@@ -826,6 +826,11 @@ completion. `features/app_lock` adapts Streak's PIN pad to the Mane kit and
 reuses the PBKDF2 PIN primitive, with a 30-second resume grace and a 30-second
 lockout after five misses.
 
+- The `v1.0` product-polish branch removes the app lock from the product
+  surface and deletes `features/app_lock` and its tests. Legacy databases that
+  still hold the old settings rows keep working, and their salt/hash stay
+  excluded from every backup. See [product-polish.md](product-polish.md).
+
 **Limitations:** GymMane import accepts the JSON payload (`gymmane.json`) rather
 than reading the backup zip directly, ignores GymMane's `planMoves` per-date
 overrides, and uses a one-hour block because GymMane stores no duration.
@@ -966,3 +971,31 @@ visible. See [CREDITS.md](../CREDITS.md) and
 [ADDITIONAL_TERMS.md](../ADDITIONAL_TERMS.md).
 
 Built with Flutter, Drift, Riverpod and Material 3.
+
+## 13. Product polish branch
+
+`feat/product-polish` moves the app from the v0.9 foundation to the requested
+product shape. See [product-polish.md](product-polish.md) for the full brief and
+status. The important architecture additions are:
+
+- Schema v9: `contexts` (jobs, homes, people/groups), `projects`, `habits`,
+  `habit_completions` and `time_entries`. Entries gain context, project,
+  priority and completion timestamp; shift patterns gain a context; shift
+  checklist items gain a cycle-day scope; home and shopping rows gain a home
+  context.
+- Timing semantics are explicit: scheduled, clock-in, deadline and anytime.
+  A deadline's effective priority is raised by its remaining time.
+- The UI is responsive: a bottom navigation on phones and a configurable side
+  rail on wide windows. The Plan page becomes a collapsible month/week calendar
+  with a mobile list/timeline switch and a desktop week grid.
+- Settings are split into Appearance, Preferences, Data and backup, Online
+  functionalities and About, with a search field and no app-lock surface.
+- Reports use a pure `ReportData` shape and a PDF/CSV writer, so the stats UI
+  and the export path do not depend on Drift.
+- The app lock is removed: its feature folder and tests are deleted, no settings
+  row is shown, and legacy PIN rows are still stripped from backups.
+- Rendered evidence lives in [screenshots/](screenshots/):
+  `v1.0-today-list-light.png`, `v1.0-today-timeline-light.png`,
+  `v1.0-work-desktop.png`, `v1.0-plan-desktop.png`,
+  `v1.0-stats-desktop.png`, `v1.0-personal-mobile.png`,
+  `v1.0-settings-mobile.png` and `v1.0-appearance-mobile.png`.

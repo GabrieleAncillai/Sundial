@@ -12,21 +12,17 @@ No account, no cloud, no telemetry. LAN sync and a local MCP endpoint are
 planned, optional, automatic when possible, and never required for the core to
 work.
 
-**Status:** v0.9 shipped. The 2026-11-09 Huawei device pass closed install,
-notifications on API 29, timezone, LAN, MCP, backup/CSV and app lock, and fixed
-an app-lock bypass, notification actions/snooze and CSV import duplication. The
-widget and OEM battery checks, the accessibility/contrast audit and the signed
-release remain in [docs/completion-plan.md](docs/completion-plan.md). Reboot
-rescheduling is blocked by EMUI and documented as an OEM limitation. Today,
-Week and Calendar tabs (with a day timeline), tags, flexible shifts, reminders
-with custom times and actions, settings, backup/restore and rotation, home
-inventory, shopping, maintenance, sleep, ICS import/export, GymMane schedule
-import, CSV interchange, companion import, optional LAN pairing with persistent
-read-only snapshots, a local MCP endpoint with streamable sessions and the full
-tool set, global search, an Android home-screen widget, the reference-style
-shell and UI kit, multi-day entries, per-slot shift checklists, an optional PIN
-app lock, work and quiet hours, and English/Spanish coverage are in place. See
-[docs/compliance-audit.md](docs/compliance-audit.md) for the verified gaps.
+**Status:** v0.9 shipped, then `feat/product-polish` rebuilt the product
+surface. The branch adds a responsive shell (bottom nav on phones, configurable
+side rail on desktop), Today list/timeline switching, Work/Home/Personal space
+overviews with jobs/homes/people, projects, habits, per-day shift checklists, a
+collapsible Plan with a desktop week grid, a Stats dashboard with PDF/CSV
+reports, sectioned/searchable settings, an Aero theme, background and text-size
+preferences, discovery-first device pairing, a configurable MCP port, and schema
+v9 (contexts, projects, habits, tracked sessions, task priorities). The old app
+lock is removed from the UI. See [docs/product-polish.md](docs/product-polish.md)
+and [docs/progress.md](docs/progress.md). Reboot rescheduling is blocked by
+EMUI and documented as an OEM limitation.
 
 ## Docs
 
@@ -53,9 +49,26 @@ app lock, work and quiet hours, and English/Spanish coverage are in place. See
 
 ## Working now
 
-- Today, Week and Calendar tabs, with month/week/day modes, per-space markers,
-  shift bars, a 24-hour timeline, day detail, previous/next navigation and
-  jump-to-today.
+- Today and Plan tabs, with the Today list/timeline switch, a collapsible
+  month/week calendar, per-space markers, shift bars, a 24-hour timeline, day
+  detail, previous/next navigation, jump-to-today and a desktop week grid.
+- A responsive shell. Phones keep the floating bottom navigation; wide windows
+  use a side rail that can sit on the left or right.
+- Today's friendly list/timeline switch with progress, priority chips,
+  context/project labels and clock-in/out for tracked tasks.
+- Space overviews for Work (jobs), Home (homes) and Personal (people/groups),
+  each with projects and dedicated detail screens. Work adds shifts, Home adds
+  inventory, shopping and gadgets, Personal adds habits.
+- A plan page with a collapsible month/week calendar, mobile list/timeline and a
+  desktop week grid with drag-to-move, resize and drag-to-create.
+- A stats dashboard and Clockify-style summary/detailed PDF reports plus CSV.
+- Sectioned settings with search, Aero/light/dark/system themes, accent schemes,
+  dots/grid/OLED/plain/custom backgrounds, text size, date format, navigation
+  side and performance mode.
+- Default categories with icons (Health, Fitness, Mindfulness, Productivity,
+  Learning, Finance), editable through the category manager.
+- Local media stickers for jobs, homes, people and projects, with crop,
+  background removal and a white outline.
 - Personal, Work and Home spaces, add/edit/soft-delete entries.
 - Timezone-aware timed entries and shift patterns. Device travel moves the
   displayed local time; all-day dates never shift.
@@ -74,7 +87,7 @@ app lock, work and quiet hours, and English/Spanish coverage are in place. See
   persistent Work deadlines.
 - Settings for theme, English/Spanish, week start, hiding Work, work/quiet
   hours, default reminders, sleep buffers, data backup, automatic backup
-  rotation, app lock, sync/MCP switches and About.
+  rotation, sync/MCP switches and About.
 - Versioned JSON backup and a validated, transactional restore, older schema
   upgrades (3–8) and daily local copies with rotation.
 - Home inventory with quantity, unit, location, reorder levels, quick ±1
@@ -84,8 +97,6 @@ app lock, work and quiet hours, and English/Spanish coverage are in place. See
   completion date, with a dedicated due/upcoming page.
 - A read-only GymMane schedule import for weekly gym blocks, and CSV
   export/import for entries, shopping and inventory.
-- An optional local PIN app lock adapted from Streak, with a resume grace and
-  no secret in backups.
 - A soft sleep window on Today, with configurable commute, wind-down and wake
   buffers.
 - Shift checklists whose completions stay independent for each shift date.
@@ -122,8 +133,7 @@ app lock, work and quiet hours, and English/Spanish coverage are in place. See
 - v0.7: day timeline, multi-day entries, recurrence exceptions, tagged shifts,
   per-slot checklists, ICS export and real-file ICS hardening. Done.
 - v0.8: GymMane schedule import, automatic local backups with rotation, older
-  backup schemas, CSV interchange, home-tracking views and optional app lock.
-  Done.
+  backup schemas, CSV interchange, home-tracking views. Done.
 - v0.9: full MCP tool set and sessions, persistent LAN snapshots, work-hours and
   quiet-hours rules, custom reminder times and actions. Done.
 - v1.0: device verification, accessibility/contrast audit, final docs and a

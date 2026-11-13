@@ -60,9 +60,10 @@ companion import, optional LAN pairing with persistent read-only snapshots, a
 local MCP endpoint with streamable sessions and the full tool set, and global
 search exist. An Android home-screen widget shows today's plan, and the app uses
 the adapted GymMane/Streak visual language. Multi-day entries, tagged shifts,
-the optional PIN app lock, work hours and quiet hours are in. English and
-Spanish are covered. The constraint audit is in
-[compliance-audit.md](compliance-audit.md).
+work hours and quiet hours are in. The `feat/product-polish` branch adds the
+responsive shell, space jobs/homes/people, projects, habits, timing modes,
+Stats and sectioned settings, and removes the app lock. English and Spanish are
+covered. The constraint audit is in [compliance-audit.md](compliance-audit.md).
 
 - [Full docs](full-docs.md): architecture, data model, feature areas and roadmap.
 - [Completion plan](completion-plan.md): the active v0.6 → v1.0 milestones and

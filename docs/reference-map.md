@@ -80,6 +80,20 @@ git clone https://github.com/InlitX/streak.git ../Streak
 - **Work-hours rules, quiet hours and full MCP tool coverage.** Neither
   reference has these surfaces. They are implemented against the planner model
   in v0.9; see `docs/full-docs.md`.
+- **Work jobs, Home homes, Personal people/groups, projects and habits.** The
+  reference projects use folders/projects for habits and to-dos but do not have
+  a first-class job/home/person context inside three spaces. Mane adds
+  `PlannerContext`, `Project` and `Habit` to `mane_core` and schema v9. The
+  folder cards, category icons and habit controls adapt Streak's patterns.
+- **Responsive shell and week grid.** GymMane and Streak are phone-first. Mane's
+  side rail follows Streak's `responsive.dart` idea, and the desktop week grid
+  is a planner-specific widget with move/resize/create gestures.
+- **Stats and report export.** Streak has habit statistics; neither reference
+  has a Clockify-style tracked-time report. The dashboard uses Mane data and the
+  PDF/CSV writer lives in `lib/features/stats/report_writer.dart`.
+- **Sticker media editor.** GymMane's nutrition cutout editor was the reference
+  for crop/background removal/outline. Mane reimplements it in
+  `lib/features/media/` for job, home, person and project images.
 - **Visual layer.** v0.6 adapts GymMane's shell, Nunito, warm palette and
   settings rows, plus Streak's floating nav, sheet shape and page motion. Mane
   does not ship GymMane's photo/pattern background picker or Streak's three

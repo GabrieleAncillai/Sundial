@@ -4,12 +4,40 @@ Keep this file current. A fresh context window should be able to resume from it.
 
 ## Current milestone
 
-v0.9 is complete. The v1.0 program is real-device verification, the
-accessibility/contrast audit, final docs and a signed release. The 2026-11-09
-Huawei run fixed the app-lock bypass, notification actions/snooze and CSV
-import duplication; see `docs/device-run-2026-11-09.md`. The widget and OEM
-battery checks still need the user, and reboot is blocked by EMUI. The
-constraint audit is in `docs/compliance-audit.md`.
+`feat/product-polish` reworks the product surface after v0.9. The foundation is
+in place and green:
+
+- Responsive shell: bottom navigation on phones, a configurable left/right side
+  rail on desktop.
+- Today list/timeline switch with progress and friendly task cards.
+- Work/Home/Personal space overviews with jobs, homes, people, projects and
+  habits. Context detail screens expose shifts, per-day checklists, inventory,
+  gadgets, projects and habits.
+- Plan page with a collapsible month, mobile list/timeline and a desktop week
+  grid with drag-to-move, resize and drag-to-create.
+- Stats dashboard with PDF summary/detailed reports and CSV export.
+- Sectioned settings with search, Aero/light/dark/system themes, accent
+  schemes, background styles, text size, date format, navigation side and a
+  performance mode. App lock is removed from the product surface.
+- Online master switch gates Devices & Sync and MCP; the MCP port is
+  configurable and pairing is discovery-first.
+- Schema v9 adds contexts, projects, habits, habit completions, time sessions,
+  entry context/project/priority/completedAt and per-day shift checklists,
+  with a v8 migration test and a backup round-trip.
+
+Still open: real-device visual pass, Android tablet/desktop layout review,
+weekly-grid interaction polish, and manual testing of the sticker editor and
+report save dialogs on both platforms. The old app-lock feature and its tests
+are deleted; legacy settings rows are ignored and still excluded from backups.
+
+Screenshot evidence is rendered by `tool/screenshots/screenshot_test.dart` into
+`docs/screenshots/v1.0-*.png`. That pass fixed narrow desktop entry blocks,
+clipped all-day chips, scheduled tasks shown as deadlines, and the day timeline
+opening at midnight; it now self-scrolls near the current hour and draws a
+separate due marker for deadlines.
+
+The v1.0 device/accessibility/release items from the earlier program remain in
+`docs/completion-plan.md`.
 
 ## Reference notes
 
