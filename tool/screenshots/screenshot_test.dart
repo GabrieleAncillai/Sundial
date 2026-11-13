@@ -1,294 +1,212 @@
+import 'dart:ffi' show DynamicLibrary;
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mane/app/app_shell.dart';
 import 'package:mane/core/i18n/l10n.dart';
-import 'package:mane/core/widgets/ui_kit.dart';
-import 'package:mane/features/app_lock/pages/pin_setup_page.dart';
-import 'package:mane/features/calendar/pages/calendar_page.dart';
-import 'package:mane/features/home_inventory/pages/maintenance_page.dart';
-import 'package:mane/features/home_inventory/pages/shopping_list_page.dart';
-import 'package:mane/features/reminders/widgets/reminder_offset_sheet.dart';
-import 'package:mane/features/settings/pages/settings_page.dart';
 import 'package:mane/models/app_settings.dart';
 import 'package:mane/models/home_item.dart';
 import 'package:mane/models/shopping_item.dart';
-import 'package:mane/screens/today_screen.dart';
+import 'package:mane/services/app_database.dart';
+import 'package:mane/services/notification_service.dart';
 import 'package:mane/state/providers.dart';
 import 'package:mane/state/settings_controller.dart';
-import 'package:mane/theme/app_colors.dart';
 import 'package:mane/theme/app_theme.dart';
-import 'package:mane/theme/app_typography.dart';
 import 'package:mane_core/mane_core.dart';
+import 'package:sqlite3/open.dart';
+
+const _phone = (size: Size(1290, 2796), dpr: 3.0);
+const _desktop = (size: Size(2560, 1600), dpr: 2.0);
+final _today = LocalDate.parse('2026-11-09');
+final _now = DateTime.utc(2026, 11, 9, 10, 30);
 
 void main() {
   setUpAll(() async {
+    open.overrideFor(OperatingSystem.linux, () => DynamicLibrary.open('libsqlite3.so.0'));
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     initializeTimeZones();
-    final materialFont = locateMaterialFont();
-    if (materialFont != null) {
-      final icons = FontLoader('MaterialIcons')
-        ..addFont(Future.value(ByteData.sublistView(materialFont.readAsBytesSync())));
-      await icons.load();
-    }
-    final loader = FontLoader('Nunito');
-    for (final file in [
-      'Nunito-Regular.ttf',
-      'Nunito-Italic.ttf',
-      'Nunito-Medium.ttf',
-      'Nunito-SemiBold.ttf',
-      'Nunito-SemiBoldItalic.ttf',
-      'Nunito-Bold.ttf',
-      'Nunito-ExtraBold.ttf',
-      'Nunito-Black.ttf',
-    ]) {
-      loader.addFont(rootBundle.load('assets/fonts/$file'));
-    }
-    await loader.load();
+    await _loadFonts();
   });
 
-  testWidgets('render Today light', (tester) async {
-    await render(tester, 'v0.6-today-light.png', ManeTheme.light, shell(const TodayScreen()));
+  late AppDatabase database;
+
+  setUp(() async {
+    database = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    await _seed(database);
   });
 
-  testWidgets('render Today dark', (tester) async {
-    await render(tester, 'v0.6-today-dark.png', ManeTheme.dark, shell(const TodayScreen()));
+  tearDown(() => database.close());
+
+  testWidgets('render mobile Today list', (tester) async {
+    await _renderShell(tester, 'v1.0-today-list-light.png', database, view: _phone);
   });
 
-  testWidgets('render Calendar light', (tester) async {
-    await render(tester, 'v0.6-calendar-light.png', ManeTheme.light, shell(const CalendarPage()));
-  });
-
-  testWidgets('render Calendar day light', (tester) async {
-    await render(
+  testWidgets('render mobile Today timeline', (tester) async {
+    await _renderShell(
       tester,
-      'v0.7-calendar-day-light.png',
-      ManeTheme.light,
-      shell(const CalendarPage()),
+      'v1.0-today-timeline-light.png',
+      database,
+      view: _phone,
       act: (tester) async {
-        await tester.tap(find.text('Day'));
-        await tester.pumpAndSettle();
-        await tester.drag(find.byType(ListView).first, const Offset(0, -720));
+        await tester.tap(find.text('Timeline'));
         await tester.pumpAndSettle();
       },
     );
   });
 
-  testWidgets('render Settings light', (tester) async {
-    await render(tester, 'v0.6-settings-light.png', ManeTheme.light, const SettingsPage());
-  });
-
-  testWidgets('render Shopping light', (tester) async {
-    await render(
+  testWidgets('render desktop Work', (tester) async {
+    await _renderShell(
       tester,
-      'v0.8-shopping-light.png',
-      ManeTheme.light,
-      const ShoppingListPage(),
-      homeItems: const [
-        HomeItem(id: 'rice', name: 'Rice', category: 'Pantry', location: 'Kitchen', quantity: 1),
-        HomeItem(id: 'soap', name: 'Soap', category: 'Bathroom', location: 'Cabinet', quantity: 2),
-      ],
-      shoppingItems: const [
-        ShoppingItem(id: 'rice', name: 'Rice', quantity: 2, homeItemId: 'rice'),
-        ShoppingItem(id: 'soap', name: 'Soap', quantity: 3, homeItemId: 'soap'),
-        ShoppingItem(id: 'batteries', name: 'Batteries', quantity: 1, note: 'AA'),
-      ],
-    );
-  });
-
-  testWidgets('render Maintenance light', (tester) async {
-    final today = LocalDate.parse('2026-11-09');
-    final now = DateTime.utc(2026, 11, 1, 8);
-    final entry = Entry(
-      id: 'pump',
-      spaceId: 'home',
-      title: 'Service the water pump',
-      date: today.addDays(-3),
-      allDay: true,
-      repeatAfterCompletionDays: 90,
-      createdAt: now,
-      updatedAt: now,
-    );
-    await render(
-      tester,
-      'v0.8-maintenance-light.png',
-      ManeTheme.light,
-      const MaintenancePage(),
-      entryOccurrences: [EntryOccurrence(date: entry.date!, displayDate: entry.date!, entry: entry)],
-    );
-  });
-
-  testWidgets('render PIN setup light', (tester) async {
-    await render(tester, 'v0.8-pin-setup-light.png', ManeTheme.light, const PinSetupPage());
-  });
-
-  testWidgets('render work and quiet hours', (tester) async {
-    await render(
-      tester,
-      'v0.9-settings-hours-light.png',
-      ManeTheme.light,
-      const SettingsPage(),
-      settings: const AppSettings(workHoursEnabled: true, quietHoursEnabled: true),
+      'v1.0-work-desktop.png',
+      database,
+      view: _desktop,
       act: (tester) async {
-        await tester.drag(find.byType(ListView).first, const Offset(0, -330));
+        await tester.tap(find.text('Work'));
         await tester.pumpAndSettle();
       },
     );
   });
 
-  testWidgets('render reminder times', (tester) async {
-    await render(
+  testWidgets('render desktop Plan', (tester) async {
+    await _renderShell(
       tester,
-      'v0.9-reminders-light.png',
-      ManeTheme.light,
-      Builder(
-        builder: (context) => Scaffold(
-          backgroundColor: context.mc.pageBg,
-          body: const ReminderSelectionSheet(initialOffsets: {10, 60}, initialTimes: {8 * 60}),
-        ),
-      ),
+      'v1.0-plan-desktop.png',
+      database,
+      view: _desktop,
+      act: (tester) async {
+        await tester.tap(find.text('Plan'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render desktop Stats', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.0-stats-desktop.png',
+      database,
+      view: _desktop,
+      act: (tester) async {
+        await tester.tap(find.text('Stats'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render mobile Personal', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.0-personal-mobile.png',
+      database,
+      view: _phone,
+      act: (tester) async {
+        await tester.tap(find.text('Personal'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render mobile Settings', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.0-settings-mobile.png',
+      database,
+      view: _phone,
+      act: (tester) async {
+        await tester.tap(find.byTooltip('Settings'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render mobile Appearance', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.0-appearance-mobile.png',
+      database,
+      view: _phone,
+      act: (tester) async {
+        await tester.tap(find.byTooltip('Settings'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Appearance'));
+        await tester.pumpAndSettle();
+      },
     );
   });
 }
 
-Widget shell(Widget page) {
-  return Builder(
-    builder: (context) {
-      final c = context.mc;
-      final l10n = context.l10n;
-      return AppBackground(
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18, 10, 16, 6),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(13)),
-                      child: Icon(Icons.event_note, size: 21, color: c.onAccent),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(l10n.appName, style: ManeType.headline(21, color: c.text)),
-                    const Spacer(),
-                    GlassIconButton(icon: Icons.search, tooltip: l10n.search, onTap: () {}),
-                    const SizedBox(width: 8),
-                    GlassIconButton(icon: Icons.filter_alt_outlined, tooltip: l10n.filterByTag, onTap: () {}),
-                    const SizedBox(width: 8),
-                    GlassIconButton(icon: Icons.settings_outlined, tooltip: l10n.settings, onTap: () {}),
-                  ],
-                ),
-              ),
-              Expanded(child: page),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ManeNavBar(
-                        index: 0,
-                        onSelected: (_) {},
-                        items: [
-                          (icon: Icons.today_outlined, selectedIcon: Icons.today, label: l10n.today),
-                          (
-                            icon: Icons.calendar_view_week_outlined,
-                            selectedIcon: Icons.calendar_view_week,
-                            label: l10n.week,
-                          ),
-                          (
-                            icon: Icons.calendar_month_outlined,
-                            selectedIcon: Icons.calendar_month,
-                            label: l10n.calendar,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    ManeAddButton(tooltip: l10n.addEntry, onTap: () {}),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
+Future<void> _loadFonts() async {
+  final materialFont = _locateMaterialFont();
+  if (materialFont != null) {
+    final icons = FontLoader('MaterialIcons')
+      ..addFont(Future.value(ByteData.sublistView(materialFont.readAsBytesSync())));
+    await icons.load();
+  }
+  final loader = FontLoader('Nunito');
+  for (final file in [
+    'Nunito-Regular.ttf',
+    'Nunito-Italic.ttf',
+    'Nunito-Medium.ttf',
+    'Nunito-SemiBold.ttf',
+    'Nunito-SemiBoldItalic.ttf',
+    'Nunito-Bold.ttf',
+    'Nunito-ExtraBold.ttf',
+    'Nunito-Black.ttf',
+  ]) {
+    loader.addFont(rootBundle.load('assets/fonts/$file'));
+  }
+  await loader.load();
 }
 
-Future<void> render(
+Future<void> _renderShell(
   WidgetTester tester,
   String name,
-  ThemeData theme,
-  Widget home, {
+  AppDatabase database, {
+  required ({Size size, double dpr}) view,
   Future<void> Function(WidgetTester tester)? act,
-  List<EntryOccurrence>? entryOccurrences,
-  List<HomeItem> homeItems = const [],
-  List<ShoppingItem> shoppingItems = const [],
   AppSettings settings = const AppSettings(),
 }) async {
-  tester.view.physicalSize = const Size(1290, 2796);
-  tester.view.devicePixelRatio = 3;
+  tester.view.physicalSize = view.size;
+  tester.view.devicePixelRatio = view.dpr;
   addTearDown(tester.view.reset);
-  final key = GlobalKey();
-  final today = LocalDate.parse('2026-11-09');
-  final entries = entryOccurrences ?? demoEntries(today);
-  final shifts = demoShifts(today);
 
+  final key = GlobalKey();
   await tester.pumpWidget(
     RepaintBoundary(
       key: key,
       child: ProviderScope(
         overrides: [
+          databaseProvider.overrideWithValue(database),
+          notificationServiceProvider.overrideWithValue(
+            // ignore: invalid_use_of_visible_for_testing_member
+            NotificationService.withPlugin(FlutterLocalNotificationsPlugin()),
+          ),
           initialSettingsProvider.overrideWithValue(settings),
           deviceTimeZoneProvider.overrideWith(() => DeviceTimeZoneController(initial: 'Europe/Madrid')),
-          nowProvider.overrideWithValue(DateTime.utc(2026, 11, 9, 18)),
-          spacesProvider.overrideWith((ref) => Stream.value(fallbackSpaces)),
-          tagsProvider.overrideWith((ref) => Stream.value(const <Tag>[])),
-          homeItemsProvider.overrideWith((ref) => Stream.value(homeItems)),
-          shoppingItemsProvider.overrideWith((ref) => Stream.value(shoppingItems)),
-          pairedDevicesProvider.overrideWith((ref) => Stream.value(const [])),
-          entriesProvider.overrideWith(
-            (ref, range) => Stream.value(
-              entries
-                  .where(
-                    (entry) =>
-                        entry.displayDate.key >= range.start.key && entry.displayDate.key <= range.end.key,
-                  )
-                  .toList(),
-            ),
-          ),
-          shiftsProvider.overrideWith(
-            (ref, range) => Stream.value(
-              shifts
-                  .where(
-                    (shift) =>
-                        shift.displayDate.key >= range.start.key && shift.displayDate.key <= range.end.key,
-                  )
-                  .toList(),
-            ),
-          ),
+          nowProvider.overrideWithValue(_now),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme: theme,
+          theme: ManeTheme.forSettings(settings, Brightness.light),
           locale: const Locale('en'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(backgroundColor: Colors.transparent, body: home),
+          home: const AppShell(),
         ),
       ),
     ),
   );
-  await tester.pump();
-  await tester.pump(const Duration(milliseconds: 400));
+  await tester.pumpAndSettle();
   if (act != null) await act(tester);
+
   final boundary = tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
   await tester.runAsync(() async {
     final image = await boundary.toImage(pixelRatio: 2);
@@ -297,9 +215,234 @@ Future<void> render(
     final dir = Directory('docs/screenshots')..createSync(recursive: true);
     File('${dir.path}/$name').writeAsBytesSync(bytes!.buffer.asUint8List());
   });
+
+  // AppShell owns a periodic clock; drop the tree so the timer is cancelled.
+  await tester.pumpWidget(const SizedBox.shrink());
+  await tester.pump(const Duration(seconds: 1));
 }
 
-File? locateMaterialFont() {
+Future<void> _seed(AppDatabase database) async {
+  await database.seedDefaults();
+  final created = DateTime.utc(2026, 11, 1, 8);
+
+  const pizzeria = PlannerContext(
+    id: 'pizzeria',
+    spaceId: 'work',
+    name: 'The Pizzeria',
+    description: 'Evening shifts and weekend prep',
+    colorValue: 0xFFE08A3C,
+    icon: 'restaurant',
+    position: 0,
+  );
+  const studio = PlannerContext(
+    id: 'studio',
+    spaceId: 'work',
+    name: 'Studio North',
+    description: 'Design and front-end work',
+    colorValue: 0xFF4F7CAC,
+    icon: 'laptop',
+    position: 1,
+  );
+  const apartment = PlannerContext(
+    id: 'apartment',
+    spaceId: 'home',
+    name: 'Apartment 4B',
+    description: 'Everything shared under one roof',
+    colorValue: 0xFF6B9B7B,
+    icon: 'home',
+    position: 0,
+  );
+  const family = PlannerContext(
+    id: 'family',
+    spaceId: 'personal',
+    name: 'Family',
+    description: 'Time with the people who matter',
+    colorValue: 0xFFB06AB3,
+    icon: 'group',
+    position: 0,
+  );
+  for (final context in [pizzeria, studio, apartment, family]) {
+    await database.saveContext(context);
+  }
+
+  for (final project in const [
+    Project(
+      id: 'relaunch',
+      spaceId: 'work',
+      contextId: 'studio',
+      name: 'Website relaunch',
+      description: 'Portfolio refresh',
+      colorValue: 0xFF4F7CAC,
+      icon: 'rocket',
+    ),
+    Project(
+      id: 'deep-clean',
+      spaceId: 'home',
+      contextId: 'apartment',
+      name: 'Deep clean',
+      description: 'Room-by-room reset',
+      colorValue: 0xFF6B9B7B,
+      icon: 'cleaning',
+    ),
+    Project(
+      id: 'parents',
+      spaceId: 'personal',
+      contextId: 'family',
+      name: 'Weekend with Mom & Dad',
+      description: 'Monthly visit',
+      colorValue: 0xFFB06AB3,
+      icon: 'favorite',
+    ),
+  ]) {
+    await database.saveProject(project);
+  }
+
+  await database.saveHabit(
+    Habit(
+      id: 'walk',
+      spaceId: 'personal',
+      contextId: 'family',
+      name: 'Morning walk',
+      description: 'Twenty minutes before work',
+      colorValue: 0xFF6B9B7B,
+      icon: 'directions_run',
+      targetPerWeek: 5,
+      createdAt: created,
+    ),
+  );
+
+  for (final entry in _entries(created)) {
+    await database.saveEntry(entry);
+  }
+
+  await database.saveShiftPattern(
+    ShiftPattern(
+      id: 'pizzeria-shifts',
+      spaceId: 'work',
+      contextId: 'pizzeria',
+      name: 'Pizzeria',
+      timeZone: 'Europe/Madrid',
+      cycleDays: 7,
+      anchorDate: _today,
+      slots: const [ShiftSlot(dayIndex: 0, startMinute: 15 * 60, endMinute: 23 * 60, label: 'Floor')],
+    ),
+  );
+
+  await database.startTimeEntry(entryId: 'review', at: DateTime.utc(2026, 11, 9, 10));
+
+  await database.saveHomeItem(
+    const HomeItem(
+      id: 'rice',
+      name: 'Rice',
+      category: 'Pantry',
+      location: 'Kitchen',
+      quantity: 2,
+      unit: 'kg',
+      reorderLevel: 1,
+    ),
+  );
+  await database.saveShoppingItem(const ShoppingItem(id: 'milk', name: 'Milk', quantity: 2, unit: 'L'));
+}
+
+List<Entry> _entries(DateTime created) {
+  Entry entry(
+    String id,
+    String space,
+    String title, {
+    EntryKind kind = EntryKind.task,
+    bool allDay = true,
+    int? start,
+    int? end,
+    String? context,
+    String? project,
+    EntryPriority priority = EntryPriority.none,
+    EntryStatus status = EntryStatus.open,
+    DateTime? completedAt,
+    LocalDate? date,
+    int? repeatAfterCompletionDays,
+  }) {
+    return Entry(
+      id: id,
+      spaceId: space,
+      title: title,
+      kind: kind,
+      date: date ?? _today,
+      allDay: allDay,
+      startMinute: allDay ? null : start,
+      endMinute: allDay ? null : end,
+      timeZone: allDay ? null : 'Europe/Madrid',
+      contextId: context,
+      projectId: project,
+      priority: priority,
+      status: status,
+      completedAt: completedAt,
+      repeatAfterCompletionDays: repeatAfterCompletionDays,
+      createdAt: created,
+      updatedAt: created,
+    );
+  }
+
+  return [
+    entry('dough', 'work', 'Prep the dough', allDay: false, start: 8 * 60, end: 10 * 60, context: 'pizzeria'),
+    entry(
+      'standup',
+      'work',
+      'Team standup',
+      allDay: false,
+      start: 10 * 60,
+      end: 10 * 60 + 30,
+      context: 'studio',
+      project: 'relaunch',
+      status: EntryStatus.done,
+      completedAt: DateTime.utc(2026, 11, 9, 9, 40),
+    ),
+    entry(
+      'review',
+      'work',
+      'Review the release notes',
+      allDay: false,
+      start: 11 * 60,
+      end: 12 * 60 + 30,
+      context: 'studio',
+      project: 'relaunch',
+      priority: EntryPriority.high,
+    ),
+    entry('dentist', 'personal', 'Call the dentist', context: 'family'),
+    entry(
+      'passport',
+      'personal',
+      'Renew the passport',
+      kind: EntryKind.deadline,
+      allDay: false,
+      end: 17 * 60,
+      context: 'family',
+      priority: EntryPriority.medium,
+    ),
+    entry('plants', 'home', 'Water the plants', kind: EntryKind.obligation, context: 'apartment'),
+    entry(
+      'pump',
+      'home',
+      'Service the water pump',
+      kind: EntryKind.obligation,
+      context: 'apartment',
+      date: _today.addDays(-9),
+      repeatAfterCompletionDays: 90,
+    ),
+    entry(
+      'dinner',
+      'personal',
+      'Anniversary dinner',
+      kind: EntryKind.event,
+      allDay: false,
+      start: 20 * 60,
+      end: 22 * 60,
+      context: 'family',
+      date: _today.addDays(3),
+    ),
+  ];
+}
+
+File? _locateMaterialFont() {
   var dir = File(Platform.resolvedExecutable).parent;
   for (var i = 0; i < 10; i++) {
     for (final candidate in [
@@ -313,74 +456,4 @@ File? locateMaterialFont() {
     dir = dir.parent;
   }
   return null;
-}
-
-List<EntryOccurrence> demoEntries(LocalDate today) {
-  final now = DateTime.utc(2026, 11, 1, 8);
-  Entry entry(
-    String id,
-    String space,
-    String title,
-    LocalDate date, {
-    EntryKind kind = EntryKind.task,
-    bool allDay = false,
-    int? start,
-    int? end,
-    RecurrenceRule? recurrence,
-  }) {
-    return Entry(
-      id: id,
-      spaceId: space,
-      title: title,
-      kind: kind,
-      date: date,
-      allDay: allDay,
-      startMinute: allDay ? null : start,
-      endMinute: allDay ? null : end,
-      timeZone: allDay ? null : 'Europe/Madrid',
-      recurrence: recurrence,
-      createdAt: now,
-      updatedAt: now,
-    );
-  }
-
-  final list = [
-    entry('review', 'work', 'Review the release notes', today, start: 10 * 60, end: 11 * 60),
-    entry('taxes', 'personal', 'File the quarterly taxes', today, kind: EntryKind.deadline, allDay: true),
-    entry('pump', 'home', 'Service the water pump', today, kind: EntryKind.obligation, allDay: true),
-    entry('standup', 'work', 'Morning standup', today.addDays(1), start: 9 * 60, end: 9 * 60 + 30),
-    entry(
-      'anniversary',
-      'personal',
-      'Anniversary dinner',
-      today.addDays(3),
-      kind: EntryKind.event,
-      start: 20 * 60,
-      end: 22 * 60,
-      recurrence: const RecurrenceRule(frequency: RecurrenceFrequency.yearly),
-    ),
-  ];
-  return [
-    for (final item in list)
-      EntryOccurrence(
-        date: item.date!,
-        displayDate: item.date!,
-        entry: item,
-        startAt: item.startAt,
-        endAt: item.endAt,
-      ),
-  ];
-}
-
-List<ShiftOccurrence> demoShifts(LocalDate today) {
-  final pattern = ShiftPattern(
-    id: 'pizzeria',
-    spaceId: 'work',
-    name: 'Pizzeria',
-    timeZone: 'Europe/Madrid',
-    cycleDays: 7,
-    anchorDate: today,
-    slots: const [ShiftSlot(dayIndex: 0, startMinute: 15 * 60, endMinute: 23 * 60, label: 'Floor')],
-  );
-  return pattern.occurrencesBetween(today, today.addDays(6), viewerTimeZone: 'Europe/Madrid');
 }

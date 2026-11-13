@@ -278,7 +278,7 @@ void main() {
       'method': 'tools/call',
       'params': {'name': 'tags.list', 'arguments': <String, Object?>{}},
     });
-    expect(_toolPayload(tagsBody)['tags'], isEmpty);
+    expect((_toolPayload(tagsBody)['tags'] as List), hasLength(6));
 
     await database.saveEntry(
       Entry(
