@@ -994,8 +994,32 @@ status. The important architecture additions are:
   and the export path do not depend on Drift.
 - The app lock is removed: its feature folder and tests are deleted, no settings
   row is shown, and legacy PIN rows are still stripped from backups.
+
+### V2 product deltas
+
+- Aero is a component treatment, not only a palette: `SoftCard`, the nav bar,
+  segmented controls and glass icon buttons gain a glossy gradient, cyan edge
+  and soft glow. Selecting Aero also selects the Aero interaction-sound pack.
+- Interaction sounds and alarm previews are optional and off by default. Sounds
+  play from bundled WAV assets: Android through a small `SoundPool`
+  `MethodChannel`, Linux through `aplay`, with system sounds as fallback.
+  Scheduled reminders use one Android notification channel per alarm sound.
+- Preferences expose a searchable IANA time-zone picker. The chosen zone is the
+  planning zone for new timed entries; display still follows the device zone.
+- The entry editor derives the task shape from clearable start/end fields:
+  both = scheduled, start only = clock-in, end only = deadline, neither =
+  anytime. The repeat control opens a Streak-style sheet with interval,
+  weekday chips, monthly day or nth weekday, end conditions and
+  repeat-after-completion.
+- Clocking out pauses a clock-in task. Sessions are accumulated per entry, so
+  the same task can be resumed on a later day; `finishTracked` is the explicit
+  end-time path.
+- `showAppSheet` is a bottom sheet below 900 logical pixels and a blurred
+  floating dialog above it. The shared `ManeSelectField`/`showManeSelectSheet`
+  replace stock dropdowns in the entry, shift, project and category forms.
 - Rendered evidence lives in [screenshots/](screenshots/):
   `v1.0-today-list-light.png`, `v1.0-today-timeline-light.png`,
   `v1.0-work-desktop.png`, `v1.0-plan-desktop.png`,
   `v1.0-stats-desktop.png`, `v1.0-personal-mobile.png`,
-  `v1.0-settings-mobile.png` and `v1.0-appearance-mobile.png`.
+  `v1.0-settings-mobile.png`, `v1.0-appearance-mobile.png`,
+  `v1.2-today-aero.png` and `v1.2-preferences-mobile.png`.

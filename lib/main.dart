@@ -18,7 +18,7 @@ Future<void> main() async {
   await database.seedDefaults();
   final settings = AppSettings.fromMap(await database.readSettings());
   final notifications = NotificationService();
-  await notifications.initialize(deviceTimeZone: timeZone);
+  await notifications.initialize(deviceTimeZone: timeZone, alarmSound: settings.alarmSound);
   runApp(
     ProviderScope(
       overrides: [

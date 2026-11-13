@@ -16,22 +16,38 @@ in place and green:
 - Plan page with a collapsible month, mobile list/timeline and a desktop week
   grid with drag-to-move, resize and drag-to-create.
 - Stats dashboard with PDF summary/detailed reports and CSV export.
-- Sectioned settings with search, Aero/light/dark/system themes, accent
-  schemes, background styles, text size, date format, navigation side and a
-  performance mode. App lock is removed from the product surface.
+- Sectioned settings with search, Aero/light/dark/system themes, background
+  styles, text size, date format, navigation side and a performance mode. App
+  lock is removed from the product surface.
+- V2 delta: Aero now treats shared surfaces as glossy frosted glass and selects
+  the Aero interaction-sound pack. Preferences add an opt-in Sound section
+  (interaction pack, preview, alarm sound) and a searchable IANA time zone
+  picker for new timed entries.
+- V2 delta: the entry editor infers scheduled / clock-in / deadline / anytime
+  from clearable start and end fields, and uses a Streak-style repeat sheet plus
+  repeat-after-completion. Clocking out pauses; the same entry resumes on a
+  later day with a second session.
+- V2 delta: `showAppSheet` is a bottom sheet on phones and a blurred floating
+  dialog on desktop; a shared searchable selector replaces the stock dropdowns
+  in the main forms.
 - Online master switch gates Devices & Sync and MCP; the MCP port is
   configurable and pairing is discovery-first.
 - Schema v9 adds contexts, projects, habits, habit completions, time sessions,
   entry context/project/priority/completedAt and per-day shift checklists,
-  with a v8 migration test and a backup round-trip.
+  with a v8 migration test and a backup round-trip. Schema v10 repairs
+  databases written by the earlier draft-v9 build (space units, task sessions
+  and integer priorities) and keeps their rows.
 
 Still open: real-device visual pass, Android tablet/desktop layout review,
-weekly-grid interaction polish, and manual testing of the sticker editor and
-report save dialogs on both platforms. The old app-lock feature and its tests
+weekly-grid interaction polish, manual testing of the sticker editor and
+report save dialogs on both platforms, and a real-device audio check for the
+SoundPool bridge, `aplay` fallback and per-sound notification channels. The old app-lock feature and its tests
 are deleted; legacy settings rows are ignored and still excluded from backups.
 
 Screenshot evidence is rendered by `tool/screenshots/screenshot_test.dart` into
-`docs/screenshots/v1.0-*.png`. That pass fixed narrow desktop entry blocks,
+`docs/screenshots/v1.0-*.png` plus the v2 captures
+`docs/screenshots/v1.2-today-aero.png` and
+`docs/screenshots/v1.2-preferences-mobile.png`. That pass fixed narrow desktop entry blocks,
 clipped all-day chips, scheduled tasks shown as deadlines, and the day timeline
 opening at midnight; it now self-scrolls near the current hour and draws a
 separate due marker for deadlines.

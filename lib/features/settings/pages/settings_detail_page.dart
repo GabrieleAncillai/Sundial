@@ -4,6 +4,8 @@ import 'package:mane_core/mane_core.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../core/i18n/reminder_label.dart';
+import '../../../core/sound/sound_service.dart';
+import '../../../core/timezone/timezone_picker.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../models/app_settings.dart';
 import '../../../state/providers.dart';
@@ -72,12 +74,6 @@ class SettingsDetailPage extends ConsumerWidget {
                   ),
                 ),
                 SettingsNavRow(
-                  icon: Icons.palette_outlined,
-                  title: l10n.colorScheme,
-                  value: _accentLabel(l10n, settings.accentScheme),
-                  onTap: () => _pickAccent(context, controller, settings.accentScheme),
-                ),
-                SettingsNavRow(
                   icon: Icons.texture_outlined,
                   title: l10n.background,
                   value: _backgroundLabel(l10n, settings.backgroundStyle),
@@ -126,6 +122,15 @@ class SettingsDetailPage extends ConsumerWidget {
                   ),
                 ),
                 SettingsNavRow(
+                  icon: Icons.public,
+                  title: l10n.timeZone,
+                  subtitle: l10n.timezoneSubtitle,
+                  value: settings.timezoneOverride.isEmpty
+                      ? ref.watch(deviceTimeZoneProvider)
+                      : settings.timezoneOverride,
+                  onTap: () => _pickTimeZone(context, ref, settings),
+                ),
+                SettingsNavRow(
                   icon: Icons.event_outlined,
                   title: l10n.dateFormatLabel,
                   value: _dateFormatLabel(l10n, settings.dateFormat),
@@ -157,6 +162,68 @@ class SettingsDetailPage extends ConsumerWidget {
                   subtitle: l10n.performanceModeSubtitle,
                   value: settings.performanceMode,
                   onChanged: controller.setPerformanceMode,
+                ),
+              ],
+            ),
+          if (section == SettingsDetailSection.preferences)
+            SettingsSection(
+              title: l10n.soundSection,
+              children: [
+                SettingsSwitchRow(
+                  icon: Icons.volume_up_outlined,
+                  title: l10n.interactionSounds,
+                  subtitle: l10n.interactionSoundsSubtitle,
+                  value: settings.soundsEnabled,
+                  onChanged: (value) async {
+                    await controller.setSoundsEnabled(value);
+                    if (value) {
+                      ref.read(soundControllerProvider).play(UiSound.toggleOn, force: true);
+                    }
+                  },
+                ),
+                SettingsChoiceRow(
+                  icon: Icons.graphic_eq,
+                  title: l10n.soundPackLabel,
+                  choice: ManeSegmented<ManeSoundPack>(
+                    segments: [
+                      ManeSegment(value: ManeSoundPack.soft, label: l10n.soundPackSoft),
+                      ManeSegment(value: ManeSoundPack.aero, label: l10n.soundPackAero),
+                    ],
+                    selected: settings.soundPack,
+                    onChanged: (value) {
+                      controller.setSoundPack(value);
+                      ref.read(soundControllerProvider).play(UiSound.tap, force: true);
+                    },
+                    compact: true,
+                  ),
+                ),
+                SettingsChoiceRow(
+                  icon: Icons.play_circle_outline,
+                  title: l10n.previewSound,
+                  choice: OutlinedButton.icon(
+                    onPressed: () => ref.read(soundControllerProvider).play(UiSound.tap, force: true),
+                    icon: const Icon(Icons.play_arrow, size: 18),
+                    label: Text(l10n.previewSound),
+                  ),
+                ),
+                SettingsChoiceRow(
+                  icon: Icons.alarm_outlined,
+                  title: l10n.alarmSounds,
+                  subtitle: l10n.alarmSoundsSubtitle,
+                  choice: ManeSegmented<ManeAlarmSound>(
+                    segments: [
+                      ManeSegment(value: ManeAlarmSound.soft, label: l10n.alarmSoundSoft),
+                      ManeSegment(value: ManeAlarmSound.chime, label: l10n.alarmSoundChime),
+                      ManeSegment(value: ManeAlarmSound.bright, label: l10n.alarmSoundBright),
+                    ],
+                    selected: settings.alarmSound,
+                    onChanged: (value) {
+                      controller.setAlarmSound(value);
+                      ref.read(soundControllerProvider).previewAlarm(value);
+                      ref.read(reminderCoordinatorProvider).reschedule();
+                    },
+                    compact: true,
+                  ),
                 ),
               ],
             ),
@@ -741,25 +808,19 @@ class SettingsDetailPage extends ConsumerWidget {
     }
   }
 
-  Future<void> _pickAccent(
-    BuildContext context,
-    SettingsController controller,
-    ManeAccentScheme selected,
-  ) async {
+  Future<void> _pickTimeZone(BuildContext context, WidgetRef ref, AppSettings settings) async {
     final l10n = context.l10n;
-    final picked = await _choose<ManeAccentScheme>(
+    final picked = await showTimeZonePicker(
       context,
-      title: l10n.colorScheme,
-      selected: selected,
-      options: [
-        (ManeAccentScheme.sage, l10n.schemeSage),
-        (ManeAccentScheme.ocean, l10n.schemeOcean),
-        (ManeAccentScheme.sunset, l10n.schemeSunset),
-        (ManeAccentScheme.violet, l10n.schemeViolet),
-        (ManeAccentScheme.mono, l10n.schemeMono),
-      ],
+      selected: settings.timezoneOverride,
+      title: l10n.timeZone,
+      searchHint: l10n.timezoneSearch,
+      deviceLabel: l10n.timezoneDevice,
+      deviceZone: ref.read(deviceTimeZoneProvider),
     );
-    if (picked != null) await controller.setAccentScheme(picked);
+    if (picked == null || !context.mounted) return;
+    await ref.read(settingsProvider.notifier).setTimezoneOverride(picked);
+    await ref.read(reminderCoordinatorProvider).reschedule();
   }
 
   Future<void> _pickBackground(
@@ -851,14 +912,6 @@ class SettingsDetailPage extends ConsumerWidget {
       ),
     );
   }
-
-  String _accentLabel(AppLocalizations l10n, ManeAccentScheme scheme) => switch (scheme) {
-    ManeAccentScheme.sage => l10n.schemeSage,
-    ManeAccentScheme.ocean => l10n.schemeOcean,
-    ManeAccentScheme.sunset => l10n.schemeSunset,
-    ManeAccentScheme.violet => l10n.schemeViolet,
-    ManeAccentScheme.mono => l10n.schemeMono,
-  };
 
   String _backgroundLabel(AppLocalizations l10n, ManeBackgroundStyle style) => switch (style) {
     ManeBackgroundStyle.dots => l10n.backgroundDots,

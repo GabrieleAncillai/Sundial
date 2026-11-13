@@ -2010,7 +2010,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timingScheduledHint => 'Starts and ends at a set time.';
 
   @override
-  String get timingClockInHint => 'Clock in when you start; clocking out records the end.';
+  String get timingClockInHint => 'Clock in when you start; clocking out pauses and keeps the tracked time.';
 
   @override
   String get timingDeadlineHint => 'Can happen any time until the deadline.';
@@ -2080,4 +2080,158 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mediaHint => 'Crop the image, remove a plain background and add a white sticker outline.';
+
+  @override
+  String get soundSection => 'Sound';
+
+  @override
+  String get interactionSounds => 'Interaction sounds';
+
+  @override
+  String get interactionSoundsSubtitle =>
+      'Short, quiet blips for taps, tabs, completions and clock actions. Off by default.';
+
+  @override
+  String get soundPackLabel => 'Sound pack';
+
+  @override
+  String get soundPackSoft => 'Soft';
+
+  @override
+  String get soundPackAero => 'Aero';
+
+  @override
+  String get previewSound => 'Preview';
+
+  @override
+  String get alarmSounds => 'Alarm sounds';
+
+  @override
+  String get alarmSoundsSubtitle => 'Used by scheduled reminders.';
+
+  @override
+  String get alarmSoundSoft => 'Soft';
+
+  @override
+  String get alarmSoundChime => 'Chime';
+
+  @override
+  String get alarmSoundBright => 'Bright';
+
+  @override
+  String get timezoneSubtitle => 'Zone for new timed entries. Display follows the device.';
+
+  @override
+  String get timezoneDevice => 'Device time zone';
+
+  @override
+  String get timezoneSearch => 'Search city or region';
+
+  @override
+  String get timezoneUseDevice => 'Use device time zone';
+
+  @override
+  String get planningTimeZone => 'Planning time zone';
+
+  @override
+  String get repeatEnds => 'Ends';
+
+  @override
+  String get repeatEndsNever => 'Never';
+
+  @override
+  String get repeatEndsOnDate => 'On a date';
+
+  @override
+  String get repeatEndsAfter => 'After';
+
+  @override
+  String repeatOccurrences(int count) {
+    return '$count times';
+  }
+
+  @override
+  String get repeatEvery => 'Every';
+
+  @override
+  String get repeatUnitDays => 'days';
+
+  @override
+  String get repeatUnitWeeks => 'weeks';
+
+  @override
+  String get repeatUnitMonths => 'months';
+
+  @override
+  String get repeatUnitYears => 'years';
+
+  @override
+  String get repeatOnDays => 'Repeat on';
+
+  @override
+  String get repeatMonthlyMode => 'Monthly pattern';
+
+  @override
+  String get repeatMonthlyDay => 'Day of month';
+
+  @override
+  String get repeatMonthlyOrdinal => 'Weekday position';
+
+  @override
+  String get repeatOrdinalFirst => 'First';
+
+  @override
+  String get repeatOrdinalSecond => 'Second';
+
+  @override
+  String get repeatOrdinalThird => 'Third';
+
+  @override
+  String get repeatOrdinalFourth => 'Fourth';
+
+  @override
+  String get repeatOrdinalLast => 'Last';
+
+  @override
+  String get repeatEndDate => 'End date';
+
+  @override
+  String get repeatSummaryNever => 'Does not repeat';
+
+  @override
+  String get clearStart => 'Clear start';
+
+  @override
+  String get clearEnd => 'Clear end';
+
+  @override
+  String get clearTime => 'Clear time';
+
+  @override
+  String get noTime => 'No time';
+
+  @override
+  String get pauseTask => 'Pause';
+
+  @override
+  String get resumeTask => 'Resume';
+
+  @override
+  String get finishTask => 'Finish';
+
+  @override
+  String get paused => 'Paused';
+
+  @override
+  String sessionsTracked(int count) {
+    return '$count sessions';
+  }
+
+  @override
+  String get sessionsTrackedOne => '1 session';
+
+  @override
+  String recurrenceUntil(Object date) {
+    return 'until $date';
+  }
 }

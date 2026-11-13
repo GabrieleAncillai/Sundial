@@ -5,6 +5,7 @@ import 'package:mane_core/mane_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/l10n.dart';
+import '../../../core/timezone/timezone_picker.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
@@ -156,42 +157,75 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
               validator: (value) => value == null || value.trim().isEmpty ? l10n.patternNameRequired : null,
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: _spaceId,
-              decoration: InputDecoration(labelText: l10n.space, border: const OutlineInputBorder()),
-              items: [
-                for (final space in spaces)
-                  DropdownMenuItem(
-                    value: space.id,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
+            ManeSelectField(
+              label: l10n.space,
+              valueLabel: spaces.where((space) => space.id == _spaceId).firstOrNull?.name ?? _spaceId,
+              leading: Container(
+                width: 9,
+                height: 9,
+                decoration: BoxDecoration(
+                  color: Color(
+                    spaces.where((space) => space.id == _spaceId).firstOrNull?.colorValue ?? 0xFF4A6FA5,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              onTap: () async {
+                final picked = await showManeSelectSheet<String>(
+                  context: context,
+                  title: l10n.space,
+                  selected: _spaceId,
+                  options: [
+                    for (final space in spaces)
+                      ManeSelectOption(
+                        value: space.id,
+                        label: space.name,
+                        leading: Container(
+                          width: 9,
+                          height: 9,
                           decoration: BoxDecoration(color: Color(space.colorValue), shape: BoxShape.circle),
                         ),
-                        const SizedBox(width: 8),
-                        Text(space.name),
-                      ],
-                    ),
-                  ),
-              ],
-              onChanged: (value) {
-                if (value != null) setState(() => _spaceId = value);
+                      ),
+                  ],
+                );
+                if (picked != null && mounted) {
+                  setState(() {
+                    _spaceId = picked;
+                    _contextId = null;
+                  });
+                }
               },
             ),
             if (contexts.isNotEmpty) ...[
               const SizedBox(height: 12),
-              DropdownButtonFormField<String?>(
-                initialValue: _contextId,
-                decoration: InputDecoration(labelText: l10n.context),
-                items: [
-                  DropdownMenuItem<String?>(value: null, child: Text(l10n.noContext)),
-                  for (final context in contexts)
-                    DropdownMenuItem<String?>(value: context.id, child: Text(context.name)),
-                ],
-                onChanged: (value) => setState(() => _contextId = value),
+              ManeSelectField(
+                label: l10n.context,
+                valueLabel:
+                    contexts.where((item) => item.id == _contextId).firstOrNull?.name ?? l10n.noContext,
+                leading: const Icon(Icons.work_outline),
+                onTap: () async {
+                  final picked = await showManeSelectSheet<String>(
+                    context: context,
+                    title: l10n.context,
+                    selected: _contextId ?? '',
+                    options: [
+                      ManeSelectOption(value: '', label: l10n.noContext),
+                      for (final item in contexts)
+                        ManeSelectOption(
+                          value: item.id,
+                          label: item.name,
+                          leading: Container(
+                            width: 9,
+                            height: 9,
+                            decoration: BoxDecoration(color: Color(item.colorValue), shape: BoxShape.circle),
+                          ),
+                        ),
+                    ],
+                  );
+                  if (picked != null && mounted) {
+                    setState(() => _contextId = picked.isEmpty ? null : picked);
+                  }
+                },
               ),
             ],
             if (availableTags.isNotEmpty) ...[
@@ -218,14 +252,11 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
               ),
             ],
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _timeZoneController,
-              decoration: InputDecoration(labelText: l10n.timeZone, hintText: 'Europe/Madrid'),
-              validator: (value) {
-                final zone = value?.trim() ?? '';
-                if (zone.isEmpty || !isKnownTimeZone(zone)) return l10n.invalidTimeZone;
-                return null;
-              },
+            ManeSelectField(
+              label: l10n.timeZone,
+              valueLabel: _timeZoneController.text,
+              leading: const Icon(Icons.public),
+              onTap: () => _pickTimeZone(context),
             ),
             const SizedBox(height: 12),
             Row(
@@ -638,6 +669,20 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     } on ArgumentError {
       return null;
     }
+  }
+
+  Future<void> _pickTimeZone(BuildContext context) async {
+    final l10n = context.l10n;
+    final picked = await showTimeZonePicker(
+      context,
+      selected: _timeZoneController.text,
+      title: l10n.timeZone,
+      searchHint: l10n.timezoneSearch,
+      deviceLabel: l10n.timezoneDevice,
+      deviceZone: _deviceTimeZone,
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _timeZoneController.text = picked.isEmpty ? _deviceTimeZone : picked);
   }
 
   Future<void> _save() async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mane_core/mane_core.dart';
 
 import '../core/i18n/l10n.dart';
 import '../models/app_settings.dart';
@@ -39,9 +40,15 @@ class SettingsController extends Notifier<AppSettings> {
       ManeThemeVariant.system => ThemeMode.system,
       ManeThemeVariant.aero => ThemeMode.light,
     };
-    state = state.copyWith(themeVariant: value, themeMode: mode);
+    state = state.copyWith(
+      themeVariant: value,
+      themeMode: mode,
+      soundPack: value == ManeThemeVariant.aero ? ManeSoundPack.aero : state.soundPack,
+    );
     await _repository.writeSetting(SettingsKeys.themeVariant, value.name);
-    if (value != ManeThemeVariant.aero) {
+    if (value == ManeThemeVariant.aero) {
+      await _repository.writeSetting(SettingsKeys.soundPack, ManeSoundPack.aero.name);
+    } else {
       await _repository.writeSetting(SettingsKeys.themeMode, mode.name);
     }
   }
@@ -91,6 +98,30 @@ class SettingsController extends Notifier<AppSettings> {
     final port = value.clamp(1024, 65535);
     state = state.copyWith(mcpPort: port);
     await _repository.writeSetting(SettingsKeys.mcpPort, '$port');
+  }
+
+  Future<void> setSoundsEnabled(bool value) async {
+    state = state.copyWith(soundsEnabled: value);
+    await _repository.writeSetting(SettingsKeys.soundsEnabled, '$value');
+  }
+
+  Future<void> setSoundPack(ManeSoundPack value) async {
+    state = state.copyWith(soundPack: value);
+    await _repository.writeSetting(SettingsKeys.soundPack, value.name);
+  }
+
+  Future<void> setAlarmSound(ManeAlarmSound value) async {
+    state = state.copyWith(alarmSound: value);
+    await _repository.writeSetting(SettingsKeys.alarmSound, value.name);
+  }
+
+  /// Empty selects the device zone. Unknown zones are ignored so a stale or
+  /// imported value cannot break scheduling.
+  Future<void> setTimezoneOverride(String value) async {
+    final zone = value.trim();
+    if (zone.isNotEmpty && !isKnownTimeZone(zone)) return;
+    state = state.copyWith(timezoneOverride: zone);
+    await _repository.writeSetting(SettingsKeys.timezoneOverride, zone);
   }
 
   Future<void> setLocale(Locale? value) async {

@@ -474,7 +474,7 @@ class AppDatabase extends _$AppDatabase {
   final String defaultTimeZone;
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -494,6 +494,7 @@ class AppDatabase extends _$AppDatabase {
       if (from < 7) await _migrateToV7(m);
       if (from < 8) await _migrateToV8(m);
       if (from < 9) await _migrateToV9(m);
+      if (from < 10) await _migrateToV10(m);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -2080,6 +2081,173 @@ class AppDatabase extends _$AppDatabase {
     if (tableNames.contains('tag_records') && !tagColumns.any((row) => row.read<String>('name') == 'icon')) {
       await m.addColumn(tagRecords, tagRecords.icon);
     }
+  }
+
+  /// The first v9 build shipped `space_unit_records`, `task_session_records`,
+  /// `habit_check_records` and `gadget_records`, and stored priorities as
+  /// integers. The final model renamed those tables without bumping the
+  /// schema, so a database written by that build still reports v9 while missing
+  /// `context_records`, `time_entry_records` and the shipped entry columns.
+  /// This step maps the draft shape onto the final one and is a no-op for
+  /// databases that already have it.
+  Future<void> _migrateToV10(Migrator m) async {
+    Future<Set<String>> tables() async => (await customSelect(
+      "SELECT name FROM sqlite_master WHERE type = 'table'",
+    ).get()).map((row) => row.read<String>('name')).toSet();
+
+    Future<Set<String>> columnsOf(String table) async => (await customSelect(
+      'PRAGMA table_info($table)',
+    ).get()).map((row) => row.read<String>('name')).toSet();
+
+    var tableNames = await tables();
+
+    // Contexts were called space units. Keep every row, including the seeded
+    // personal/work/home units and any job or home the user added.
+    if (tableNames.contains('space_unit_records')) {
+      if (!tableNames.contains('context_records')) {
+        await customStatement('ALTER TABLE space_unit_records RENAME TO context_records');
+      } else {
+        await customStatement(
+          'INSERT OR IGNORE INTO context_records '
+          '(id, space_id, name, description, color, icon, image_path, position, created_at, updated_at, deleted_at) '
+          "SELECT id, space_id, name, '', color, icon, image_path, position, created_at, updated_at, deleted_at "
+          'FROM space_unit_records',
+        );
+      }
+      tableNames = await tables();
+    }
+    if (tableNames.contains('context_records')) {
+      final contextColumns = await columnsOf('context_records');
+      if (!contextColumns.contains('description')) {
+        await m.addColumn(contextRecords, contextRecords.description);
+      }
+    }
+
+    if (tableNames.contains('habit_check_records') && !tableNames.contains('habit_completion_records')) {
+      await customStatement('ALTER TABLE habit_check_records RENAME TO habit_completion_records');
+      tableNames = await tables();
+    }
+
+    if (tableNames.contains('task_session_records') && !tableNames.contains('time_entry_records')) {
+      await customStatement('ALTER TABLE task_session_records RENAME TO time_entry_records');
+      tableNames = await tables();
+    }
+    if (tableNames.contains('time_entry_records')) {
+      final timeColumns = await columnsOf('time_entry_records');
+      if (!timeColumns.contains('occurrence_date_key')) {
+        await m.addColumn(timeEntryRecords, timeEntryRecords.occurrenceDateKey);
+      }
+    }
+
+    if (tableNames.contains('project_records')) {
+      final projectColumns = await columnsOf('project_records');
+      if (projectColumns.contains('space_unit_id')) {
+        await m.alterTable(
+          TableMigration(
+            projectRecords,
+            newColumns: [projectRecords.contextId],
+            columnTransformer: {projectRecords.contextId: const CustomExpression<String>('space_unit_id')},
+          ),
+        );
+      } else if (!projectColumns.contains('context_id')) {
+        await m.addColumn(projectRecords, projectRecords.contextId);
+      }
+    }
+
+    if (tableNames.contains('entry_records')) {
+      final entryColumns = await columnsOf('entry_records');
+      final draft =
+          entryColumns.contains('space_unit_id') ||
+          entryColumns.contains('estimated_minutes') ||
+          entryColumns.contains('sort_order');
+      if (draft) {
+        await m.alterTable(
+          TableMigration(
+            entryRecords,
+            newColumns: [
+              if (!entryColumns.contains('context_id')) entryRecords.contextId,
+              if (!entryColumns.contains('completed_at')) entryRecords.completedAt,
+            ],
+            columnTransformer: {
+              if (entryColumns.contains('space_unit_id'))
+                entryRecords.contextId: const CustomExpression<String>('space_unit_id'),
+              entryRecords.priority: const CustomExpression<String>(
+                "CASE priority WHEN 1 THEN 'low' WHEN 2 THEN 'medium' WHEN 3 THEN 'high' ELSE 'none' END",
+              ),
+            },
+          ),
+        );
+      } else if (!entryColumns.contains('context_id')) {
+        await m.addColumn(entryRecords, entryRecords.contextId);
+      }
+    }
+
+    if (tableNames.contains('habit_records')) {
+      final habitColumns = await columnsOf('habit_records');
+      if (habitColumns.contains('space_unit_id')) {
+        await m.alterTable(
+          TableMigration(
+            habitRecords,
+            newColumns: [
+              if (!habitColumns.contains('space_id')) habitRecords.spaceId,
+              habitRecords.contextId,
+              if (!habitColumns.contains('description')) habitRecords.description,
+              if (!habitColumns.contains('target_per_week')) habitRecords.targetPerWeek,
+              if (!habitColumns.contains('position')) habitRecords.position,
+              if (!habitColumns.contains('archived')) habitRecords.archived,
+            ],
+            columnTransformer: {
+              habitRecords.spaceId: const CustomExpression<String>(
+                'COALESCE((SELECT u.space_id FROM context_records u '
+                "WHERE u.id = habit_records.space_unit_id), 'personal')",
+              ),
+              habitRecords.contextId: const CustomExpression<String>('space_unit_id'),
+            },
+          ),
+        );
+      }
+    }
+
+    // Jobs on shift patterns and homes on inventory rows kept their data but
+    // moved to the shared context table.
+    if (tableNames.contains('shift_pattern_records')) {
+      final patternColumns = await columnsOf('shift_pattern_records');
+      if (!patternColumns.contains('context_id')) {
+        await m.addColumn(shiftPatternRecords, shiftPatternRecords.contextId);
+      }
+      if (patternColumns.contains('space_unit_id')) {
+        await customStatement(
+          'UPDATE shift_pattern_records SET context_id = space_unit_id WHERE context_id IS NULL',
+        );
+      }
+    }
+
+    if (tableNames.contains('home_item_records')) {
+      final itemColumns = await columnsOf('home_item_records');
+      if (!itemColumns.contains('context_id')) {
+        await m.addColumn(homeItemRecords, homeItemRecords.contextId);
+      }
+      if (itemColumns.contains('space_unit_id')) {
+        await customStatement(
+          'UPDATE home_item_records SET context_id = space_unit_id WHERE context_id IS NULL',
+        );
+      }
+    }
+
+    if (tableNames.contains('shopping_item_records')) {
+      final itemColumns = await columnsOf('shopping_item_records');
+      if (!itemColumns.contains('context_id')) {
+        await m.addColumn(shoppingItemRecords, shoppingItemRecords.contextId);
+      }
+      if (itemColumns.contains('space_unit_id')) {
+        await customStatement(
+          'UPDATE shopping_item_records SET context_id = space_unit_id WHERE context_id IS NULL',
+        );
+      }
+    }
+
+    // `gadget_records` has no shipped equivalent; leave it untouched so no
+    // maintenance history is destroyed by this repair.
   }
 
   Future<ShiftPattern?> _loadPattern(String id) async {

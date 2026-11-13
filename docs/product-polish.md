@@ -129,12 +129,76 @@ Timing modes:
 
 - Schema v9 adds contexts, projects, habits, habit completions, time entries,
   entry context/project/priority/completedAt, shift context, per-day checklist
-  items and home context.
-- Migrations v1–v9 remain supported. Backup import accepts schema 3–9.
+  items and home context. Schema v10 repairs databases written by the earlier
+  draft-v9 build, which used space units and task sessions and stored integer
+  priorities while still reporting v9.
+- Migrations v1–v10 remain supported. Backup import accepts schema 3–9.
 - LAN snapshots and MCP tools expose the new entities through the shared
   repository, never through direct SQL from UI code.
 - App lock stays out of the UI; its old local rows are ignored and never enter
   backups.
+
+## 10.5 V2 request deltas (2026-11-13)
+
+This branch keeps the shipped v1 surface. The second request refined it; these
+are the only differences that still need work here. Everything not listed is
+already delivered by the v1 implementation above.
+
+### Appearance
+
+- Aero is no longer only a palette. Selecting it also applies a glossy,
+frosted component treatment and uses the Aero interaction-sound pack. Sounds
+remain a separate opt-in switch (off by default).
+- The standalone Colour scheme row is removed from Appearance, matching the
+v2 request. The stored preference stays for compatibility but is hidden.
+
+### Preferences
+
+- Add a **Sound** section:
+  - Interaction sounds switch, sound-pack picker and preview. Off by default.
+  - Alarm sound picker with preview, used by scheduled reminders.
+- Add a **Time zone** setting with a searchable IANA selector that shows the
+device zone, current offset and local time. New timed entries default to the
+selected planning zone; existing entries keep their stored zone.
+
+### Entry editor
+
+- Start and end fields can be cleared. Clearing the end makes the entry a
+clock-in task; clearing the start makes it a deadline; clearing both makes it
+an anytime task. A timing dropdown is no longer the primary control.
+- Repeat follows Streak's sheet: never, daily, weekly weekday chips, monthly
+day-of-month or nth weekday, yearly, every N, ending never / on a date / after
+N occurrences. Mane's **repeat after completion** interval stays as an
+alternative mode in the same sheet.
+- The space picker drives context and project pickers that only show the
+selected space.
+
+### Tasks and time
+
+- Clocking out pauses a task. It records a session but does not write the
+entry's end time or turn it into a scheduled entry. The same entry can be
+resumed on another day, and each session keeps its own range.
+- Completing is separate from pausing. A clock-in task stays clockable after
+any number of sessions; an explicit finish can still set its end time.
+
+### Modals and selectors
+
+- `showAppSheet` presents a bottom sheet on compact widths and a centred
+floating dialog on wide widths, with a blurred backdrop when performance mode
+is off. Screens never call `showModalBottomSheet` directly.
+- Selectors share one component with search, leading icon/colour, a selected
+check and a summary value, instead of stock dropdowns.
+
+### Validation for this delta
+
+- [x] Aero component treatment and sound pack.
+- [x] Sound and alarm preferences with previews.
+- [x] Searchable time zone picker wired to settings, entries and shifts.
+- [x] Clearable start/end with inferred timing.
+- [x] Streak-style repeat sheet plus repeat after completion.
+- [x] Pause/resume sessions without rewriting the entry end.
+- [x] Responsive blurred modal and shared selector component.
+- [x] English/Spanish ARB parity, analyze, app/core tests and both debug builds.
 
 ## 11. Implementation status
 
@@ -143,14 +207,37 @@ Implemented on `feat/product-polish`:
 - Schema v9 and repository support for contexts, projects, habits, habit
   completions and time sessions; entry `contextId`, `projectId`, `priority`
   and `completedAt`; shift-pattern context; per-day checklist items; home and
-  shopping context.
+  shopping context. Schema v10 maps the draft-v9 space-unit/task-session
+  tables and integer priorities onto that model without losing rows.
 - Responsive shell, side-rail side setting, Today switch, space overviews and
   context details, Plan page and desktop week grid, Stats dashboard and report
   export, sectioned/searchable settings, Aero palette/background, sticker media
   editor, discovery-first pairing UX and configurable MCP port.
 - Core tests for timing modes and deadline urgency; database tests for contexts,
-  projects, habits, tracking and clearing data; a real v8 → v9 migration test;
-  backup round-trip coverage and shell/settings widget tests.
+  projects, habits, tracking and clearing data; real v8 → v9 and draft-v9 → v10
+  migration tests; backup round-trip coverage and shell/settings widget tests.
+
+V2 deltas shipped on top of the v1 surface:
+
+- Aero now adds glossy/frosted cards, nav bar, segmented control and icon
+  buttons, and selecting it adopts the Aero interaction-sound pack. Sounds are
+  still opt-in and off by default.
+- Preferences gain a Sound section (interaction sounds, pack, preview, alarm
+  sound with preview) and a searchable IANA time zone picker. New timed entries
+  default to the selected planning zone; existing entries keep their stored
+  zone and the device zone remains the display zone.
+- The entry editor infers the four task shapes from the start/end fields, has
+  clear buttons for each, and replaces the old repeat dropdown with a
+  Streak-style repeat sheet (interval, weekday chips, monthly day or nth
+  weekday, end never/on a date/after N) plus repeat-after-completion.
+- Clocking out pauses a task and records a session; it no longer writes the
+  entry end. `finishTracked` remains the explicit finish path. A task can be
+  resumed on any later day.
+- `showAppSheet` becomes a bottom sheet on compact widths and a blurred
+  floating dialog on wide widths. A shared searchable selector replaces the
+  stock dropdowns in the entry, shift, project and category forms.
+- Screenshot evidence: `docs/screenshots/v1.2-today-aero.png` and
+  `docs/screenshots/v1.2-preferences-mobile.png`.
 
 Known follow-ups:
 
@@ -175,6 +262,18 @@ Known follow-ups:
   midnight, and deadline-only items get a due marker instead of an all-day chip.
 - Desktop layouts for Today/Stats are intentionally the spacious single-column
   versions; a denser dashboard can follow once the real window sizes are known.
+- Sound needs a real-device pass: Android plays bundled raw resources through a
+  SoundPool bridge and Linux shells out to `aplay`; both fall back to system
+  sounds. The alarm-sound setting maps to per-sound Android notification
+  channels; Linux notifications keep the desktop default.
+- Time zone selection sets the planning zone for new timed entries. Changing
+  the display zone still follows the device, as the time model requires.
+- Compact sheets keep the standard dimmed barrier so drag-to-dismiss, keyboard
+  insets and safe areas stay intact; the blurred barrier is used on wide
+  layouts.
+- Clock-out is now a pause rather than a finish, which deliberately differs
+  from the v1 wording. Users finish a clock-in task with the completion control
+  or the explicit `finishTracked` path.
 
 ## 10. Validation
 

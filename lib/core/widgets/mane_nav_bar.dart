@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../settings_scope.dart';
 import 'pressable.dart';
 
 typedef ManeNavItem = ({IconData icon, IconData selectedIcon, String label});
 
 /// The floating bottom navigation from the reference shell. A soft lens slides
-/// between three destinations; labels stay visible for accessibility.
+/// between three destinations; labels stay visible for accessibility. Aero
+/// turns the bar into a glass slab with a gloss and a cyan glow.
 class ManeNavBar extends StatelessWidget {
   const ManeNavBar({super.key, required this.items, required this.index, required this.onSelected});
 
@@ -18,29 +20,56 @@ class ManeNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final settings = AppSettingsScope.maybeOf(context);
+    final aero = settings?.isAero ?? false;
+    final reduced = settings?.performanceMode ?? false;
+    final glow = aero && !reduced;
     final radius = BorderRadius.circular(26);
     return Container(
       height: 64,
       decoration: BoxDecoration(
         borderRadius: radius,
-        boxShadow: [
-          BoxShadow(color: c.shadow, blurRadius: 24, offset: const Offset(0, 10)),
-          BoxShadow(color: c.shadow.withValues(alpha: 0.35), blurRadius: 4, offset: const Offset(0, 1)),
-        ],
+        boxShadow: aero
+            ? [
+                BoxShadow(color: c.shadow, blurRadius: 24, offset: const Offset(0, 10)),
+                if (glow) BoxShadow(color: c.accent.withValues(alpha: 0.14), blurRadius: 22),
+              ]
+            : [
+                BoxShadow(color: c.shadow, blurRadius: 24, offset: const Offset(0, 10)),
+                BoxShadow(color: c.shadow.withValues(alpha: 0.35), blurRadius: 4, offset: const Offset(0, 1)),
+              ],
       ),
       child: ClipRRect(
         borderRadius: radius,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: c.navBg,
+            color: aero ? c.glass : c.navBg,
             borderRadius: radius,
-            border: Border.all(color: c.border),
+            border: Border.all(color: aero ? c.glassEdge : c.border, width: aero ? 1.4 : 1),
           ),
           child: LayoutBuilder(
             builder: (context, box) {
               final slot = box.maxWidth / items.length;
               return Stack(
                 children: [
+                  if (aero && !reduced)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.white.withValues(alpha: 0.45),
+                                Colors.white.withValues(alpha: 0),
+                              ],
+                              stops: const [0, 0.55],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   AnimatedPositioned(
                     duration: MediaQuery.disableAnimationsOf(context)
                         ? Duration.zero
@@ -51,11 +80,33 @@ class ManeNavBar extends StatelessWidget {
                     width: slot - 12,
                     height: 52,
                     child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: c.accentSoft,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: c.accent.withValues(alpha: 0.22)),
-                      ),
+                      decoration: aero
+                          ? BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.92),
+                                  c.accent.withValues(alpha: 0.16),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: c.accent.withValues(alpha: 0.32)),
+                              boxShadow: glow
+                                  ? [
+                                      BoxShadow(
+                                        color: c.accent.withValues(alpha: 0.16),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ]
+                                  : null,
+                            )
+                          : BoxDecoration(
+                              color: c.accentSoft,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: c.accent.withValues(alpha: 0.22)),
+                            ),
                     ),
                   ),
                   Row(

@@ -107,21 +107,25 @@ class _ProjectEditorSheetState extends ConsumerState<_ProjectEditorSheet> {
         ),
         if (widget.contexts.isNotEmpty) ...[
           const SizedBox(height: 12),
-          InputDecorator(
-            decoration: InputDecoration(labelText: l10n.context),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String?>(
-                isExpanded: true,
-                isDense: true,
-                value: widget.contexts.any((item) => item.id == _contextId) ? _contextId : null,
-                items: [
-                  DropdownMenuItem<String?>(value: null, child: Text(l10n.noContext)),
-                  for (final context in widget.contexts)
-                    DropdownMenuItem<String?>(value: context.id, child: Text(context.name)),
+          ManeSelectField(
+            label: l10n.context,
+            valueLabel:
+                widget.contexts.where((item) => item.id == _contextId).firstOrNull?.name ?? l10n.noContext,
+            leading: const Icon(Icons.work_outline),
+            onTap: () async {
+              final picked = await showManeSelectSheet<String>(
+                context: context,
+                title: l10n.context,
+                selected: _contextId ?? '',
+                options: [
+                  ManeSelectOption(value: '', label: l10n.noContext),
+                  for (final item in widget.contexts) ManeSelectOption(value: item.id, label: item.name),
                 ],
-                onChanged: (value) => setState(() => _contextId = value),
-              ),
-            ),
+              );
+              if (picked != null && mounted) {
+                setState(() => _contextId = picked.isEmpty ? null : picked);
+              }
+            },
           ),
         ],
         const SizedBox(height: 16),

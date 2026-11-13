@@ -1,5 +1,111 @@
 package io.github.gabrieleancillai.mane
 
+import android.media.AudioAttributes
+import android.media.SoundPool
 import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
 
-class MainActivity : FlutterActivity()
+class MainActivity : FlutterActivity() {
+    private var soundPool: SoundPool? = null
+    private val soundIds = HashMap<Int, Int>()
+    private val loadedIds = HashSet<Int>()
+    private val pendingIds = HashSet<Int>()
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+
+        val pool = SoundPool.Builder()
+            .setMaxStreams(MAX_STREAMS)
+            .setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+            )
+            .build()
+        pool.setOnLoadCompleteListener { _, sampleId, status ->
+            if (status == 0) {
+                loadedIds.add(sampleId)
+                // The first request may arrive before the sample is ready.
+                if (pendingIds.remove(sampleId)) {
+                    pool.play(sampleId, 1f, 1f, 1, 0, 1f)
+                }
+            } else {
+                pendingIds.remove(sampleId)
+            }
+        }
+        soundPool = pool
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "play" -> {
+                        val played = play(
+                            alarm = call.argument<String>("alarm"),
+                            pack = call.argument<String>("pack"),
+                            file = call.argument<String>("file"),
+                        )
+                        result.success(played)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+    }
+
+    private fun play(alarm: String?, pack: String?, file: String?): Boolean {
+        val name = when {
+            alarm != null -> "mane_alarm_$alarm"
+            pack != null && file != null -> "mane_${pack}_$file"
+            else -> return false
+        }
+        if (!isValidResourceName(name)) return false
+
+        val pool = soundPool ?: return false
+        val resourceId = try {
+            resources.getIdentifier(name, "raw", packageName)
+        } catch (_: Exception) {
+            0
+        }
+        if (resourceId == 0) return false
+
+        val sampleId = soundIds.getOrPut(resourceId) {
+            try {
+                pool.load(this, resourceId, 1)
+            } catch (_: Exception) {
+                0
+            }
+        }
+        if (sampleId == 0) return false
+        if (sampleId !in loadedIds) {
+            pendingIds.add(sampleId)
+            return true
+        }
+
+        val streamId = try {
+            pool.play(sampleId, 1f, 1f, 1, 0, 1f)
+        } catch (_: Exception) {
+            0
+        }
+        return streamId != 0
+    }
+
+    private fun isValidResourceName(name: String): Boolean {
+        if (name.isEmpty()) return false
+        return name.all { it in 'a'..'z' || it in '0'..'9' || it == '_' }
+    }
+
+    override fun onDestroy() {
+        soundPool?.release()
+        soundPool = null
+        soundIds.clear()
+        loadedIds.clear()
+        pendingIds.clear()
+        super.onDestroy()
+    }
+
+    private companion object {
+        const val CHANNEL = "mane/sound"
+        const val MAX_STREAMS = 4
+    }
+}

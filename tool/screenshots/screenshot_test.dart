@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mane/app/app_shell.dart';
 import 'package:mane/core/i18n/l10n.dart';
+import 'package:mane/core/settings_scope.dart';
 import 'package:mane/models/app_settings.dart';
 import 'package:mane/models/home_item.dart';
 import 'package:mane/models/shopping_item.dart';
@@ -141,6 +142,31 @@ void main() {
       },
     );
   });
+
+  testWidgets('render mobile Preferences with sound and time zone', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.2-preferences-mobile.png',
+      database,
+      view: _phone,
+      act: (tester) async {
+        await tester.tap(find.byTooltip('Settings'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Preferences'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render Aero Today', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.2-today-aero.png',
+      database,
+      view: _phone,
+      settings: const AppSettings(themeVariant: ManeThemeVariant.aero),
+    );
+  });
 }
 
 Future<void> _loadFonts() async {
@@ -193,13 +219,16 @@ Future<void> _renderShell(
           deviceTimeZoneProvider.overrideWith(() => DeviceTimeZoneController(initial: 'Europe/Madrid')),
           nowProvider.overrideWithValue(_now),
         ],
-        child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          theme: ManeTheme.forSettings(settings, Brightness.light),
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const AppShell(),
+        child: AppSettingsScope(
+          settings: settings,
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: ManeTheme.forSettings(settings, Brightness.light),
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const AppShell(),
+          ),
         ),
       ),
     ),

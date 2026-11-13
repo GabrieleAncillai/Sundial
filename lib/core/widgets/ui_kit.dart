@@ -5,6 +5,7 @@ export 'mane_nav_bar.dart';
 export 'mane_notice.dart';
 export 'mane_page.dart';
 export 'mane_search_field.dart';
+export 'mane_select_field.dart';
 export 'mane_segmented.dart';
 export 'page_motion.dart';
 export 'pressable.dart';

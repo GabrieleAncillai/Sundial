@@ -3737,7 +3737,7 @@ abstract class AppLocalizations {
   /// No description provided for @timingClockInHint.
   ///
   /// In en, this message translates to:
-  /// **'Clock in when you start; clocking out records the end.'**
+  /// **'Clock in when you start; clocking out pauses and keeps the tracked time.'**
   String get timingClockInHint;
 
   /// No description provided for @timingDeadlineHint.
@@ -3877,6 +3877,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Crop the image, remove a plain background and add a white sticker outline.'**
   String get mediaHint;
+
+  /// No description provided for @soundSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound'**
+  String get soundSection;
+
+  /// No description provided for @interactionSounds.
+  ///
+  /// In en, this message translates to:
+  /// **'Interaction sounds'**
+  String get interactionSounds;
+
+  /// No description provided for @interactionSoundsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Short, quiet blips for taps, tabs, completions and clock actions. Off by default.'**
+  String get interactionSoundsSubtitle;
+
+  /// No description provided for @soundPackLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound pack'**
+  String get soundPackLabel;
+
+  /// No description provided for @soundPackSoft.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft'**
+  String get soundPackSoft;
+
+  /// No description provided for @soundPackAero.
+  ///
+  /// In en, this message translates to:
+  /// **'Aero'**
+  String get soundPackAero;
+
+  /// No description provided for @previewSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get previewSound;
+
+  /// No description provided for @alarmSounds.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarm sounds'**
+  String get alarmSounds;
+
+  /// No description provided for @alarmSoundsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Used by scheduled reminders.'**
+  String get alarmSoundsSubtitle;
+
+  /// No description provided for @alarmSoundSoft.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft'**
+  String get alarmSoundSoft;
+
+  /// No description provided for @alarmSoundChime.
+  ///
+  /// In en, this message translates to:
+  /// **'Chime'**
+  String get alarmSoundChime;
+
+  /// No description provided for @alarmSoundBright.
+  ///
+  /// In en, this message translates to:
+  /// **'Bright'**
+  String get alarmSoundBright;
+
+  /// No description provided for @timezoneSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone for new timed entries. Display follows the device.'**
+  String get timezoneSubtitle;
+
+  /// No description provided for @timezoneDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Device time zone'**
+  String get timezoneDevice;
+
+  /// No description provided for @timezoneSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search city or region'**
+  String get timezoneSearch;
+
+  /// No description provided for @timezoneUseDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Use device time zone'**
+  String get timezoneUseDevice;
+
+  /// No description provided for @planningTimeZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Planning time zone'**
+  String get planningTimeZone;
+
+  /// No description provided for @repeatEnds.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends'**
+  String get repeatEnds;
+
+  /// No description provided for @repeatEndsNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get repeatEndsNever;
+
+  /// No description provided for @repeatEndsOnDate.
+  ///
+  /// In en, this message translates to:
+  /// **'On a date'**
+  String get repeatEndsOnDate;
+
+  /// No description provided for @repeatEndsAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'After'**
+  String get repeatEndsAfter;
+
+  /// No description provided for @repeatOccurrences.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} times'**
+  String repeatOccurrences(int count);
+
+  /// No description provided for @repeatEvery.
+  ///
+  /// In en, this message translates to:
+  /// **'Every'**
+  String get repeatEvery;
+
+  /// No description provided for @repeatUnitDays.
+  ///
+  /// In en, this message translates to:
+  /// **'days'**
+  String get repeatUnitDays;
+
+  /// No description provided for @repeatUnitWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'weeks'**
+  String get repeatUnitWeeks;
+
+  /// No description provided for @repeatUnitMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'months'**
+  String get repeatUnitMonths;
+
+  /// No description provided for @repeatUnitYears.
+  ///
+  /// In en, this message translates to:
+  /// **'years'**
+  String get repeatUnitYears;
+
+  /// No description provided for @repeatOnDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat on'**
+  String get repeatOnDays;
+
+  /// No description provided for @repeatMonthlyMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly pattern'**
+  String get repeatMonthlyMode;
+
+  /// No description provided for @repeatMonthlyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day of month'**
+  String get repeatMonthlyDay;
+
+  /// No description provided for @repeatMonthlyOrdinal.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekday position'**
+  String get repeatMonthlyOrdinal;
+
+  /// No description provided for @repeatOrdinalFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'First'**
+  String get repeatOrdinalFirst;
+
+  /// No description provided for @repeatOrdinalSecond.
+  ///
+  /// In en, this message translates to:
+  /// **'Second'**
+  String get repeatOrdinalSecond;
+
+  /// No description provided for @repeatOrdinalThird.
+  ///
+  /// In en, this message translates to:
+  /// **'Third'**
+  String get repeatOrdinalThird;
+
+  /// No description provided for @repeatOrdinalFourth.
+  ///
+  /// In en, this message translates to:
+  /// **'Fourth'**
+  String get repeatOrdinalFourth;
+
+  /// No description provided for @repeatOrdinalLast.
+  ///
+  /// In en, this message translates to:
+  /// **'Last'**
+  String get repeatOrdinalLast;
+
+  /// No description provided for @repeatEndDate.
+  ///
+  /// In en, this message translates to:
+  /// **'End date'**
+  String get repeatEndDate;
+
+  /// No description provided for @repeatSummaryNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Does not repeat'**
+  String get repeatSummaryNever;
+
+  /// No description provided for @clearStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear start'**
+  String get clearStart;
+
+  /// No description provided for @clearEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear end'**
+  String get clearEnd;
+
+  /// No description provided for @clearTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear time'**
+  String get clearTime;
+
+  /// No description provided for @noTime.
+  ///
+  /// In en, this message translates to:
+  /// **'No time'**
+  String get noTime;
+
+  /// No description provided for @pauseTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get pauseTask;
+
+  /// No description provided for @resumeTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get resumeTask;
+
+  /// No description provided for @finishTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get finishTask;
+
+  /// No description provided for @paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get paused;
+
+  /// No description provided for @sessionsTracked.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sessions'**
+  String sessionsTracked(int count);
+
+  /// No description provided for @sessionsTrackedOne.
+  ///
+  /// In en, this message translates to:
+  /// **'1 session'**
+  String get sessionsTrackedOne;
+
+  /// No description provided for @recurrenceUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'until {date}'**
+  String recurrenceUntil(Object date);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

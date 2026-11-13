@@ -12,10 +12,12 @@ import 'package:mane/state/providers.dart';
 import 'package:mane/state/settings_controller.dart';
 import 'package:mane_core/mane_core.dart';
 import 'package:sqlite3/open.dart';
+import 'package:timezone/data/latest.dart' as tzdata;
 
 void main() {
   setUpAll(() {
     open.overrideFor(OperatingSystem.linux, () => DynamicLibrary.open('libsqlite3.so.0'));
+    tzdata.initializeTimeZones();
   });
 
   test('parses stored settings with safe defaults', () {
@@ -46,6 +48,29 @@ void main() {
     expect(settings.themeMode, ThemeMode.system);
     expect(settings.locale, const Locale('tlh'));
     expect(settings.weekStart, DateTime.monday);
+  });
+
+  test('parses sound and planning time zone preferences', () {
+    final settings = AppSettings.fromMap({
+      SettingsKeys.soundsEnabled: 'true',
+      SettingsKeys.soundPack: 'soft',
+      SettingsKeys.alarmSound: 'bright',
+      SettingsKeys.timezoneOverride: 'America/New_York',
+    });
+
+    expect(settings.soundsEnabled, isTrue);
+    expect(settings.soundPack, ManeSoundPack.soft);
+    expect(settings.alarmSound, ManeAlarmSound.bright);
+    expect(settings.timezoneOverride, 'America/New_York');
+
+    final fallback = AppSettings.fromMap({
+      SettingsKeys.soundPack: 'neon',
+      SettingsKeys.alarmSound: 'loud',
+      SettingsKeys.timezoneOverride: 'Mars/Olympus',
+    });
+    expect(fallback.soundPack, ManeSoundPack.aero);
+    expect(fallback.alarmSound, ManeAlarmSound.chime);
+    expect(fallback.timezoneOverride, isEmpty);
   });
 
   test('work and quiet windows use the device timezone', () {
@@ -98,6 +123,10 @@ void main() {
     await controller.setWeekStart(DateTime.saturday);
     await controller.setHideWorkSpace(true);
     await controller.setDefaultReminderOffsets([30, 1440, 30]);
+    await controller.setSoundsEnabled(true);
+    await controller.setSoundPack(ManeSoundPack.soft);
+    await controller.setAlarmSound(ManeAlarmSound.bright);
+    await controller.setTimezoneOverride('Europe/Madrid');
 
     final stored = await database.readSettings();
     expect(stored[SettingsKeys.themeMode], 'light');
@@ -105,6 +134,13 @@ void main() {
     expect(stored[SettingsKeys.weekStart], '6');
     expect(stored[SettingsKeys.hideWorkSpace], 'true');
     expect(stored[SettingsKeys.defaultReminderOffsets], '30,1440');
+    expect(stored[SettingsKeys.soundsEnabled], 'true');
+    expect(stored[SettingsKeys.soundPack], 'soft');
+    expect(stored[SettingsKeys.alarmSound], 'bright');
+    expect(stored[SettingsKeys.timezoneOverride], 'Europe/Madrid');
+
+    await controller.setTimezoneOverride('Not/AZone');
+    expect(container.read(settingsProvider).timezoneOverride, 'Europe/Madrid');
 
     await controller.setLocale(null);
     expect(container.read(settingsProvider).locale, isNull);

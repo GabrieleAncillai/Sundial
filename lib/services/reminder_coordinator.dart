@@ -27,6 +27,7 @@ class ReminderCoordinator {
 
   Future<void> reschedule() async {
     try {
+      notifications.setAlarmSound(settings.alarmSound);
       final now = clock().toUtc();
       final today = localDateAt(now, deviceTimeZone);
       final occurrences = await repository.loadEntries(

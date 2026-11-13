@@ -47,6 +47,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+    - assets/sounds/
+    - assets/sounds/aero/
+    - assets/sounds/soft/
   fonts:
     - family: Nunito
       fonts:

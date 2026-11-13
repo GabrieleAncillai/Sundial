@@ -2020,7 +2020,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timingScheduledHint => 'Empieza y termina a una hora fija.';
 
   @override
-  String get timingClockInHint => 'Ficha al empezar; la salida registra el fin.';
+  String get timingClockInHint => 'Ficha al empezar; fichar salida pausa y conserva el tiempo registrado.';
 
   @override
   String get timingDeadlineHint => 'Puede hacerse en cualquier momento hasta la fecha límite.';
@@ -2090,4 +2090,158 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get mediaHint => 'Recorta la imagen, quita un fondo liso y añade un borde blanco de pegatina.';
+
+  @override
+  String get soundSection => 'Sonido';
+
+  @override
+  String get interactionSounds => 'Sonidos de interacción';
+
+  @override
+  String get interactionSoundsSubtitle =>
+      'Tonos breves y suaves al tocar, cambiar de pestaña, completar o fichar. Apagados por defecto.';
+
+  @override
+  String get soundPackLabel => 'Paquete de sonidos';
+
+  @override
+  String get soundPackSoft => 'Suave';
+
+  @override
+  String get soundPackAero => 'Aero';
+
+  @override
+  String get previewSound => 'Escuchar';
+
+  @override
+  String get alarmSounds => 'Sonidos de alarma';
+
+  @override
+  String get alarmSoundsSubtitle => 'Se usan en los recordatorios programados.';
+
+  @override
+  String get alarmSoundSoft => 'Suave';
+
+  @override
+  String get alarmSoundChime => 'Campana';
+
+  @override
+  String get alarmSoundBright => 'Brillante';
+
+  @override
+  String get timezoneSubtitle => 'Zona de las nuevas entradas con hora. Se muestra en la del dispositivo.';
+
+  @override
+  String get timezoneDevice => 'Zona del dispositivo';
+
+  @override
+  String get timezoneSearch => 'Buscar ciudad o región';
+
+  @override
+  String get timezoneUseDevice => 'Usar la zona del dispositivo';
+
+  @override
+  String get planningTimeZone => 'Zona de planificación';
+
+  @override
+  String get repeatEnds => 'Termina';
+
+  @override
+  String get repeatEndsNever => 'Nunca';
+
+  @override
+  String get repeatEndsOnDate => 'En una fecha';
+
+  @override
+  String get repeatEndsAfter => 'Después de';
+
+  @override
+  String repeatOccurrences(int count) {
+    return '$count veces';
+  }
+
+  @override
+  String get repeatEvery => 'Cada';
+
+  @override
+  String get repeatUnitDays => 'días';
+
+  @override
+  String get repeatUnitWeeks => 'semanas';
+
+  @override
+  String get repeatUnitMonths => 'meses';
+
+  @override
+  String get repeatUnitYears => 'años';
+
+  @override
+  String get repeatOnDays => 'Repetir los días';
+
+  @override
+  String get repeatMonthlyMode => 'Patrón mensual';
+
+  @override
+  String get repeatMonthlyDay => 'Día del mes';
+
+  @override
+  String get repeatMonthlyOrdinal => 'Posición del día';
+
+  @override
+  String get repeatOrdinalFirst => 'Primer';
+
+  @override
+  String get repeatOrdinalSecond => 'Segundo';
+
+  @override
+  String get repeatOrdinalThird => 'Tercer';
+
+  @override
+  String get repeatOrdinalFourth => 'Cuarto';
+
+  @override
+  String get repeatOrdinalLast => 'Último';
+
+  @override
+  String get repeatEndDate => 'Fecha de fin';
+
+  @override
+  String get repeatSummaryNever => 'No se repite';
+
+  @override
+  String get clearStart => 'Quitar la hora de inicio';
+
+  @override
+  String get clearEnd => 'Quitar la hora de fin';
+
+  @override
+  String get clearTime => 'Quitar la hora';
+
+  @override
+  String get noTime => 'Sin hora';
+
+  @override
+  String get pauseTask => 'Pausar';
+
+  @override
+  String get resumeTask => 'Reanudar';
+
+  @override
+  String get finishTask => 'Terminar';
+
+  @override
+  String get paused => 'En pausa';
+
+  @override
+  String sessionsTracked(int count) {
+    return '$count sesiones';
+  }
+
+  @override
+  String get sessionsTrackedOne => '1 sesión';
+
+  @override
+  String recurrenceUntil(Object date) {
+    return 'hasta el $date';
+  }
 }

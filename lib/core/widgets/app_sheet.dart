@@ -1,10 +1,24 @@
+import 'dart:math' as math;
+import 'dart:ui' show ImageFilter, TileMode;
+
 import 'package:flutter/material.dart';
 
+import '../settings_scope.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 
-/// Opens a bottom sheet with the reference shape, backing surface and drag
-/// behaviour. Kept as a function so every feature sheet gets the same motion.
+/// The width at which Mane swaps a phone sheet for a floating desktop dialog.
+/// Mirrors the shell breakpoint in `lib/app/app_shell.dart`.
+const double appSheetCompactBreakpoint = 900;
+
+const _compactKey = ValueKey<String>('app-sheet-compact');
+const _wideKey = ValueKey<String>('app-sheet-wide');
+
+/// Opens the shared modal surface.
+///
+/// Phones keep the reference bottom sheet (drag, safe area and keyboard
+/// behaviour included). Wide layouts get a centred dialog with a blurred
+/// backdrop and a fade/scale entrance.
 Future<T?> showAppSheet<T>({
   required BuildContext context,
   required WidgetBuilder builder,
@@ -12,6 +26,32 @@ Future<T?> showAppSheet<T>({
   bool isDismissible = true,
   bool enableDrag = true,
   bool useSafeArea = true,
+}) {
+  if (MediaQuery.sizeOf(context).width < appSheetCompactBreakpoint) {
+    return _showCompactSheet<T>(
+      context: context,
+      builder: builder,
+      isScrollControlled: isScrollControlled,
+      isDismissible: isDismissible,
+      enableDrag: enableDrag,
+      useSafeArea: useSafeArea,
+    );
+  }
+  return _showWideDialog<T>(
+    context: context,
+    builder: builder,
+    isDismissible: isDismissible,
+    useSafeArea: useSafeArea,
+  );
+}
+
+Future<T?> _showCompactSheet<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+  required bool isScrollControlled,
+  required bool isDismissible,
+  required bool enableDrag,
+  required bool useSafeArea,
 }) {
   final c = context.mc;
   return showModalBottomSheet<T>(
@@ -24,11 +64,149 @@ Future<T?> showAppSheet<T>({
     backgroundColor: c.surface,
     barrierColor: Colors.black.withValues(alpha: 0.38),
     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
-    builder: (sheetContext) => Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(sheetContext).bottom),
-      child: builder(sheetContext),
+    builder: (sheetContext) => KeyedSubtree(
+      key: _compactKey,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(sheetContext).bottom),
+        child: builder(sheetContext),
+      ),
     ),
   );
+}
+
+Future<T?> _showWideDialog<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+  required bool isDismissible,
+  required bool useSafeArea,
+}) {
+  final navigator = Navigator.of(context);
+  final captured = InheritedTheme.capture(from: context, to: navigator.context);
+  return navigator.push<T>(
+    _AppSheetDialogRoute<T>(
+      builder: (dialogContext) => captured.wrap(builder(dialogContext)),
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      isDismissible: isDismissible,
+      useSafeArea: useSafeArea,
+      reduceMotion: MediaQuery.disableAnimationsOf(context),
+    ),
+  );
+}
+
+/// A centred dialog route with a blurred, dimmed barrier. The route uses the
+/// same controller/view model as the stock popup routes so [Navigator.pop]
+/// results and dismissal semantics are unchanged.
+class _AppSheetDialogRoute<T> extends PopupRoute<T> {
+  _AppSheetDialogRoute({
+    required this.builder,
+    required String barrierLabel,
+    required this.isDismissible,
+    required this.useSafeArea,
+    required this.reduceMotion,
+  }) : _barrierLabel = barrierLabel;
+
+  final WidgetBuilder builder;
+  final String _barrierLabel;
+  final bool isDismissible;
+  final bool useSafeArea;
+  final bool reduceMotion;
+
+  @override
+  Color? get barrierColor => Colors.black.withValues(alpha: 0.38);
+
+  @override
+  bool get barrierDismissible => isDismissible;
+
+  @override
+  String? get barrierLabel => _barrierLabel;
+
+  @override
+  Duration get transitionDuration => reduceMotion ? Duration.zero : const Duration(milliseconds: 220);
+
+  @override
+  Duration get reverseTransitionDuration => reduceMotion ? Duration.zero : const Duration(milliseconds: 160);
+
+  @override
+  Widget buildModalBarrier() {
+    void dismiss() => navigator?.maybePop();
+
+    Widget barrier = ColoredBox(color: barrierColor!, child: const SizedBox.expand());
+    if (!reduceMotion) {
+      barrier = BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 7, sigmaY: 7, tileMode: TileMode.clamp),
+        child: barrier,
+      );
+    }
+    barrier = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: isDismissible ? dismiss : null,
+      child: barrier,
+    );
+    barrier = FadeTransition(opacity: animation ?? const AlwaysStoppedAnimation<double>(1), child: barrier);
+    if (isDismissible) {
+      barrier = Semantics(button: true, label: barrierLabel, onTap: dismiss, child: barrier);
+    }
+    return BlockSemantics(child: barrier);
+  }
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
+    final c = context.mc;
+    final media = MediaQuery.of(context);
+    final insets = media.viewInsets;
+    final maxWidth = math.max(0.0, math.min(660.0, media.size.width - 48));
+    final maxHeight = math.max(0.0, math.min(780.0, media.size.height - insets.bottom - 48));
+    final radius = BorderRadius.circular(28);
+
+    Widget panel = ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight),
+      child: SizedBox(
+        width: double.infinity,
+        child: Material(
+          color: c.surface,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: radius,
+            side: BorderSide(color: c.border),
+          ),
+          child: builder(context),
+        ),
+      ),
+    );
+    panel = Container(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: [
+          BoxShadow(color: c.shadow, blurRadius: 42, offset: const Offset(0, 18), spreadRadius: -10),
+        ],
+      ),
+      child: panel,
+    );
+
+    Widget content = Padding(
+      padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + insets.bottom),
+      child: Center(
+        child: KeyedSubtree(key: _wideKey, child: panel),
+      ),
+    );
+    if (useSafeArea) content = SafeArea(child: content);
+    return content;
+  }
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    if (reduceMotion) return child;
+    final curved = animation.drive(CurveTween(curve: Curves.easeOutCubic));
+    return FadeTransition(
+      opacity: curved,
+      child: ScaleTransition(scale: Tween<double>(begin: 0.96, end: 1).animate(curved), child: child),
+    );
+  }
 }
 
 class AppSheet extends StatelessWidget {
@@ -54,37 +232,56 @@ class AppSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final media = MediaQuery.of(context);
+    final wide = media.size.width >= appSheetCompactBreakpoint;
+    final aero = AppSettingsScope.maybeOf(context)?.isAero ?? false;
+    final available = math.max(0.0, media.size.height - media.viewInsets.bottom);
     final content = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SheetHandle(),
+        if (!wide) const SheetHandle(),
         if (title != null) ...[
-          SizedBox(height: top),
+          if (!wide) SizedBox(height: top),
           Text(
             title!,
-            textAlign: TextAlign.center,
-            style: ManeType.headline(19, color: c.text),
+            textAlign: wide ? TextAlign.start : TextAlign.center,
+            style: ManeType.headline(wide ? 21 : 19, color: c.text),
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 5),
             Text(
               subtitle!,
-              textAlign: TextAlign.center,
+              textAlign: wide ? TextAlign.start : TextAlign.center,
               style: ManeType.body(13, color: c.textSecondary),
             ),
           ],
         ],
-        SizedBox(height: title == null ? top : 16),
+        SizedBox(height: wide ? 18 : (title == null ? top : 16)),
         ...children,
       ],
     );
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * maxHeight),
-      padding: EdgeInsets.fromLTRB(20, 10, 20, bottom + MediaQuery.paddingOf(context).bottom),
+      constraints: BoxConstraints(maxHeight: available * maxHeight),
+      padding: EdgeInsets.fromLTRB(
+        wide ? 26 : 20,
+        wide ? 26 : 10,
+        wide ? 26 : 20,
+        (wide ? 26 : bottom) + media.padding.bottom,
+      ),
       decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+        color: aero ? null : c.surface,
+        gradient: aero
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [c.surface, c.surfaceAlt],
+              )
+            : null,
+        borderRadius: wide
+            ? BorderRadius.circular(28)
+            : const BorderRadius.vertical(top: Radius.circular(30)),
+        border: Border.all(color: aero ? c.glassEdge : (wide ? c.border : Colors.transparent)),
       ),
       child: scroll ? SingleChildScrollView(child: content) : content,
     );

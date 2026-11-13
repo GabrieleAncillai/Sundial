@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:mane_core/mane_core.dart';
 
 import '../../../core/i18n/l10n.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../models/time_entry.dart';
 import '../../../screens/entry_editor.dart';
@@ -32,8 +33,9 @@ class TaskCard extends ConsumerWidget {
     final projects = ref.watch(projectsProvider(null)).value ?? const <Project>[];
     final entryTimes = ref.watch(entryTimeProvider(entry.id)).value ?? const <TimeEntry>[];
     final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
-    final tracked = _tracked(entryTimes, now);
-    final running = _running(entryTimes);
+    final sessions = _relevant(entryTimes);
+    final tracked = sessions.fold(Duration.zero, (total, item) => total + item.durationAt(now.toUtc()));
+    final running = sessions.any((item) => item.isRunning);
     final completed = occurrence?.completed ?? entry.isDone;
     final plannerContext = _contextFor(contexts);
     final project = _projectFor(projects);
@@ -114,7 +116,7 @@ class TaskCard extends ConsumerWidget {
                         ),
                       if (project != null)
                         _Meta(icon: Icons.folder_outlined, text: project.name, color: c.textSecondary),
-                      if (tracked > Duration.zero || running)
+                      if (sessions.isNotEmpty)
                         _Meta(
                           icon: running ? Icons.timer : Icons.timer_outlined,
                           text: _durationText(tracked),
@@ -129,10 +131,10 @@ class TaskCard extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 4),
                 child: IconButton(
-                  tooltip: running ? l10n.clockOut : l10n.clockIn,
+                  tooltip: running ? l10n.pauseTask : l10n.resumeTask,
                   onPressed: () => _toggleClock(ref, timeZone),
                   icon: Icon(
-                    running ? Icons.stop_circle_outlined : Icons.play_circle_outline,
+                    running ? Icons.pause_circle_outlined : Icons.play_circle_outline,
                     color: running ? c.success : c.accent,
                   ),
                   visualDensity: VisualDensity.compact,
@@ -177,11 +179,6 @@ class TaskCard extends ConsumerWidget {
         .toList();
   }
 
-  Duration _tracked(List<TimeEntry> entries, DateTime now) =>
-      _relevant(entries).fold(Duration.zero, (total, item) => total + item.durationAt(now.toUtc()));
-
-  bool _running(List<TimeEntry> entries) => _relevant(entries).any((item) => item.isRunning);
-
   EntryOccurrence _asOccurrence(String timeZone) {
     final existing = occurrence;
     if (existing != null) return existing;
@@ -204,17 +201,21 @@ class TaskCard extends ConsumerWidget {
     } else {
       await repository.setEntryStatus(entry.id, completed ? EntryStatus.open : EntryStatus.done);
     }
+    ref.read(soundControllerProvider).play(completed ? UiSound.toggleOff : UiSound.toggleOn);
   }
 
   Future<void> _toggleClock(WidgetRef ref, String timeZone) async {
     final repository = ref.read(repositoryProvider);
     final occ = _asOccurrence(timeZone);
-    final running = _running(ref.read(entryTimeProvider(entry.id)).value ?? const <TimeEntry>[]);
+    final running = _relevant(
+      ref.read(entryTimeProvider(entry.id)).value ?? const <TimeEntry>[],
+    ).any((item) => item.isRunning);
     if (running) {
       await repository.clockOut(occ);
     } else {
       await repository.clockIn(occ);
     }
+    ref.read(soundControllerProvider).play(running ? UiSound.toggleOff : UiSound.toggleOn);
   }
 
   String _timeLabel(BuildContext context, DateTime startAt, DateTime? endAt, String timeZone) {

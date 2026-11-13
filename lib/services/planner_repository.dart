@@ -201,27 +201,37 @@ class PlannerRepository {
 
   Future<TimeEntry> clockIn(EntryOccurrence occurrence, {DateTime? at}) => _database.startTimeEntry(
     entryId: occurrence.entry.id,
-    occurrenceDateKey: occurrence.entry.recurrence == null ? null : occurrence.date.key,
+    occurrenceDateKey: _occurrenceDateKey(occurrence),
     at: at,
   );
 
-  /// Stops the running session and, for a start-only task, records the
-  /// clock-out time as the entry's end.
-  Future<TimeEntry?> clockOut(EntryOccurrence occurrence, {DateTime? at}) async {
+  /// Stops the running session and returns it, or null if none was running.
+  ///
+  /// Pausing never rewrites the entry: a clock-in task keeps its start and no
+  /// end, so it stays resumable on a later day. Finishing is separate.
+  Future<TimeEntry?> clockOut(EntryOccurrence occurrence, {DateTime? at}) =>
+      _database.stopTimeEntry(occurrence.entry.id, occurrenceDateKey: _occurrenceDateKey(occurrence), at: at);
+
+  /// Stops the running session and, for a clock-in task, records the entry's
+  /// end. This is the explicit finish path; it does not complete the entry.
+  Future<TimeEntry?> finishTracked(EntryOccurrence occurrence, {DateTime? at}) async {
     final stopped = await _database.stopTimeEntry(
       occurrence.entry.id,
-      occurrenceDateKey: occurrence.entry.recurrence == null ? null : occurrence.date.key,
+      occurrenceDateKey: _occurrenceDateKey(occurrence),
       at: at,
     );
-    if (stopped == null) return null;
     final entry = occurrence.entry;
     if (entry.isClockInTask && entry.timeZone != null) {
-      var minute = localMinuteAt(stopped.endedAt!, entry.timeZone!);
+      final endedAt = stopped?.endedAt ?? at ?? DateTime.now().toUtc();
+      var minute = localMinuteAt(endedAt, entry.timeZone!);
       if (minute <= entry.startMinute!) minute += 1440;
       await saveEntry(entry.copyWith(endMinute: minute, updatedAt: DateTime.now().toUtc()));
     }
     return stopped;
   }
+
+  int? _occurrenceDateKey(EntryOccurrence occurrence) =>
+      occurrence.entry.recurrence == null ? null : occurrence.date.key;
 
   Future<void> clearAllData() => _database.clearAllData();
 

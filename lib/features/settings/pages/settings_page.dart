@@ -166,7 +166,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       title: l10n.preferencesSection,
       subtitle: l10n.preferencesSubtitle,
       keywords:
-          'language date week start navigation side performance hours quiet reminders sleep categories tags shifts inventory shopping maintenance idioma fecha semana',
+          'language time zone sound alarm interaction aero date week start navigation side performance hours quiet reminders sleep categories tags shifts inventory shopping maintenance idioma fecha semana zona horaria sonido alarma',
       section: SettingsDetailSection.preferences,
     ),
     _SettingLink(

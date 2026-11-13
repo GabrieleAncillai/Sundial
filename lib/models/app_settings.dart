@@ -35,6 +35,10 @@ abstract final class SettingsKeys {
   static const performanceMode = 'performanceMode';
   static const onlineEnabled = 'onlineEnabled';
   static const mcpPort = 'mcpPort';
+  static const soundsEnabled = 'soundsEnabled';
+  static const soundPack = 'soundPack';
+  static const alarmSound = 'alarmSound';
+  static const timezoneOverride = 'timezoneOverride';
 }
 
 enum ManeThemeVariant { system, light, dark, aero }
@@ -46,6 +50,10 @@ enum ManeBackgroundStyle { dots, grid, oled, plain, custom }
 enum ManeNavSide { left, right }
 
 enum ManeDateFormat { system, dmy, mdy, ymd }
+
+enum ManeSoundPack { soft, aero }
+
+enum ManeAlarmSound { soft, chime, bright }
 
 /// App-wide preferences. Persisted in the `setting_records` table.
 class AppSettings {
@@ -80,6 +88,10 @@ class AppSettings {
     this.performanceMode = false,
     this.onlineEnabled = false,
     this.mcpPort = 8765,
+    this.soundsEnabled = false,
+    this.soundPack = ManeSoundPack.aero,
+    this.alarmSound = ManeAlarmSound.chime,
+    this.timezoneOverride = '',
   });
 
   final ThemeMode themeMode;
@@ -134,6 +146,16 @@ class AppSettings {
   final bool onlineEnabled;
   final int mcpPort;
 
+  /// Short interaction blips. Off by default so a first launch stays quiet.
+  final bool soundsEnabled;
+  final ManeSoundPack soundPack;
+
+  /// Sound played by scheduled reminders.
+  final ManeAlarmSound alarmSound;
+
+  /// IANA zone used for new timed entries. Empty follows the device zone.
+  final String timezoneOverride;
+
   Duration get commute => Duration(minutes: sleepCommuteMinutes);
   Duration get windDown => Duration(minutes: sleepWindDownMinutes);
   Duration get wakeBuffer => Duration(minutes: sleepWakeBufferMinutes);
@@ -186,6 +208,10 @@ class AppSettings {
       navSide: values[SettingsKeys.navSide] == 'right' ? ManeNavSide.right : ManeNavSide.left,
       dateFormat: _dateFormat(values[SettingsKeys.dateFormat]),
       performanceMode: values[SettingsKeys.performanceMode] == 'true',
+      soundsEnabled: values[SettingsKeys.soundsEnabled] == 'true',
+      soundPack: _soundPack(values[SettingsKeys.soundPack]),
+      alarmSound: _alarmSound(values[SettingsKeys.alarmSound]),
+      timezoneOverride: _timezone(values[SettingsKeys.timezoneOverride]),
       onlineEnabled:
           values[SettingsKeys.onlineEnabled] == 'true' ||
           values[SettingsKeys.syncEnabled] == 'true' ||
@@ -256,6 +282,25 @@ class AppSettings {
     return ManeDateFormat.system;
   }
 
+  static ManeSoundPack _soundPack(String? value) {
+    for (final pack in ManeSoundPack.values) {
+      if (pack.name == value) return pack;
+    }
+    return ManeSoundPack.aero;
+  }
+
+  static ManeAlarmSound _alarmSound(String? value) {
+    for (final sound in ManeAlarmSound.values) {
+      if (sound.name == value) return sound;
+    }
+    return ManeAlarmSound.chime;
+  }
+
+  static String _timezone(String? value) {
+    final zone = value?.trim() ?? '';
+    return zone.isEmpty || !isKnownTimeZone(zone) ? '' : zone;
+  }
+
   static double _textScale(String? value) {
     final parsed = double.tryParse(value ?? '');
     if (parsed == null) return 1;
@@ -305,6 +350,10 @@ class AppSettings {
     bool? performanceMode,
     bool? onlineEnabled,
     int? mcpPort,
+    bool? soundsEnabled,
+    ManeSoundPack? soundPack,
+    ManeAlarmSound? alarmSound,
+    String? timezoneOverride,
   }) => AppSettings(
     themeMode: themeMode ?? this.themeMode,
     locale: clearLocale ? null : (locale ?? this.locale),
@@ -336,5 +385,9 @@ class AppSettings {
     performanceMode: performanceMode ?? this.performanceMode,
     onlineEnabled: onlineEnabled ?? this.onlineEnabled,
     mcpPort: mcpPort ?? this.mcpPort,
+    soundsEnabled: soundsEnabled ?? this.soundsEnabled,
+    soundPack: soundPack ?? this.soundPack,
+    alarmSound: alarmSound ?? this.alarmSound,
+    timezoneOverride: timezoneOverride ?? this.timezoneOverride,
   );
 }

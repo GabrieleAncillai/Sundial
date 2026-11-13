@@ -138,7 +138,7 @@ void main() {
     expect(columns.map((row) => row.data['name']), contains('time_zone'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 9);
+    expect(version.data.values.single, 10);
   });
 
   test('migrates real v2 data and keeps tags usable', () async {
@@ -200,7 +200,7 @@ void main() {
     expect((await database.watchTags().first).single.name, 'Tax');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 9);
+    expect(version.data.values.single, 10);
   });
 
   test('migrates real v3 data and exposes the v0.3 tables', () async {
@@ -254,7 +254,7 @@ void main() {
 
     await database.saveShiftChecklistItems('missing-pattern', const []);
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 9);
+    expect(version.data.values.single, 10);
   });
 
   test('migrates real v4 data and creates the pairing tables', () async {
@@ -408,7 +408,7 @@ void main() {
     expect(paired.port, 8766);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 9);
+    expect(version.data.values.single, 10);
   });
 
   test('migrates real v5 checklist rows to per-slot keys', () async {
@@ -478,7 +478,7 @@ void main() {
     expect(saved.windDownMinutes, 20);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 9);
+    expect(version.data.values.single, 10);
   });
 
   test('migrates real v6 rows to shopping order and purchase history', () async {
@@ -535,7 +535,7 @@ void main() {
     expect(history.single.note, 'Shop run');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 9);
+    expect(version.data.values.single, 10);
   });
 
   test('migrates real v7 rows to custom reminder times and remote snapshots', () async {
@@ -610,7 +610,7 @@ void main() {
     expect(await database.readRemoteSnapshots(), isEmpty);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 9);
+    expect(version.data.values.single, 10);
   });
 
   test('migrates real v8 rows to contexts, projects, habits and tracked tasks', () async {
@@ -685,6 +685,139 @@ void main() {
     expect((await database.readShiftChecklistItems('bar')).single.dayIndex, 2);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 9);
+    expect(version.data.values.single, 10);
+  });
+
+  test('repairs a database written by the draft v9 build', () async {
+    final directory = await Directory.systemTemp.createTemp('mane-migration-v9-draft');
+    final path = '${directory.path}/mane.sqlite';
+    final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
+
+    final raw = sqlite3.open(path);
+    raw.execute(File('test/fixtures/schema_v9_draft.sql').readAsStringSync());
+    raw.execute(
+      'INSERT INTO space_records (id, name, color, position, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['work', 'Work', 0xFF4A6FA5, 1, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO space_unit_records '
+      '(id, space_id, name, kind, icon, color, position, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['pizza', 'work', 'Pida Pizza', 'job', 'store', 0xFF2F7ED8, 1, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO project_records '
+      '(id, space_id, space_unit_id, name, color, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?)',
+      ['reno', 'work', 'pizza', 'Reno', 0xFF2FA98F, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO entry_records '
+      '(id, space_id, space_unit_id, project_id, title, kind, date_key, all_day, status, priority, '
+      'estimated_minutes, sort_order, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        'shift',
+        'work',
+        'pizza',
+        'reno',
+        'Shift note',
+        'task',
+        20261109,
+        1,
+        'open',
+        2,
+        45,
+        3,
+        createdAt,
+        createdAt,
+      ],
+    );
+    raw.execute(
+      'INSERT INTO habit_records (id, space_unit_id, name, icon, color, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?)',
+      ['open-shop', 'pizza', 'Open shop', 'bolt', 0xFF34C759, createdAt, createdAt],
+    );
+    raw.execute('INSERT INTO habit_check_records (habit_id, date_key, created_at) VALUES (?, ?, ?)', [
+      'open-shop',
+      20261109,
+      createdAt,
+    ]);
+    raw.execute(
+      'INSERT INTO task_session_records '
+      '(id, entry_id, started_at, ended_at, note, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?)',
+      ['session', 'shift', createdAt, createdAt + 1800, 'Prep', createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO shift_pattern_records '
+      '(id, space_id, space_unit_id, name, time_zone, cycle_days, anchor_date_key, enabled, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['bar', 'work', 'pizza', 'Bar', 'Europe/Madrid', 7, 20261109, 1, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO home_item_records (id, space_unit_id, name, quantity, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['beans', 'pizza', 'Beans', 2, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO shopping_item_records (id, space_unit_id, name, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?)',
+      ['milk', 'pizza', 'Milk', createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO gadget_records (id, space_unit_id, name, interval_days, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['boiler', 'pizza', 'Boiler service', 180, createdAt, createdAt],
+    );
+    raw.dispose();
+
+    final database = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(() async {
+      await database.close();
+      await directory.delete(recursive: true);
+    });
+
+    final contexts = await database.watchContexts().first;
+    expect(contexts.map((context) => context.id), contains('pizza'));
+    expect(contexts.firstWhere((context) => context.id == 'pizza').name, 'Pida Pizza');
+
+    final projects = await database.watchProjects().first;
+    expect(projects.single.contextId, 'pizza');
+
+    final entry = await database.readEntry('shift');
+    expect(entry!.contextId, 'pizza');
+    expect(entry.projectId, 'reno');
+    expect(entry.priority, EntryPriority.medium);
+
+    final habit = (await database.watchHabits().first).single;
+    expect(habit.spaceId, 'work');
+    expect(habit.contextId, 'pizza');
+    final completions = await database.watchHabitCompletions().first;
+    expect(completions['open-shop'], contains(LocalDate.parse('2026-11-09')));
+
+    final sessions = await database.readTimeEntriesBetween(
+      DateTime.utc(2026, 11, 1),
+      DateTime.utc(2026, 11, 2),
+    );
+    expect(sessions.single.note, 'Prep');
+    expect(sessions.single.endedAt, DateTime.utc(2026, 11, 1, 0, 30));
+
+    final patterns = await database.watchShiftPatterns().first;
+    expect(patterns.single.contextId, 'pizza');
+    expect((await database.watchHomeItems().first).single.contextId, 'pizza');
+    expect((await database.watchShoppingItems().first).single.contextId, 'pizza');
+
+    final entryColumns = await database.customSelect('PRAGMA table_info(entry_records)').get();
+    final entryNames = entryColumns.map((row) => row.read<String>('name')).toSet();
+    expect(entryNames, containsAll(['context_id', 'completed_at']));
+    expect(entryNames, isNot(contains('space_unit_id')));
+
+    final gadgets = await database.customSelect('SELECT COUNT(*) AS total FROM gadget_records').getSingle();
+    expect(gadgets.read<int>('total'), 1);
+
+    final version = await database.customSelect('PRAGMA user_version').getSingle();
+    expect(version.data.values.single, 10);
   });
 }

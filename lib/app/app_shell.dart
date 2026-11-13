@@ -7,6 +7,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:mane_core/mane_core.dart';
 
 import '../core/i18n/l10n.dart';
+import '../core/sound/sound_service.dart';
 import '../core/widgets/ui_kit.dart';
 import '../features/home_widget/home_widget_service.dart';
 import '../features/plan/pages/plan_page.dart';
@@ -189,6 +190,7 @@ class _AppShellState extends ConsumerState<AppShell>
 
   void _selectTab(int value) {
     if (value == _index) return;
+    ref.read(soundControllerProvider).play(UiSound.tap);
     setState(() => _index = value);
     if (!MediaQuery.disableAnimationsOf(context)) _swap.forward(from: 0);
   }

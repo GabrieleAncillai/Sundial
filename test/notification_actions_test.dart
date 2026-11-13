@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mane/models/app_settings.dart';
 import 'package:mane/services/notification_service.dart';
 import 'package:mane/services/reminder_planner.dart';
 import 'package:mane_core/mane_core.dart';
@@ -48,6 +49,16 @@ void main() {
       containsAll([NotificationService.snoozeAction, NotificationService.completeAction]),
     );
     expect(actions.every((action) => action.showsUserInterface), isTrue);
+  });
+
+  test('each alarm sound maps to its own Android channel and raw resource', () {
+    for (final sound in ManeAlarmSound.values) {
+      final android = NotificationService.detailsFor(sound).android;
+      expect(android, isNotNull);
+      expect(android!.channelId, NotificationService.channelIdFor(sound));
+      expect(android.sound, isA<RawResourceAndroidNotificationSound>());
+      expect(android.sound!.sound, 'mane_alarm_${sound.name}');
+    }
   });
 
   test('a resume rebuild keeps a scheduled snooze', () async {

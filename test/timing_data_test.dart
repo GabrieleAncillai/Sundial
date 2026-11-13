@@ -105,7 +105,7 @@ void main() {
     expect(anytime.endAt, isNull);
   });
 
-  test('clocking out stores a session and finishes a start-only task', () async {
+  test('clocking out stores a session and keeps a start-only task resumable', () async {
     await database.saveEntry(
       Entry(
         id: 'clock',
@@ -130,8 +130,8 @@ void main() {
     expect(sessions.single.durationAt(now), const Duration(minutes: 90));
 
     final saved = await repository.readEntry('clock');
-    expect(saved!.endMinute, 10 * 60 + 30);
-    expect(saved.timing, EntryTiming.scheduled);
+    expect(saved!.endMinute, isNull);
+    expect(saved.timing, EntryTiming.clockIn);
   });
 
   test('shift checklists keep the cycle-day scope', () async {

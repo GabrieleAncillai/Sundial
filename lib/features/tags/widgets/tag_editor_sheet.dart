@@ -71,29 +71,36 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
                 validator: (value) => value == null || value.trim().isEmpty ? l10n.tagNameRequired : null,
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String?>(
-                initialValue: _spaceId,
-                decoration: InputDecoration(labelText: l10n.tagSpace),
-                items: [
-                  DropdownMenuItem<String?>(value: null, child: Text(l10n.tagSpaceAny)),
-                  for (final space in widget.spaces)
-                    DropdownMenuItem<String?>(
-                      value: space.id,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
+              ManeSelectField(
+                label: l10n.tagSpace,
+                valueLabel: _spaceId == null
+                    ? l10n.tagSpaceAny
+                    : widget.spaces.where((space) => space.id == _spaceId).firstOrNull?.name ??
+                          l10n.tagSpaceAny,
+                leading: const Icon(Icons.space_dashboard_outlined),
+                onTap: () async {
+                  final picked = await showManeSelectSheet<String>(
+                    context: context,
+                    title: l10n.tagSpace,
+                    selected: _spaceId ?? '',
+                    options: [
+                      ManeSelectOption(value: '', label: l10n.tagSpaceAny),
+                      for (final space in widget.spaces)
+                        ManeSelectOption(
+                          value: space.id,
+                          label: space.name,
+                          leading: Container(
+                            width: 9,
+                            height: 9,
                             decoration: BoxDecoration(color: Color(space.colorValue), shape: BoxShape.circle),
                           ),
-                          const SizedBox(width: 8),
-                          Text(space.name),
-                        ],
-                      ),
-                    ),
-                ],
-                onChanged: (value) => setState(() => _spaceId = value),
+                        ),
+                    ],
+                  );
+                  if (picked != null && mounted) {
+                    setState(() => _spaceId = picked.isEmpty ? null : picked);
+                  }
+                },
               ),
               const SizedBox(height: 16),
               Row(
