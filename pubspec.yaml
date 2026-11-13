@@ -29,6 +29,9 @@ dependencies:
   bonsoir: ^6.0.1
   crypto: ^3.0.7
   home_widget: ^0.10.0
+  # pdf 3.11 needs archive <4.1; image 4.11 calls APIs missing from that archive.
+  image: 4.8.0
+  pdf: ^3.11.3
   mane_core:
     path: packages/mane_core
 

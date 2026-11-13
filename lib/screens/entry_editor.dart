@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:mane_core/mane_core.dart';
 import 'package:uuid/uuid.dart';
 
+import '../core/i18n/date_labels.dart';
 import '../core/i18n/l10n.dart';
 import '../core/i18n/recurrence_label.dart';
 import '../core/i18n/reminder_label.dart';
@@ -27,20 +27,49 @@ Future<void> showEntryEditor(
   BuildContext context, {
   Entry? entry,
   LocalDate? initialDate,
+  int? initialStartMinute,
+  int? initialEndMinute,
+  String? initialContextId,
+  String? initialProjectId,
+  int? initialMaintenanceDays,
   required List<Space> spaces,
 }) {
   return showAppSheet<void>(
     context: context,
-    builder: (context) => EntryEditorSheet(entry: entry, initialDate: initialDate, spaces: spaces),
+    builder: (context) => EntryEditorSheet(
+      entry: entry,
+      initialDate: initialDate,
+      initialStartMinute: initialStartMinute,
+      initialEndMinute: initialEndMinute,
+      initialContextId: initialContextId,
+      initialProjectId: initialProjectId,
+      initialMaintenanceDays: initialMaintenanceDays,
+      spaces: spaces,
+    ),
   );
 }
 
 class EntryEditorSheet extends ConsumerStatefulWidget {
-  const EntryEditorSheet({super.key, required this.spaces, this.entry, this.initialDate});
+  const EntryEditorSheet({
+    super.key,
+    required this.spaces,
+    this.entry,
+    this.initialDate,
+    this.initialStartMinute,
+    this.initialEndMinute,
+    this.initialContextId,
+    this.initialProjectId,
+    this.initialMaintenanceDays,
+  });
 
   final List<Space> spaces;
   final Entry? entry;
   final LocalDate? initialDate;
+  final int? initialStartMinute;
+  final int? initialEndMinute;
+  final String? initialContextId;
+  final String? initialProjectId;
+  final int? initialMaintenanceDays;
 
   @override
   ConsumerState<EntryEditorSheet> createState() => _EntryEditorSheetState();
@@ -52,6 +81,10 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
   late final TextEditingController _notesController;
   late String _spaceId;
   late EntryKind _kind;
+  late EntryTiming _timing;
+  late EntryPriority _priority;
+  String? _contextId;
+  String? _projectId;
   late LocalDate _date;
   late LocalDate? _endDate;
   late bool _allDay;
@@ -86,14 +119,23 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
         ? entry.spaceId
         : _spaces.first.id;
     _kind = entry?.kind ?? EntryKind.task;
+    _timing = entry?.allDay == true ? EntryTiming.anytime : (entry?.timing ?? EntryTiming.scheduled);
+    _priority = entry?.priority ?? EntryPriority.none;
+    _contextId = entry?.contextId ?? widget.initialContextId;
+    _projectId = entry?.projectId ?? widget.initialProjectId;
     _date = entry?.date ?? widget.initialDate ?? localDateAt(ref.read(nowProvider), _deviceTimeZone);
     _endDate = entry?.endDate;
     _allDay = entry?.allDay ?? false;
-    _startMinute = entry?.startMinute ?? 9 * 60;
-    _endMinute = entry?.endMinute ?? 10 * 60;
+    _startMinute = entry?.startMinute ?? widget.initialStartMinute ?? 9 * 60;
+    _endMinute = entry?.endMinute ?? widget.initialEndMinute ?? 10 * 60;
     _repeat = _repeatFrom(entry?.recurrence);
     _repeatAfterCompletion = entry?.repeatAfterCompletionDays != null;
     _repeatDaysController = TextEditingController(text: '${entry?.repeatAfterCompletionDays ?? 30}');
+    if (entry == null && widget.initialMaintenanceDays != null) {
+      _kind = EntryKind.obligation;
+      _repeatAfterCompletion = true;
+      _repeatDaysController.text = '${widget.initialMaintenanceDays}';
+    }
     _tagIds = {...?entry?.tagIds};
     _skipDates = {...?entry?.recurrence?.skipDates};
     if (entry == null) {
@@ -144,10 +186,13 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     final c = context.mc;
     final l10n = context.l10n;
     final title = widget.entry == null ? l10n.newEntry : l10n.editEntry;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final availableTags = (ref.watch(tagsProvider).value ?? const <Tag>[])
         .where((tag) => tag.appliesTo(_spaceId))
         .toList();
+    final contexts = ref.watch(contextsProvider(_spaceId)).value ?? const <PlannerContext>[];
+    final projects = ref.watch(projectsProvider(_spaceId)).value ?? const <Project>[];
+    if (_contextId != null && !contexts.any((item) => item.id == _contextId)) _contextId = null;
+    if (_projectId != null && !projects.any((item) => item.id == _projectId)) _projectId = null;
 
     return AppSheet(
       children: [
@@ -176,6 +221,13 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                 textInputAction: TextInputAction.next,
                 decoration: InputDecoration(labelText: l10n.titleQuestion),
                 validator: (value) => value == null || value.trim().isEmpty ? l10n.titleRequired : null,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _notesController,
+                maxLines: 2,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(labelText: l10n.notesOptional, alignLabelWithHint: true),
               ),
               const SizedBox(height: 12),
               Row(
@@ -240,68 +292,178 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                   ),
                 ],
               ),
+              if (contexts.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _LabeledDropdown<String>(
+                  label: l10n.context,
+                  value: _contextId ?? '',
+                  items: [
+                    DropdownMenuItem<String>(value: '', child: Text(l10n.noContext)),
+                    for (final item in contexts)
+                      DropdownMenuItem<String>(
+                        value: item.id,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Color(item.colorValue),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(item.name),
+                          ],
+                        ),
+                      ),
+                  ],
+                  onChanged: (value) =>
+                      setState(() => _contextId = value == null || value.isEmpty ? null : value),
+                ),
+              ],
+              if (projects.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _LabeledDropdown<String>(
+                  label: l10n.project,
+                  value: _projectId ?? '',
+                  items: [
+                    DropdownMenuItem<String>(value: '', child: Text(l10n.noProject)),
+                    for (final project in projects)
+                      DropdownMenuItem<String>(value: project.id, child: Text(project.name)),
+                  ],
+                  onChanged: (value) =>
+                      setState(() => _projectId = value == null || value.isEmpty ? null : value),
+                ),
+              ],
               const SizedBox(height: 12),
-              _PickerRow(
-                icon: Icons.event_outlined,
-                label: l10n.date,
-                value: DateFormat.yMMMEd(locale).format(_date.toDateTime()),
-                onTap: _pickDate,
-              ),
-              const SizedBox(height: 10),
-              Row(
+              if (availableTags.isNotEmpty) ...[
+                Text(l10n.categories, style: ManeType.label(12.5, color: c.textSecondary)),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final tag in availableTags)
+                      FilterChip(
+                        label: Text(tag.name),
+                        selected: _tagIds.contains(tag.id),
+                        avatar: CircleAvatar(backgroundColor: Color(tag.colorValue), radius: 5),
+                        onSelected: (selected) => setState(() {
+                          if (selected) {
+                            _tagIds.add(tag.id);
+                          } else {
+                            _tagIds.remove(tag.id);
+                          }
+                        }),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
+              Text(l10n.priority, style: ManeType.label(12.5, color: c.textSecondary)),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
                 children: [
-                  Expanded(
-                    child: _PickerRow(
-                      icon: Icons.date_range_outlined,
-                      label: l10n.endDate,
-                      value: _endDate == null
-                          ? l10n.singleDay
-                          : DateFormat.yMMMEd(locale).format(_endDate!.toDateTime()),
-                      onTap: _pickEndDate,
-                    ),
-                  ),
-                  if (_endDate != null)
-                    IconButton(
-                      onPressed: () => setState(() => _endDate = null),
-                      icon: const Icon(Icons.close, size: 18),
-                      tooltip: l10n.singleDay,
+                  for (final priority in EntryPriority.values)
+                    ChoiceChip(
+                      label: Text(_priorityLabel(context, priority)),
+                      selected: _priority == priority,
+                      onSelected: (_) => setState(() => _priority = priority),
                     ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(4, 4, 0, 0),
-                child: Text(l10n.multiDayHint, style: ManeType.body(11, color: c.textTertiary)),
-              ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 12),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(l10n.allDay),
                 value: _allDay,
                 onChanged: (value) => setState(() => _allDay = value),
               ),
-              if (!_allDay)
+              if (!_allDay) ...[
+                _LabeledDropdown<EntryTiming>(
+                  label: l10n.timing,
+                  value: _timing,
+                  items: [
+                    for (final timing in EntryTiming.values)
+                      DropdownMenuItem<EntryTiming>(
+                        value: timing,
+                        child: Text(_timingLabel(context, timing)),
+                      ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) setState(() => _timing = value);
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 5, 0, 0),
+                  child: Text(_timingHint(context, _timing), style: ManeType.body(11, color: c.textTertiary)),
+                ),
+              ],
+              const SizedBox(height: 8),
+              _PickerRow(
+                icon: Icons.event_outlined,
+                label: l10n.date,
+                value: formatFullDate(context, _date.toDateTime()),
+                onTap: _pickDate,
+              ),
+              if (_allDay || _timing == EntryTiming.scheduled) ...[
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
                       child: _PickerRow(
-                        icon: Icons.schedule,
-                        label: l10n.starts,
-                        value: _timeLabel(_startMinute),
-                        onTap: _pickStartTime,
+                        icon: Icons.date_range_outlined,
+                        label: l10n.endDate,
+                        value: _endDate == null
+                            ? l10n.singleDay
+                            : formatFullDate(context, _endDate!.toDateTime()),
+                        onTap: _pickEndDate,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _PickerRow(
-                        icon: Icons.schedule_outlined,
-                        label: l10n.ends,
-                        value: _timeLabel(_endMinute),
-                        onTap: _pickEndTime,
+                    if (_endDate != null)
+                      IconButton(
+                        onPressed: () => setState(() => _endDate = null),
+                        icon: const Icon(Icons.close, size: 18),
+                        tooltip: l10n.singleDay,
                       ),
-                    ),
                   ],
                 ),
-              if (!_allDay)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 4, 0, 0),
+                  child: Text(l10n.multiDayHint, style: ManeType.body(11, color: c.textTertiary)),
+                ),
+              ],
+              if (!_allDay && _timing != EntryTiming.anytime) ...[
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    if (_timing != EntryTiming.deadline)
+                      Expanded(
+                        child: _PickerRow(
+                          icon: Icons.schedule,
+                          label: l10n.starts,
+                          value: _timeLabel(_startMinute),
+                          onTap: _pickStartTime,
+                        ),
+                      ),
+                    if (_timing == EntryTiming.scheduled) const SizedBox(width: 12),
+                    if (_timing != EntryTiming.clockIn)
+                      Expanded(
+                        child: _PickerRow(
+                          icon: _timing == EntryTiming.deadline
+                              ? Icons.flag_outlined
+                              : Icons.schedule_outlined,
+                          label: _timing == EntryTiming.deadline ? l10n.deadline : l10n.ends,
+                          value: _timeLabel(_endMinute),
+                          onTap: _pickEndTime,
+                        ),
+                      ),
+                  ],
+                ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(4, 6, 0, 0),
                   child: Row(
@@ -317,6 +479,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                     ],
                   ),
                 ),
+              ],
               const SizedBox(height: 12),
               if (!_repeatAfterCompletion)
                 _LabeledDropdown<_Repeat>(
@@ -382,30 +545,6 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                   },
                 ),
               const SizedBox(height: 12),
-              if (availableTags.isNotEmpty) ...[
-                Text(l10n.tags, style: ManeType.label(12.5, color: c.textSecondary)),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    for (final tag in availableTags)
-                      FilterChip(
-                        label: Text(tag.name),
-                        selected: _tagIds.contains(tag.id),
-                        avatar: CircleAvatar(backgroundColor: Color(tag.colorValue), radius: 5),
-                        onSelected: (selected) => setState(() {
-                          if (selected) {
-                            _tagIds.add(tag.id);
-                          } else {
-                            _tagIds.remove(tag.id);
-                          }
-                        }),
-                      ),
-                  ],
-                ),
-              ],
-              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -441,13 +580,6 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                       ),
                   ],
                 ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _notesController,
-                maxLines: 3,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(labelText: l10n.notesOptional, alignLabelWithHint: true),
-              ),
               const SizedBox(height: 20),
               FilledButton(
                 onPressed: _saving || !_remindersLoaded ? null : _save,
@@ -474,6 +606,27 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
       ],
     );
   }
+
+  String _timingLabel(BuildContext context, EntryTiming timing) => switch (timing) {
+    EntryTiming.scheduled => context.l10n.timingScheduled,
+    EntryTiming.clockIn => context.l10n.timingClockIn,
+    EntryTiming.deadline => context.l10n.timingDeadline,
+    EntryTiming.anytime => context.l10n.timingAnytime,
+  };
+
+  String _timingHint(BuildContext context, EntryTiming timing) => switch (timing) {
+    EntryTiming.scheduled => context.l10n.timingScheduledHint,
+    EntryTiming.clockIn => context.l10n.timingClockInHint,
+    EntryTiming.deadline => context.l10n.timingDeadlineHint,
+    EntryTiming.anytime => context.l10n.timingAnytimeHint,
+  };
+
+  String _priorityLabel(BuildContext context, EntryPriority priority) => switch (priority) {
+    EntryPriority.none => context.l10n.priorityNone,
+    EntryPriority.low => context.l10n.priorityLow,
+    EntryPriority.medium => context.l10n.priorityMedium,
+    EntryPriority.high => context.l10n.priorityHigh,
+  };
 
   String _timeLabel(int minutes) {
     final normalized = minutes % 1440;
@@ -539,8 +692,11 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     final form = _formKey.currentState;
     if (form == null || !form.validate()) return;
     final existing = widget.entry;
-    final endDate = _endDate != null && _endDate!.isAfter(_date) ? _endDate : null;
-    if (!_allDay && endDate == null && _endMinute <= _startMinute) {
+    final endDate =
+        (_allDay || _timing == EntryTiming.scheduled) && _endDate != null && _endDate!.isAfter(_date)
+        ? _endDate
+        : null;
+    if (!_allDay && _timing == EntryTiming.scheduled && endDate == null && _endMinute <= _startMinute) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.endAfterStartError)));
       return;
     }
@@ -560,8 +716,12 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
           RecurrenceOverride(
             date: original,
             dateOverride: _date == original ? null : _date,
-            startMinute: _allDay ? null : _startMinute,
-            endMinute: _allDay ? null : _endMinute,
+            startMinute: _allDay || _timing == EntryTiming.deadline || _timing == EntryTiming.anytime
+                ? null
+                : _startMinute,
+            endMinute: _allDay || _timing == EntryTiming.clockIn || _timing == EntryTiming.anytime
+                ? null
+                : _endMinute,
             allDay: _allDay == existing.allDay ? null : _allDay,
             title: title == existing.title ? null : title,
             notes: notes == existing.notes ? null : notes,
@@ -578,9 +738,20 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
       kind: _kind,
       date: singleOccurrence ? existing!.date : _date,
       endDate: singleOccurrence ? existing!.endDate : endDate,
-      startMinute: singleOccurrence ? existing!.startMinute : (_allDay ? null : _startMinute),
-      endMinute: singleOccurrence ? existing!.endMinute : (_allDay ? null : _endMinute),
-      timeZone: singleOccurrence ? existing!.timeZone : (_allDay ? null : _timeZone),
+      startMinute: singleOccurrence
+          ? existing!.startMinute
+          : (_allDay || _timing == EntryTiming.deadline || _timing == EntryTiming.anytime
+                ? null
+                : _startMinute),
+      endMinute: singleOccurrence
+          ? existing!.endMinute
+          : (_allDay || _timing == EntryTiming.clockIn || _timing == EntryTiming.anytime ? null : _endMinute),
+      timeZone: singleOccurrence
+          ? existing!.timeZone
+          : (_allDay || _timing == EntryTiming.anytime ? null : _timeZone),
+      contextId: singleOccurrence ? existing!.contextId : _contextId,
+      projectId: singleOccurrence ? existing!.projectId : _projectId,
+      priority: _priority,
       tagIds: _tagIds,
       allDay: singleOccurrence ? existing!.allDay : _allDay,
       status: existing?.status ?? EntryStatus.open,

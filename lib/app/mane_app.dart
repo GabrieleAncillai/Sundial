@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/i18n/l10n.dart';
-import '../features/app_lock/widgets/app_lock_gate.dart';
+import '../core/settings_scope.dart';
 import '../state/settings_controller.dart';
 import '../theme/app_theme.dart';
 import 'app_shell.dart';
@@ -17,16 +17,25 @@ class ManeApp extends ConsumerWidget {
     return MaterialApp(
       onGenerateTitle: (context) => context.l10n.appName,
       debugShowCheckedModeBanner: false,
-      theme: ManeTheme.light,
-      darkTheme: ManeTheme.dark,
-      themeMode: settings.themeMode,
+      theme: ManeTheme.forSettings(settings, Brightness.light),
+      darkTheme: ManeTheme.forSettings(settings, Brightness.dark),
+      themeMode: settings.isAero ? ThemeMode.light : settings.resolvedThemeMode,
       locale: settings.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
-        value: ManeTheme.systemBars(Theme.of(context).brightness),
-        child: AppLockGate(child: child ?? const SizedBox.shrink()),
-      ),
+      builder: (context, child) {
+        final media = MediaQuery.of(context);
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: ManeTheme.systemBars(Theme.of(context).brightness),
+          child: MediaQuery(
+            data: media.copyWith(
+              textScaler: TextScaler.linear(settings.textScale),
+              disableAnimations: settings.performanceMode || media.disableAnimations,
+            ),
+            child: AppSettingsScope(settings: settings, child: child ?? const SizedBox.shrink()),
+          ),
+        );
+      },
       home: const AppShell(),
     );
   }

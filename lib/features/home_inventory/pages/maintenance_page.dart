@@ -4,6 +4,7 @@ import 'package:mane_core/mane_core.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
+import '../../../screens/entry_editor.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
@@ -11,7 +12,9 @@ import '../../../theme/app_typography.dart';
 /// Interval-after-completion tasks, grouped by due and upcoming. Completing a
 /// task moves its next date forward from today and records the history.
 class MaintenancePage extends ConsumerWidget {
-  const MaintenancePage({super.key});
+  const MaintenancePage({super.key, this.contextId});
+
+  final String? contextId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,6 +28,7 @@ class MaintenancePage extends ConsumerWidget {
     final tasks = <EntryOccurrence>[];
     for (final occurrence in occurrences) {
       if (!occurrence.entry.isMaintenance) continue;
+      if (contextId != null && occurrence.entry.contextId != contextId) continue;
       if (!seen.add(occurrence.entry.id)) continue;
       tasks.add(occurrence);
     }
@@ -41,11 +45,32 @@ class MaintenancePage extends ConsumerWidget {
     return ManePage(
       title: l10n.maintenance,
       subtitle: l10n.maintenanceSubtitle,
+      floatingAction: ManeAddButton(
+        tooltip: l10n.addGadget,
+        onTap: () => showEntryEditor(
+          context,
+          initialDate: today,
+          initialContextId: contextId,
+          initialMaintenanceDays: 30,
+          spaces: ref.watch(spacesProvider).value ?? fallbackSpaces,
+        ),
+      ),
       child: tasks.isEmpty
           ? AppEmptyState(
               icon: Icons.build_circle_outlined,
               title: l10n.maintenanceNone,
               message: l10n.maintenanceSubtitle,
+              action: FilledButton.tonalIcon(
+                onPressed: () => showEntryEditor(
+                  context,
+                  initialDate: today,
+                  initialContextId: contextId,
+                  initialMaintenanceDays: 30,
+                  spaces: ref.watch(spacesProvider).value ?? fallbackSpaces,
+                ),
+                icon: const Icon(Icons.add, size: 18),
+                label: Text(l10n.addGadget),
+              ),
             )
           : ListView(
               padding: const EdgeInsets.only(bottom: 24),

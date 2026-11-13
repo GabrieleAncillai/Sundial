@@ -12,26 +12,34 @@ import '../low_stock.dart';
 import '../widgets/home_item_sheet.dart';
 
 class HomeInventoryPage extends ConsumerWidget {
-  const HomeInventoryPage({super.key});
+  const HomeInventoryPage({super.key, this.contextId});
+
+  final String? contextId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final c = context.mc;
-    final items = ref.watch(homeItemsProvider).value ?? const <HomeItem>[];
+    final allItems = ref.watch(homeItemsProvider).value ?? const <HomeItem>[];
+    final items = contextId == null
+        ? allItems
+        : allItems.where((item) => item.contextId == contextId).toList();
     final lowStock = items.where((item) => item.isLowStock).toList();
 
     return ManePage(
       title: l10n.homeInventory,
       subtitle: l10n.homeInventorySubtitle,
-      floatingAction: ManeAddButton(tooltip: l10n.addHomeItem, onTap: () => showHomeItemSheet(context)),
+      floatingAction: ManeAddButton(
+        tooltip: l10n.addHomeItem,
+        onTap: () => showHomeItemSheet(context, contextId: contextId),
+      ),
       child: items.isEmpty
           ? AppEmptyState(
               icon: Icons.inventory_2_outlined,
               title: l10n.homeInventoryEmpty,
               message: l10n.homeInventorySubtitle,
               action: FilledButton.tonalIcon(
-                onPressed: () => showHomeItemSheet(context),
+                onPressed: () => showHomeItemSheet(context, contextId: contextId),
                 icon: const Icon(Icons.add, size: 18),
                 label: Text(l10n.addHomeItem),
               ),

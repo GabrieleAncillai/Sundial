@@ -1,6 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
+import '../../models/app_settings.dart';
+import '../settings_scope.dart';
+
 /// ISO weekdays in display order, starting from [weekStart] (1 = Monday).
 List<int> weekdaysFrom(int weekStart) {
   final start = weekStart >= 1 && weekStart <= 7 ? weekStart : DateTime.monday;
@@ -19,3 +22,23 @@ String shortWeekday(BuildContext context, int weekday) {
 
 String shortWeekdayList(BuildContext context, Iterable<int> weekdays) =>
     (weekdays.toList()..sort()).map((day) => shortWeekday(context, day)).join(', ');
+
+/// Formats a full date according to the user's date-format preference.
+String formatFullDate(BuildContext context, DateTime date) {
+  final locale = Localizations.localeOf(context).toLanguageTag();
+  return switch (AppSettingsScope.maybeOf(context)?.dateFormat ?? ManeDateFormat.system) {
+    ManeDateFormat.dmy => DateFormat('dd/MM/yyyy', locale).format(date),
+    ManeDateFormat.mdy => DateFormat('MM/dd/yyyy', locale).format(date),
+    ManeDateFormat.ymd => DateFormat('yyyy/MM/dd', locale).format(date),
+    ManeDateFormat.system => DateFormat.yMMMMd(locale).format(date),
+  };
+}
+
+/// Formats a month and year according to the date-format preference.
+String formatMonthYear(BuildContext context, DateTime date) {
+  final locale = Localizations.localeOf(context).toLanguageTag();
+  return switch (AppSettingsScope.maybeOf(context)?.dateFormat ?? ManeDateFormat.system) {
+    ManeDateFormat.ymd => DateFormat('yyyy/MM', locale).format(date),
+    _ => DateFormat.yMMMM(locale).format(date),
+  };
+}

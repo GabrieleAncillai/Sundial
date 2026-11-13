@@ -18,6 +18,21 @@ Future<String?> saveCsvFile(String content, {required String dialogTitle, requir
   }
 }
 
+/// Writes a PDF through the platform save dialog.
+Future<String?> savePdfFile(Uint8List bytes, {required String dialogTitle, required String fileName}) async {
+  try {
+    return await FilePicker.platform.saveFile(
+      dialogTitle: dialogTitle,
+      fileName: fileName,
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      bytes: bytes,
+    );
+  } catch (_) {
+    return null;
+  }
+}
+
 /// Writes an iCalendar file through the platform save dialog.
 Future<String?> saveIcsFile(String content, {required String dialogTitle}) async {
   final now = DateTime.now().toUtc();

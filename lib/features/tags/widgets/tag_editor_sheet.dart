@@ -4,10 +4,12 @@ import 'package:mane_core/mane_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/l10n.dart';
+import '../../../core/icons/mane_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
+import '../../spaces/widgets/space_controls.dart';
 import '../tag_colors.dart';
 
 Future<void> showTagEditor(BuildContext context, {Tag? tag, required List<Space> spaces}) =>
@@ -31,6 +33,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
   late final TextEditingController _nameController;
   late String? _spaceId;
   late int _color;
+  late String _icon;
   bool _saving = false;
 
   @override
@@ -39,6 +42,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
     _nameController = TextEditingController(text: widget.tag?.name ?? '');
     _spaceId = widget.tag?.spaceId;
     _color = widget.tag?.colorValue ?? tagPalette.first;
+    _icon = widget.tag?.icon ?? 'folder';
   }
 
   @override
@@ -52,7 +56,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
     final l10n = context.l10n;
     final c = context.mc;
     return AppSheet(
-      title: widget.tag == null ? l10n.addTag : l10n.editTag,
+      title: widget.tag == null ? l10n.addCategory : l10n.editCategory,
       children: [
         Form(
           key: _formKey,
@@ -63,7 +67,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
                 controller: _nameController,
                 autofocus: true,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(labelText: l10n.tagName),
+                decoration: InputDecoration(labelText: l10n.categoryName),
                 validator: (value) => value == null || value.trim().isEmpty ? l10n.tagNameRequired : null,
               ),
               const SizedBox(height: 12),
@@ -92,6 +96,39 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
                 onChanged: (value) => setState(() => _spaceId = value),
               ),
               const SizedBox(height: 16),
+              Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: tagColor(_color).withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(ManeIcons.resolve(_icon), size: 20, color: tagColor(_color)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l10n.icon,
+                      style: ManeType.body(13, weight: FontWeight.w700, color: c.text),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () async {
+                      final picked = await showIconPicker(
+                        context,
+                        selected: _icon,
+                        recommended: ManeIcons.personalRecommended,
+                      );
+                      if (picked != null && mounted) setState(() => _icon = picked);
+                    },
+                    icon: const Icon(Icons.category_outlined, size: 18),
+                    label: Text(l10n.chooseIcon),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
               Text(l10n.tagColor, style: ManeType.label(12.5, color: c.textSecondary)),
               const SizedBox(height: 10),
               Wrap(
@@ -139,6 +176,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
       spaceId: _spaceId,
       name: _nameController.text.trim(),
       colorValue: _color,
+      icon: _icon,
       position: existing?.position ?? 0,
     );
     try {

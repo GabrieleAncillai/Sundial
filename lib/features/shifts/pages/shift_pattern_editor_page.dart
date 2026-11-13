@@ -12,9 +12,10 @@ import '../../../models/shift_checklist.dart';
 import '../../../state/providers.dart';
 
 class ShiftPatternEditorPage extends ConsumerStatefulWidget {
-  const ShiftPatternEditorPage({super.key, this.pattern});
+  const ShiftPatternEditorPage({super.key, this.pattern, this.contextId});
 
   final ShiftPattern? pattern;
+  final String? contextId;
 
   @override
   ConsumerState<ShiftPatternEditorPage> createState() => _ShiftPatternEditorPageState();
@@ -25,6 +26,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
   late final TextEditingController _nameController;
   late final TextEditingController _timeZoneController;
   late String _spaceId;
+  String? _contextId;
   late int _cycleDays;
   late LocalDate _anchorDate;
   late List<_SlotDraft> _slots;
@@ -46,6 +48,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     _nameController = TextEditingController(text: pattern?.name ?? '');
     _timeZoneController = TextEditingController(text: pattern?.timeZone ?? _deviceTimeZone);
     _spaceId = pattern?.spaceId ?? 'work';
+    _contextId = pattern?.contextId ?? widget.contextId;
     _cycleDays = pattern?.cycleDays ?? 7;
     _anchorDate = pattern?.anchorDate ?? localDateAt(ref.read(nowProvider), _deviceTimeZone);
     _tagIds = {...?pattern?.tagIds};
@@ -71,7 +74,9 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       final items = await ref.read(repositoryProvider).readShiftChecklistItems(patternId);
       if (!mounted) return;
       setState(() {
-        _checklist = [for (final item in items) _ChecklistDraft(id: item.id, label: item.label)];
+        _checklist = [
+          for (final item in items) _ChecklistDraft(id: item.id, label: item.label, dayIndex: item.dayIndex),
+        ];
         _checklistLoading = false;
       });
     } catch (error) {
@@ -89,6 +94,15 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
 
   void _removeChecklistItem(int index) {
     setState(() => _checklist.removeAt(index));
+  }
+
+  void _moveChecklistItem(int index, int delta) {
+    final target = index + delta;
+    if (target < 0 || target >= _checklist.length) return;
+    setState(() {
+      final item = _checklist.removeAt(index);
+      _checklist.insert(target, item);
+    });
   }
 
   @override
@@ -113,6 +127,10 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     final availableTags = (ref.watch(tagsProvider).value ?? const <Tag>[])
         .where((tag) => tag.appliesTo(_spaceId))
         .toList();
+    final contexts = ref.watch(contextsProvider(_spaceId)).value ?? const <PlannerContext>[];
+    if (_contextId != null && !contexts.any((item) => item.id == _contextId)) {
+      _contextId = null;
+    }
     final locale = Localizations.localeOf(context).toLanguageTag();
     final activeSpace = spaces.any((space) => space.id == _spaceId) ? _spaceId : spaces.first.id;
     _spaceId = activeSpace;
@@ -163,6 +181,19 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
                 if (value != null) setState(() => _spaceId = value);
               },
             ),
+            if (contexts.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String?>(
+                initialValue: _contextId,
+                decoration: InputDecoration(labelText: l10n.context),
+                items: [
+                  DropdownMenuItem<String?>(value: null, child: Text(l10n.noContext)),
+                  for (final context in contexts)
+                    DropdownMenuItem<String?>(value: context.id, child: Text(context.name)),
+                ],
+                onChanged: (value) => setState(() => _contextId = value),
+              ),
+            ],
             if (availableTags.isNotEmpty) ...[
               const SizedBox(height: 14),
               SectionLabel(l10n.shiftTags),
@@ -289,22 +320,49 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
               for (var index = 0; index < _checklist.length; index++)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: TextFormField(
-                          key: ValueKey('checklist-${_checklist[index].id}'),
-                          initialValue: _checklist[index].label,
-                          textCapitalization: TextCapitalization.sentences,
-                          decoration: InputDecoration(labelText: l10n.checklistItemLabel),
-                          onChanged: (value) => _checklist[index] = _checklist[index].copyWith(label: value),
-                        ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              key: ValueKey('checklist-${_checklist[index].id}'),
+                              initialValue: _checklist[index].label,
+                              textCapitalization: TextCapitalization.sentences,
+                              decoration: InputDecoration(labelText: l10n.checklistItemLabel),
+                              onChanged: (value) =>
+                                  _checklist[index] = _checklist[index].copyWith(label: value),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: index == 0 ? null : () => _moveChecklistItem(index, -1),
+                            icon: const Icon(Icons.keyboard_arrow_up),
+                            tooltip: l10n.moveUp,
+                          ),
+                          IconButton(
+                            onPressed: index == _checklist.length - 1
+                                ? null
+                                : () => _moveChecklistItem(index, 1),
+                            icon: const Icon(Icons.keyboard_arrow_down),
+                            tooltip: l10n.moveDown,
+                          ),
+                          IconButton(
+                            onPressed: () => _removeChecklistItem(index),
+                            icon: const Icon(Icons.remove_circle_outline),
+                            tooltip: l10n.delete,
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        onPressed: () => _removeChecklistItem(index),
-                        icon: const Icon(Icons.remove_circle_outline),
-                        tooltip: l10n.delete,
+                      DropdownButtonFormField<int?>(
+                        initialValue: _checklist[index].dayIndex,
+                        decoration: InputDecoration(labelText: l10n.shiftChecklists),
+                        items: [
+                          DropdownMenuItem<int?>(value: null, child: Text(l10n.allDays)),
+                          for (var day = 0; day < _cycleDays; day++)
+                            DropdownMenuItem<int?>(value: day, child: Text(l10n.checklistForDay(day + 1))),
+                        ],
+                        onChanged: (value) => _checklist[index] = _checklist[index].copyWith(dayIndex: value),
                       ),
                     ],
                   ),
@@ -557,6 +615,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       return ShiftPattern(
         id: widget.pattern?.id ?? 'preview',
         spaceId: _spaceId,
+        contextId: _contextId,
         name: _nameController.text.trim(),
         timeZone: _timeZoneController.text.trim(),
         cycleDays: _cycleDays,
@@ -597,6 +656,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     final saved = ShiftPattern(
       id: widget.pattern?.id ?? const Uuid().v4(),
       spaceId: pattern.spaceId,
+      contextId: pattern.contextId,
       name: pattern.name,
       timeZone: pattern.timeZone,
       cycleDays: pattern.cycleDays,
@@ -613,7 +673,12 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       await ref.read(repositoryProvider).saveShiftChecklistItems(saved.id, [
         for (final draft in _checklist)
           if (draft.label.trim().isNotEmpty)
-            ShiftChecklistItem(id: draft.id, patternId: saved.id, label: draft.label.trim()),
+            ShiftChecklistItem(
+              id: draft.id,
+              patternId: saved.id,
+              label: draft.label.trim(),
+              dayIndex: draft.dayIndex,
+            ),
       ]);
     } catch (error) {
       if (!mounted) return;
@@ -654,13 +719,20 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
 }
 
 class _ChecklistDraft {
-  const _ChecklistDraft({required this.id, required this.label});
+  const _ChecklistDraft({required this.id, required this.label, this.dayIndex});
 
   final String id;
   final String label;
+  final int? dayIndex;
 
-  _ChecklistDraft copyWith({String? label}) => _ChecklistDraft(id: id, label: label ?? this.label);
+  _ChecklistDraft copyWith({String? label, Object? dayIndex = _unset}) => _ChecklistDraft(
+    id: id,
+    label: label ?? this.label,
+    dayIndex: identical(dayIndex, _unset) ? this.dayIndex : dayIndex as int?,
+  );
 }
+
+const _unset = Object();
 
 class _SlotDraft {
   _SlotDraft({

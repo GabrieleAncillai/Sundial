@@ -16,11 +16,15 @@ class ShiftChecklistSection extends ConsumerStatefulWidget {
     required this.patternId,
     required this.date,
     required this.slotKey,
+    this.dayIndex,
   });
 
   final String patternId;
   final LocalDate date;
   final String slotKey;
+
+  /// Cycle day of the shift, so per-day checklist items can be filtered.
+  final int? dayIndex;
 
   @override
   ConsumerState<ShiftChecklistSection> createState() => _ShiftChecklistSectionState();
@@ -37,7 +41,9 @@ class _ShiftChecklistSectionState extends ConsumerState<ShiftChecklistSection> {
 
   Future<(List<ShiftChecklistItem>, Set<String>)> _load() async {
     final repository = ref.read(repositoryProvider);
-    final items = await repository.readShiftChecklistItems(widget.patternId);
+    final items = (await repository.readShiftChecklistItems(
+      widget.patternId,
+    )).where((item) => item.dayIndex == null || item.dayIndex == widget.dayIndex).toList();
     if (items.isEmpty) return (items, <String>{});
     final done = await repository.readShiftChecklistCompletions(
       widget.patternId,

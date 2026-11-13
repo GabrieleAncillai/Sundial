@@ -22,9 +22,21 @@
   "nothingPlanned": "Nothing planned",
   "shiftsSection": "Shifts",
   "couldNotLoadDay": "Could not load your day: {error}",
-  "@couldNotLoadDay": {"placeholders": {"error": {"type": "String"}}},
+  "@couldNotLoadDay": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "couldNotLoadShifts": "Could not load shifts: {error}",
-  "@couldNotLoadShifts": {"placeholders": {"error": {"type": "String"}}},
+  "@couldNotLoadShifts": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "allDay": "All day",
   "overnightSuffix": "(+1 day)",
   "importedEvent": "Imported calendar event",
@@ -48,47 +60,137 @@
   "repeatAfterCompletionSubtitle": "Schedule the next one from the day you finish.",
   "daysRequired": "Use a number of days greater than zero.",
   "daysValue": "{count} days",
-  "@daysValue": {"placeholders": {"count": {"type": "int"}}},
+  "@daysValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "repeatAfterDaysLabel": "Days between completions",
   "couldNotComplete": "Could not complete: {error}",
-  "@couldNotComplete": {"placeholders": {"error": {"type": "String"}}},
+  "@couldNotComplete": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "notesOptional": "Notes (optional)",
   "saveChanges": "Save changes",
   "deleteEntryQuestion": "Delete this entry?",
   "deleteEntryBody": "It will disappear from your plan.",
   "endAfterStartError": "The end time has to be after the start.",
   "couldNotSave": "Could not save: {error}",
-  "@couldNotSave": {"placeholders": {"error": {"type": "String"}}},
+  "@couldNotSave": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "couldNotDelete": "Could not delete: {error}",
-  "@couldNotDelete": {"placeholders": {"error": {"type": "String"}}},
+  "@couldNotDelete": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "timesDefinedIn": "Times are defined in {timeZone}",
-  "@timesDefinedIn": {"placeholders": {"timeZone": {"type": "String"}}},
+  "@timesDefinedIn": {
+    "placeholders": {
+      "timeZone": {
+        "type": "String"
+      }
+    }
+  },
   "markAsDone": "Mark {title} as done",
-  "@markAsDone": {"placeholders": {"title": {"type": "String"}}},
+  "@markAsDone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "entryKindTask": "Task",
   "entryKindEvent": "Event",
   "entryKindObligation": "Obligation",
   "entryKindDeadline": "Deadline",
   "recurrenceEveryDay": "Every day",
   "recurrenceEveryNDays": "Every {count} days",
-  "@recurrenceEveryNDays": {"placeholders": {"count": {"type": "int"}}},
+  "@recurrenceEveryNDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "recurrenceEveryWeek": "Every week",
   "recurrenceEveryNWeeks": "Every {count} weeks",
-  "@recurrenceEveryNWeeks": {"placeholders": {"count": {"type": "int"}}},
+  "@recurrenceEveryNWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "recurrenceOnDays": "Every week on {days}",
-  "@recurrenceOnDays": {"placeholders": {"days": {"type": "String"}}},
+  "@recurrenceOnDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "recurrenceEveryNWeeksOnDays": "Every {count} weeks on {days}",
-  "@recurrenceEveryNWeeksOnDays": {"placeholders": {"count": {"type": "int"}, "days": {"type": "String"}}},
+  "@recurrenceEveryNWeeksOnDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "recurrenceEveryMonth": "Every month",
   "recurrenceEveryNMonths": "Every {count} months",
-  "@recurrenceEveryNMonths": {"placeholders": {"count": {"type": "int"}}},
+  "@recurrenceEveryNMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "recurrenceEveryNMonthsOnDay": "Every {count} months on day {day}",
-  "@recurrenceEveryNMonthsOnDay": {"placeholders": {"count": {"type": "int"}, "day": {"type": "int"}}},
+  "@recurrenceEveryNMonthsOnDay": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
+    }
+  },
   "recurrenceOnDayOfMonth": "Every month on day {day}",
-  "@recurrenceOnDayOfMonth": {"placeholders": {"day": {"type": "int"}}},
+  "@recurrenceOnDayOfMonth": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
   "recurrenceEveryYear": "Every year",
   "recurrenceEveryNYears": "Every {count} years",
-  "@recurrenceEveryNYears": {"placeholders": {"count": {"type": "int"}}},
+  "@recurrenceEveryNYears": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "previousMonth": "Previous month",
   "nextMonth": "Next month",
   "previousWeek": "Previous week",
@@ -99,7 +201,16 @@
   "selectedDay": "Selected day",
   "noEntriesOnDay": "Nothing planned on this day.",
   "calendarDaySemantics": "{date}, {count} items",
-  "@calendarDaySemantics": {"placeholders": {"date": {"type": "String"}, "count": {"type": "int"}}},
+  "@calendarDaySemantics": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "theme": "Theme",
   "themeSystem": "System",
   "themeLight": "Light",
@@ -118,18 +229,42 @@
   "defaultRemindersSubtitle": "Pre-selected when you add an entry.",
   "reminderAtTime": "At the start time",
   "reminderMinutesBefore": "{count} minutes before",
-  "@reminderMinutesBefore": {"placeholders": {"count": {"type": "int"}}},
+  "@reminderMinutesBefore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "reminderHoursBefore": "{count} hours before",
-  "@reminderHoursBefore": {"placeholders": {"count": {"type": "int"}}},
+  "@reminderHoursBefore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "reminderDaysBefore": "{count} days before",
-  "@reminderDaysBefore": {"placeholders": {"count": {"type": "int"}}},
+  "@reminderDaysBefore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "reminders": "Reminders",
   "addReminder": "Add a reminder",
   "removeReminder": "Remove reminder",
   "remindersOff": "No reminders",
   "notificationPermissionDenied": "Notifications are off. Enable them in system settings so reminders can reach you.",
   "couldNotLoadReminders": "Could not load reminders: {error}",
-  "@couldNotLoadReminders": {"placeholders": {"error": {"type": "String"}}},
+  "@couldNotLoadReminders": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "dataAndBackup": "Data and backup",
   "exportBackup": "Export a backup",
   "exportBackupSubtitle": "Write a versioned JSON file of all your data.",
@@ -139,22 +274,67 @@
   "importCalendarSubtitle": "Read a local .ics file. Imported events are read-only.",
   "importCalendarSpace": "Import into",
   "importCalendarDone": "Imported {imported}, updated {updated}, skipped {skipped} duplicates or unsupported events.",
-  "@importCalendarDone": {"placeholders": {"imported": {"type": "int"}, "updated": {"type": "int"}, "skipped": {"type": "int"}}},
+  "@importCalendarDone": {
+    "placeholders": {
+      "imported": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
   "importCalendarEmpty": "No events were found in this file.",
   "importCalendarFailed": "Calendar import failed: {error}",
-  "@importCalendarFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@importCalendarFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "importCompanion": "Import a companion export",
   "importCompanionSubtitle": "Read a local JSON schedule exported by another app.",
   "importCompanionDone": "Imported {imported} events. Skipped {skipped} duplicates or invalid rows.",
-  "@importCompanionDone": {"placeholders": {"imported": {"type": "int"}, "skipped": {"type": "int"}}},
+  "@importCompanionDone": {
+    "placeholders": {
+      "imported": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
   "importCompanionEmpty": "No events were found in this file.",
   "importCompanionFailed": "Companion import failed: {error}",
-  "@importCompanionFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@importCompanionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "backupExported": "Backup written to {path}",
-  "@backupExported": {"placeholders": {"path": {"type": "String"}}},
+  "@backupExported": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "backupImported": "Backup restored.",
   "backupFailed": "Backup failed: {error}",
-  "@backupFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@backupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "backupInvalid": "This file is not a valid Mane backup.",
   "backupFuture": "This backup comes from a newer version of Mane.",
   "importConfirmTitle": "Replace your data?",
@@ -173,12 +353,24 @@
   "privacySection": "Privacy",
   "notSet": "None",
   "selectedCount": "{count} selected",
-  "@selectedCount": {"placeholders": {"count": {"type": "int"}}},
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "basedOnGymMane": "Based on GymMane by InlitX",
   "basedOnStreak": "Based on Streak by InlitX",
   "basedOnMane": "Based on Mane by the Mane contributors",
   "version": "Version {version}",
-  "@version": {"placeholders": {"version": {"type": "String"}}},
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "license": "License",
   "licenseBody": "Mane is free software under GPL-3.0-only. It comes with no warranty. See LICENSE and ADDITIONAL_TERMS.md in the repository.",
   "credits": "Credits",
@@ -211,23 +403,62 @@
   "archiveItemQuestion": "Archive this item?",
   "archiveItemBody": "It disappears from the inventory but stays in backups.",
   "shoppingProgress": "{done} of {total} bought",
-  "@shoppingProgress": {"placeholders": {"done": {"type": "int"}, "total": {"type": "int"}}},
+  "@shoppingProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "sleepWindow": "Sleep window",
   "sleepWindowSubtitle": "A soft block from the last commitment today to the first tomorrow.",
   "sleepBuffers": "Sleep buffers",
   "sleepBuffersSummary": "{commute} commute · {windDown} wind-down · {wake} wake",
-  "@sleepBuffersSummary": {"placeholders": {"commute": {"type": "int"}, "windDown": {"type": "int"}, "wake": {"type": "int"}}},
+  "@sleepBuffersSummary": {
+    "placeholders": {
+      "commute": {
+        "type": "int"
+      },
+      "windDown": {
+        "type": "int"
+      },
+      "wake": {
+        "type": "int"
+      }
+    }
+  },
   "commute": "Commute (minutes)",
   "windDown": "Wind-down (minutes)",
   "wakeBuffer": "Wake buffer (minutes)",
   "sleepBedtime": "Bedtime around {time}",
-  "@sleepBedtime": {"placeholders": {"time": {"type": "String"}}},
+  "@sleepBedtime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "sleepWake": "Wake around {time}",
-  "@sleepWake": {"placeholders": {"time": {"type": "String"}}},
+  "@sleepWake": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "sleepWarning": "This plan leaves little room to sleep.",
   "sleepNoEarlyStart": "No early start tomorrow.",
   "minutesValue": "{count} min",
-  "@minutesValue": {"placeholders": {"count": {"type": "int"}}},
+  "@minutesValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "tagsManagerSubtitle": "Separate jobs in Work and people or groups in Personal.",
   "shiftPatterns": "Shift patterns",
   "shiftPatternsSubtitle": "Cycles, per-day slots and date exceptions.",
@@ -249,16 +480,28 @@
   "patternName": "Pattern name",
   "cycleLength": "Cycle length",
   "cycleLengthValue": "{count} days",
-  "@cycleLengthValue": {"placeholders": {"count": {"type": "int"}}},
+  "@cycleLengthValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "anchorDate": "Anchor date",
   "timeZone": "Time zone",
   "cycleDay": "Day {index}",
-  "@cycleDay": {"placeholders": {"index": {"type": "int"}}},
+  "@cycleDay": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
   "addSlot": "Add a slot",
   "removeSlot": "Remove slot",
   "slotLabel": "Label",
-  "startTime": "Start",
-  "endTime": "End",
+  "startTime": "Start time",
+  "endTime": "End time",
   "exceptions": "Date exceptions",
   "addException": "Add exception",
   "exceptionFree": "Free day",
@@ -279,11 +522,20 @@
   "noExceptions": "No exceptions.",
   "shiftChecklist": "Shift checklist",
   "shiftChecklistSubtitle": "Items to tick off on each shift of this pattern.",
-  "addChecklistItem": "Add item",
+  "addChecklistItem": "Add checklist item",
   "checklistItemLabel": "Checklist item",
   "noChecklistItems": "No checklist items yet.",
   "checklistDone": "{done} of {total} done",
-  "@checklistDone": {"placeholders": {"done": {"type": "int"}, "total": {"type": "int"}}},
+  "@checklistDone": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "devices": "Devices",
   "devicesSubtitle": "Pair your own devices over the local network.",
   "thisDevice": "This device",
@@ -308,9 +560,21 @@
   "pairingExpires": "Valid for five minutes.",
   "newCode": "New code",
   "pairingSucceeded": "Paired with {name}.",
-  "@pairingSucceeded": {"placeholders": {"name": {"type": "String"}}},
+  "@pairingSucceeded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "pairingFailed": "Pairing failed: {error}",
-  "@pairingFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@pairingFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "discoveredOnNetwork": "Found on this network",
   "noDiscoveredDevices": "No other Mane devices found yet.",
   "address": "Address",
@@ -318,22 +582,55 @@
   "code": "Code",
   "pair": "Pair",
   "pairedDevices": "Paired devices",
-  "noPairedDevices": "No devices paired yet.",
+  "noPairedDevices": "No paired devices yet.",
   "unpair": "Unpair",
   "unpairQuestion": "Unpair this device?",
   "unpairBody": "It disappears from this device. The other device keeps its own copy.",
   "lastSeen": "Last seen {time}",
-  "@lastSeen": {"placeholders": {"time": {"type": "String"}}},
+  "@lastSeen": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "neverReached": "Not reached yet",
-  "refreshDevices": "Refresh",
+  "refreshDevices": "Refresh devices",
   "remoteToday": "{entries} entries, {shifts} shifts today",
-  "@remoteToday": {"placeholders": {"entries": {"type": "int"}, "shifts": {"type": "int"}}},
+  "@remoteToday": {
+    "placeholders": {
+      "entries": {
+        "type": "int"
+      },
+      "shifts": {
+        "type": "int"
+      }
+    }
+  },
   "remoteNextShift": "Next shift: {label}",
-  "@remoteNextShift": {"placeholders": {"label": {"type": "String"}}},
+  "@remoteNextShift": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "remoteShopping": "{count} shopping items open",
-  "@remoteShopping": {"placeholders": {"count": {"type": "int"}}},
+  "@remoteShopping": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "serverOnPort": "Server on port {port}",
-  "@serverOnPort": {"placeholders": {"port": {"type": "int"}}},
+  "@serverOnPort": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
   "serverOff": "Server off",
   "discoveryUnavailable": "Network discovery is unavailable. Use the address manually.",
   "identityFingerprint": "Certificate fingerprint",
@@ -350,13 +647,25 @@
   "copied": "Copied.",
   "mcpLoopbackHint": "Bound to 127.0.0.1 only. The agent must run on this machine.",
   "mcpRunning": "Listening on 127.0.0.1:{port}",
-  "@mcpRunning": {"placeholders": {"port": {"type": "int"}}},
+  "@mcpRunning": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
   "mcpStopped": "MCP endpoint is off.",
   "search": "Search",
   "searchHint": "Search entries, tags and home items",
   "searchPrompt": "Type a title, a note, a tag or a household item.",
   "searchNoResults": "Nothing matches “{query}”.",
-  "@searchNoResults": {"placeholders": {"query": {"type": "String"}}},
+  "@searchNoResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "searchEntries": "Entries",
   "searchHomeItems": "Home items",
   "nextShiftPrefix": "Next: ",
@@ -374,11 +683,29 @@
   "exportCalendar": "Export calendar (.ics)",
   "exportCalendarSubtitle": "Share a read-only calendar file. No account or network is used.",
   "calendarExported": "Calendar exported to {path}",
-  "@calendarExported": {"placeholders": {"path": {"type": "String"}}},
+  "@calendarExported": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "calendarExportFailed": "Could not export the calendar: {error}",
-  "@calendarExportFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@calendarExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "icsUpdated": "{count} updated",
-  "@icsUpdated": {"placeholders": {"count": {"type": "int"}}},
+  "@icsUpdated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "onlyThisOccurrence": "Only this occurrence",
   "onlyThisOccurrenceSubtitle": "Keep the series and change just this date.",
   "singleDay": "Single day",
@@ -393,45 +720,89 @@
   "csvShopping": "Shopping",
   "csvInventory": "Inventory",
   "csvExported": "CSV exported to {path}",
-  "@csvExported": {"placeholders": {"path": {"type": "String"}}},
+  "@csvExported": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "csvExportFailed": "Could not export the CSV: {error}",
-  "@csvExportFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@csvExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "csvImportDone": "{imported} imported, {duplicates} duplicates, {skipped} skipped",
-  "@csvImportDone": {"placeholders": {"imported": {"type": "int"}, "duplicates": {"type": "int"}, "skipped": {"type": "int"}}},
+  "@csvImportDone": {
+    "placeholders": {
+      "imported": {
+        "type": "int"
+      },
+      "duplicates": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
   "csvImportEmpty": "No rows to import.",
   "gymmaneImport": "GymMane schedule",
   "gymmaneImportSubtitle": "Read-only weekly gym blocks from a GymMane JSON backup.",
   "gymmaneImportDone": "{imported} blocks imported ({timed} timed, {allDay} all-day), {skipped} skipped.",
-  "@gymmaneImportDone": {"placeholders": {"imported": {"type": "int"}, "timed": {"type": "int"}, "allDay": {"type": "int"}, "skipped": {"type": "int"}}},
+  "@gymmaneImportDone": {
+    "placeholders": {
+      "imported": {
+        "type": "int"
+      },
+      "timed": {
+        "type": "int"
+      },
+      "allDay": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
   "gymmaneImportFailed": "Could not import GymMane: {error}",
-  "@gymmaneImportFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@gymmaneImportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "gymmaneImportEmpty": "The backup has no weekly plan.",
-  "appLock": "App lock",
-  "appLockSubtitle": "Ask for a PIN when the app opens.",
-  "appLockPinTitle": "Choose a PIN",
-  "appLockPinRepeat": "Repeat the PIN",
-  "appLockPinMismatch": "The PINs do not match.",
-  "appLockUnlockTitle": "Enter your PIN",
-  "appLockUnlockSubtitle": "Unlock Mane",
-  "appLockWrong": "Wrong PIN. Try again.",
-  "appLockLockedOut": "Too many attempts. Wait {seconds}s.",
-  "@appLockLockedOut": {"placeholders": {"seconds": {"type": "int"}}},
-  "appLockEnabled": "App lock is on.",
-  "appLockDisabled": "App lock is off.",
-  "appLockPinLength": "Use four to eight digits.",
   "purchaseHistory": "Purchase history",
   "purchaseHistoryEmpty": "No purchases recorded yet.",
   "increaseQuantity": "Increase quantity",
   "decreaseQuantity": "Decrease quantity",
   "lowStockCount": "{count} items below their reorder level",
-  "@lowStockCount": {"placeholders": {"count": {"type": "int"}}},
+  "@lowStockCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "maintenance": "Maintenance",
   "maintenanceSubtitle": "Tasks due after their last service.",
   "maintenanceDue": "Due now",
   "maintenanceUpcoming": "Upcoming",
   "maintenanceNone": "No maintenance tasks yet.",
   "maintenanceDone": "Done. Next due {date}.",
-  "@maintenanceDone": {"placeholders": {"date": {"type": "String"}}},
+  "@maintenanceDone": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "clearChecked": "Clear bought",
   "clearCheckedBody": "Remove every bought line? This cannot be undone.",
   "shoppingToBuy": "To buy",
@@ -450,5 +821,390 @@
   "quietHoursSubtitle": "Pause notifications during this window.",
   "mcpTools": "MCP tools",
   "mcpToolsHint": "Loopback only. Initialize returns an Mcp-Session-Id header; clients that accept text/event-stream receive one SSE message per call. Writes stay gated by the switch above.",
-  "hoursWindow": "Set window"
+  "hoursWindow": "Set window",
+  "todayTab": "Today",
+  "planTab": "Plan",
+  "statsTab": "Stats",
+  "workTab": "Work",
+  "homeTab": "Home",
+  "personalTab": "Personal",
+  "workSpace": "Work",
+  "homeSpace": "Home",
+  "personalSpace": "Personal",
+  "jobs": "Jobs",
+  "homes": "Homes",
+  "peopleAndGroups": "People & groups",
+  "projectsSection": "Projects",
+  "householdSection": "Household",
+  "tasksSection": "Tasks",
+  "habitsSection": "Habits",
+  "gadgetsSection": "Gadgets",
+  "inventorySection": "Inventory",
+  "shoppingSection": "Shopping",
+  "newJob": "New job",
+  "editJob": "Edit job",
+  "newHome": "New home",
+  "editHome": "Edit home",
+  "newPerson": "New person or group",
+  "editPerson": "Edit person or group",
+  "newProject": "New project",
+  "editProject": "Edit project",
+  "jobName": "Job name",
+  "homeName": "Home name",
+  "personName": "Name",
+  "projectName": "Project name",
+  "projectDescription": "Description (optional)",
+  "name": "Name",
+  "descriptionOptional": "Description (optional)",
+  "icon": "Icon",
+  "color": "Colour",
+  "image": "Image",
+  "chooseIcon": "Choose an icon",
+  "searchIcons": "Search icons",
+  "noIconsFound": "No icon matches that search.",
+  "recommendedIcons": "Suggested",
+  "allIcons": "All icons",
+  "chooseImage": "Choose image",
+  "changeImage": "Change image",
+  "removeImage": "Remove image",
+  "createJob": "Create job",
+  "createHome": "Create home",
+  "createPerson": "Create person or group",
+  "createProject": "Create project",
+  "noJobs": "No jobs yet.",
+  "noJobsHint": "Add a job to give its shifts, projects and tasks a home.",
+  "noHomes": "No homes yet.",
+  "noHomesHint": "Add a home to organise inventory, gadgets and house projects.",
+  "noPeople": "No people or groups yet.",
+  "noPeopleHint": "Use projects to keep time with different people separate.",
+  "noProjects": "No projects yet.",
+  "noProjectsHint": "Projects group related tasks without adding another space.",
+  "noHabits": "No habits yet.",
+  "noHabitsHint": "Add a habit to track a personal routine.",
+  "noTasks": "Nothing here yet.",
+  "noTasksHint": "Add a task from this screen or from Today.",
+  "upcomingTasks": "Upcoming",
+  "openTasks": "Open tasks",
+  "overdueTasks": "Overdue",
+  "unscheduledTasks": "Anytime",
+  "taskCount": "{count, plural, =0 {No tasks} =1 {1 task} other {{count} tasks}}",
+  "@taskCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "projectCount": "{count, plural, =0 {No projects} =1 {1 project} other {{count} projects}}",
+  "@projectCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "habitCount": "{count, plural, =0 {No habits} =1 {1 habit} other {{count} habits}}",
+  "@habitCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addTaskFor": "Add a task for {name}",
+  "@addTaskFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "jobSummary": "Shifts, checklists and work projects",
+  "homeSummary": "Inventory, gadgets and household projects",
+  "personalSummary": "Projects, habits and personal admin",
+  "manageJobs": "Manage jobs",
+  "manageHomes": "Manage homes",
+  "managePeople": "Manage people and groups",
+  "noContextsYet": "Create one to get started.",
+  "addFirstContext": "Create the first one",
+  "shiftChecklists": "Shift checklists",
+  "checklistForDay": "Checklist for day {day}",
+  "@checklistForDay": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "allDays": "Every day",
+  "checklistItemHint": "What needs doing?",
+  "reorderChecklistHint": "Drag to reorder. Different days can have different lists.",
+  "addProject": "Add project",
+  "addHabit": "Add habit",
+  "editHabit": "Edit habit",
+  "habitName": "Habit name",
+  "targetPerWeek": "Target per week",
+  "timesPerWeek": "{count}× per week",
+  "@timesPerWeek": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakDays": "{count} day streak",
+  "@streakDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "thisWeek": "This week",
+  "markHabitDone": "Mark done",
+  "habitDone": "Done today",
+  "addGadget": "Add gadget",
+  "gadgetName": "Gadget name",
+  "maintenanceIntervalDays": "Days between services",
+  "nextDue": "Next due {date}",
+  "@nextDue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteContextQuestion": "Delete {name}?",
+  "@deleteContextQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteContextBody": "Its tasks and notes stay in your plan but lose this grouping.",
+  "deleteProjectQuestion": "Delete this project?",
+  "deleteProjectBody": "Tasks keep their space and context.",
+  "listView": "List",
+  "timelineView": "Timeline",
+  "progressToday": "Today's progress",
+  "doneOfTotal": "{done} of {total} done",
+  "@doneOfTotal": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "allDone": "Everything for today is done.",
+  "tasksLeft": "{count} left today",
+  "@tasksLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clockIn": "Clock in",
+  "clockOut": "Clock out",
+  "clockedIn": "Running",
+  "trackedTime": "Tracked",
+  "trackedTimeValue": "{duration} tracked",
+  "@trackedTimeValue": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "deadline": "Deadline",
+  "dueIn": "Due in {time}",
+  "@dueIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "overdue": "Overdue",
+  "anytime": "Anytime",
+  "priority": "Priority",
+  "priorityNone": "No priority",
+  "priorityLow": "Low",
+  "priorityMedium": "Medium",
+  "priorityHigh": "High",
+  "completeTask": "Complete task",
+  "reopenTask": "Reopen task",
+  "plan": "Plan",
+  "month": "Month",
+  "day": "Day",
+  "collapseCalendar": "Collapse calendar",
+  "expandCalendar": "Expand calendar",
+  "desktopWeekHint": "Drag blocks to move them, drag the bottom edge to resize, or drag an empty slot to create.",
+  "createEntryAt": "Create at {time}",
+  "@createEntryAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "entryMoved": "Entry moved.",
+  "couldNotMoveEntry": "Could not move the entry: {error}",
+  "@couldNotMoveEntry": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "stats": "Stats",
+  "overview": "Overview",
+  "completionRate": "Completion rate",
+  "tasksCompleted": "Tasks completed",
+  "overdueDeadlines": "Overdue deadlines",
+  "bySpace": "By space",
+  "byProject": "By project",
+  "byDay": "By day",
+  "habitConsistency": "Habit consistency",
+  "rangeWeek": "Week",
+  "rangeMonth": "Month",
+  "rangeQuarter": "Quarter",
+  "rangeYear": "Year",
+  "exportReport": "Export report",
+  "exportSummaryReport": "Summary report (PDF)",
+  "exportDetailedReport": "Detailed report (PDF)",
+  "exportReportCsv": "Report (CSV)",
+  "reportExported": "Report saved.",
+  "reportFailed": "Could not export the report: {error}",
+  "@reportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "totalTracked": "Total tracked",
+  "shareOfTotal": "Share",
+  "noTrackedTime": "No tracked time in this range.",
+  "completed": "Completed",
+  "openLabel": "Open",
+  "deadlineLoad": "Deadlines",
+  "settingsSearch": "Search settings",
+  "generalSection": "General",
+  "noSettingsFound": "No setting matches that search.",
+  "appearanceSubtitle": "Theme, colour, background and text size",
+  "preferencesSubtitle": "Language, dates, hours and reminders",
+  "dataSubtitle": "Backups, calendars, CSV and local data",
+  "onlineSubtitle": "Pair devices and run the local MCP endpoint",
+  "themeAero": "Aero",
+  "colorScheme": "Colour scheme",
+  "schemeSage": "Sage",
+  "schemeOcean": "Ocean",
+  "schemeSunset": "Sunset",
+  "schemeViolet": "Violet",
+  "schemeMono": "Mono",
+  "background": "Background",
+  "backgroundDots": "Dots",
+  "backgroundGrid": "Grid",
+  "backgroundOled": "OLED black",
+  "backgroundPlain": "Plain",
+  "backgroundCustom": "Custom",
+  "customBackgroundColor": "Custom colour",
+  "textSize": "Text size",
+  "textSmall": "Small",
+  "textDefault": "Default",
+  "textLarge": "Large",
+  "textExtraLarge": "Extra large",
+  "navigationSide": "Navigation side",
+  "navLeft": "Left",
+  "navRight": "Right",
+  "dateFormatLabel": "Date format",
+  "dateFormatSystem": "System",
+  "dateFormatDmy": "Day / month / year",
+  "dateFormatMdy": "Month / day / year",
+  "dateFormatYmd": "Year / month / day",
+  "performanceMode": "Performance mode",
+  "performanceModeSubtitle": "Reduce blur, shadows and long animations.",
+  "preferencesSection": "Preferences",
+  "dataSection": "Data and backup",
+  "onlineSection": "Online functionalities",
+  "onlineEnable": "Enable online functionalities",
+  "onlineEnableSubtitle": "LAN sync and the local MCP endpoint. Off by default; the planner works without them.",
+  "devicesAndSync": "Devices & Sync",
+  "devicesAndSyncSubtitle": "Find devices on this network and pair them.",
+  "mcpServer": "MCP Server",
+  "mcpPort": "Port",
+  "mcpPortHint": "Loopback port between 1024 and 65535.",
+  "applyPort": "Apply port",
+  "portSaved": "MCP port saved. Restart the endpoint to apply it.",
+  "deleteAllData": "Delete all data",
+  "deleteAllDataSubtitle": "Remove the plan, devices, backups links and settings from this device.",
+  "deleteAllDataQuestion": "Delete all local data?",
+  "deleteAllDataBody": "This cannot be undone. Exported files are not deleted.",
+  "dataDeleted": "Local data deleted.",
+  "nearbyDevices": "Nearby devices",
+  "scanningDevices": "Looking for Mane devices on this network…",
+  "noNearbyDevices": "No nearby Mane devices found. Make sure the other device has online functionalities enabled.",
+  "pairWithDevice": "Pair with {name}",
+  "@pairWithDevice": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pairCode": "Pairing code",
+  "pairCodeHint": "Enter the six-digit code shown on the other device.",
+  "pairingWith": "Pairing with {name}",
+  "@pairingWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syncExplainer": "Mane finds your other devices on the local network. Pairing stores a shared key once, so changing networks or IP addresses does not break the link. Sync stays read-only and never replaces your local plan.",
+  "pairSuccess": "Device paired.",
+  "pairFailed": "Could not pair: {error}",
+  "@pairFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "timing": "Timing",
+  "timingScheduled": "Scheduled",
+  "timingClockIn": "Clock in",
+  "timingDeadline": "Deadline",
+  "timingAnytime": "Anytime",
+  "timingScheduledHint": "Starts and ends at a set time.",
+  "timingClockInHint": "Clock in when you start; clocking out records the end.",
+  "timingDeadlineHint": "Can happen any time until the deadline.",
+  "timingAnytimeHint": "No fixed time. Complete it whenever it is done.",
+  "context": "Job, home or person",
+  "noContext": "No job, home or person",
+  "noProject": "No project",
+  "project": "Project",
+  "categories": "Categories",
+  "addCategory": "Add category",
+  "editCategory": "Edit category",
+  "categoryName": "Category name",
+  "noCategories": "No categories yet.",
+  "stickerImage": "Image",
+  "pickImage": "Pick an image",
+  "zoomHint": "Pinch or scroll to zoom and drag to frame the square.",
+  "tolerance": "Background tolerance",
+  "outline": "White sticker outline",
+  "outlineWidth": "Outline width",
+  "reset": "Reset",
+  "useImage": "Use image",
+  "noImage": "No image selected.",
+  "imageError": "Could not load that image.",
+  "choosePhotoOrIcon": "Choose a photo or use an icon",
+  "mediaHint": "Crop the image, remove a plain background and add a white sticker outline."
 }

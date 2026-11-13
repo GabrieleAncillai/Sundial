@@ -8,16 +8,18 @@ import 'package:mane_core/mane_core.dart';
 
 import '../core/i18n/l10n.dart';
 import '../core/widgets/ui_kit.dart';
-import '../features/calendar/pages/calendar_page.dart';
 import '../features/home_widget/home_widget_service.dart';
+import '../features/plan/pages/plan_page.dart';
 import '../features/search/pages/search_page.dart';
 import '../features/settings/pages/settings_page.dart';
+import '../features/spaces/pages/space_overview_page.dart';
+import '../features/stats/pages/stats_page.dart';
 import '../features/tags/widgets/tag_filter_sheet.dart';
-import '../services/notification_service.dart';
-import '../services/reminder_planner.dart';
+import '../models/app_settings.dart';
 import '../screens/entry_editor.dart';
 import '../screens/today_screen.dart';
-import '../screens/week_screen.dart';
+import '../services/notification_service.dart';
+import '../services/reminder_planner.dart';
 import '../state/providers.dart';
 import '../state/settings_controller.dart';
 import '../theme/app_colors.dart';
@@ -35,6 +37,15 @@ class _AppShellState extends ConsumerState<AppShell>
   int _index = 0;
   Timer? _clockTimer;
   late final AnimationController _swap;
+
+  static const _destinations = <_Destination>[
+    _Destination(label: _Label.today, icon: Icons.today_outlined, selectedIcon: Icons.today),
+    _Destination(label: _Label.work, icon: Icons.work_outline, selectedIcon: Icons.work),
+    _Destination(label: _Label.home, icon: Icons.home_outlined, selectedIcon: Icons.home),
+    _Destination(label: _Label.personal, icon: Icons.people_outline, selectedIcon: Icons.people),
+    _Destination(label: _Label.plan, icon: Icons.calendar_month_outlined, selectedIcon: Icons.calendar_month),
+    _Destination(label: _Label.stats, icon: Icons.insights_outlined, selectedIcon: Icons.insights),
+  ];
 
   @override
   void initState() {
@@ -91,7 +102,9 @@ class _AppShellState extends ConsumerState<AppShell>
     await ref.read(reminderCoordinatorProvider).reschedule();
     final settings = ref.read(settingsProvider);
     await ref.read(serviceCoordinatorProvider).apply(settings);
-    if (settings.syncEnabled) await ref.read(syncServiceProvider).refresh();
+    if (settings.onlineEnabled) {
+      await ref.read(syncServiceProvider).refresh();
+    }
     await _updateHomeWidget();
     unawaited(_runAutoBackup());
   }
@@ -182,109 +195,49 @@ class _AppShellState extends ConsumerState<AppShell>
 
   @override
   Widget build(BuildContext context) {
+    final settings = ref.watch(settingsProvider);
     final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
-    final filterCount = ref.watch(tagFilterProvider).length;
-    final l10n = context.l10n;
     final c = context.mc;
 
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.keyF, control: true): _openSearch,
-        const SingleActivator(LogicalKeyboardKey.digit1, control: true): () => _selectTab(0),
-        const SingleActivator(LogicalKeyboardKey.digit2, control: true): () => _selectTab(1),
-        const SingleActivator(LogicalKeyboardKey.digit3, control: true): () => _selectTab(2),
+        for (var index = 0; index < _destinations.length; index++)
+          SingleActivator(LogicalKeyboardKey(LogicalKeyboardKey.digit1.keyId + index), control: true): () =>
+              _selectTab(index),
       },
       child: Focus(
         autofocus: true,
         child: Scaffold(
           backgroundColor: Colors.transparent,
           body: AppBackground(
+            style: settings.backgroundStyle,
+            customColor: Color(settings.backgroundCustomColor),
+            aero: settings.isAero,
+            performanceMode: settings.performanceMode,
             child: SafeArea(
               bottom: false,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(18, 10, 16, 6),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(13)),
-                          child: Icon(Icons.event_note, size: 21, color: c.onAccent),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(l10n.appName, style: ManeType.headline(21, color: c.text)),
-                        const Spacer(),
-                        GlassIconButton(icon: Icons.search, tooltip: l10n.search, onTap: _openSearch),
-                        const SizedBox(width: 8),
-                        GlassIconButton(
-                          icon: filterCount > 0 ? Icons.filter_alt : Icons.filter_alt_outlined,
-                          tooltip: l10n.filterByTag,
-                          onTap: () => showTagFilterSheet(context),
-                          badge: filterCount == 0
-                              ? null
-                              : Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                  decoration: BoxDecoration(
-                                    color: c.accent,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text('$filterCount', style: ManeType.label(9, color: c.onAccent)),
-                                ),
-                        ),
-                        const SizedBox(width: 8),
-                        GlassIconButton(
-                          icon: Icons.settings_outlined,
-                          tooltip: l10n.settings,
-                          onTap: () => Navigator.of(
-                            context,
-                          ).push(MaterialPageRoute<void>(builder: (_) => const SettingsPage())),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: FadeThrough(
-                      animation: _swap,
-                      child: IndexedStack(
-                        index: _index,
-                        children: const [TodayScreen(), WeekScreen(), CalendarPage()],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(16, 8, 16, 12 + MediaQuery.paddingOf(context).bottom),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: ManeNavBar(
-                            index: _index,
-                            onSelected: _selectTab,
-                            items: [
-                              (icon: Icons.today_outlined, selectedIcon: Icons.today, label: l10n.today),
-                              (
-                                icon: Icons.calendar_view_week_outlined,
-                                selectedIcon: Icons.calendar_view_week,
-                                label: l10n.week,
-                              ),
-                              (
-                                icon: Icons.calendar_month_outlined,
-                                selectedIcon: Icons.calendar_month,
-                                label: l10n.calendar,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        ManeAddButton(
-                          tooltip: l10n.addEntry,
-                          onTap: () => showEntryEditor(context, spaces: spaces),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final desktop = constraints.maxWidth >= 900;
+                  final content = _shellContent(context, settings, spaces, c, desktop);
+                  if (!desktop) return content;
+                  final rail = _SideRail(
+                    index: _index,
+                    items: _destinations,
+                    settings: settings,
+                    onSelected: _selectTab,
+                    onAdd: () => showEntryEditor(context, spaces: spaces),
+                    onSettings: _openSettings,
+                    onSearch: _openSearch,
+                    onFilter: () => showTagFilterSheet(context),
+                  );
+                  return Row(
+                    children: settings.navSide == ManeNavSide.right
+                        ? [Expanded(child: content), rail]
+                        : [rail, Expanded(child: content)],
+                  );
+                },
               ),
             ),
           ),
@@ -293,7 +246,287 @@ class _AppShellState extends ConsumerState<AppShell>
     );
   }
 
+  Widget _shellContent(
+    BuildContext context,
+    AppSettings settings,
+    List<Space> spaces,
+    ManeColors c,
+    bool desktop,
+  ) {
+    final l10n = context.l10n;
+    final filterCount = ref.watch(tagFilterProvider).length;
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(desktop ? 20 : 18, 10, 16, 6),
+          child: Row(
+            children: [
+              if (!desktop) ...[
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(13)),
+                  child: Icon(Icons.event_note, size: 21, color: c.onAccent),
+                ),
+                const SizedBox(width: 10),
+                Text(l10n.appName, style: ManeType.headline(21, color: c.text)),
+              ],
+              const Spacer(),
+              GlassIconButton(icon: Icons.search, tooltip: l10n.search, onTap: _openSearch),
+              const SizedBox(width: 8),
+              GlassIconButton(
+                icon: filterCount > 0 ? Icons.filter_alt : Icons.filter_alt_outlined,
+                tooltip: l10n.filterByTag,
+                onTap: () => showTagFilterSheet(context),
+                badge: filterCount == 0
+                    ? null
+                    : Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(8)),
+                        child: Text('$filterCount', style: ManeType.label(9, color: c.onAccent)),
+                      ),
+              ),
+              if (!desktop) ...[
+                const SizedBox(width: 8),
+                GlassIconButton(icon: Icons.settings_outlined, tooltip: l10n.settings, onTap: _openSettings),
+              ],
+            ],
+          ),
+        ),
+        Expanded(
+          child: FadeThrough(
+            animation: _swap,
+            child: IndexedStack(
+              index: _index,
+              children: const [
+                TodayScreen(),
+                SpaceOverviewPage(spaceId: 'work'),
+                SpaceOverviewPage(spaceId: 'home'),
+                SpaceOverviewPage(spaceId: 'personal'),
+                PlanPage(),
+                StatsPage(),
+              ],
+            ),
+          ),
+        ),
+        if (!desktop)
+          Padding(
+            padding: EdgeInsets.fromLTRB(10, 8, 10, 10 + MediaQuery.paddingOf(context).bottom),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ManeNavBar(
+                    index: _index,
+                    onSelected: _selectTab,
+                    items: [
+                      for (final item in _destinations)
+                        (
+                          icon: item.icon,
+                          selectedIcon: item.selectedIcon,
+                          label: _label(context, item.label),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ManeAddButton(
+                  tooltip: l10n.addEntry,
+                  onTap: () => showEntryEditor(context, spaces: spaces),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _openSettings() {
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SettingsPage()));
+  }
+
   void _openSearch() {
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SearchPage()));
+  }
+
+  static String _label(BuildContext context, _Label label) => switch (label) {
+    _Label.today => context.l10n.todayTab,
+    _Label.work => context.l10n.workTab,
+    _Label.home => context.l10n.homeTab,
+    _Label.personal => context.l10n.personalTab,
+    _Label.plan => context.l10n.planTab,
+    _Label.stats => context.l10n.statsTab,
+  };
+}
+
+enum _Label { today, work, home, personal, plan, stats }
+
+class _Destination {
+  const _Destination({required this.label, required this.icon, required this.selectedIcon});
+
+  final _Label label;
+  final IconData icon;
+  final IconData selectedIcon;
+}
+
+class _SideRail extends StatelessWidget {
+  const _SideRail({
+    required this.index,
+    required this.items,
+    required this.settings,
+    required this.onSelected,
+    required this.onAdd,
+    required this.onSettings,
+    required this.onSearch,
+    required this.onFilter,
+  });
+
+  final int index;
+  final List<_Destination> items;
+  final AppSettings settings;
+  final ValueChanged<int> onSelected;
+  final VoidCallback onAdd;
+  final VoidCallback onSettings;
+  final VoidCallback onSearch;
+  final VoidCallback onFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.mc;
+    final l10n = context.l10n;
+    return Container(
+      width: 236,
+      margin: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      decoration: BoxDecoration(
+        color: c.navBg,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: c.border),
+        boxShadow: [BoxShadow(color: c.shadow, blurRadius: 26, offset: const Offset(0, 12))],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 12, 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(13)),
+                  child: Icon(Icons.event_note, size: 21, color: c.onAccent),
+                ),
+                const SizedBox(width: 10),
+                Text(l10n.appName, style: ManeType.headline(20, color: c.text)),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: onSearch,
+                    icon: const Icon(Icons.search, size: 18),
+                    label: Text(l10n.search),
+                  ),
+                ),
+                IconButton(
+                  onPressed: onFilter,
+                  tooltip: l10n.filterByTag,
+                  icon: const Icon(Icons.filter_alt_outlined, size: 19),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              children: [
+                for (var itemIndex = 0; itemIndex < items.length; itemIndex++)
+                  _RailItem(
+                    item: items[itemIndex],
+                    selected: itemIndex == index,
+                    onTap: () => onSelected(itemIndex),
+                  ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: onAdd,
+                icon: const Icon(Icons.add, size: 19),
+                label: Text(l10n.addEntry),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
+            child: _RailItem(
+              item: const _Destination(
+                label: _Label.stats,
+                icon: Icons.settings_outlined,
+                selectedIcon: Icons.settings,
+              ),
+              labelOverride: l10n.settings,
+              selected: false,
+              onTap: onSettings,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RailItem extends StatelessWidget {
+  const _RailItem({required this.item, required this.selected, required this.onTap, this.labelOverride});
+
+  final _Destination item;
+  final bool selected;
+  final VoidCallback onTap;
+  final String? labelOverride;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.mc;
+    final label = labelOverride ?? _AppShellState._label(context, item.label);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Pressable(
+        onTap: onTap,
+        semanticButton: true,
+        semanticLabel: label,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? c.accentSoft : Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+            border: selected ? Border.all(color: c.accent.withValues(alpha: 0.2)) : null,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                selected ? item.selectedIcon : item.icon,
+                size: 20,
+                color: selected ? c.accent : c.textSecondary,
+              ),
+              const SizedBox(width: 11),
+              Text(
+                label,
+                style: ManeType.body(
+                  13,
+                  weight: selected ? FontWeight.w800 : FontWeight.w600,
+                  color: selected ? c.accent : c.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

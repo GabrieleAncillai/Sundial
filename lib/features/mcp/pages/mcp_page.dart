@@ -70,6 +70,13 @@ class McpPage extends ConsumerWidget {
                         }
                       : null,
                 ),
+                SettingsNavRow(
+                  icon: Icons.settings_ethernet,
+                  title: l10n.mcpPort,
+                  subtitle: l10n.mcpPortHint,
+                  value: '${settings.mcpPort}',
+                  onTap: () => _editPort(context, ref, settings.mcpPort),
+                ),
               ],
             ),
             SettingsSection(
@@ -81,12 +88,12 @@ class McpPage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SelectableText(
-                        'http://127.0.0.1:${McpServer.port}${McpServer.path}',
+                        'http://127.0.0.1:${settings.mcpPort}${McpServer.path}',
                         style: ManeType.body(13, weight: FontWeight.w700, color: context.mc.text),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        settings.mcpEnabled ? l10n.mcpRunning(McpServer.port) : l10n.mcpStopped,
+                        settings.mcpEnabled ? l10n.mcpRunning(settings.mcpPort) : l10n.mcpStopped,
                         style: ManeType.body(
                           11.5,
                           color: settings.mcpEnabled ? context.mc.success : context.mc.textSecondary,
@@ -176,5 +183,35 @@ class McpPage extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _editPort(BuildContext context, WidgetRef ref, int current) async {
+    final l10n = context.l10n;
+    final controller = TextEditingController(text: '$current');
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.mcpPort),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(labelText: l10n.mcpPort, helperText: l10n.mcpPortHint),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text(l10n.cancel)),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            child: Text(l10n.applyPort),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    final parsed = int.tryParse(result?.trim() ?? '');
+    if (parsed == null || parsed < 1024 || parsed > 65535) return;
+    await ref.read(settingsProvider.notifier).setMcpPort(parsed);
+    await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.portSaved)));
   }
 }

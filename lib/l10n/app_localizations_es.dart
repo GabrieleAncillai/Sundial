@@ -752,10 +752,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get slotLabel => 'Etiqueta';
 
   @override
-  String get startTime => 'Inicio';
+  String get startTime => 'Hora de inicio';
 
   @override
-  String get endTime => 'Fin';
+  String get endTime => 'Hora de fin';
 
   @override
   String get exceptions => 'Excepciones de fecha';
@@ -818,7 +818,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get shiftChecklistSubtitle => 'Tareas para marcar en cada turno de este patrón.';
 
   @override
-  String get addChecklistItem => 'Añadir tarea';
+  String get addChecklistItem => 'Añadir elemento';
 
   @override
   String get checklistItemLabel => 'Tarea de la lista';
@@ -952,7 +952,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get neverReached => 'Todavía sin conexión';
 
   @override
-  String get refreshDevices => 'Actualizar';
+  String get refreshDevices => 'Actualizar dispositivos';
 
   @override
   String remoteToday(int entries, int shifts) {
@@ -1184,44 +1184,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gymmaneImportEmpty => 'El respaldo no contiene un plan semanal.';
 
   @override
-  String get appLock => 'Bloqueo de la app';
-
-  @override
-  String get appLockSubtitle => 'Pide un PIN al abrir la app.';
-
-  @override
-  String get appLockPinTitle => 'Elige un PIN';
-
-  @override
-  String get appLockPinRepeat => 'Repite el PIN';
-
-  @override
-  String get appLockPinMismatch => 'Los PIN no coinciden.';
-
-  @override
-  String get appLockUnlockTitle => 'Introduce tu PIN';
-
-  @override
-  String get appLockUnlockSubtitle => 'Desbloquea Mane';
-
-  @override
-  String get appLockWrong => 'PIN incorrecto. Inténtalo de nuevo.';
-
-  @override
-  String appLockLockedOut(int seconds) {
-    return 'Demasiados intentos. Espera $seconds s.';
-  }
-
-  @override
-  String get appLockEnabled => 'Bloqueo activado.';
-
-  @override
-  String get appLockDisabled => 'Bloqueo desactivado.';
-
-  @override
-  String get appLockPinLength => 'Usa de 4 a 8 dígitos.';
-
-  @override
   String get purchaseHistory => 'Historial de compras';
 
   @override
@@ -1317,4 +1279,815 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get hoursWindow => 'Configurar franja';
+
+  @override
+  String get todayTab => 'Hoy';
+
+  @override
+  String get planTab => 'Plan';
+
+  @override
+  String get statsTab => 'Estadísticas';
+
+  @override
+  String get workTab => 'Trabajo';
+
+  @override
+  String get homeTab => 'Casa';
+
+  @override
+  String get personalTab => 'Personal';
+
+  @override
+  String get workSpace => 'Trabajo';
+
+  @override
+  String get homeSpace => 'Casa';
+
+  @override
+  String get personalSpace => 'Personal';
+
+  @override
+  String get jobs => 'Trabajos';
+
+  @override
+  String get homes => 'Casas';
+
+  @override
+  String get peopleAndGroups => 'Personas y grupos';
+
+  @override
+  String get projectsSection => 'Proyectos';
+
+  @override
+  String get householdSection => 'Hogar';
+
+  @override
+  String get tasksSection => 'Tareas';
+
+  @override
+  String get habitsSection => 'Hábitos';
+
+  @override
+  String get gadgetsSection => 'Aparatos';
+
+  @override
+  String get inventorySection => 'Inventario';
+
+  @override
+  String get shoppingSection => 'Compra';
+
+  @override
+  String get newJob => 'Nuevo trabajo';
+
+  @override
+  String get editJob => 'Editar trabajo';
+
+  @override
+  String get newHome => 'Nueva casa';
+
+  @override
+  String get editHome => 'Editar casa';
+
+  @override
+  String get newPerson => 'Nueva persona o grupo';
+
+  @override
+  String get editPerson => 'Editar persona o grupo';
+
+  @override
+  String get newProject => 'Nuevo proyecto';
+
+  @override
+  String get editProject => 'Editar proyecto';
+
+  @override
+  String get jobName => 'Nombre del trabajo';
+
+  @override
+  String get homeName => 'Nombre de la casa';
+
+  @override
+  String get personName => 'Nombre';
+
+  @override
+  String get projectName => 'Nombre del proyecto';
+
+  @override
+  String get projectDescription => 'Descripción (opcional)';
+
+  @override
+  String get name => 'Nombre';
+
+  @override
+  String get descriptionOptional => 'Descripción (opcional)';
+
+  @override
+  String get icon => 'Icono';
+
+  @override
+  String get color => 'Color';
+
+  @override
+  String get image => 'Imagen';
+
+  @override
+  String get chooseIcon => 'Elegir un icono';
+
+  @override
+  String get searchIcons => 'Buscar iconos';
+
+  @override
+  String get noIconsFound => 'Ningún icono coincide con la búsqueda.';
+
+  @override
+  String get recommendedIcons => 'Sugeridos';
+
+  @override
+  String get allIcons => 'Todos los iconos';
+
+  @override
+  String get chooseImage => 'Elegir imagen';
+
+  @override
+  String get changeImage => 'Cambiar imagen';
+
+  @override
+  String get removeImage => 'Quitar imagen';
+
+  @override
+  String get createJob => 'Crear trabajo';
+
+  @override
+  String get createHome => 'Crear casa';
+
+  @override
+  String get createPerson => 'Crear persona o grupo';
+
+  @override
+  String get createProject => 'Crear proyecto';
+
+  @override
+  String get noJobs => 'Todavía no hay trabajos.';
+
+  @override
+  String get noJobsHint => 'Añade un trabajo para agrupar sus turnos, proyectos y tareas.';
+
+  @override
+  String get noHomes => 'Todavía no hay casas.';
+
+  @override
+  String get noHomesHint => 'Añade una casa para organizar inventario, aparatos y proyectos.';
+
+  @override
+  String get noPeople => 'Todavía no hay personas o grupos.';
+
+  @override
+  String get noPeopleHint => 'Usa proyectos para separar el tiempo con cada persona.';
+
+  @override
+  String get noProjects => 'Todavía no hay proyectos.';
+
+  @override
+  String get noProjectsHint => 'Los proyectos agrupan tareas afines sin crear otro espacio.';
+
+  @override
+  String get noHabits => 'Todavía no hay hábitos.';
+
+  @override
+  String get noHabitsHint => 'Añade un hábito para seguir una rutina personal.';
+
+  @override
+  String get noTasks => 'Aquí todavía no hay nada.';
+
+  @override
+  String get noTasksHint => 'Añade una tarea desde esta pantalla o desde Hoy.';
+
+  @override
+  String get upcomingTasks => 'Próximas';
+
+  @override
+  String get openTasks => 'Tareas abiertas';
+
+  @override
+  String get overdueTasks => 'Atrasadas';
+
+  @override
+  String get unscheduledTasks => 'Cuando quieras';
+
+  @override
+  String taskCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tareas',
+      one: '1 tarea',
+      zero: 'Sin tareas',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String projectCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count proyectos',
+      one: '1 proyecto',
+      zero: 'Sin proyectos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String habitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hábitos',
+      one: '1 hábito',
+      zero: 'Sin hábitos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String addTaskFor(String name) {
+    return 'Añadir una tarea para $name';
+  }
+
+  @override
+  String get jobSummary => 'Turnos, listas y proyectos de trabajo';
+
+  @override
+  String get homeSummary => 'Inventario, aparatos y proyectos del hogar';
+
+  @override
+  String get personalSummary => 'Proyectos, hábitos y gestiones personales';
+
+  @override
+  String get manageJobs => 'Gestionar trabajos';
+
+  @override
+  String get manageHomes => 'Gestionar casas';
+
+  @override
+  String get managePeople => 'Gestionar personas y grupos';
+
+  @override
+  String get noContextsYet => 'Crea uno para empezar.';
+
+  @override
+  String get addFirstContext => 'Crear el primero';
+
+  @override
+  String get shiftChecklists => 'Listas de turno';
+
+  @override
+  String checklistForDay(int day) {
+    return 'Lista del día $day';
+  }
+
+  @override
+  String get allDays => 'Todos los días';
+
+  @override
+  String get checklistItemHint => '¿Qué hay que hacer?';
+
+  @override
+  String get reorderChecklistHint => 'Arrastra para ordenar. Cada día puede tener una lista distinta.';
+
+  @override
+  String get addProject => 'Añadir proyecto';
+
+  @override
+  String get addHabit => 'Añadir hábito';
+
+  @override
+  String get editHabit => 'Editar hábito';
+
+  @override
+  String get habitName => 'Nombre del hábito';
+
+  @override
+  String get targetPerWeek => 'Objetivo semanal';
+
+  @override
+  String timesPerWeek(int count) {
+    return '$count× por semana';
+  }
+
+  @override
+  String streakDays(int count) {
+    return 'Racha de $count días';
+  }
+
+  @override
+  String get thisWeek => 'Esta semana';
+
+  @override
+  String get markHabitDone => 'Marcar hecho';
+
+  @override
+  String get habitDone => 'Hecho hoy';
+
+  @override
+  String get addGadget => 'Añadir aparato';
+
+  @override
+  String get gadgetName => 'Nombre del aparato';
+
+  @override
+  String get maintenanceIntervalDays => 'Días entre revisiones';
+
+  @override
+  String nextDue(String date) {
+    return 'Próxima: $date';
+  }
+
+  @override
+  String deleteContextQuestion(String name) {
+    return '¿Eliminar $name?';
+  }
+
+  @override
+  String get deleteContextBody => 'Sus tareas y notas siguen en tu plan, pero pierden esta agrupación.';
+
+  @override
+  String get deleteProjectQuestion => '¿Eliminar este proyecto?';
+
+  @override
+  String get deleteProjectBody => 'Las tareas conservan su espacio y contexto.';
+
+  @override
+  String get listView => 'Lista';
+
+  @override
+  String get timelineView => 'Horario';
+
+  @override
+  String get progressToday => 'Progreso de hoy';
+
+  @override
+  String doneOfTotal(int done, int total) {
+    return '$done de $total hechas';
+  }
+
+  @override
+  String get allDone => 'Todo lo de hoy está hecho.';
+
+  @override
+  String tasksLeft(int count) {
+    return 'Quedan $count para hoy';
+  }
+
+  @override
+  String get clockIn => 'Fichar entrada';
+
+  @override
+  String get clockOut => 'Fichar salida';
+
+  @override
+  String get clockedIn => 'En marcha';
+
+  @override
+  String get trackedTime => 'Registrado';
+
+  @override
+  String trackedTimeValue(String duration) {
+    return '$duration registrado';
+  }
+
+  @override
+  String get deadline => 'Fecha límite';
+
+  @override
+  String dueIn(String time) {
+    return 'Vence en $time';
+  }
+
+  @override
+  String get overdue => 'Atrasada';
+
+  @override
+  String get anytime => 'Cuando sea';
+
+  @override
+  String get priority => 'Prioridad';
+
+  @override
+  String get priorityNone => 'Sin prioridad';
+
+  @override
+  String get priorityLow => 'Baja';
+
+  @override
+  String get priorityMedium => 'Media';
+
+  @override
+  String get priorityHigh => 'Alta';
+
+  @override
+  String get completeTask => 'Completar tarea';
+
+  @override
+  String get reopenTask => 'Reabrir tarea';
+
+  @override
+  String get plan => 'Plan';
+
+  @override
+  String get month => 'Mes';
+
+  @override
+  String get day => 'Día';
+
+  @override
+  String get collapseCalendar => 'Contraer calendario';
+
+  @override
+  String get expandCalendar => 'Expandir calendario';
+
+  @override
+  String get desktopWeekHint =>
+      'Arrastra los bloques para moverlos, el borde inferior para cambiar la duración o un hueco vacío para crear.';
+
+  @override
+  String createEntryAt(String time) {
+    return 'Crear a las $time';
+  }
+
+  @override
+  String get entryMoved => 'Entrada movida.';
+
+  @override
+  String couldNotMoveEntry(String error) {
+    return 'No se pudo mover la entrada: $error';
+  }
+
+  @override
+  String get stats => 'Estadísticas';
+
+  @override
+  String get overview => 'Resumen';
+
+  @override
+  String get completionRate => 'Tasa de finalización';
+
+  @override
+  String get tasksCompleted => 'Tareas completadas';
+
+  @override
+  String get overdueDeadlines => 'Fechas límite atrasadas';
+
+  @override
+  String get bySpace => 'Por espacio';
+
+  @override
+  String get byProject => 'Por proyecto';
+
+  @override
+  String get byDay => 'Por día';
+
+  @override
+  String get habitConsistency => 'Constancia de hábitos';
+
+  @override
+  String get rangeWeek => 'Semana';
+
+  @override
+  String get rangeMonth => 'Mes';
+
+  @override
+  String get rangeQuarter => 'Trimestre';
+
+  @override
+  String get rangeYear => 'Año';
+
+  @override
+  String get exportReport => 'Exportar informe';
+
+  @override
+  String get exportSummaryReport => 'Informe resumido (PDF)';
+
+  @override
+  String get exportDetailedReport => 'Informe detallado (PDF)';
+
+  @override
+  String get exportReportCsv => 'Informe (CSV)';
+
+  @override
+  String get reportExported => 'Informe guardado.';
+
+  @override
+  String reportFailed(String error) {
+    return 'No se pudo exportar el informe: $error';
+  }
+
+  @override
+  String get totalTracked => 'Total registrado';
+
+  @override
+  String get shareOfTotal => 'Porcentaje';
+
+  @override
+  String get noTrackedTime => 'No hay tiempo registrado en este rango.';
+
+  @override
+  String get completed => 'Completadas';
+
+  @override
+  String get openLabel => 'Abiertas';
+
+  @override
+  String get deadlineLoad => 'Fechas límite';
+
+  @override
+  String get settingsSearch => 'Buscar ajustes';
+
+  @override
+  String get generalSection => 'General';
+
+  @override
+  String get noSettingsFound => 'Ningún ajuste coincide con la búsqueda.';
+
+  @override
+  String get appearanceSubtitle => 'Tema, color, fondo y tamaño del texto';
+
+  @override
+  String get preferencesSubtitle => 'Idioma, fechas, horarios y recordatorios';
+
+  @override
+  String get dataSubtitle => 'Copias, calendarios, CSV y datos locales';
+
+  @override
+  String get onlineSubtitle => 'Emparejar dispositivos y ejecutar el MCP local';
+
+  @override
+  String get themeAero => 'Aero';
+
+  @override
+  String get colorScheme => 'Esquema de color';
+
+  @override
+  String get schemeSage => 'Salvia';
+
+  @override
+  String get schemeOcean => 'Océano';
+
+  @override
+  String get schemeSunset => 'Atardecer';
+
+  @override
+  String get schemeViolet => 'Violeta';
+
+  @override
+  String get schemeMono => 'Monocromo';
+
+  @override
+  String get background => 'Fondo';
+
+  @override
+  String get backgroundDots => 'Puntos';
+
+  @override
+  String get backgroundGrid => 'Cuadrícula';
+
+  @override
+  String get backgroundOled => 'Negro OLED';
+
+  @override
+  String get backgroundPlain => 'Liso';
+
+  @override
+  String get backgroundCustom => 'Personalizado';
+
+  @override
+  String get customBackgroundColor => 'Color personalizado';
+
+  @override
+  String get textSize => 'Tamaño del texto';
+
+  @override
+  String get textSmall => 'Pequeño';
+
+  @override
+  String get textDefault => 'Predeterminado';
+
+  @override
+  String get textLarge => 'Grande';
+
+  @override
+  String get textExtraLarge => 'Muy grande';
+
+  @override
+  String get navigationSide => 'Lado de la navegación';
+
+  @override
+  String get navLeft => 'Izquierda';
+
+  @override
+  String get navRight => 'Derecha';
+
+  @override
+  String get dateFormatLabel => 'Formato de fecha';
+
+  @override
+  String get dateFormatSystem => 'Sistema';
+
+  @override
+  String get dateFormatDmy => 'Día / mes / año';
+
+  @override
+  String get dateFormatMdy => 'Mes / día / año';
+
+  @override
+  String get dateFormatYmd => 'Año / mes / día';
+
+  @override
+  String get performanceMode => 'Modo rendimiento';
+
+  @override
+  String get performanceModeSubtitle => 'Reduce desenfoque, sombras y animaciones largas.';
+
+  @override
+  String get preferencesSection => 'Preferencias';
+
+  @override
+  String get dataSection => 'Datos y copias';
+
+  @override
+  String get onlineSection => 'Funciones en línea';
+
+  @override
+  String get onlineEnable => 'Activar funciones en línea';
+
+  @override
+  String get onlineEnableSubtitle =>
+      'Sincronización LAN y MCP local. Desactivado por defecto; el planificador funciona sin ellas.';
+
+  @override
+  String get devicesAndSync => 'Dispositivos y sincronización';
+
+  @override
+  String get devicesAndSyncSubtitle => 'Busca dispositivos en esta red y empareja.';
+
+  @override
+  String get mcpServer => 'Servidor MCP';
+
+  @override
+  String get mcpPort => 'Puerto';
+
+  @override
+  String get mcpPortHint => 'Puerto local entre 1024 y 65535.';
+
+  @override
+  String get applyPort => 'Aplicar puerto';
+
+  @override
+  String get portSaved => 'Puerto MCP guardado. Reinicia el endpoint para aplicarlo.';
+
+  @override
+  String get deleteAllData => 'Eliminar todos los datos';
+
+  @override
+  String get deleteAllDataSubtitle =>
+      'Quita el plan, dispositivos, enlaces de copia y ajustes de este dispositivo.';
+
+  @override
+  String get deleteAllDataQuestion => '¿Eliminar todos los datos locales?';
+
+  @override
+  String get deleteAllDataBody => 'No se puede deshacer. Los archivos exportados no se borran.';
+
+  @override
+  String get dataDeleted => 'Datos locales eliminados.';
+
+  @override
+  String get nearbyDevices => 'Dispositivos cercanos';
+
+  @override
+  String get scanningDevices => 'Buscando dispositivos Mane en esta red…';
+
+  @override
+  String get noNearbyDevices =>
+      'No se han encontrado dispositivos Mane. Asegúrate de que el otro dispositivo tiene las funciones en línea activadas.';
+
+  @override
+  String pairWithDevice(String name) {
+    return 'Emparejar con $name';
+  }
+
+  @override
+  String get pairCode => 'Código de emparejamiento';
+
+  @override
+  String get pairCodeHint => 'Introduce el código de seis dígitos del otro dispositivo.';
+
+  @override
+  String pairingWith(String name) {
+    return 'Emparejando con $name';
+  }
+
+  @override
+  String get syncExplainer =>
+      'Mane encuentra tus otros dispositivos en la red local. El emparejamiento guarda una clave compartida una sola vez, así que cambiar de red o de IP no rompe el vínculo. La sincronización es de solo lectura y nunca sustituye tu plan local.';
+
+  @override
+  String get pairSuccess => 'Dispositivo emparejado.';
+
+  @override
+  String pairFailed(String error) {
+    return 'No se pudo emparejar: $error';
+  }
+
+  @override
+  String get timing => 'Horario';
+
+  @override
+  String get timingScheduled => 'Programada';
+
+  @override
+  String get timingClockIn => 'Fichar';
+
+  @override
+  String get timingDeadline => 'Fecha límite';
+
+  @override
+  String get timingAnytime => 'Cuando sea';
+
+  @override
+  String get timingScheduledHint => 'Empieza y termina a una hora fija.';
+
+  @override
+  String get timingClockInHint => 'Ficha al empezar; la salida registra el fin.';
+
+  @override
+  String get timingDeadlineHint => 'Puede hacerse en cualquier momento hasta la fecha límite.';
+
+  @override
+  String get timingAnytimeHint => 'Sin hora fija. Complétala cuando esté.';
+
+  @override
+  String get context => 'Trabajo, casa o persona';
+
+  @override
+  String get noContext => 'Sin trabajo, casa o persona';
+
+  @override
+  String get noProject => 'Sin proyecto';
+
+  @override
+  String get project => 'Proyecto';
+
+  @override
+  String get categories => 'Categorías';
+
+  @override
+  String get addCategory => 'Añadir categoría';
+
+  @override
+  String get editCategory => 'Editar categoría';
+
+  @override
+  String get categoryName => 'Nombre de la categoría';
+
+  @override
+  String get noCategories => 'Todavía no hay categorías.';
+
+  @override
+  String get stickerImage => 'Imagen';
+
+  @override
+  String get pickImage => 'Elegir una imagen';
+
+  @override
+  String get zoomHint => 'Pellizca o desplaza para ampliar y arrastra para encuadrar el cuadrado.';
+
+  @override
+  String get tolerance => 'Tolerancia del fondo';
+
+  @override
+  String get outline => 'Borde blanco de pegatina';
+
+  @override
+  String get outlineWidth => 'Grosor del borde';
+
+  @override
+  String get reset => 'Restablecer';
+
+  @override
+  String get useImage => 'Usar imagen';
+
+  @override
+  String get noImage => 'No hay imagen seleccionada.';
+
+  @override
+  String get imageError => 'No se pudo cargar la imagen.';
+
+  @override
+  String get choosePhotoOrIcon => 'Elige una foto o usa un icono';
+
+  @override
+  String get mediaHint => 'Recorta la imagen, quita un fondo liso y añade un borde blanco de pegatina.';
 }

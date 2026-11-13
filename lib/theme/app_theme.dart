@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../models/app_settings.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
 
@@ -9,6 +10,30 @@ class ManeTheme {
 
   static ThemeData get light => _build(Brightness.light, ManeColors.light);
   static ThemeData get dark => _build(Brightness.dark, ManeColors.dark);
+
+  static ThemeData forSettings(AppSettings settings, Brightness brightness) {
+    final aero = settings.isAero;
+    final effective = aero ? Brightness.light : brightness;
+    final base = aero
+        ? ManeColors.aero
+        : effective == Brightness.dark
+        ? ManeColors.dark
+        : ManeColors.light;
+    final accent = _accentFor(settings.accentScheme, effective, aero: aero);
+    return _build(effective, base.withAccent(accent));
+  }
+
+  static Color _accentFor(ManeAccentScheme scheme, Brightness brightness, {required bool aero}) {
+    if (aero) return ManeColors.aero.accent;
+    final dark = brightness == Brightness.dark;
+    return switch (scheme) {
+      ManeAccentScheme.sage => dark ? const Color(0xFF8FB39D) : const Color(0xFF4F6D5A),
+      ManeAccentScheme.ocean => dark ? const Color(0xFF82B1FF) : const Color(0xFF2D6CDF),
+      ManeAccentScheme.sunset => dark ? const Color(0xFFE89A7B) : const Color(0xFFC25B3F),
+      ManeAccentScheme.violet => dark ? const Color(0xFFB6A2FF) : const Color(0xFF6E52D8),
+      ManeAccentScheme.mono => dark ? const Color(0xFFD0D0D0) : const Color(0xFF444444),
+    };
+  }
 
   static SystemUiOverlayStyle systemBars(Brightness brightness) {
     final icons = brightness == Brightness.dark ? Brightness.light : Brightness.dark;

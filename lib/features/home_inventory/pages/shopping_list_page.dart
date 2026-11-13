@@ -12,14 +12,22 @@ import '../low_stock.dart';
 import '../widgets/shopping_item_sheet.dart';
 
 class ShoppingListPage extends ConsumerWidget {
-  const ShoppingListPage({super.key});
+  const ShoppingListPage({super.key, this.contextId});
+
+  final String? contextId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final c = context.mc;
-    final items = ref.watch(shoppingItemsProvider).value ?? const <ShoppingItem>[];
-    final homeItems = ref.watch(homeItemsProvider).value ?? const <HomeItem>[];
+    final allItems = ref.watch(shoppingItemsProvider).value ?? const <ShoppingItem>[];
+    final items = contextId == null
+        ? allItems
+        : allItems.where((item) => item.contextId == contextId).toList();
+    final allHomeItems = ref.watch(homeItemsProvider).value ?? const <HomeItem>[];
+    final homeItems = contextId == null
+        ? allHomeItems
+        : allHomeItems.where((item) => item.contextId == contextId).toList();
     final homeById = {for (final item in homeItems) item.id: item};
     final lowStock = homeItems.where((item) => item.isLowStock).toList();
     final available = items.where((item) => !item.checked).toList();
@@ -32,7 +40,7 @@ class ShoppingListPage extends ConsumerWidget {
       subtitle: items.isEmpty ? null : l10n.shoppingProgress(done, items.length),
       floatingAction: ManeAddButton(
         tooltip: l10n.addShoppingItem,
-        onTap: () => showShoppingItemSheet(context),
+        onTap: () => showShoppingItemSheet(context, contextId: contextId),
       ),
       child: ListView(
         padding: const EdgeInsets.only(bottom: 88),
@@ -82,7 +90,7 @@ class ShoppingListPage extends ConsumerWidget {
               title: l10n.shoppingListEmpty,
               message: l10n.shoppingListSubtitle,
               action: FilledButton.tonalIcon(
-                onPressed: () => showShoppingItemSheet(context),
+                onPressed: () => showShoppingItemSheet(context, contextId: contextId),
                 icon: const Icon(Icons.add, size: 18),
                 label: Text(l10n.addShoppingItem),
               ),
@@ -109,7 +117,8 @@ class ShoppingListPage extends ConsumerWidget {
                           homeName: homeById[group.items[index].homeItemId]?.name,
                           onChecked: (value) =>
                               ref.read(repositoryProvider).setShoppingChecked(group.items[index].id, value),
-                          onEdit: () => showShoppingItemSheet(context, item: group.items[index]),
+                          onEdit: () =>
+                              showShoppingItemSheet(context, item: group.items[index], contextId: contextId),
                           onDelete: () =>
                               ref.read(repositoryProvider).deleteShoppingItem(group.items[index].id),
                           onMoveUp: index == 0
@@ -147,7 +156,8 @@ class ShoppingListPage extends ConsumerWidget {
                         homeName: homeById[bought[index].homeItemId]?.name,
                         onChecked: (value) =>
                             ref.read(repositoryProvider).setShoppingChecked(bought[index].id, value),
-                        onEdit: () => showShoppingItemSheet(context, item: bought[index]),
+                        onEdit: () =>
+                            showShoppingItemSheet(context, item: bought[index], contextId: contextId),
                         onDelete: () => ref.read(repositoryProvider).deleteShoppingItem(bought[index].id),
                       ),
                     ],

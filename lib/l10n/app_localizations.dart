@@ -1421,13 +1421,13 @@ abstract class AppLocalizations {
   /// No description provided for @startTime.
   ///
   /// In en, this message translates to:
-  /// **'Start'**
+  /// **'Start time'**
   String get startTime;
 
   /// No description provided for @endTime.
   ///
   /// In en, this message translates to:
-  /// **'End'**
+  /// **'End time'**
   String get endTime;
 
   /// No description provided for @exceptions.
@@ -1553,7 +1553,7 @@ abstract class AppLocalizations {
   /// No description provided for @addChecklistItem.
   ///
   /// In en, this message translates to:
-  /// **'Add item'**
+  /// **'Add checklist item'**
   String get addChecklistItem;
 
   /// No description provided for @checklistItemLabel.
@@ -1769,7 +1769,7 @@ abstract class AppLocalizations {
   /// No description provided for @noPairedDevices.
   ///
   /// In en, this message translates to:
-  /// **'No devices paired yet.'**
+  /// **'No paired devices yet.'**
   String get noPairedDevices;
 
   /// No description provided for @unpair.
@@ -1805,7 +1805,7 @@ abstract class AppLocalizations {
   /// No description provided for @refreshDevices.
   ///
   /// In en, this message translates to:
-  /// **'Refresh'**
+  /// **'Refresh devices'**
   String get refreshDevices;
 
   /// No description provided for @remoteToday.
@@ -2204,78 +2204,6 @@ abstract class AppLocalizations {
   /// **'The backup has no weekly plan.'**
   String get gymmaneImportEmpty;
 
-  /// No description provided for @appLock.
-  ///
-  /// In en, this message translates to:
-  /// **'App lock'**
-  String get appLock;
-
-  /// No description provided for @appLockSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Ask for a PIN when the app opens.'**
-  String get appLockSubtitle;
-
-  /// No description provided for @appLockPinTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a PIN'**
-  String get appLockPinTitle;
-
-  /// No description provided for @appLockPinRepeat.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat the PIN'**
-  String get appLockPinRepeat;
-
-  /// No description provided for @appLockPinMismatch.
-  ///
-  /// In en, this message translates to:
-  /// **'The PINs do not match.'**
-  String get appLockPinMismatch;
-
-  /// No description provided for @appLockUnlockTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your PIN'**
-  String get appLockUnlockTitle;
-
-  /// No description provided for @appLockUnlockSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Unlock Mane'**
-  String get appLockUnlockSubtitle;
-
-  /// No description provided for @appLockWrong.
-  ///
-  /// In en, this message translates to:
-  /// **'Wrong PIN. Try again.'**
-  String get appLockWrong;
-
-  /// No description provided for @appLockLockedOut.
-  ///
-  /// In en, this message translates to:
-  /// **'Too many attempts. Wait {seconds}s.'**
-  String appLockLockedOut(int seconds);
-
-  /// No description provided for @appLockEnabled.
-  ///
-  /// In en, this message translates to:
-  /// **'App lock is on.'**
-  String get appLockEnabled;
-
-  /// No description provided for @appLockDisabled.
-  ///
-  /// In en, this message translates to:
-  /// **'App lock is off.'**
-  String get appLockDisabled;
-
-  /// No description provided for @appLockPinLength.
-  ///
-  /// In en, this message translates to:
-  /// **'Use four to eight digits.'**
-  String get appLockPinLength;
-
   /// No description provided for @purchaseHistory.
   ///
   /// In en, this message translates to:
@@ -2455,6 +2383,1500 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Set window'**
   String get hoursWindow;
+
+  /// No description provided for @todayTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todayTab;
+
+  /// No description provided for @planTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get planTab;
+
+  /// No description provided for @statsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats'**
+  String get statsTab;
+
+  /// No description provided for @workTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get workTab;
+
+  /// No description provided for @homeTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get homeTab;
+
+  /// No description provided for @personalTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal'**
+  String get personalTab;
+
+  /// No description provided for @workSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get workSpace;
+
+  /// No description provided for @homeSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get homeSpace;
+
+  /// No description provided for @personalSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal'**
+  String get personalSpace;
+
+  /// No description provided for @jobs.
+  ///
+  /// In en, this message translates to:
+  /// **'Jobs'**
+  String get jobs;
+
+  /// No description provided for @homes.
+  ///
+  /// In en, this message translates to:
+  /// **'Homes'**
+  String get homes;
+
+  /// No description provided for @peopleAndGroups.
+  ///
+  /// In en, this message translates to:
+  /// **'People & groups'**
+  String get peopleAndGroups;
+
+  /// No description provided for @projectsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects'**
+  String get projectsSection;
+
+  /// No description provided for @householdSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Household'**
+  String get householdSection;
+
+  /// No description provided for @tasksSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get tasksSection;
+
+  /// No description provided for @habitsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Habits'**
+  String get habitsSection;
+
+  /// No description provided for @gadgetsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Gadgets'**
+  String get gadgetsSection;
+
+  /// No description provided for @inventorySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get inventorySection;
+
+  /// No description provided for @shoppingSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get shoppingSection;
+
+  /// No description provided for @newJob.
+  ///
+  /// In en, this message translates to:
+  /// **'New job'**
+  String get newJob;
+
+  /// No description provided for @editJob.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit job'**
+  String get editJob;
+
+  /// No description provided for @newHome.
+  ///
+  /// In en, this message translates to:
+  /// **'New home'**
+  String get newHome;
+
+  /// No description provided for @editHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit home'**
+  String get editHome;
+
+  /// No description provided for @newPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'New person or group'**
+  String get newPerson;
+
+  /// No description provided for @editPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit person or group'**
+  String get editPerson;
+
+  /// No description provided for @newProject.
+  ///
+  /// In en, this message translates to:
+  /// **'New project'**
+  String get newProject;
+
+  /// No description provided for @editProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit project'**
+  String get editProject;
+
+  /// No description provided for @jobName.
+  ///
+  /// In en, this message translates to:
+  /// **'Job name'**
+  String get jobName;
+
+  /// No description provided for @homeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Home name'**
+  String get homeName;
+
+  /// No description provided for @personName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get personName;
+
+  /// No description provided for @projectName.
+  ///
+  /// In en, this message translates to:
+  /// **'Project name'**
+  String get projectName;
+
+  /// No description provided for @projectDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get projectDescription;
+
+  /// No description provided for @name.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
+
+  /// No description provided for @descriptionOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get descriptionOptional;
+
+  /// No description provided for @icon.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get icon;
+
+  /// No description provided for @color.
+  ///
+  /// In en, this message translates to:
+  /// **'Colour'**
+  String get color;
+
+  /// No description provided for @image.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get image;
+
+  /// No description provided for @chooseIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an icon'**
+  String get chooseIcon;
+
+  /// No description provided for @searchIcons.
+  ///
+  /// In en, this message translates to:
+  /// **'Search icons'**
+  String get searchIcons;
+
+  /// No description provided for @noIconsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No icon matches that search.'**
+  String get noIconsFound;
+
+  /// No description provided for @recommendedIcons.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested'**
+  String get recommendedIcons;
+
+  /// No description provided for @allIcons.
+  ///
+  /// In en, this message translates to:
+  /// **'All icons'**
+  String get allIcons;
+
+  /// No description provided for @chooseImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose image'**
+  String get chooseImage;
+
+  /// No description provided for @changeImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Change image'**
+  String get changeImage;
+
+  /// No description provided for @removeImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove image'**
+  String get removeImage;
+
+  /// No description provided for @createJob.
+  ///
+  /// In en, this message translates to:
+  /// **'Create job'**
+  String get createJob;
+
+  /// No description provided for @createHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Create home'**
+  String get createHome;
+
+  /// No description provided for @createPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'Create person or group'**
+  String get createPerson;
+
+  /// No description provided for @createProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Create project'**
+  String get createProject;
+
+  /// No description provided for @noJobs.
+  ///
+  /// In en, this message translates to:
+  /// **'No jobs yet.'**
+  String get noJobs;
+
+  /// No description provided for @noJobsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a job to give its shifts, projects and tasks a home.'**
+  String get noJobsHint;
+
+  /// No description provided for @noHomes.
+  ///
+  /// In en, this message translates to:
+  /// **'No homes yet.'**
+  String get noHomes;
+
+  /// No description provided for @noHomesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a home to organise inventory, gadgets and house projects.'**
+  String get noHomesHint;
+
+  /// No description provided for @noPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'No people or groups yet.'**
+  String get noPeople;
+
+  /// No description provided for @noPeopleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use projects to keep time with different people separate.'**
+  String get noPeopleHint;
+
+  /// No description provided for @noProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'No projects yet.'**
+  String get noProjects;
+
+  /// No description provided for @noProjectsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects group related tasks without adding another space.'**
+  String get noProjectsHint;
+
+  /// No description provided for @noHabits.
+  ///
+  /// In en, this message translates to:
+  /// **'No habits yet.'**
+  String get noHabits;
+
+  /// No description provided for @noHabitsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a habit to track a personal routine.'**
+  String get noHabitsHint;
+
+  /// No description provided for @noTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet.'**
+  String get noTasks;
+
+  /// No description provided for @noTasksHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a task from this screen or from Today.'**
+  String get noTasksHint;
+
+  /// No description provided for @upcomingTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get upcomingTasks;
+
+  /// No description provided for @openTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Open tasks'**
+  String get openTasks;
+
+  /// No description provided for @overdueTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get overdueTasks;
+
+  /// No description provided for @unscheduledTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Anytime'**
+  String get unscheduledTasks;
+
+  /// No description provided for @taskCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0 {No tasks} =1 {1 task} other {{count} tasks}}'**
+  String taskCount(int count);
+
+  /// No description provided for @projectCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0 {No projects} =1 {1 project} other {{count} projects}}'**
+  String projectCount(int count);
+
+  /// No description provided for @habitCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0 {No habits} =1 {1 habit} other {{count} habits}}'**
+  String habitCount(int count);
+
+  /// No description provided for @addTaskFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a task for {name}'**
+  String addTaskFor(String name);
+
+  /// No description provided for @jobSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Shifts, checklists and work projects'**
+  String get jobSummary;
+
+  /// No description provided for @homeSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory, gadgets and household projects'**
+  String get homeSummary;
+
+  /// No description provided for @personalSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects, habits and personal admin'**
+  String get personalSummary;
+
+  /// No description provided for @manageJobs.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage jobs'**
+  String get manageJobs;
+
+  /// No description provided for @manageHomes.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage homes'**
+  String get manageHomes;
+
+  /// No description provided for @managePeople.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage people and groups'**
+  String get managePeople;
+
+  /// No description provided for @noContextsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Create one to get started.'**
+  String get noContextsYet;
+
+  /// No description provided for @addFirstContext.
+  ///
+  /// In en, this message translates to:
+  /// **'Create the first one'**
+  String get addFirstContext;
+
+  /// No description provided for @shiftChecklists.
+  ///
+  /// In en, this message translates to:
+  /// **'Shift checklists'**
+  String get shiftChecklists;
+
+  /// No description provided for @checklistForDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Checklist for day {day}'**
+  String checklistForDay(int day);
+
+  /// No description provided for @allDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day'**
+  String get allDays;
+
+  /// No description provided for @checklistItemHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What needs doing?'**
+  String get checklistItemHint;
+
+  /// No description provided for @reorderChecklistHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder. Different days can have different lists.'**
+  String get reorderChecklistHint;
+
+  /// No description provided for @addProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Add project'**
+  String get addProject;
+
+  /// No description provided for @addHabit.
+  ///
+  /// In en, this message translates to:
+  /// **'Add habit'**
+  String get addHabit;
+
+  /// No description provided for @editHabit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit habit'**
+  String get editHabit;
+
+  /// No description provided for @habitName.
+  ///
+  /// In en, this message translates to:
+  /// **'Habit name'**
+  String get habitName;
+
+  /// No description provided for @targetPerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Target per week'**
+  String get targetPerWeek;
+
+  /// No description provided for @timesPerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}× per week'**
+  String timesPerWeek(int count);
+
+  /// No description provided for @streakDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} day streak'**
+  String streakDays(int count);
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get thisWeek;
+
+  /// No description provided for @markHabitDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark done'**
+  String get markHabitDone;
+
+  /// No description provided for @habitDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done today'**
+  String get habitDone;
+
+  /// No description provided for @addGadget.
+  ///
+  /// In en, this message translates to:
+  /// **'Add gadget'**
+  String get addGadget;
+
+  /// No description provided for @gadgetName.
+  ///
+  /// In en, this message translates to:
+  /// **'Gadget name'**
+  String get gadgetName;
+
+  /// No description provided for @maintenanceIntervalDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days between services'**
+  String get maintenanceIntervalDays;
+
+  /// No description provided for @nextDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Next due {date}'**
+  String nextDue(String date);
+
+  /// No description provided for @deleteContextQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}?'**
+  String deleteContextQuestion(String name);
+
+  /// No description provided for @deleteContextBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Its tasks and notes stay in your plan but lose this grouping.'**
+  String get deleteContextBody;
+
+  /// No description provided for @deleteProjectQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this project?'**
+  String get deleteProjectQuestion;
+
+  /// No description provided for @deleteProjectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks keep their space and context.'**
+  String get deleteProjectBody;
+
+  /// No description provided for @listView.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get listView;
+
+  /// No description provided for @timelineView.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline'**
+  String get timelineView;
+
+  /// No description provided for @progressToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s progress'**
+  String get progressToday;
+
+  /// No description provided for @doneOfTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} done'**
+  String doneOfTotal(int done, int total);
+
+  /// No description provided for @allDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything for today is done.'**
+  String get allDone;
+
+  /// No description provided for @tasksLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} left today'**
+  String tasksLeft(int count);
+
+  /// No description provided for @clockIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Clock in'**
+  String get clockIn;
+
+  /// No description provided for @clockOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Clock out'**
+  String get clockOut;
+
+  /// No description provided for @clockedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get clockedIn;
+
+  /// No description provided for @trackedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracked'**
+  String get trackedTime;
+
+  /// No description provided for @trackedTimeValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{duration} tracked'**
+  String trackedTimeValue(String duration);
+
+  /// No description provided for @deadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline'**
+  String get deadline;
+
+  /// No description provided for @dueIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Due in {time}'**
+  String dueIn(String time);
+
+  /// No description provided for @overdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get overdue;
+
+  /// No description provided for @anytime.
+  ///
+  /// In en, this message translates to:
+  /// **'Anytime'**
+  String get anytime;
+
+  /// No description provided for @priority.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get priority;
+
+  /// No description provided for @priorityNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No priority'**
+  String get priorityNone;
+
+  /// No description provided for @priorityLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get priorityLow;
+
+  /// No description provided for @priorityMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get priorityMedium;
+
+  /// No description provided for @priorityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get priorityHigh;
+
+  /// No description provided for @completeTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete task'**
+  String get completeTask;
+
+  /// No description provided for @reopenTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen task'**
+  String get reopenTask;
+
+  /// No description provided for @plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get plan;
+
+  /// No description provided for @month.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get month;
+
+  /// No description provided for @day.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get day;
+
+  /// No description provided for @collapseCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse calendar'**
+  String get collapseCalendar;
+
+  /// No description provided for @expandCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand calendar'**
+  String get expandCalendar;
+
+  /// No description provided for @desktopWeekHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag blocks to move them, drag the bottom edge to resize, or drag an empty slot to create.'**
+  String get desktopWeekHint;
+
+  /// No description provided for @createEntryAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Create at {time}'**
+  String createEntryAt(String time);
+
+  /// No description provided for @entryMoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry moved.'**
+  String get entryMoved;
+
+  /// No description provided for @couldNotMoveEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not move the entry: {error}'**
+  String couldNotMoveEntry(String error);
+
+  /// No description provided for @stats.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats'**
+  String get stats;
+
+  /// No description provided for @overview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get overview;
+
+  /// No description provided for @completionRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion rate'**
+  String get completionRate;
+
+  /// No description provided for @tasksCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks completed'**
+  String get tasksCompleted;
+
+  /// No description provided for @overdueDeadlines.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue deadlines'**
+  String get overdueDeadlines;
+
+  /// No description provided for @bySpace.
+  ///
+  /// In en, this message translates to:
+  /// **'By space'**
+  String get bySpace;
+
+  /// No description provided for @byProject.
+  ///
+  /// In en, this message translates to:
+  /// **'By project'**
+  String get byProject;
+
+  /// No description provided for @byDay.
+  ///
+  /// In en, this message translates to:
+  /// **'By day'**
+  String get byDay;
+
+  /// No description provided for @habitConsistency.
+  ///
+  /// In en, this message translates to:
+  /// **'Habit consistency'**
+  String get habitConsistency;
+
+  /// No description provided for @rangeWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get rangeWeek;
+
+  /// No description provided for @rangeMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get rangeMonth;
+
+  /// No description provided for @rangeQuarter.
+  ///
+  /// In en, this message translates to:
+  /// **'Quarter'**
+  String get rangeQuarter;
+
+  /// No description provided for @rangeYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get rangeYear;
+
+  /// No description provided for @exportReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export report'**
+  String get exportReport;
+
+  /// No description provided for @exportSummaryReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary report (PDF)'**
+  String get exportSummaryReport;
+
+  /// No description provided for @exportDetailedReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed report (PDF)'**
+  String get exportDetailedReport;
+
+  /// No description provided for @exportReportCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Report (CSV)'**
+  String get exportReportCsv;
+
+  /// No description provided for @reportExported.
+  ///
+  /// In en, this message translates to:
+  /// **'Report saved.'**
+  String get reportExported;
+
+  /// No description provided for @reportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not export the report: {error}'**
+  String reportFailed(String error);
+
+  /// No description provided for @totalTracked.
+  ///
+  /// In en, this message translates to:
+  /// **'Total tracked'**
+  String get totalTracked;
+
+  /// No description provided for @shareOfTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get shareOfTotal;
+
+  /// No description provided for @noTrackedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'No tracked time in this range.'**
+  String get noTrackedTime;
+
+  /// No description provided for @completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get completed;
+
+  /// No description provided for @openLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get openLabel;
+
+  /// No description provided for @deadlineLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadlines'**
+  String get deadlineLoad;
+
+  /// No description provided for @settingsSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search settings'**
+  String get settingsSearch;
+
+  /// No description provided for @generalSection.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get generalSection;
+
+  /// No description provided for @noSettingsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No setting matches that search.'**
+  String get noSettingsFound;
+
+  /// No description provided for @appearanceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme, colour, background and text size'**
+  String get appearanceSubtitle;
+
+  /// No description provided for @preferencesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language, dates, hours and reminders'**
+  String get preferencesSubtitle;
+
+  /// No description provided for @dataSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backups, calendars, CSV and local data'**
+  String get dataSubtitle;
+
+  /// No description provided for @onlineSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair devices and run the local MCP endpoint'**
+  String get onlineSubtitle;
+
+  /// No description provided for @themeAero.
+  ///
+  /// In en, this message translates to:
+  /// **'Aero'**
+  String get themeAero;
+
+  /// No description provided for @colorScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Colour scheme'**
+  String get colorScheme;
+
+  /// No description provided for @schemeSage.
+  ///
+  /// In en, this message translates to:
+  /// **'Sage'**
+  String get schemeSage;
+
+  /// No description provided for @schemeOcean.
+  ///
+  /// In en, this message translates to:
+  /// **'Ocean'**
+  String get schemeOcean;
+
+  /// No description provided for @schemeSunset.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunset'**
+  String get schemeSunset;
+
+  /// No description provided for @schemeViolet.
+  ///
+  /// In en, this message translates to:
+  /// **'Violet'**
+  String get schemeViolet;
+
+  /// No description provided for @schemeMono.
+  ///
+  /// In en, this message translates to:
+  /// **'Mono'**
+  String get schemeMono;
+
+  /// No description provided for @background.
+  ///
+  /// In en, this message translates to:
+  /// **'Background'**
+  String get background;
+
+  /// No description provided for @backgroundDots.
+  ///
+  /// In en, this message translates to:
+  /// **'Dots'**
+  String get backgroundDots;
+
+  /// No description provided for @backgroundGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid'**
+  String get backgroundGrid;
+
+  /// No description provided for @backgroundOled.
+  ///
+  /// In en, this message translates to:
+  /// **'OLED black'**
+  String get backgroundOled;
+
+  /// No description provided for @backgroundPlain.
+  ///
+  /// In en, this message translates to:
+  /// **'Plain'**
+  String get backgroundPlain;
+
+  /// No description provided for @backgroundCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get backgroundCustom;
+
+  /// No description provided for @customBackgroundColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom colour'**
+  String get customBackgroundColor;
+
+  /// No description provided for @textSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get textSize;
+
+  /// No description provided for @textSmall.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get textSmall;
+
+  /// No description provided for @textDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get textDefault;
+
+  /// No description provided for @textLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get textLarge;
+
+  /// No description provided for @textExtraLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra large'**
+  String get textExtraLarge;
+
+  /// No description provided for @navigationSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation side'**
+  String get navigationSide;
+
+  /// No description provided for @navLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Left'**
+  String get navLeft;
+
+  /// No description provided for @navRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Right'**
+  String get navRight;
+
+  /// No description provided for @dateFormatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date format'**
+  String get dateFormatLabel;
+
+  /// No description provided for @dateFormatSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get dateFormatSystem;
+
+  /// No description provided for @dateFormatDmy.
+  ///
+  /// In en, this message translates to:
+  /// **'Day / month / year'**
+  String get dateFormatDmy;
+
+  /// No description provided for @dateFormatMdy.
+  ///
+  /// In en, this message translates to:
+  /// **'Month / day / year'**
+  String get dateFormatMdy;
+
+  /// No description provided for @dateFormatYmd.
+  ///
+  /// In en, this message translates to:
+  /// **'Year / month / day'**
+  String get dateFormatYmd;
+
+  /// No description provided for @performanceMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance mode'**
+  String get performanceMode;
+
+  /// No description provided for @performanceModeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce blur, shadows and long animations.'**
+  String get performanceModeSubtitle;
+
+  /// No description provided for @preferencesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get preferencesSection;
+
+  /// No description provided for @dataSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Data and backup'**
+  String get dataSection;
+
+  /// No description provided for @onlineSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Online functionalities'**
+  String get onlineSection;
+
+  /// No description provided for @onlineEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable online functionalities'**
+  String get onlineEnable;
+
+  /// No description provided for @onlineEnableSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'LAN sync and the local MCP endpoint. Off by default; the planner works without them.'**
+  String get onlineEnableSubtitle;
+
+  /// No description provided for @devicesAndSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Devices & Sync'**
+  String get devicesAndSync;
+
+  /// No description provided for @devicesAndSyncSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find devices on this network and pair them.'**
+  String get devicesAndSyncSubtitle;
+
+  /// No description provided for @mcpServer.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP Server'**
+  String get mcpServer;
+
+  /// No description provided for @mcpPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Port'**
+  String get mcpPort;
+
+  /// No description provided for @mcpPortHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Loopback port between 1024 and 65535.'**
+  String get mcpPortHint;
+
+  /// No description provided for @applyPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply port'**
+  String get applyPort;
+
+  /// No description provided for @portSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP port saved. Restart the endpoint to apply it.'**
+  String get portSaved;
+
+  /// No description provided for @deleteAllData.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all data'**
+  String get deleteAllData;
+
+  /// No description provided for @deleteAllDataSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the plan, devices, backups links and settings from this device.'**
+  String get deleteAllDataSubtitle;
+
+  /// No description provided for @deleteAllDataQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all local data?'**
+  String get deleteAllDataQuestion;
+
+  /// No description provided for @deleteAllDataBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be undone. Exported files are not deleted.'**
+  String get deleteAllDataBody;
+
+  /// No description provided for @dataDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Local data deleted.'**
+  String get dataDeleted;
+
+  /// No description provided for @nearbyDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby devices'**
+  String get nearbyDevices;
+
+  /// No description provided for @scanningDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for Mane devices on this network…'**
+  String get scanningDevices;
+
+  /// No description provided for @noNearbyDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'No nearby Mane devices found. Make sure the other device has online functionalities enabled.'**
+  String get noNearbyDevices;
+
+  /// No description provided for @pairWithDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair with {name}'**
+  String pairWithDevice(String name);
+
+  /// No description provided for @pairCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing code'**
+  String get pairCode;
+
+  /// No description provided for @pairCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the six-digit code shown on the other device.'**
+  String get pairCodeHint;
+
+  /// No description provided for @pairingWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing with {name}'**
+  String pairingWith(String name);
+
+  /// No description provided for @syncExplainer.
+  ///
+  /// In en, this message translates to:
+  /// **'Mane finds your other devices on the local network. Pairing stores a shared key once, so changing networks or IP addresses does not break the link. Sync stays read-only and never replaces your local plan.'**
+  String get syncExplainer;
+
+  /// No description provided for @pairSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Device paired.'**
+  String get pairSuccess;
+
+  /// No description provided for @pairFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not pair: {error}'**
+  String pairFailed(String error);
+
+  /// No description provided for @timing.
+  ///
+  /// In en, this message translates to:
+  /// **'Timing'**
+  String get timing;
+
+  /// No description provided for @timingScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled'**
+  String get timingScheduled;
+
+  /// No description provided for @timingClockIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Clock in'**
+  String get timingClockIn;
+
+  /// No description provided for @timingDeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline'**
+  String get timingDeadline;
+
+  /// No description provided for @timingAnytime.
+  ///
+  /// In en, this message translates to:
+  /// **'Anytime'**
+  String get timingAnytime;
+
+  /// No description provided for @timingScheduledHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts and ends at a set time.'**
+  String get timingScheduledHint;
+
+  /// No description provided for @timingClockInHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Clock in when you start; clocking out records the end.'**
+  String get timingClockInHint;
+
+  /// No description provided for @timingDeadlineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Can happen any time until the deadline.'**
+  String get timingDeadlineHint;
+
+  /// No description provided for @timingAnytimeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No fixed time. Complete it whenever it is done.'**
+  String get timingAnytimeHint;
+
+  /// No description provided for @context.
+  ///
+  /// In en, this message translates to:
+  /// **'Job, home or person'**
+  String get context;
+
+  /// No description provided for @noContext.
+  ///
+  /// In en, this message translates to:
+  /// **'No job, home or person'**
+  String get noContext;
+
+  /// No description provided for @noProject.
+  ///
+  /// In en, this message translates to:
+  /// **'No project'**
+  String get noProject;
+
+  /// No description provided for @project.
+  ///
+  /// In en, this message translates to:
+  /// **'Project'**
+  String get project;
+
+  /// No description provided for @categories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categories;
+
+  /// No description provided for @addCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Add category'**
+  String get addCategory;
+
+  /// No description provided for @editCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit category'**
+  String get editCategory;
+
+  /// No description provided for @categoryName.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name'**
+  String get categoryName;
+
+  /// No description provided for @noCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories yet.'**
+  String get noCategories;
+
+  /// No description provided for @stickerImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get stickerImage;
+
+  /// No description provided for @pickImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick an image'**
+  String get pickImage;
+
+  /// No description provided for @zoomHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinch or scroll to zoom and drag to frame the square.'**
+  String get zoomHint;
+
+  /// No description provided for @tolerance.
+  ///
+  /// In en, this message translates to:
+  /// **'Background tolerance'**
+  String get tolerance;
+
+  /// No description provided for @outline.
+  ///
+  /// In en, this message translates to:
+  /// **'White sticker outline'**
+  String get outline;
+
+  /// No description provided for @outlineWidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Outline width'**
+  String get outlineWidth;
+
+  /// No description provided for @reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get reset;
+
+  /// No description provided for @useImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Use image'**
+  String get useImage;
+
+  /// No description provided for @noImage.
+  ///
+  /// In en, this message translates to:
+  /// **'No image selected.'**
+  String get noImage;
+
+  /// No description provided for @imageError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load that image.'**
+  String get imageError;
+
+  /// No description provided for @choosePhotoOrIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a photo or use an icon'**
+  String get choosePhotoOrIcon;
+
+  /// No description provided for @mediaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop the image, remove a plain background and add a white sticker outline.'**
+  String get mediaHint;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

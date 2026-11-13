@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mane_core/mane_core.dart';
 
 import '../../../core/i18n/l10n.dart';
+import '../../../core/icons/mane_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
@@ -22,20 +23,20 @@ class TagsPage extends ConsumerWidget {
     final spaceNames = {for (final space in spaces) space.id: space.name};
 
     return ManePage(
-      title: l10n.tagsManager,
+      title: l10n.categories,
       floatingAction: ManeAddButton(
-        tooltip: l10n.addTag,
+        tooltip: l10n.addCategory,
         onTap: () => showTagEditor(context, spaces: spaces),
       ),
       child: tags.isEmpty
           ? AppEmptyState(
               icon: Icons.sell_outlined,
-              title: l10n.noTags,
+              title: l10n.noCategories,
               message: l10n.tagsManagerSubtitle,
               action: FilledButton.tonalIcon(
                 onPressed: () => showTagEditor(context, spaces: spaces),
                 icon: const Icon(Icons.add, size: 18),
-                label: Text(l10n.addTag),
+                label: Text(l10n.addCategory),
               ),
             )
           : ListView(
@@ -116,11 +117,7 @@ class _TagRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(9),
             ),
             child: Center(
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(color: tagColor(tag.colorValue), shape: BoxShape.circle),
-              ),
+              child: Icon(ManeIcons.resolve(tag.icon), size: 16, color: tagColor(tag.colorValue)),
             ),
           ),
           const SizedBox(width: 12),

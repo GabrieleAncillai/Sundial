@@ -7,15 +7,17 @@ import '../../../core/widgets/ui_kit.dart';
 import '../../../models/shopping_item.dart';
 import '../../../state/providers.dart';
 
-Future<void> showShoppingItemSheet(BuildContext context, {ShoppingItem? item}) => showAppSheet<void>(
-  context: context,
-  builder: (context) => ShoppingItemSheet(item: item),
-);
+Future<void> showShoppingItemSheet(BuildContext context, {ShoppingItem? item, String? contextId}) =>
+    showAppSheet<void>(
+      context: context,
+      builder: (context) => ShoppingItemSheet(item: item, contextId: contextId),
+    );
 
 class ShoppingItemSheet extends ConsumerStatefulWidget {
-  const ShoppingItemSheet({super.key, this.item});
+  const ShoppingItemSheet({super.key, this.item, this.contextId});
 
   final ShoppingItem? item;
+  final String? contextId;
 
   @override
   ConsumerState<ShoppingItemSheet> createState() => _ShoppingItemSheetState();
@@ -125,6 +127,7 @@ class _ShoppingItemSheetState extends ConsumerState<ShoppingItemSheet> {
     final existing = widget.item;
     final item = ShoppingItem(
       id: existing?.id ?? const Uuid().v4(),
+      contextId: existing?.contextId ?? widget.contextId,
       name: _name.text.trim(),
       quantity: _parse(_quantity.text),
       unit: _unit.text.trim(),

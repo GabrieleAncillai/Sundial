@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mane_core/mane_core.dart';
 
+import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
@@ -29,7 +30,9 @@ class CalendarDayDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.mc;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final title = DateFormat.yMMMMEEEEd(locale).format(date.toDateTime());
+    final title =
+        '${DateFormat.EEEE(locale).format(date.toDateTime())} · '
+        '${formatFullDate(context, date.toDateTime())}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,6 +55,7 @@ class CalendarDayDetail extends StatelessWidget {
                 patternId: shift.pattern.id,
                 date: shift.date,
                 slotKey: shift.slotKey,
+                dayIndex: shift.pattern.cycleIndexFor(shift.date),
               ),
             ),
         ],

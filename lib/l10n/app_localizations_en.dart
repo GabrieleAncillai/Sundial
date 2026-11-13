@@ -747,10 +747,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get slotLabel => 'Label';
 
   @override
-  String get startTime => 'Start';
+  String get startTime => 'Start time';
 
   @override
-  String get endTime => 'End';
+  String get endTime => 'End time';
 
   @override
   String get exceptions => 'Date exceptions';
@@ -813,7 +813,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shiftChecklistSubtitle => 'Items to tick off on each shift of this pattern.';
 
   @override
-  String get addChecklistItem => 'Add item';
+  String get addChecklistItem => 'Add checklist item';
 
   @override
   String get checklistItemLabel => 'Checklist item';
@@ -927,7 +927,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pairedDevices => 'Paired devices';
 
   @override
-  String get noPairedDevices => 'No devices paired yet.';
+  String get noPairedDevices => 'No paired devices yet.';
 
   @override
   String get unpair => 'Unpair';
@@ -947,7 +947,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get neverReached => 'Not reached yet';
 
   @override
-  String get refreshDevices => 'Refresh';
+  String get refreshDevices => 'Refresh devices';
 
   @override
   String remoteToday(int entries, int shifts) {
@@ -1176,44 +1176,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gymmaneImportEmpty => 'The backup has no weekly plan.';
 
   @override
-  String get appLock => 'App lock';
-
-  @override
-  String get appLockSubtitle => 'Ask for a PIN when the app opens.';
-
-  @override
-  String get appLockPinTitle => 'Choose a PIN';
-
-  @override
-  String get appLockPinRepeat => 'Repeat the PIN';
-
-  @override
-  String get appLockPinMismatch => 'The PINs do not match.';
-
-  @override
-  String get appLockUnlockTitle => 'Enter your PIN';
-
-  @override
-  String get appLockUnlockSubtitle => 'Unlock Mane';
-
-  @override
-  String get appLockWrong => 'Wrong PIN. Try again.';
-
-  @override
-  String appLockLockedOut(int seconds) {
-    return 'Too many attempts. Wait ${seconds}s.';
-  }
-
-  @override
-  String get appLockEnabled => 'App lock is on.';
-
-  @override
-  String get appLockDisabled => 'App lock is off.';
-
-  @override
-  String get appLockPinLength => 'Use four to eight digits.';
-
-  @override
   String get purchaseHistory => 'Purchase history';
 
   @override
@@ -1307,4 +1269,815 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hoursWindow => 'Set window';
+
+  @override
+  String get todayTab => 'Today';
+
+  @override
+  String get planTab => 'Plan';
+
+  @override
+  String get statsTab => 'Stats';
+
+  @override
+  String get workTab => 'Work';
+
+  @override
+  String get homeTab => 'Home';
+
+  @override
+  String get personalTab => 'Personal';
+
+  @override
+  String get workSpace => 'Work';
+
+  @override
+  String get homeSpace => 'Home';
+
+  @override
+  String get personalSpace => 'Personal';
+
+  @override
+  String get jobs => 'Jobs';
+
+  @override
+  String get homes => 'Homes';
+
+  @override
+  String get peopleAndGroups => 'People & groups';
+
+  @override
+  String get projectsSection => 'Projects';
+
+  @override
+  String get householdSection => 'Household';
+
+  @override
+  String get tasksSection => 'Tasks';
+
+  @override
+  String get habitsSection => 'Habits';
+
+  @override
+  String get gadgetsSection => 'Gadgets';
+
+  @override
+  String get inventorySection => 'Inventory';
+
+  @override
+  String get shoppingSection => 'Shopping';
+
+  @override
+  String get newJob => 'New job';
+
+  @override
+  String get editJob => 'Edit job';
+
+  @override
+  String get newHome => 'New home';
+
+  @override
+  String get editHome => 'Edit home';
+
+  @override
+  String get newPerson => 'New person or group';
+
+  @override
+  String get editPerson => 'Edit person or group';
+
+  @override
+  String get newProject => 'New project';
+
+  @override
+  String get editProject => 'Edit project';
+
+  @override
+  String get jobName => 'Job name';
+
+  @override
+  String get homeName => 'Home name';
+
+  @override
+  String get personName => 'Name';
+
+  @override
+  String get projectName => 'Project name';
+
+  @override
+  String get projectDescription => 'Description (optional)';
+
+  @override
+  String get name => 'Name';
+
+  @override
+  String get descriptionOptional => 'Description (optional)';
+
+  @override
+  String get icon => 'Icon';
+
+  @override
+  String get color => 'Colour';
+
+  @override
+  String get image => 'Image';
+
+  @override
+  String get chooseIcon => 'Choose an icon';
+
+  @override
+  String get searchIcons => 'Search icons';
+
+  @override
+  String get noIconsFound => 'No icon matches that search.';
+
+  @override
+  String get recommendedIcons => 'Suggested';
+
+  @override
+  String get allIcons => 'All icons';
+
+  @override
+  String get chooseImage => 'Choose image';
+
+  @override
+  String get changeImage => 'Change image';
+
+  @override
+  String get removeImage => 'Remove image';
+
+  @override
+  String get createJob => 'Create job';
+
+  @override
+  String get createHome => 'Create home';
+
+  @override
+  String get createPerson => 'Create person or group';
+
+  @override
+  String get createProject => 'Create project';
+
+  @override
+  String get noJobs => 'No jobs yet.';
+
+  @override
+  String get noJobsHint => 'Add a job to give its shifts, projects and tasks a home.';
+
+  @override
+  String get noHomes => 'No homes yet.';
+
+  @override
+  String get noHomesHint => 'Add a home to organise inventory, gadgets and house projects.';
+
+  @override
+  String get noPeople => 'No people or groups yet.';
+
+  @override
+  String get noPeopleHint => 'Use projects to keep time with different people separate.';
+
+  @override
+  String get noProjects => 'No projects yet.';
+
+  @override
+  String get noProjectsHint => 'Projects group related tasks without adding another space.';
+
+  @override
+  String get noHabits => 'No habits yet.';
+
+  @override
+  String get noHabitsHint => 'Add a habit to track a personal routine.';
+
+  @override
+  String get noTasks => 'Nothing here yet.';
+
+  @override
+  String get noTasksHint => 'Add a task from this screen or from Today.';
+
+  @override
+  String get upcomingTasks => 'Upcoming';
+
+  @override
+  String get openTasks => 'Open tasks';
+
+  @override
+  String get overdueTasks => 'Overdue';
+
+  @override
+  String get unscheduledTasks => 'Anytime';
+
+  @override
+  String taskCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tasks',
+      one: '1 task',
+      zero: 'No tasks',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String projectCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count projects',
+      one: '1 project',
+      zero: 'No projects',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String habitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count habits',
+      one: '1 habit',
+      zero: 'No habits',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String addTaskFor(String name) {
+    return 'Add a task for $name';
+  }
+
+  @override
+  String get jobSummary => 'Shifts, checklists and work projects';
+
+  @override
+  String get homeSummary => 'Inventory, gadgets and household projects';
+
+  @override
+  String get personalSummary => 'Projects, habits and personal admin';
+
+  @override
+  String get manageJobs => 'Manage jobs';
+
+  @override
+  String get manageHomes => 'Manage homes';
+
+  @override
+  String get managePeople => 'Manage people and groups';
+
+  @override
+  String get noContextsYet => 'Create one to get started.';
+
+  @override
+  String get addFirstContext => 'Create the first one';
+
+  @override
+  String get shiftChecklists => 'Shift checklists';
+
+  @override
+  String checklistForDay(int day) {
+    return 'Checklist for day $day';
+  }
+
+  @override
+  String get allDays => 'Every day';
+
+  @override
+  String get checklistItemHint => 'What needs doing?';
+
+  @override
+  String get reorderChecklistHint => 'Drag to reorder. Different days can have different lists.';
+
+  @override
+  String get addProject => 'Add project';
+
+  @override
+  String get addHabit => 'Add habit';
+
+  @override
+  String get editHabit => 'Edit habit';
+
+  @override
+  String get habitName => 'Habit name';
+
+  @override
+  String get targetPerWeek => 'Target per week';
+
+  @override
+  String timesPerWeek(int count) {
+    return '$count× per week';
+  }
+
+  @override
+  String streakDays(int count) {
+    return '$count day streak';
+  }
+
+  @override
+  String get thisWeek => 'This week';
+
+  @override
+  String get markHabitDone => 'Mark done';
+
+  @override
+  String get habitDone => 'Done today';
+
+  @override
+  String get addGadget => 'Add gadget';
+
+  @override
+  String get gadgetName => 'Gadget name';
+
+  @override
+  String get maintenanceIntervalDays => 'Days between services';
+
+  @override
+  String nextDue(String date) {
+    return 'Next due $date';
+  }
+
+  @override
+  String deleteContextQuestion(String name) {
+    return 'Delete $name?';
+  }
+
+  @override
+  String get deleteContextBody => 'Its tasks and notes stay in your plan but lose this grouping.';
+
+  @override
+  String get deleteProjectQuestion => 'Delete this project?';
+
+  @override
+  String get deleteProjectBody => 'Tasks keep their space and context.';
+
+  @override
+  String get listView => 'List';
+
+  @override
+  String get timelineView => 'Timeline';
+
+  @override
+  String get progressToday => 'Today\'s progress';
+
+  @override
+  String doneOfTotal(int done, int total) {
+    return '$done of $total done';
+  }
+
+  @override
+  String get allDone => 'Everything for today is done.';
+
+  @override
+  String tasksLeft(int count) {
+    return '$count left today';
+  }
+
+  @override
+  String get clockIn => 'Clock in';
+
+  @override
+  String get clockOut => 'Clock out';
+
+  @override
+  String get clockedIn => 'Running';
+
+  @override
+  String get trackedTime => 'Tracked';
+
+  @override
+  String trackedTimeValue(String duration) {
+    return '$duration tracked';
+  }
+
+  @override
+  String get deadline => 'Deadline';
+
+  @override
+  String dueIn(String time) {
+    return 'Due in $time';
+  }
+
+  @override
+  String get overdue => 'Overdue';
+
+  @override
+  String get anytime => 'Anytime';
+
+  @override
+  String get priority => 'Priority';
+
+  @override
+  String get priorityNone => 'No priority';
+
+  @override
+  String get priorityLow => 'Low';
+
+  @override
+  String get priorityMedium => 'Medium';
+
+  @override
+  String get priorityHigh => 'High';
+
+  @override
+  String get completeTask => 'Complete task';
+
+  @override
+  String get reopenTask => 'Reopen task';
+
+  @override
+  String get plan => 'Plan';
+
+  @override
+  String get month => 'Month';
+
+  @override
+  String get day => 'Day';
+
+  @override
+  String get collapseCalendar => 'Collapse calendar';
+
+  @override
+  String get expandCalendar => 'Expand calendar';
+
+  @override
+  String get desktopWeekHint =>
+      'Drag blocks to move them, drag the bottom edge to resize, or drag an empty slot to create.';
+
+  @override
+  String createEntryAt(String time) {
+    return 'Create at $time';
+  }
+
+  @override
+  String get entryMoved => 'Entry moved.';
+
+  @override
+  String couldNotMoveEntry(String error) {
+    return 'Could not move the entry: $error';
+  }
+
+  @override
+  String get stats => 'Stats';
+
+  @override
+  String get overview => 'Overview';
+
+  @override
+  String get completionRate => 'Completion rate';
+
+  @override
+  String get tasksCompleted => 'Tasks completed';
+
+  @override
+  String get overdueDeadlines => 'Overdue deadlines';
+
+  @override
+  String get bySpace => 'By space';
+
+  @override
+  String get byProject => 'By project';
+
+  @override
+  String get byDay => 'By day';
+
+  @override
+  String get habitConsistency => 'Habit consistency';
+
+  @override
+  String get rangeWeek => 'Week';
+
+  @override
+  String get rangeMonth => 'Month';
+
+  @override
+  String get rangeQuarter => 'Quarter';
+
+  @override
+  String get rangeYear => 'Year';
+
+  @override
+  String get exportReport => 'Export report';
+
+  @override
+  String get exportSummaryReport => 'Summary report (PDF)';
+
+  @override
+  String get exportDetailedReport => 'Detailed report (PDF)';
+
+  @override
+  String get exportReportCsv => 'Report (CSV)';
+
+  @override
+  String get reportExported => 'Report saved.';
+
+  @override
+  String reportFailed(String error) {
+    return 'Could not export the report: $error';
+  }
+
+  @override
+  String get totalTracked => 'Total tracked';
+
+  @override
+  String get shareOfTotal => 'Share';
+
+  @override
+  String get noTrackedTime => 'No tracked time in this range.';
+
+  @override
+  String get completed => 'Completed';
+
+  @override
+  String get openLabel => 'Open';
+
+  @override
+  String get deadlineLoad => 'Deadlines';
+
+  @override
+  String get settingsSearch => 'Search settings';
+
+  @override
+  String get generalSection => 'General';
+
+  @override
+  String get noSettingsFound => 'No setting matches that search.';
+
+  @override
+  String get appearanceSubtitle => 'Theme, colour, background and text size';
+
+  @override
+  String get preferencesSubtitle => 'Language, dates, hours and reminders';
+
+  @override
+  String get dataSubtitle => 'Backups, calendars, CSV and local data';
+
+  @override
+  String get onlineSubtitle => 'Pair devices and run the local MCP endpoint';
+
+  @override
+  String get themeAero => 'Aero';
+
+  @override
+  String get colorScheme => 'Colour scheme';
+
+  @override
+  String get schemeSage => 'Sage';
+
+  @override
+  String get schemeOcean => 'Ocean';
+
+  @override
+  String get schemeSunset => 'Sunset';
+
+  @override
+  String get schemeViolet => 'Violet';
+
+  @override
+  String get schemeMono => 'Mono';
+
+  @override
+  String get background => 'Background';
+
+  @override
+  String get backgroundDots => 'Dots';
+
+  @override
+  String get backgroundGrid => 'Grid';
+
+  @override
+  String get backgroundOled => 'OLED black';
+
+  @override
+  String get backgroundPlain => 'Plain';
+
+  @override
+  String get backgroundCustom => 'Custom';
+
+  @override
+  String get customBackgroundColor => 'Custom colour';
+
+  @override
+  String get textSize => 'Text size';
+
+  @override
+  String get textSmall => 'Small';
+
+  @override
+  String get textDefault => 'Default';
+
+  @override
+  String get textLarge => 'Large';
+
+  @override
+  String get textExtraLarge => 'Extra large';
+
+  @override
+  String get navigationSide => 'Navigation side';
+
+  @override
+  String get navLeft => 'Left';
+
+  @override
+  String get navRight => 'Right';
+
+  @override
+  String get dateFormatLabel => 'Date format';
+
+  @override
+  String get dateFormatSystem => 'System';
+
+  @override
+  String get dateFormatDmy => 'Day / month / year';
+
+  @override
+  String get dateFormatMdy => 'Month / day / year';
+
+  @override
+  String get dateFormatYmd => 'Year / month / day';
+
+  @override
+  String get performanceMode => 'Performance mode';
+
+  @override
+  String get performanceModeSubtitle => 'Reduce blur, shadows and long animations.';
+
+  @override
+  String get preferencesSection => 'Preferences';
+
+  @override
+  String get dataSection => 'Data and backup';
+
+  @override
+  String get onlineSection => 'Online functionalities';
+
+  @override
+  String get onlineEnable => 'Enable online functionalities';
+
+  @override
+  String get onlineEnableSubtitle =>
+      'LAN sync and the local MCP endpoint. Off by default; the planner works without them.';
+
+  @override
+  String get devicesAndSync => 'Devices & Sync';
+
+  @override
+  String get devicesAndSyncSubtitle => 'Find devices on this network and pair them.';
+
+  @override
+  String get mcpServer => 'MCP Server';
+
+  @override
+  String get mcpPort => 'Port';
+
+  @override
+  String get mcpPortHint => 'Loopback port between 1024 and 65535.';
+
+  @override
+  String get applyPort => 'Apply port';
+
+  @override
+  String get portSaved => 'MCP port saved. Restart the endpoint to apply it.';
+
+  @override
+  String get deleteAllData => 'Delete all data';
+
+  @override
+  String get deleteAllDataSubtitle =>
+      'Remove the plan, devices, backups links and settings from this device.';
+
+  @override
+  String get deleteAllDataQuestion => 'Delete all local data?';
+
+  @override
+  String get deleteAllDataBody => 'This cannot be undone. Exported files are not deleted.';
+
+  @override
+  String get dataDeleted => 'Local data deleted.';
+
+  @override
+  String get nearbyDevices => 'Nearby devices';
+
+  @override
+  String get scanningDevices => 'Looking for Mane devices on this network…';
+
+  @override
+  String get noNearbyDevices =>
+      'No nearby Mane devices found. Make sure the other device has online functionalities enabled.';
+
+  @override
+  String pairWithDevice(String name) {
+    return 'Pair with $name';
+  }
+
+  @override
+  String get pairCode => 'Pairing code';
+
+  @override
+  String get pairCodeHint => 'Enter the six-digit code shown on the other device.';
+
+  @override
+  String pairingWith(String name) {
+    return 'Pairing with $name';
+  }
+
+  @override
+  String get syncExplainer =>
+      'Mane finds your other devices on the local network. Pairing stores a shared key once, so changing networks or IP addresses does not break the link. Sync stays read-only and never replaces your local plan.';
+
+  @override
+  String get pairSuccess => 'Device paired.';
+
+  @override
+  String pairFailed(String error) {
+    return 'Could not pair: $error';
+  }
+
+  @override
+  String get timing => 'Timing';
+
+  @override
+  String get timingScheduled => 'Scheduled';
+
+  @override
+  String get timingClockIn => 'Clock in';
+
+  @override
+  String get timingDeadline => 'Deadline';
+
+  @override
+  String get timingAnytime => 'Anytime';
+
+  @override
+  String get timingScheduledHint => 'Starts and ends at a set time.';
+
+  @override
+  String get timingClockInHint => 'Clock in when you start; clocking out records the end.';
+
+  @override
+  String get timingDeadlineHint => 'Can happen any time until the deadline.';
+
+  @override
+  String get timingAnytimeHint => 'No fixed time. Complete it whenever it is done.';
+
+  @override
+  String get context => 'Job, home or person';
+
+  @override
+  String get noContext => 'No job, home or person';
+
+  @override
+  String get noProject => 'No project';
+
+  @override
+  String get project => 'Project';
+
+  @override
+  String get categories => 'Categories';
+
+  @override
+  String get addCategory => 'Add category';
+
+  @override
+  String get editCategory => 'Edit category';
+
+  @override
+  String get categoryName => 'Category name';
+
+  @override
+  String get noCategories => 'No categories yet.';
+
+  @override
+  String get stickerImage => 'Image';
+
+  @override
+  String get pickImage => 'Pick an image';
+
+  @override
+  String get zoomHint => 'Pinch or scroll to zoom and drag to frame the square.';
+
+  @override
+  String get tolerance => 'Background tolerance';
+
+  @override
+  String get outline => 'White sticker outline';
+
+  @override
+  String get outlineWidth => 'Outline width';
+
+  @override
+  String get reset => 'Reset';
+
+  @override
+  String get useImage => 'Use image';
+
+  @override
+  String get noImage => 'No image selected.';
+
+  @override
+  String get imageError => 'Could not load that image.';
+
+  @override
+  String get choosePhotoOrIcon => 'Choose a photo or use an icon';
+
+  @override
+  String get mediaHint => 'Crop the image, remove a plain background and add a white sticker outline.';
 }

@@ -7,15 +7,17 @@ import '../../../core/widgets/ui_kit.dart';
 import '../../../models/home_item.dart';
 import '../../../state/providers.dart';
 
-Future<void> showHomeItemSheet(BuildContext context, {HomeItem? item}) => showAppSheet<void>(
-  context: context,
-  builder: (context) => HomeItemSheet(item: item),
-);
+Future<void> showHomeItemSheet(BuildContext context, {HomeItem? item, String? contextId}) =>
+    showAppSheet<void>(
+      context: context,
+      builder: (context) => HomeItemSheet(item: item, contextId: contextId),
+    );
 
 class HomeItemSheet extends ConsumerStatefulWidget {
-  const HomeItemSheet({super.key, this.item});
+  const HomeItemSheet({super.key, this.item, this.contextId});
 
   final HomeItem? item;
+  final String? contextId;
 
   @override
   ConsumerState<HomeItemSheet> createState() => _HomeItemSheetState();
@@ -146,6 +148,7 @@ class _HomeItemSheetState extends ConsumerState<HomeItemSheet> {
     final existing = widget.item;
     final item = HomeItem(
       id: existing?.id ?? const Uuid().v4(),
+      contextId: existing?.contextId ?? widget.contextId,
       name: _name.text.trim(),
       category: _category.text.trim(),
       location: _location.text.trim(),
