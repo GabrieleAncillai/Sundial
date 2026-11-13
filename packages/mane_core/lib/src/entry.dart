@@ -6,6 +6,16 @@ enum EntryKind { task, event, obligation, deadline }
 
 enum EntryStatus { open, done, cancelled }
 
+/// Explicit weighting chosen by the user. A dated deadline can raise the
+/// effective priority through [deadlineUrgency].
+enum EntryPriority { none, low, medium, high }
+
+/// How a task relates to time.
+///
+/// [scheduled] has a start and an end. [clockIn] has a start but no end until
+/// the user clocks out. [deadline] has only an end. [anytime] has neither.
+enum EntryTiming { scheduled, clockIn, deadline, anytime }
+
 /// One thing on the plan.
 ///
 /// Timed entries keep the wall-clock [date], [startMinute] and [endMinute] in
@@ -28,6 +38,10 @@ class Entry {
     this.startMinute,
     this.endMinute,
     this.timeZone,
+    this.contextId,
+    this.projectId,
+    this.priority = EntryPriority.none,
+    this.completedAt,
     this.tagIds = const <String>{},
     this.allDay = false,
     this.source,
@@ -66,8 +80,21 @@ class Entry {
   final int? startMinute;
   final int? endMinute;
 
-  /// IANA timezone the wall-clock fields are defined in. Null for all-day.
+  /// IANA timezone the wall-clock fields are defined in. Null for all-day or
+  /// date-only tasks.
   final String? timeZone;
+
+  /// Job, home or person/group this entry belongs to.
+  final String? contextId;
+
+  /// Optional project inside the space/context.
+  final String? projectId;
+
+  final EntryPriority priority;
+
+  /// Set when a one-off task is completed. Recurring occurrences use the
+  /// completions table instead.
+  final DateTime? completedAt;
 
   /// Tags attached to this entry. The join rows live in `entry_tags`.
   final Set<String> tagIds;
@@ -105,6 +132,23 @@ class Entry {
   bool get isDone => status == EntryStatus.done;
 
   bool get isTimed => !allDay && date != null && startMinute != null;
+
+  bool get hasStart => startMinute != null && startAt != null;
+
+  bool get hasEnd => endMinute != null && endAt != null;
+
+  EntryTiming get timing {
+    if (hasStart && hasEnd) return EntryTiming.scheduled;
+    if (hasStart) return EntryTiming.clockIn;
+    if (hasEnd) return EntryTiming.deadline;
+    return EntryTiming.anytime;
+  }
+
+  bool get isClockInTask => timing == EntryTiming.clockIn;
+
+  bool get isDeadline => timing == EntryTiming.deadline;
+
+  bool get isAnytime => timing == EntryTiming.anytime;
 
   bool get isMaintenance => repeatAfterCompletionDays != null;
 
@@ -157,6 +201,10 @@ class Entry {
     Object? startMinute = _unset,
     Object? endMinute = _unset,
     Object? timeZone = _unset,
+    Object? contextId = _unset,
+    Object? projectId = _unset,
+    EntryPriority? priority,
+    Object? completedAt = _unset,
     Set<String>? tagIds,
     bool? allDay,
     Object? source = _unset,
@@ -179,6 +227,10 @@ class Entry {
     startMinute: identical(startMinute, _unset) ? this.startMinute : startMinute as int?,
     endMinute: identical(endMinute, _unset) ? this.endMinute : endMinute as int?,
     timeZone: identical(timeZone, _unset) ? this.timeZone : timeZone as String?,
+    contextId: identical(contextId, _unset) ? this.contextId : contextId as String?,
+    projectId: identical(projectId, _unset) ? this.projectId : projectId as String?,
+    priority: priority ?? this.priority,
+    completedAt: identical(completedAt, _unset) ? this.completedAt : completedAt as DateTime?,
     tagIds: tagIds ?? this.tagIds,
     allDay: allDay ?? this.allDay,
     source: identical(source, _unset) ? this.source : source as String?,
@@ -249,29 +301,49 @@ class Entry {
       return;
     }
 
+    final start = startMinute;
+    final end = endMinute;
+    if (start == null && end == null) {
+      if (timeZone != null) throw ArgumentError('A date-only task cannot carry a timezone');
+      if (endDate != null) throw ArgumentError('A date-only task cannot carry an end date');
+      if (startAt != null || endAt != null) throw ArgumentError('A date-only task cannot carry an instant');
+      return;
+    }
     if (timeZone == null || timeZone!.isEmpty) {
       throw ArgumentError('A timed entry needs an IANA timezone');
     }
-    final start = startMinute;
-    final end = endMinute;
-    if (start == null || start < 0 || start >= 1440) {
+    if (start != null && (start < 0 || start >= 1440)) {
       throw ArgumentError.value(startMinute, 'startMinute', 'must be between 0 and 1439');
     }
-    if (end == null) {
-      throw ArgumentError.value(endMinute, 'endMinute', 'is required');
+    if (end != null && end < 0) {
+      throw ArgumentError.value(endMinute, 'endMinute', 'must not be negative');
     }
+
+    if (start != null && end == null) {
+      if (endDate != null) throw ArgumentError('A clock-in task cannot carry an end date');
+      if (startAt == null || !startAt!.isUtc) throw ArgumentError('A clock-in task needs a start instant');
+      if (endAt != null) throw ArgumentError('A clock-in task cannot carry an end instant');
+      return;
+    }
+    if (start == null && end != null) {
+      if (endDate != null) throw ArgumentError('A deadline cannot carry an end date');
+      if (startAt != null) throw ArgumentError('A deadline cannot carry a start instant');
+      if (endAt == null || !endAt!.isUtc) throw ArgumentError('A deadline needs an end instant');
+      return;
+    }
+
     if (endDate != null && endDate!.isBefore(date!)) {
       throw ArgumentError.value(endDate, 'endDate', 'must not be before date');
     }
     if (endDate == null) {
-      if (end <= start || end - start > 1440) {
+      if (end! <= start! || end - start > 1440) {
         throw ArgumentError.value(endMinute, 'endMinute', 'must be after start and at most 24 hours later');
       }
     } else {
-      if (end < 0 || end >= 1440) {
+      if (end! >= 1440) {
         throw ArgumentError.value(endMinute, 'endMinute', 'must be between 0 and 1439 with an end date');
       }
-      if (endDate == date && end <= start) {
+      if (endDate == date && end <= start!) {
         throw ArgumentError.value(endMinute, 'endMinute', 'must be after start on the same day');
       }
     }
@@ -293,6 +365,8 @@ class EntryOccurrence {
     this.completed = false,
     this.startAt,
     this.endAt,
+    this.tracked = Duration.zero,
+    this.clockedIn = false,
   });
 
   /// Date in the entry's stored timezone.
@@ -310,4 +384,21 @@ class EntryOccurrence {
   /// Resolved instants for this occurrence, null for all-day entries.
   final DateTime? startAt;
   final DateTime? endAt;
+
+  /// Actual tracked time recorded through clock in/out sessions.
+  final Duration tracked;
+
+  /// Whether a tracking session is open for this occurrence right now.
+  final bool clockedIn;
+
+  EntryOccurrence copyWith({bool? completed, Duration? tracked, bool? clockedIn}) => EntryOccurrence(
+    date: date,
+    displayDate: displayDate,
+    entry: entry,
+    completed: completed ?? this.completed,
+    startAt: startAt,
+    endAt: endAt,
+    tracked: tracked ?? this.tracked,
+    clockedIn: clockedIn ?? this.clockedIn,
+  );
 }

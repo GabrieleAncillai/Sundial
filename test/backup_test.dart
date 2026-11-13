@@ -35,6 +35,29 @@ void main() {
     final now = DateTime.utc(2026, 11, 1, 8);
     await database.saveTag(const Tag(id: 'job-a', spaceId: 'work', name: 'Job A', colorValue: 0xFF4A6FA5));
     await database.saveTag(const Tag(id: 'old-tag', name: 'Old', colorValue: 0xFF8A5A5A));
+    await database.saveContext(
+      const PlannerContext(
+        id: 'cafe',
+        spaceId: 'work',
+        name: 'Cafe',
+        colorValue: 0xFF2F7ED8,
+        icon: 'local_cafe',
+      ),
+    );
+    await database.saveProject(
+      const Project(
+        id: 'reno',
+        spaceId: 'work',
+        contextId: 'cafe',
+        name: 'Renovation',
+        colorValue: 0xFF2FA98F,
+        icon: 'build',
+      ),
+    );
+    await database.saveHabit(
+      const Habit(id: 'walk', spaceId: 'personal', name: 'Walk', colorValue: 0xFF00AA00, targetPerWeek: 3),
+    );
+    await database.setHabitCompleted('walk', LocalDate.parse('2026-11-09'), completed: true);
     await database.saveEntry(
       Entry(
         id: 'bins',
@@ -58,12 +81,17 @@ void main() {
         startMinute: 23 * 60,
         endMinute: 24 * 60,
         timeZone: 'America/New_York',
+        contextId: 'cafe',
+        projectId: 'reno',
+        priority: EntryPriority.medium,
         tagIds: const {'job-a'},
         status: EntryStatus.done,
         createdAt: now,
         updatedAt: now,
       ),
     );
+    await database.startTimeEntry(entryId: 'shift', at: now);
+    await database.stopTimeEntry('shift', at: now.add(const Duration(minutes: 45)));
     await database.saveEntry(
       Entry(
         id: 'old-entry',
@@ -165,7 +193,7 @@ void main() {
 
     final exported = await BackupService(source).exportJson();
     final payload = jsonDecode(exported) as Map<String, dynamic>;
-    expect(payload['schemaVersion'], 8);
+    expect(payload['schemaVersion'], 9);
     expect(payload.containsKey('identity'), isFalse);
     expect(payload.containsKey('pairedDevices'), isFalse);
     expect(exported, isNot(contains('cGluaGFzaA==')));

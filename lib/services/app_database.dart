@@ -17,6 +17,7 @@ import '../models/reminder.dart';
 import '../models/search_results.dart';
 import '../models/shift_checklist.dart';
 import '../models/shopping_item.dart';
+import '../models/time_entry.dart';
 
 part 'app_database.g.dart';
 
@@ -34,12 +35,97 @@ class SpaceRecords extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@DataClassName('ContextRow')
+class ContextRecords extends Table {
+  TextColumn get id => text()();
+  TextColumn get spaceId => text().references(SpaceRecords, #id)();
+  TextColumn get name => text()();
+  TextColumn get description => text().withDefault(const Constant(''))();
+  IntColumn get color => integer()();
+  TextColumn get icon => text().withDefault(const Constant('folder'))();
+  TextColumn get imagePath => text().nullable()();
+  IntColumn get position => integer().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DataClassName('ProjectRow')
+class ProjectRecords extends Table {
+  TextColumn get id => text()();
+  TextColumn get spaceId => text().references(SpaceRecords, #id)();
+  TextColumn get contextId => text().nullable().references(ContextRecords, #id)();
+  TextColumn get name => text()();
+  TextColumn get description => text().withDefault(const Constant(''))();
+  IntColumn get color => integer()();
+  TextColumn get icon => text().withDefault(const Constant('folder'))();
+  TextColumn get imagePath => text().nullable()();
+  IntColumn get position => integer().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DataClassName('HabitRow')
+class HabitRecords extends Table {
+  TextColumn get id => text()();
+  TextColumn get spaceId => text().references(SpaceRecords, #id)();
+  TextColumn get contextId => text().nullable().references(ContextRecords, #id)();
+  TextColumn get name => text()();
+  TextColumn get description => text().withDefault(const Constant(''))();
+  IntColumn get color => integer()();
+  TextColumn get icon => text().withDefault(const Constant('star'))();
+  IntColumn get targetPerWeek => integer().withDefault(const Constant(7))();
+  IntColumn get position => integer().withDefault(const Constant(0))();
+  BoolColumn get archived => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DataClassName('HabitCompletionRow')
+class HabitCompletionRecords extends Table {
+  TextColumn get habitId => text().references(HabitRecords, #id)();
+  IntColumn get dateKey => integer()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {habitId, dateKey};
+}
+
+/// A clock-in/clock-out session against an entry occurrence.
+@DataClassName('TimeEntryRow')
+class TimeEntryRecords extends Table {
+  TextColumn get id => text()();
+  TextColumn get entryId => text().references(EntryRecords, #id)();
+
+  /// Occurrence date in the entry's stored timezone. Null for one-off tasks.
+  IntColumn get occurrenceDateKey => integer().nullable()();
+  DateTimeColumn get startedAt => dateTime()();
+  DateTimeColumn get endedAt => dateTime().nullable()();
+  TextColumn get note => text().withDefault(const Constant(''))();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DataClassName('TagRow')
 class TagRecords extends Table {
   TextColumn get id => text()();
   TextColumn get spaceId => text().nullable().references(SpaceRecords, #id)();
   TextColumn get name => text()();
   IntColumn get color => integer()();
+  TextColumn get icon => text().withDefault(const Constant('folder'))();
   IntColumn get position => integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
@@ -63,6 +149,10 @@ class ShiftChecklistItemRecords extends Table {
   TextColumn get id => text()();
   TextColumn get patternId => text().references(ShiftPatternRecords, #id)();
   TextColumn get label => text()();
+
+  /// Cycle day this checklist item belongs to. Null applies to every day of
+  /// the pattern.
+  IntColumn get dayIndex => integer().nullable()();
   IntColumn get position => integer().withDefault(const Constant(0))();
 
   @override
@@ -86,6 +176,9 @@ class ShiftChecklistCompletionRecords extends Table {
 @DataClassName('HomeItemRow')
 class HomeItemRecords extends Table {
   TextColumn get id => text()();
+
+  /// Home this inventory item belongs to.
+  TextColumn get contextId => text().nullable().references(ContextRecords, #id)();
   TextColumn get name => text()();
   TextColumn get category => text().withDefault(const Constant(''))();
   TextColumn get location => text().withDefault(const Constant(''))();
@@ -113,6 +206,9 @@ class ShoppingItemRecords extends Table {
   BoolColumn get checked => boolean().withDefault(const Constant(false))();
   TextColumn get note => text().withDefault(const Constant(''))();
   TextColumn get homeItemId => text().nullable().references(HomeItemRecords, #id)();
+
+  /// Home this shopping line belongs to.
+  TextColumn get contextId => text().nullable().references(ContextRecords, #id)();
 
   /// Manual order inside the list. Lower values come first.
   IntColumn get position => integer().withDefault(const Constant(0))();
@@ -200,6 +296,13 @@ class EntryRecords extends Table {
   /// IANA timezone for the wall-clock fields, null for all-day entries.
   TextColumn get timeZone => text().nullable()();
 
+  /// Job, home or person/group inside [spaceId].
+  TextColumn get contextId => text().nullable().references(ContextRecords, #id)();
+  TextColumn get projectId => text().nullable().references(ProjectRecords, #id)();
+
+  /// One of [EntryPriority].
+  TextColumn get priority => text().withDefault(const Constant('none'))();
+
   /// Resolved anchor instants in UTC, null for all-day entries.
   DateTimeColumn get startAt => dateTime().nullable()();
   DateTimeColumn get endAt => dateTime().nullable()();
@@ -219,6 +322,7 @@ class EntryRecords extends Table {
 
   DateTimeColumn get lastCompletedAt => dateTime().nullable()();
   IntColumn get repeatAfterCompletionDays => integer().nullable()();
+  DateTimeColumn get completedAt => dateTime().nullable()();
 
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
@@ -247,6 +351,9 @@ class ShiftPatternRecords extends Table {
   TextColumn get id => text()();
   TextColumn get spaceId => text().references(SpaceRecords, #id)();
   TextColumn get name => text()();
+
+  /// Job this shift pattern belongs to.
+  TextColumn get contextId => text().nullable().references(ContextRecords, #id)();
 
   /// IANA timezone the slot times are defined in.
   TextColumn get timeZone => text().withDefault(const Constant('UTC'))();
@@ -333,6 +440,11 @@ class SettingRecords extends Table {
 @DriftDatabase(
   tables: [
     SpaceRecords,
+    ContextRecords,
+    ProjectRecords,
+    HabitRecords,
+    HabitCompletionRecords,
+    TimeEntryRecords,
     EntryRecords,
     TagRecords,
     EntryTagRecords,
@@ -362,12 +474,15 @@ class AppDatabase extends _$AppDatabase {
   final String defaultTimeZone;
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
     onUpgrade: (m, from, to) async {
+      // The v2 backfill reads entries with the current mapper, so all current
+      // columns have to exist before it runs.
+      if (from < 9) await _migrateToV9(m);
       // Add the v4 entry columns first so the v1/v2 backfill can read rows with
       // the current generated entry mapper.
       if (from < 4) await _addV4EntryColumns(m);
@@ -378,6 +493,7 @@ class AppDatabase extends _$AppDatabase {
       if (from < 6) await _migrateToV6(m);
       if (from < 7) await _migrateToV7(m);
       if (from < 8) await _migrateToV8(m);
+      if (from < 9) await _migrateToV9(m);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -391,22 +507,47 @@ class AppDatabase extends _$AppDatabase {
     final existing = await select(spaceRecords).get();
     final ids = existing.map((row) => row.id).toSet();
     final missing = _defaultSpaces.where((space) => !ids.contains(space.id)).toList();
-    if (missing.isEmpty) return;
-
     final now = DateTime.now();
-    await batch((batch) {
-      batch.insertAll(spaceRecords, [
-        for (final space in missing)
-          SpaceRecordsCompanion.insert(
-            id: space.id,
-            name: space.name,
-            color: space.colorValue,
-            position: Value(space.position),
-            createdAt: now,
-            updatedAt: now,
-          ),
-      ]);
-    });
+    if (missing.isNotEmpty) {
+      await batch((batch) {
+        batch.insertAll(spaceRecords, [
+          for (final space in missing)
+            SpaceRecordsCompanion.insert(
+              id: space.id,
+              name: space.name,
+              color: space.colorValue,
+              position: Value(space.position),
+              createdAt: now,
+              updatedAt: now,
+            ),
+        ]);
+      });
+    }
+
+    final tags = await select(tagRecords).get();
+    final seeded = await (select(
+      settingRecords,
+    )..where((row) => row.key.equals('defaultCategoriesSeeded'))).getSingleOrNull();
+    if (tags.isEmpty && seeded == null) {
+      await batch((batch) {
+        batch.insertAll(tagRecords, [
+          for (final category in _defaultCategories)
+            TagRecordsCompanion.insert(
+              id: category.id,
+              name: category.name,
+              color: category.colorValue,
+              icon: Value(category.icon),
+              position: Value(category.position),
+              createdAt: now,
+              updatedAt: now,
+            ),
+        ]);
+        batch.insert(
+          settingRecords,
+          SettingRecordsCompanion.insert(key: 'defaultCategoriesSeeded', value: 'true'),
+        );
+      });
+    }
   }
 
   Stream<List<Space>> watchSpaces() {
@@ -415,6 +556,237 @@ class AppDatabase extends _$AppDatabase {
       final spaces = rows.map(_spaceFromRow).toList()..sort((a, b) => a.position.compareTo(b.position));
       return spaces;
     });
+  }
+
+  Stream<List<PlannerContext>> watchContexts({String? spaceId}) {
+    final query = select(contextRecords)..where((row) => row.deletedAt.isNull());
+    if (spaceId != null) query.where((row) => row.spaceId.equals(spaceId));
+    return query.watch().map((rows) {
+      final contexts = rows.map(_contextFromRow).toList()
+        ..sort((a, b) {
+          final byPosition = a.position.compareTo(b.position);
+          if (byPosition != 0) return byPosition;
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        });
+      return contexts;
+    });
+  }
+
+  Future<void> saveContext(PlannerContext context) async {
+    final now = DateTime.now();
+    final existing = await (select(
+      contextRecords,
+    )..where((row) => row.id.equals(context.id))).getSingleOrNull();
+    await into(contextRecords).insertOnConflictUpdate(
+      ContextRecordsCompanion(
+        id: Value(context.id),
+        spaceId: Value(context.spaceId),
+        name: Value(context.name),
+        description: Value(context.description),
+        color: Value(context.colorValue),
+        icon: Value(context.icon),
+        imagePath: Value(context.imagePath),
+        position: Value(context.position),
+        createdAt: Value(existing?.createdAt ?? now),
+        updatedAt: Value(now),
+        deletedAt: Value(context.deletedAt),
+      ),
+    );
+  }
+
+  Future<void> softDeleteContext(String id) async {
+    final now = DateTime.now();
+    await (update(contextRecords)..where((row) => row.id.equals(id))).write(
+      ContextRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+    );
+  }
+
+  Stream<List<Project>> watchProjects({String? spaceId, String? contextId}) {
+    final query = select(projectRecords)..where((row) => row.deletedAt.isNull());
+    if (spaceId != null) query.where((row) => row.spaceId.equals(spaceId));
+    if (contextId != null) query.where((row) => row.contextId.equals(contextId));
+    return query.watch().map((rows) {
+      final projects = rows.map(_projectFromRow).toList()
+        ..sort((a, b) {
+          final byPosition = a.position.compareTo(b.position);
+          if (byPosition != 0) return byPosition;
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        });
+      return projects;
+    });
+  }
+
+  Future<void> saveProject(Project project) async {
+    final now = DateTime.now();
+    final existing = await (select(
+      projectRecords,
+    )..where((row) => row.id.equals(project.id))).getSingleOrNull();
+    await into(projectRecords).insertOnConflictUpdate(
+      ProjectRecordsCompanion(
+        id: Value(project.id),
+        spaceId: Value(project.spaceId),
+        contextId: Value(project.contextId),
+        name: Value(project.name),
+        description: Value(project.description),
+        color: Value(project.colorValue),
+        icon: Value(project.icon),
+        imagePath: Value(project.imagePath),
+        position: Value(project.position),
+        createdAt: Value(existing?.createdAt ?? now),
+        updatedAt: Value(now),
+        deletedAt: Value(project.deletedAt),
+      ),
+    );
+  }
+
+  Future<void> softDeleteProject(String id) async {
+    final now = DateTime.now();
+    await (update(projectRecords)..where((row) => row.id.equals(id))).write(
+      ProjectRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+    );
+  }
+
+  Stream<List<Habit>> watchHabits({String? spaceId, String? contextId}) {
+    final query = select(habitRecords)..where((row) => row.deletedAt.isNull());
+    if (spaceId != null) query.where((row) => row.spaceId.equals(spaceId));
+    if (contextId != null) query.where((row) => row.contextId.equals(contextId));
+    return query.watch().map((rows) {
+      final habits = rows.map(_habitFromRow).toList()
+        ..sort((a, b) {
+          final byPosition = a.position.compareTo(b.position);
+          if (byPosition != 0) return byPosition;
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        });
+      return habits;
+    });
+  }
+
+  Future<void> saveHabit(Habit habit) async {
+    final now = DateTime.now();
+    final existing = await (select(habitRecords)..where((row) => row.id.equals(habit.id))).getSingleOrNull();
+    await into(habitRecords).insertOnConflictUpdate(
+      HabitRecordsCompanion(
+        id: Value(habit.id),
+        spaceId: Value(habit.spaceId),
+        contextId: Value(habit.contextId),
+        name: Value(habit.name),
+        description: Value(habit.description),
+        color: Value(habit.colorValue),
+        icon: Value(habit.icon),
+        targetPerWeek: Value(habit.cleanTarget),
+        position: Value(habit.position),
+        archived: Value(habit.archived),
+        createdAt: Value(existing?.createdAt ?? now),
+        updatedAt: Value(now),
+        deletedAt: Value(habit.deletedAt),
+      ),
+    );
+  }
+
+  Future<void> softDeleteHabit(String id) async {
+    final now = DateTime.now();
+    await (update(habitRecords)..where((row) => row.id.equals(id))).write(
+      HabitRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+    );
+  }
+
+  Stream<Map<String, Set<LocalDate>>> watchHabitCompletions({String? habitId}) {
+    final query = select(habitCompletionRecords);
+    if (habitId != null) query.where((row) => row.habitId.equals(habitId));
+    return query.watch().map((rows) {
+      final result = <String, Set<LocalDate>>{};
+      for (final row in rows) {
+        (result[row.habitId] ??= <LocalDate>{}).add(LocalDate.fromKey(row.dateKey));
+      }
+      return result;
+    });
+  }
+
+  Future<void> setHabitCompleted(String habitId, LocalDate date, {required bool completed}) async {
+    if (completed) {
+      await into(habitCompletionRecords).insertOnConflictUpdate(
+        HabitCompletionRecordsCompanion.insert(
+          habitId: habitId,
+          dateKey: date.key,
+          createdAt: DateTime.now(),
+        ),
+      );
+      return;
+    }
+    await (delete(
+      habitCompletionRecords,
+    )..where((row) => row.habitId.equals(habitId) & row.dateKey.equals(date.key))).go();
+  }
+
+  Stream<List<TimeEntry>> watchTimeEntriesForEntry(String entryId) {
+    final query = select(timeEntryRecords)..where((row) => row.entryId.equals(entryId));
+    return query.watch().map((rows) => rows.map(_timeEntryFromRow).toList());
+  }
+
+  Future<List<TimeEntry>> readTimeEntriesBetween(
+    DateTime startUtc,
+    DateTime endUtc, {
+    String? entryId,
+  }) async {
+    final query = select(timeEntryRecords)
+      ..where((row) => row.startedAt.isBiggerOrEqualValue(startUtc.toUtc()))
+      ..where((row) => row.startedAt.isSmallerThanValue(endUtc.toUtc()));
+    if (entryId != null) query.where((row) => row.entryId.equals(entryId));
+    final rows = await query.get();
+    return rows.map(_timeEntryFromRow).toList()..sort((a, b) => a.startedAt.compareTo(b.startedAt));
+  }
+
+  Future<TimeEntry?> readOpenTimeEntry(String entryId, {int? occurrenceDateKey}) async {
+    final query = select(timeEntryRecords)
+      ..where((row) => row.entryId.equals(entryId))
+      ..where((row) => row.endedAt.isNull());
+    if (occurrenceDateKey != null) {
+      query.where((row) => row.occurrenceDateKey.equals(occurrenceDateKey) | row.occurrenceDateKey.isNull());
+    }
+    final rows = await query.get();
+    if (rows.isEmpty) return null;
+    return _timeEntryFromRow(rows.first);
+  }
+
+  Future<TimeEntry> startTimeEntry({required String entryId, int? occurrenceDateKey, DateTime? at}) async {
+    final now = (at ?? DateTime.now()).toUtc();
+    final open = await readOpenTimeEntry(entryId, occurrenceDateKey: occurrenceDateKey);
+    if (open != null) return open;
+    final entry = TimeEntry(
+      id: const Uuid().v4(),
+      entryId: entryId,
+      occurrenceDateKey: occurrenceDateKey,
+      startedAt: now,
+      createdAt: now,
+    );
+    await into(timeEntryRecords).insert(
+      TimeEntryRecordsCompanion.insert(
+        id: entry.id,
+        entryId: entry.entryId,
+        occurrenceDateKey: Value(entry.occurrenceDateKey),
+        startedAt: entry.startedAt,
+        createdAt: entry.createdAt,
+      ),
+    );
+    return entry;
+  }
+
+  Future<TimeEntry?> stopTimeEntry(String entryId, {int? occurrenceDateKey, DateTime? at}) async {
+    final open = await readOpenTimeEntry(entryId, occurrenceDateKey: occurrenceDateKey);
+    if (open == null) return null;
+    final now = (at ?? DateTime.now()).toUtc();
+    await (update(
+      timeEntryRecords,
+    )..where((row) => row.id.equals(open.id))).write(TimeEntryRecordsCompanion(endedAt: Value(now)));
+    return TimeEntry(
+      id: open.id,
+      entryId: open.entryId,
+      occurrenceDateKey: open.occurrenceDateKey,
+      startedAt: open.startedAt,
+      endedAt: now,
+      note: open.note,
+      createdAt: open.createdAt,
+    );
   }
 
   Future<Map<String, String>> readSettings() async {
@@ -446,7 +818,50 @@ class AppDatabase extends _$AppDatabase {
           completionRecords.dateKey.isBetweenValues(start.addDays(-2).key, end.addDays(2).key),
     ),
     leftOuterJoin(entryTagRecords, entryTagRecords.entryId.equalsExp(entryRecords.id)),
+    leftOuterJoin(timeEntryRecords, timeEntryRecords.entryId.equalsExp(entryRecords.id)),
   ])..where(entryRecords.deletedAt.isNull());
+
+  /// Open tasks with no date or a date up to [until]. Today uses this for
+  /// unscheduled and overdue work that must stay visible.
+  Stream<List<Entry>> watchOpenEntries(LocalDate until) {
+    final query =
+        select(
+          entryRecords,
+        ).join([leftOuterJoin(entryTagRecords, entryTagRecords.entryId.equalsExp(entryRecords.id))])..where(
+          entryRecords.deletedAt.isNull() &
+              entryRecords.status.isNotIn([EntryStatus.done.name, EntryStatus.cancelled.name]) &
+              (entryRecords.dateKey.isNull() | entryRecords.dateKey.isSmallerOrEqualValue(until.key)),
+        );
+
+    return query.watch().map((rows) {
+      final entryRows = <String, EntryRow>{};
+      final tagIds = <String, Set<String>>{};
+      for (final row in rows) {
+        final entryRow = row.readTable(entryRecords);
+        entryRows[entryRow.id] = entryRow;
+        final tag = row.readTableOrNull(entryTagRecords);
+        if (tag != null) (tagIds[entryRow.id] ??= <String>{}).add(tag.tagId);
+      }
+      final entries = [
+        for (final row in entryRows.values) _entryFromRow(row, tagIds: tagIds[row.id] ?? const <String>{}),
+      ];
+      final now = DateTime.now().toUtc();
+      entries.sort((a, b) {
+        final byPriority = effectivePriority(b, now).index.compareTo(effectivePriority(a, now).index);
+        if (byPriority != 0) return byPriority;
+        final aDate = a.date;
+        final bDate = b.date;
+        if (aDate == null && bDate != null) return -1;
+        if (aDate != null && bDate == null) return 1;
+        if (aDate != null && bDate != null) {
+          final byDate = aDate.compareTo(bDate);
+          if (byDate != 0) return byDate;
+        }
+        return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+      });
+      return entries;
+    });
+  }
 
   List<EntryOccurrence> _expandEntryRows(
     List<TypedResult> rows,
@@ -457,6 +872,7 @@ class AppDatabase extends _$AppDatabase {
     final entryRows = <String, EntryRow>{};
     final completions = <String, Set<LocalDate>>{};
     final tagIds = <String, Set<String>>{};
+    final timeRows = <String, Map<String, TimeEntryRow>>{};
 
     for (final row in rows) {
       final entryRow = row.readTable(entryRecords);
@@ -469,6 +885,10 @@ class AppDatabase extends _$AppDatabase {
       if (tag != null) {
         (tagIds[entryRow.id] ??= <String>{}).add(tag.tagId);
       }
+      final timeRow = row.readTableOrNull(timeEntryRecords);
+      if (timeRow != null) {
+        (timeRows[entryRow.id] ??= <String, TimeEntryRow>{})[timeRow.id] = timeRow;
+      }
     }
 
     final entries = <String, Entry>{
@@ -476,13 +896,28 @@ class AppDatabase extends _$AppDatabase {
         row.id: _entryFromRow(row, tagIds: tagIds[row.id] ?? const <String>{}),
     };
 
-    return expandEntries(
+    final expanded = expandEntries(
       entries: entries.values,
       start: start,
       end: end,
       viewerTimeZone: viewerTimeZone,
       completions: completions,
     );
+    final now = DateTime.now().toUtc();
+    return [for (final occurrence in expanded) _withTracking(occurrence, timeRows[occurrence.entry.id], now)];
+  }
+
+  EntryOccurrence _withTracking(EntryOccurrence occurrence, Map<String, TimeEntryRow>? rows, DateTime now) {
+    if (rows == null || rows.isEmpty) return occurrence;
+    var tracked = Duration.zero;
+    var clockedIn = false;
+    for (final row in rows.values) {
+      final key = row.occurrenceDateKey;
+      if (key != null && occurrence.entry.recurrence != null && key != occurrence.date.key) continue;
+      tracked += (row.endedAt ?? now).toUtc().difference(row.startedAt.toUtc());
+      if (row.endedAt == null) clockedIn = true;
+    }
+    return occurrence.copyWith(tracked: tracked, clockedIn: clockedIn);
   }
 
   Stream<List<ShiftOccurrence>> watchShiftsBetween(LocalDate start, LocalDate end, String viewerTimeZone) {
@@ -575,6 +1010,7 @@ class AppDatabase extends _$AppDatabase {
         spaceId: Value(tag.spaceId),
         name: Value(tag.name),
         color: Value(tag.colorValue),
+        icon: Value(tag.icon),
         position: Value(tag.position),
         createdAt: Value(existing?.createdAt ?? now),
         updatedAt: Value(now),
@@ -615,6 +1051,7 @@ class AppDatabase extends _$AppDatabase {
     await into(homeItemRecords).insertOnConflictUpdate(
       HomeItemRecordsCompanion(
         id: Value(item.id),
+        contextId: Value(item.contextId),
         name: Value(item.name),
         category: Value(item.category),
         location: Value(item.location),
@@ -664,6 +1101,7 @@ class AppDatabase extends _$AppDatabase {
     await into(shoppingItemRecords).insertOnConflictUpdate(
       ShoppingItemRecordsCompanion(
         id: Value(item.id),
+        contextId: Value(item.contextId),
         name: Value(item.name),
         quantity: Value(item.quantity),
         unit: Value(item.unit),
@@ -830,7 +1268,11 @@ class AppDatabase extends _$AppDatabase {
         final exists = existing.any((row) => row.id == item.id);
         if (exists) {
           await (update(shiftChecklistItemRecords)..where((row) => row.id.equals(item.id))).write(
-            ShiftChecklistItemRecordsCompanion(label: Value(item.label), position: Value(index)),
+            ShiftChecklistItemRecordsCompanion(
+              label: Value(item.label),
+              dayIndex: Value(item.dayIndex),
+              position: Value(index),
+            ),
           );
           continue;
         }
@@ -839,6 +1281,7 @@ class AppDatabase extends _$AppDatabase {
             id: Value(item.id),
             patternId: Value(patternId),
             label: Value(item.label),
+            dayIndex: Value(item.dayIndex),
             position: Value(index),
           ),
         );
@@ -1143,9 +1586,46 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> setEntryStatus(String id, EntryStatus status) async {
+    final now = DateTime.now();
     await (update(entryRecords)..where((row) => row.id.equals(id))).write(
-      EntryRecordsCompanion(status: Value(status.name), updatedAt: Value(DateTime.now())),
+      EntryRecordsCompanion(
+        status: Value(status.name),
+        completedAt: Value(status == EntryStatus.done ? now.toUtc() : null),
+        updatedAt: Value(now),
+      ),
     );
+  }
+
+  /// Deletes every user row and re-seeds the three spaces and default
+  /// categories. Pairing identity is removed too; the caller must stop the
+  /// network services afterwards.
+  Future<void> clearAllData() {
+    return transaction(() async {
+      await delete(habitCompletionRecords).go();
+      await delete(timeEntryRecords).go();
+      await delete(completionRecords).go();
+      await delete(reminderRecords).go();
+      await delete(entryTagRecords).go();
+      await delete(entryRecords).go();
+      await delete(shiftChecklistCompletionRecords).go();
+      await delete(shiftChecklistItemRecords).go();
+      await delete(shiftPatternTagRecords).go();
+      await delete(shiftSlotRecords).go();
+      await delete(shiftExceptionRecords).go();
+      await delete(shiftPatternRecords).go();
+      await delete(shoppingItemRecords).go();
+      await delete(homePurchaseRecords).go();
+      await delete(homeItemRecords).go();
+      await delete(projectRecords).go();
+      await delete(habitRecords).go();
+      await delete(contextRecords).go();
+      await delete(tagRecords).go();
+      await delete(settingRecords).go();
+      await delete(remoteSnapshotRecords).go();
+      await delete(pairedDeviceRecords).go();
+      await delete(identityRecords).go();
+      await seedDefaults();
+    });
   }
 
   Future<Entry?> readEntry(String id) async {
@@ -1225,6 +1705,7 @@ class AppDatabase extends _$AppDatabase {
           id: Value(pattern.id),
           spaceId: Value(pattern.spaceId),
           name: Value(pattern.name),
+          contextId: Value(pattern.contextId),
           timeZone: Value(pattern.timeZone),
           cycleDays: Value(pattern.cycleDays),
           anchorDateKey: Value(pattern.anchorDate.key),
@@ -1554,6 +2035,53 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
+  /// v9 adds contexts, projects, habits, tracked time and per-day checklists.
+  Future<void> _migrateToV9(Migrator m) async {
+    final tables = await customSelect('SELECT name FROM sqlite_master WHERE type = \'table\'').get();
+    final tableNames = tables.map((row) => row.read<String>('name')).toSet();
+
+    if (!tableNames.contains('context_records')) await m.createTable(contextRecords);
+    if (!tableNames.contains('project_records')) await m.createTable(projectRecords);
+    if (!tableNames.contains('habit_records')) await m.createTable(habitRecords);
+    if (!tableNames.contains('habit_completion_records')) await m.createTable(habitCompletionRecords);
+    if (!tableNames.contains('time_entry_records')) await m.createTable(timeEntryRecords);
+
+    final entryColumns = await customSelect('PRAGMA table_info(entry_records)').get();
+    final entryNames = entryColumns.map((row) => row.read<String>('name')).toSet();
+    if (!entryNames.contains('context_id')) await m.addColumn(entryRecords, entryRecords.contextId);
+    if (!entryNames.contains('project_id')) await m.addColumn(entryRecords, entryRecords.projectId);
+    if (!entryNames.contains('priority')) await m.addColumn(entryRecords, entryRecords.priority);
+    if (!entryNames.contains('completed_at')) await m.addColumn(entryRecords, entryRecords.completedAt);
+
+    final checklistColumns = await customSelect('PRAGMA table_info(shift_checklist_item_records)').get();
+    final checklistNames = checklistColumns.map((row) => row.read<String>('name')).toSet();
+    if (tableNames.contains('shift_checklist_item_records') && !checklistNames.contains('day_index')) {
+      await m.addColumn(shiftChecklistItemRecords, shiftChecklistItemRecords.dayIndex);
+    }
+
+    final homeColumns = await customSelect('PRAGMA table_info(home_item_records)').get();
+    if (tableNames.contains('home_item_records') &&
+        !homeColumns.any((row) => row.read<String>('name') == 'context_id')) {
+      await m.addColumn(homeItemRecords, homeItemRecords.contextId);
+    }
+
+    final shoppingColumns = await customSelect('PRAGMA table_info(shopping_item_records)').get();
+    if (tableNames.contains('shopping_item_records') &&
+        !shoppingColumns.any((row) => row.read<String>('name') == 'context_id')) {
+      await m.addColumn(shoppingItemRecords, shoppingItemRecords.contextId);
+    }
+
+    final patternColumns = await customSelect('PRAGMA table_info(shift_pattern_records)').get();
+    if (!patternColumns.any((row) => row.read<String>('name') == 'context_id')) {
+      await m.addColumn(shiftPatternRecords, shiftPatternRecords.contextId);
+    }
+
+    final tagColumns = await customSelect('PRAGMA table_info(tag_records)').get();
+    if (tableNames.contains('tag_records') && !tagColumns.any((row) => row.read<String>('name') == 'icon')) {
+      await m.addColumn(tagRecords, tagRecords.icon);
+    }
+  }
+
   Future<ShiftPattern?> _loadPattern(String id) async {
     final row = await (select(shiftPatternRecords)..where((table) => table.id.equals(id))).getSingleOrNull();
     if (row == null) return null;
@@ -1601,6 +2129,16 @@ const _defaultSpaces = <Space>[
   Space(id: 'home', name: 'Home', colorValue: 0xFF5B7F6B, position: 2),
 ];
 
+/// Streak's default category vocabulary, with the same icon meanings.
+const _defaultCategories = <Tag>[
+  Tag(id: 'seed-health', name: 'Health', colorValue: 0xFF34C759, icon: 'favorite', position: 0),
+  Tag(id: 'seed-fitness', name: 'Fitness', colorValue: 0xFFFF9500, icon: 'bolt', position: 1),
+  Tag(id: 'seed-mindfulness', name: 'Mindfulness', colorValue: 0xFF5AC8FA, icon: 'psychology', position: 2),
+  Tag(id: 'seed-productivity', name: 'Productivity', colorValue: 0xFFFFCC00, icon: 'star', position: 3),
+  Tag(id: 'seed-learning', name: 'Learning', colorValue: 0xFF7C3AED, icon: 'menu_book', position: 4),
+  Tag(id: 'seed-finance', name: 'Finance', colorValue: 0xFF00C853, icon: 'target', position: 5),
+];
+
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final directory = await getApplicationSupportDirectory();
@@ -1612,8 +2150,64 @@ LazyDatabase _openConnection() {
 Space _spaceFromRow(SpaceRow row) =>
     Space(id: row.id, name: row.name, colorValue: row.color, position: row.position);
 
-Tag _tagFromRow(TagRow row) =>
-    Tag(id: row.id, spaceId: row.spaceId, name: row.name, colorValue: row.color, position: row.position);
+Tag _tagFromRow(TagRow row) => Tag(
+  id: row.id,
+  spaceId: row.spaceId,
+  name: row.name,
+  colorValue: row.color,
+  icon: row.icon,
+  position: row.position,
+);
+
+PlannerContext _contextFromRow(ContextRow row) => PlannerContext(
+  id: row.id,
+  spaceId: row.spaceId,
+  name: row.name,
+  description: row.description,
+  colorValue: row.color,
+  icon: row.icon,
+  imagePath: row.imagePath,
+  position: row.position,
+  deletedAt: row.deletedAt,
+);
+
+Project _projectFromRow(ProjectRow row) => Project(
+  id: row.id,
+  spaceId: row.spaceId,
+  contextId: row.contextId,
+  name: row.name,
+  description: row.description,
+  colorValue: row.color,
+  icon: row.icon,
+  imagePath: row.imagePath,
+  position: row.position,
+  deletedAt: row.deletedAt,
+);
+
+Habit _habitFromRow(HabitRow row) => Habit(
+  id: row.id,
+  spaceId: row.spaceId,
+  contextId: row.contextId,
+  name: row.name,
+  description: row.description,
+  colorValue: row.color,
+  icon: row.icon,
+  targetPerWeek: row.targetPerWeek,
+  position: row.position,
+  archived: row.archived,
+  createdAt: row.createdAt,
+  deletedAt: row.deletedAt,
+);
+
+TimeEntry _timeEntryFromRow(TimeEntryRow row) => TimeEntry(
+  id: row.id,
+  entryId: row.entryId,
+  occurrenceDateKey: row.occurrenceDateKey,
+  startedAt: row.startedAt.toUtc(),
+  endedAt: row.endedAt?.toUtc(),
+  note: row.note,
+  createdAt: row.createdAt,
+);
 
 Reminder _reminderFromRow(ReminderRow row) => Reminder(
   id: row.id,
@@ -1641,6 +2235,7 @@ RemoteSnapshot _remoteSnapshotFromRow(RemoteSnapshotRow row) {
 
 HomeItem _homeItemFromRow(HomeItemRow row) => HomeItem(
   id: row.id,
+  contextId: row.contextId,
   name: row.name,
   category: row.category,
   location: row.location,
@@ -1653,6 +2248,7 @@ HomeItem _homeItemFromRow(HomeItemRow row) => HomeItem(
 
 ShoppingItem _shoppingItemFromRow(ShoppingItemRow row) => ShoppingItem(
   id: row.id,
+  contextId: row.contextId,
   name: row.name,
   quantity: row.quantity,
   unit: row.unit,
@@ -1671,8 +2267,13 @@ HomePurchase _homePurchaseFromRow(HomePurchaseRow row) => HomePurchase(
   purchasedAt: row.purchasedAt,
 );
 
-ShiftChecklistItem _checklistItemFromRow(ShiftChecklistItemRow row) =>
-    ShiftChecklistItem(id: row.id, patternId: row.patternId, label: row.label, position: row.position);
+ShiftChecklistItem _checklistItemFromRow(ShiftChecklistItemRow row) => ShiftChecklistItem(
+  id: row.id,
+  patternId: row.patternId,
+  label: row.label,
+  dayIndex: row.dayIndex,
+  position: row.position,
+);
 
 LocalIdentity _identityFromRow(IdentityRow row) => LocalIdentity(
   deviceId: row.deviceId,
@@ -1711,6 +2312,10 @@ Entry _entryFromRow(EntryRow row, {Set<String> tagIds = const <String>{}}) => En
   startMinute: row.startMinute,
   endMinute: row.endMinute,
   timeZone: row.timeZone,
+  contextId: row.contextId,
+  projectId: row.projectId,
+  priority: EntryPriority.values.byName(row.priority),
+  completedAt: row.completedAt?.toUtc(),
   tagIds: tagIds,
   allDay: row.allDay,
   status: EntryStatus.values.byName(row.status),
@@ -1740,6 +2345,9 @@ EntryRecordsCompanion _entryCompanion(Entry entry) => EntryRecordsCompanion(
   startMinute: Value(entry.startMinute),
   endMinute: Value(entry.endMinute),
   timeZone: Value(entry.timeZone),
+  contextId: Value(entry.contextId),
+  projectId: Value(entry.projectId),
+  priority: Value(entry.priority.name),
   startAt: Value(entry.startAt),
   endAt: Value(entry.endAt),
   allDay: Value(entry.allDay),
@@ -1750,6 +2358,7 @@ EntryRecordsCompanion _entryCompanion(Entry entry) => EntryRecordsCompanion(
   readOnly: Value(entry.readOnly),
   lastCompletedAt: Value(entry.lastCompletedAt),
   repeatAfterCompletionDays: Value(entry.repeatAfterCompletionDays),
+  completedAt: Value(entry.completedAt),
   createdAt: Value(entry.createdAt),
   updatedAt: Value(entry.updatedAt),
   deletedAt: Value(entry.deletedAt),
@@ -1764,6 +2373,7 @@ ShiftPattern _patternFromRow(
   id: row.id,
   spaceId: row.spaceId,
   name: row.name,
+  contextId: row.contextId,
   timeZone: row.timeZone,
   cycleDays: row.cycleDays,
   anchorDate: LocalDate.fromKey(row.anchorDateKey),

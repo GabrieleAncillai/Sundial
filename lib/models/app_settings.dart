@@ -24,12 +24,28 @@ abstract final class SettingsKeys {
   static const quietHoursEnabled = 'quietHoursEnabled';
   static const quietHoursStart = 'quietHoursStart';
   static const quietHoursEnd = 'quietHoursEnd';
-  static const appLockEnabled = 'appLockEnabled';
-  static const appLockPinSalt = 'appLockPinSalt';
-  static const appLockPinHash = 'appLockPinHash';
-  static const appLockMisses = 'appLockMisses';
-  static const appLockBlockedUntil = 'appLockBlockedUntil';
+
+  static const themeVariant = 'themeVariant';
+  static const colorScheme = 'colorScheme';
+  static const backgroundStyle = 'backgroundStyle';
+  static const backgroundCustomColor = 'backgroundCustomColor';
+  static const textScale = 'textScale';
+  static const navSide = 'navSide';
+  static const dateFormat = 'dateFormat';
+  static const performanceMode = 'performanceMode';
+  static const onlineEnabled = 'onlineEnabled';
+  static const mcpPort = 'mcpPort';
 }
+
+enum ManeThemeVariant { system, light, dark, aero }
+
+enum ManeAccentScheme { sage, ocean, sunset, violet, mono }
+
+enum ManeBackgroundStyle { dots, grid, oled, plain, custom }
+
+enum ManeNavSide { left, right }
+
+enum ManeDateFormat { system, dmy, mdy, ymd }
 
 /// App-wide preferences. Persisted in the `setting_records` table.
 class AppSettings {
@@ -48,14 +64,22 @@ class AppSettings {
     this.sleepWakeBufferMinutes = 30,
     this.autoBackupEnabled = false,
     this.autoBackupKeep = 5,
-    this.appLockEnabled = false,
-    this.hasAppLockPin = false,
     this.workHoursEnabled = false,
     this.workHoursStartMinute = 9 * 60,
     this.workHoursEndMinute = 17 * 60,
     this.quietHoursEnabled = false,
     this.quietHoursStartMinute = 22 * 60,
     this.quietHoursEndMinute = 7 * 60,
+    this.themeVariant = ManeThemeVariant.system,
+    this.accentScheme = ManeAccentScheme.sage,
+    this.backgroundStyle = ManeBackgroundStyle.dots,
+    this.backgroundCustomColor = 0xFFF6F4EF,
+    this.textScale = 1,
+    this.navSide = ManeNavSide.left,
+    this.dateFormat = ManeDateFormat.system,
+    this.performanceMode = false,
+    this.onlineEnabled = false,
+    this.mcpPort = 8765,
   });
 
   final ThemeMode themeMode;
@@ -84,11 +108,6 @@ class AppSettings {
   final bool autoBackupEnabled;
   final int autoBackupKeep;
 
-  /// A PIN pad before the planner opens. The hash is device-local and never
-  /// travels in a backup.
-  final bool appLockEnabled;
-  final bool hasAppLockPin;
-
   /// When enabled, Work entries leave the aggregate screens outside this
   /// window. Work deadlines stay visible, and search always finds them.
   final bool workHoursEnabled;
@@ -100,9 +119,35 @@ class AppSettings {
   final int quietHoursStartMinute;
   final int quietHoursEndMinute;
 
+  final ManeThemeVariant themeVariant;
+  final ManeAccentScheme accentScheme;
+  final ManeBackgroundStyle backgroundStyle;
+  final int backgroundCustomColor;
+  final double textScale;
+  final ManeNavSide navSide;
+  final ManeDateFormat dateFormat;
+
+  /// Reduces blur, shadows and long animations on low-end devices.
+  final bool performanceMode;
+
+  /// Master switch for LAN sync and the local MCP endpoint.
+  final bool onlineEnabled;
+  final int mcpPort;
+
   Duration get commute => Duration(minutes: sleepCommuteMinutes);
   Duration get windDown => Duration(minutes: sleepWindDownMinutes);
   Duration get wakeBuffer => Duration(minutes: sleepWakeBufferMinutes);
+
+  ThemeMode get resolvedThemeMode => switch (themeVariant) {
+    ManeThemeVariant.light => ThemeMode.light,
+    ManeThemeVariant.dark => ThemeMode.dark,
+    ManeThemeVariant.aero => ThemeMode.light,
+    ManeThemeVariant.system => ThemeMode.system,
+  };
+
+  bool get isAero => themeVariant == ManeThemeVariant.aero;
+
+  bool get canUseNetwork => onlineEnabled;
 
   bool isWorkTime(DateTime instant, String timeZone) {
     if (!workHoursEnabled) return true;
@@ -133,6 +178,19 @@ class AppSettings {
         'dark' => ThemeMode.dark,
         _ => ThemeMode.system,
       },
+      themeVariant: _themeVariant(values),
+      accentScheme: _accentScheme(values[SettingsKeys.colorScheme]),
+      backgroundStyle: _backgroundStyle(values[SettingsKeys.backgroundStyle]),
+      backgroundCustomColor: int.tryParse(values[SettingsKeys.backgroundCustomColor] ?? '') ?? 0xFFF6F4EF,
+      textScale: _textScale(values[SettingsKeys.textScale]),
+      navSide: values[SettingsKeys.navSide] == 'right' ? ManeNavSide.right : ManeNavSide.left,
+      dateFormat: _dateFormat(values[SettingsKeys.dateFormat]),
+      performanceMode: values[SettingsKeys.performanceMode] == 'true',
+      onlineEnabled:
+          values[SettingsKeys.onlineEnabled] == 'true' ||
+          values[SettingsKeys.syncEnabled] == 'true' ||
+          values[SettingsKeys.mcpEnabled] == 'true',
+      mcpPort: _mcpPort(values[SettingsKeys.mcpPort]),
       locale: localeValue == null || localeValue.isEmpty || localeValue == 'system'
           ? null
           : localeForCode(localeValue),
@@ -148,10 +206,6 @@ class AppSettings {
       sleepWakeBufferMinutes: _minutes(values[SettingsKeys.sleepWakeBufferMinutes], 30),
       autoBackupEnabled: values[SettingsKeys.autoBackupEnabled] == 'true',
       autoBackupKeep: _keep(values[SettingsKeys.autoBackupKeep]),
-      hasAppLockPin: (values[SettingsKeys.appLockPinHash] ?? '').isNotEmpty,
-      appLockEnabled:
-          values[SettingsKeys.appLockEnabled] == 'true' &&
-          (values[SettingsKeys.appLockPinHash] ?? '').isNotEmpty,
       workHoursEnabled: values[SettingsKeys.workHoursEnabled] == 'true',
       workHoursStartMinute: _minutes(values[SettingsKeys.workHoursStart], 9 * 60),
       workHoursEndMinute: _minutes(values[SettingsKeys.workHoursEnd], 17 * 60),
@@ -165,6 +219,53 @@ class AppSettings {
     final parsed = int.tryParse(value ?? '');
     if (parsed == null || parsed < 1) return 5;
     return parsed.clamp(1, 20);
+  }
+
+  static ManeThemeVariant _themeVariant(Map<String, String> values) {
+    final explicit = values[SettingsKeys.themeVariant];
+    if (explicit != null) {
+      for (final variant in ManeThemeVariant.values) {
+        if (variant.name == explicit) return variant;
+      }
+    }
+    return switch (values[SettingsKeys.themeMode]) {
+      'light' => ManeThemeVariant.light,
+      'dark' => ManeThemeVariant.dark,
+      _ => ManeThemeVariant.system,
+    };
+  }
+
+  static ManeAccentScheme _accentScheme(String? value) {
+    for (final scheme in ManeAccentScheme.values) {
+      if (scheme.name == value) return scheme;
+    }
+    return ManeAccentScheme.sage;
+  }
+
+  static ManeBackgroundStyle _backgroundStyle(String? value) {
+    for (final style in ManeBackgroundStyle.values) {
+      if (style.name == value) return style;
+    }
+    return ManeBackgroundStyle.dots;
+  }
+
+  static ManeDateFormat _dateFormat(String? value) {
+    for (final format in ManeDateFormat.values) {
+      if (format.name == value) return format;
+    }
+    return ManeDateFormat.system;
+  }
+
+  static double _textScale(String? value) {
+    final parsed = double.tryParse(value ?? '');
+    if (parsed == null) return 1;
+    return parsed.clamp(0.85, 1.35);
+  }
+
+  static int _mcpPort(String? value) {
+    final parsed = int.tryParse(value ?? '');
+    if (parsed == null || parsed < 1024 || parsed > 65535) return 8765;
+    return parsed;
   }
 
   static int _minutes(String? value, int fallback) {
@@ -188,14 +289,22 @@ class AppSettings {
     int? sleepWakeBufferMinutes,
     bool? autoBackupEnabled,
     int? autoBackupKeep,
-    bool? appLockEnabled,
-    bool? hasAppLockPin,
     bool? workHoursEnabled,
     int? workHoursStartMinute,
     int? workHoursEndMinute,
     bool? quietHoursEnabled,
     int? quietHoursStartMinute,
     int? quietHoursEndMinute,
+    ManeThemeVariant? themeVariant,
+    ManeAccentScheme? accentScheme,
+    ManeBackgroundStyle? backgroundStyle,
+    int? backgroundCustomColor,
+    double? textScale,
+    ManeNavSide? navSide,
+    ManeDateFormat? dateFormat,
+    bool? performanceMode,
+    bool? onlineEnabled,
+    int? mcpPort,
   }) => AppSettings(
     themeMode: themeMode ?? this.themeMode,
     locale: clearLocale ? null : (locale ?? this.locale),
@@ -211,13 +320,21 @@ class AppSettings {
     sleepWakeBufferMinutes: sleepWakeBufferMinutes ?? this.sleepWakeBufferMinutes,
     autoBackupEnabled: autoBackupEnabled ?? this.autoBackupEnabled,
     autoBackupKeep: autoBackupKeep ?? this.autoBackupKeep,
-    appLockEnabled: appLockEnabled ?? this.appLockEnabled,
-    hasAppLockPin: hasAppLockPin ?? this.hasAppLockPin,
     workHoursEnabled: workHoursEnabled ?? this.workHoursEnabled,
     workHoursStartMinute: workHoursStartMinute ?? this.workHoursStartMinute,
     workHoursEndMinute: workHoursEndMinute ?? this.workHoursEndMinute,
     quietHoursEnabled: quietHoursEnabled ?? this.quietHoursEnabled,
     quietHoursStartMinute: quietHoursStartMinute ?? this.quietHoursStartMinute,
     quietHoursEndMinute: quietHoursEndMinute ?? this.quietHoursEndMinute,
+    themeVariant: themeVariant ?? this.themeVariant,
+    accentScheme: accentScheme ?? this.accentScheme,
+    backgroundStyle: backgroundStyle ?? this.backgroundStyle,
+    backgroundCustomColor: backgroundCustomColor ?? this.backgroundCustomColor,
+    textScale: textScale ?? this.textScale,
+    navSide: navSide ?? this.navSide,
+    dateFormat: dateFormat ?? this.dateFormat,
+    performanceMode: performanceMode ?? this.performanceMode,
+    onlineEnabled: onlineEnabled ?? this.onlineEnabled,
+    mcpPort: mcpPort ?? this.mcpPort,
   );
 }

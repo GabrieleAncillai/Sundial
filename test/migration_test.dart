@@ -138,7 +138,7 @@ void main() {
     expect(columns.map((row) => row.data['name']), contains('time_zone'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 9);
   });
 
   test('migrates real v2 data and keeps tags usable', () async {
@@ -200,7 +200,7 @@ void main() {
     expect((await database.watchTags().first).single.name, 'Tax');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 9);
   });
 
   test('migrates real v3 data and exposes the v0.3 tables', () async {
@@ -254,7 +254,7 @@ void main() {
 
     await database.saveShiftChecklistItems('missing-pattern', const []);
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 9);
   });
 
   test('migrates real v4 data and creates the pairing tables', () async {
@@ -408,7 +408,7 @@ void main() {
     expect(paired.port, 8766);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 9);
   });
 
   test('migrates real v5 checklist rows to per-slot keys', () async {
@@ -478,7 +478,7 @@ void main() {
     expect(saved.windDownMinutes, 20);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 9);
   });
 
   test('migrates real v6 rows to shopping order and purchase history', () async {
@@ -535,7 +535,7 @@ void main() {
     expect(history.single.note, 'Shop run');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 9);
   });
 
   test('migrates real v7 rows to custom reminder times and remote snapshots', () async {
@@ -610,6 +610,81 @@ void main() {
     expect(await database.readRemoteSnapshots(), isEmpty);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 9);
+  });
+
+  test('migrates real v8 rows to contexts, projects, habits and tracked tasks', () async {
+    final directory = await Directory.systemTemp.createTemp('mane-migration-v8');
+    final path = '${directory.path}/mane.sqlite';
+    final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
+
+    final raw = sqlite3.open(path);
+    raw.execute(File('test/fixtures/schema_v8.sql').readAsStringSync());
+    raw.execute(
+      'INSERT INTO space_records (id, name, color, position, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['work', 'Work', 0xFF4A6FA5, 0, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO entry_records '
+      '(id, space_id, title, kind, date_key, all_day, status, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['shift', 'work', 'Shift note', 'task', 20261109, 1, 'open', createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO tag_records (id, name, color, position, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['job', 'Job', 0xFF2F7ED8, 0, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO shift_pattern_records '
+      '(id, space_id, name, time_zone, cycle_days, anchor_date_key, enabled, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['bar', 'work', 'Bar', 'Europe/Madrid', 7, 20261109, 1, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO shift_checklist_item_records (id, pattern_id, label, position) VALUES (?, ?, ?, ?)',
+      ['open', 'bar', 'Open', 0],
+    );
+    raw.dispose();
+
+    final database = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(() async {
+      await database.close();
+      await directory.delete(recursive: true);
+    });
+
+    await database.saveContext(
+      const PlannerContext(id: 'cafe', spaceId: 'work', name: 'Cafe', colorValue: 0xFF2F7ED8),
+    );
+    await database.saveProject(
+      const Project(id: 'reno', spaceId: 'work', contextId: 'cafe', name: 'Reno', colorValue: 0xFF2FA98F),
+    );
+    final entry = await database.readEntry('shift');
+    expect(entry!.priority, EntryPriority.none);
+    expect(entry.contextId, isNull);
+    await database.saveEntry(
+      entry.copyWith(
+        contextId: 'cafe',
+        projectId: 'reno',
+        priority: EntryPriority.high,
+        updatedAt: DateTime.utc(2026, 11, 9),
+      ),
+    );
+    final saved = await database.readEntry('shift');
+    expect(saved!.contextId, 'cafe');
+    expect(saved.projectId, 'reno');
+    expect(saved.priority, EntryPriority.high);
+
+    final tags = await database.watchTags().first;
+    expect(tags.single.icon, 'folder');
+
+    final items = await database.readShiftChecklistItems('bar');
+    expect(items.single.dayIndex, isNull);
+    await database.saveShiftChecklistItems('bar', [items.single.copyWith(dayIndex: 2)]);
+    expect((await database.readShiftChecklistItems('bar')).single.dayIndex, 2);
+
+    final version = await database.customSelect('PRAGMA user_version').getSingle();
+    expect(version.data.values.single, 9);
   });
 }

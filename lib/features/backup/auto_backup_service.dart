@@ -44,13 +44,24 @@ class AutoBackupService {
     final files = await listBackups();
     final now = _clock();
     if (files.isNotEmpty) {
-      final newest = files.first.statSync().modified;
-      if (newest.year == now.year && newest.month == now.month && newest.day == now.day) {
+      final newest = _backupDay(files.first);
+      if (newest != null && newest.year == now.year && newest.month == now.month && newest.day == now.day) {
         return false;
       }
     }
     await runNow(keep: keep);
     return true;
+  }
+
+  /// The day encoded in `mane-auto-YYYYMMDD-HHMMSS.json`. File mtimes change
+  /// when a copy is restored or synced, while the name is the actual write day.
+  static DateTime? _backupDay(File file) {
+    final name = p.basenameWithoutExtension(file.path);
+    if (!name.startsWith(prefix)) return null;
+    final stamp = name.substring(prefix.length);
+    final day = stamp.length >= 8 ? stamp.substring(0, 8) : '';
+    if (day.length != 8) return null;
+    return DateTime.tryParse('${day.substring(0, 4)}-${day.substring(4, 6)}-${day.substring(6, 8)}');
   }
 
   Future<File> runNow({int keep = 5}) async {

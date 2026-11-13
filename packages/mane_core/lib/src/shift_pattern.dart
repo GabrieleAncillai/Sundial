@@ -118,6 +118,7 @@ class ShiftPattern {
   ShiftPattern({
     required this.id,
     required this.spaceId,
+    this.contextId,
     required this.name,
     required this.timeZone,
     required this.cycleDays,
@@ -155,6 +156,7 @@ class ShiftPattern {
 
   final String id;
   final String spaceId;
+  final String? contextId;
   final String name;
 
   /// IANA timezone the wall-clock slot times are defined in.
@@ -306,6 +308,7 @@ class ShiftPattern {
 
   ShiftPattern copyWith({
     String? name,
+    Object? contextId = _unset,
     String? timeZone,
     int? cycleDays,
     LocalDate? anchorDate,
@@ -319,6 +322,7 @@ class ShiftPattern {
     id: id,
     spaceId: spaceId,
     name: name ?? this.name,
+    contextId: identical(contextId, _unset) ? this.contextId : contextId as String?,
     timeZone: timeZone ?? this.timeZone,
     cycleDays: cycleDays ?? this.cycleDays,
     anchorDate: anchorDate ?? this.anchorDate,

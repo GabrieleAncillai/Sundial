@@ -31,14 +31,15 @@ class BackupService {
   BackupService(this._database);
 
   static const appTag = 'mane';
-  static const currentSchemaVersion = 8;
+  static const currentSchemaVersion = 9;
 
   /// The oldest payload this build still upgrades. v1 and v2 are excluded on
   /// purpose: they predate timezone-aware entries and cannot be mapped safely.
   static const minimumSchemaVersion = 3;
 
-  /// Secrets belong to this device. A backup must never carry an app-lock hash
-  /// or pairing material to another install.
+  /// Secrets belong to this device. A backup must never carry pairing
+  /// material to another install. The app-lock keys are legacy: the feature is
+  /// gone, but older databases may still hold its hash, so keep stripping it.
   static const deviceLocalSettingKeys = {
     'appLockEnabled',
     'appLockPinSalt',
@@ -51,6 +52,11 @@ class BackupService {
 
   Future<String> exportJson() async {
     final spaces = await _database.select(_database.spaceRecords).get();
+    final contexts = await _database.select(_database.contextRecords).get();
+    final projects = await _database.select(_database.projectRecords).get();
+    final habits = await _database.select(_database.habitRecords).get();
+    final habitCompletions = await _database.select(_database.habitCompletionRecords).get();
+    final timeEntries = await _database.select(_database.timeEntryRecords).get();
     final tags = await _database.select(_database.tagRecords).get();
     final entries = await _database.select(_database.entryRecords).get();
     final entryTags = await _database.select(_database.entryTagRecords).get();
@@ -71,6 +77,14 @@ class BackupService {
       final byPosition = a.position.compareTo(b.position);
       return byPosition != 0 ? byPosition : a.id.compareTo(b.id);
     });
+    contexts.sort((a, b) => a.id.compareTo(b.id));
+    projects.sort((a, b) => a.id.compareTo(b.id));
+    habits.sort((a, b) => a.id.compareTo(b.id));
+    habitCompletions.sort((a, b) {
+      final byHabit = a.habitId.compareTo(b.habitId);
+      return byHabit != 0 ? byHabit : a.dateKey.compareTo(b.dateKey);
+    });
+    timeEntries.sort((a, b) => a.id.compareTo(b.id));
     tags.sort((a, b) => a.id.compareTo(b.id));
     entries.sort((a, b) => a.id.compareTo(b.id));
     entryTags.sort((a, b) {
@@ -125,10 +139,78 @@ class BackupService {
             'spaceId': row.spaceId,
             'name': row.name,
             'color': row.color,
+            'icon': row.icon,
             'position': row.position,
             'createdAt': _date(row.createdAt),
             'updatedAt': _date(row.updatedAt),
             'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
+      'contexts': [
+        for (final row in contexts)
+          {
+            'id': row.id,
+            'spaceId': row.spaceId,
+            'name': row.name,
+            'description': row.description,
+            'color': row.color,
+            'icon': row.icon,
+            'imagePath': row.imagePath,
+            'position': row.position,
+            'createdAt': _date(row.createdAt),
+            'updatedAt': _date(row.updatedAt),
+            'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
+      'projects': [
+        for (final row in projects)
+          {
+            'id': row.id,
+            'spaceId': row.spaceId,
+            'contextId': row.contextId,
+            'name': row.name,
+            'description': row.description,
+            'color': row.color,
+            'icon': row.icon,
+            'imagePath': row.imagePath,
+            'position': row.position,
+            'createdAt': _date(row.createdAt),
+            'updatedAt': _date(row.updatedAt),
+            'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
+      'habits': [
+        for (final row in habits)
+          {
+            'id': row.id,
+            'spaceId': row.spaceId,
+            'contextId': row.contextId,
+            'name': row.name,
+            'description': row.description,
+            'color': row.color,
+            'icon': row.icon,
+            'targetPerWeek': row.targetPerWeek,
+            'position': row.position,
+            'archived': row.archived,
+            'createdAt': _date(row.createdAt),
+            'updatedAt': _date(row.updatedAt),
+            'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
+      'habitCompletions': [
+        for (final row in habitCompletions)
+          {'habitId': row.habitId, 'dateKey': row.dateKey, 'createdAt': _date(row.createdAt)},
+      ],
+      'timeEntries': [
+        for (final row in timeEntries)
+          {
+            'id': row.id,
+            'entryId': row.entryId,
+            'occurrenceDateKey': row.occurrenceDateKey,
+            'startedAt': _date(row.startedAt),
+            'endedAt': _nullableDate(row.endedAt),
+            'note': row.note,
+            'createdAt': _date(row.createdAt),
           },
       ],
       'entries': [
@@ -144,6 +226,9 @@ class BackupService {
             'startMinute': row.startMinute,
             'endMinute': row.endMinute,
             'timeZone': row.timeZone,
+            'contextId': row.contextId,
+            'projectId': row.projectId,
+            'priority': row.priority,
             'startAt': _nullableDate(row.startAt),
             'endAt': _nullableDate(row.endAt),
             'allDay': row.allDay,
@@ -154,6 +239,7 @@ class BackupService {
             'readOnly': row.readOnly,
             'lastCompletedAt': _nullableDate(row.lastCompletedAt),
             'repeatAfterCompletionDays': row.repeatAfterCompletionDays,
+            'completedAt': _nullableDate(row.completedAt),
             'createdAt': _date(row.createdAt),
             'updatedAt': _date(row.updatedAt),
             'deletedAt': _nullableDate(row.deletedAt),
@@ -182,6 +268,7 @@ class BackupService {
             'id': row.id,
             'spaceId': row.spaceId,
             'name': row.name,
+            'contextId': row.contextId,
             'timeZone': row.timeZone,
             'cycleDays': row.cycleDays,
             'anchorDateKey': row.anchorDateKey,
@@ -221,7 +308,13 @@ class BackupService {
       ],
       'shiftChecklistItems': [
         for (final row in checklistItems)
-          {'id': row.id, 'patternId': row.patternId, 'label': row.label, 'position': row.position},
+          {
+            'id': row.id,
+            'patternId': row.patternId,
+            'label': row.label,
+            'dayIndex': row.dayIndex,
+            'position': row.position,
+          },
       ],
       'shiftChecklistCompletions': [
         for (final row in checklistCompletions)
@@ -236,6 +329,7 @@ class BackupService {
         for (final row in homeItems)
           {
             'id': row.id,
+            'contextId': row.contextId,
             'name': row.name,
             'category': row.category,
             'location': row.location,
@@ -253,6 +347,7 @@ class BackupService {
         for (final row in shoppingItems)
           {
             'id': row.id,
+            'contextId': row.contextId,
             'name': row.name,
             'quantity': row.quantity,
             'unit': row.unit,
@@ -304,6 +399,11 @@ class BackupService {
     }
 
     final spaces = _requiredMaps(payload, 'spaces');
+    final contexts = _maps(payload, 'contexts');
+    final projects = _maps(payload, 'projects');
+    final habits = _maps(payload, 'habits');
+    final habitCompletions = _maps(payload, 'habitCompletions');
+    final timeEntries = _maps(payload, 'timeEntries');
     final tags = _maps(payload, 'tags');
     final entries = _requiredMaps(payload, 'entries');
     final entryTags = _maps(payload, 'entryTags');
@@ -321,6 +421,8 @@ class BackupService {
     final settings = _map(payload, 'settings');
 
     await _database.transaction(() async {
+      await _database.delete(_database.habitCompletionRecords).go();
+      await _database.delete(_database.timeEntryRecords).go();
       await _database.delete(_database.shiftChecklistCompletionRecords).go();
       await _database.delete(_database.shiftChecklistItemRecords).go();
       await _database.delete(_database.homePurchaseRecords).go();
@@ -334,6 +436,9 @@ class BackupService {
       await _database.delete(_database.shiftExceptionRecords).go();
       await _database.delete(_database.entryRecords).go();
       await _database.delete(_database.shiftPatternRecords).go();
+      await _database.delete(_database.habitRecords).go();
+      await _database.delete(_database.projectRecords).go();
+      await _database.delete(_database.contextRecords).go();
       await _database.delete(_database.tagRecords).go();
       await _database.delete(_database.spaceRecords).go();
       await _database.delete(_database.settingRecords).go();
@@ -354,6 +459,69 @@ class BackupService {
             );
       }
 
+      for (final row in contexts) {
+        await _database
+            .into(_database.contextRecords)
+            .insert(
+              ContextRecordsCompanion(
+                id: Value(_string(row, 'id')),
+                spaceId: Value(_string(row, 'spaceId')),
+                name: Value(_string(row, 'name')),
+                description: Value(_optionalString(row, 'description') ?? ''),
+                color: Value(_integer(row, 'color')),
+                icon: Value(_optionalString(row, 'icon') ?? 'folder'),
+                imagePath: Value(_optionalString(row, 'imagePath')),
+                position: Value(_optionalInteger(row, 'position') ?? 0),
+                createdAt: Value(_dateTime(row, 'createdAt')),
+                updatedAt: Value(_dateTime(row, 'updatedAt')),
+                deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
+      for (final row in projects) {
+        await _database
+            .into(_database.projectRecords)
+            .insert(
+              ProjectRecordsCompanion(
+                id: Value(_string(row, 'id')),
+                spaceId: Value(_string(row, 'spaceId')),
+                contextId: Value(_optionalString(row, 'contextId')),
+                name: Value(_string(row, 'name')),
+                description: Value(_optionalString(row, 'description') ?? ''),
+                color: Value(_integer(row, 'color')),
+                icon: Value(_optionalString(row, 'icon') ?? 'folder'),
+                imagePath: Value(_optionalString(row, 'imagePath')),
+                position: Value(_optionalInteger(row, 'position') ?? 0),
+                createdAt: Value(_dateTime(row, 'createdAt')),
+                updatedAt: Value(_dateTime(row, 'updatedAt')),
+                deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
+      for (final row in habits) {
+        await _database
+            .into(_database.habitRecords)
+            .insert(
+              HabitRecordsCompanion(
+                id: Value(_string(row, 'id')),
+                spaceId: Value(_string(row, 'spaceId')),
+                contextId: Value(_optionalString(row, 'contextId')),
+                name: Value(_string(row, 'name')),
+                description: Value(_optionalString(row, 'description') ?? ''),
+                color: Value(_integer(row, 'color')),
+                icon: Value(_optionalString(row, 'icon') ?? 'star'),
+                targetPerWeek: Value(_optionalInteger(row, 'targetPerWeek') ?? 7),
+                position: Value(_optionalInteger(row, 'position') ?? 0),
+                archived: Value(_optionalBoolean(row, 'archived') ?? false),
+                createdAt: Value(_dateTime(row, 'createdAt')),
+                updatedAt: Value(_dateTime(row, 'updatedAt')),
+                deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
       for (final row in tags) {
         await _database
             .into(_database.tagRecords)
@@ -363,6 +531,7 @@ class BackupService {
                 spaceId: Value(_optionalString(row, 'spaceId')),
                 name: Value(_string(row, 'name')),
                 color: Value(_integer(row, 'color')),
+                icon: Value(_optionalString(row, 'icon') ?? 'folder'),
                 position: Value(_integer(row, 'position')),
                 createdAt: Value(_dateTime(row, 'createdAt')),
                 updatedAt: Value(_dateTime(row, 'updatedAt')),
@@ -377,6 +546,7 @@ class BackupService {
             .insert(
               HomeItemRecordsCompanion(
                 id: Value(_string(row, 'id')),
+                contextId: Value(_optionalString(row, 'contextId')),
                 name: Value(_string(row, 'name')),
                 category: Value(_string(row, 'category')),
                 location: Value(_string(row, 'location')),
@@ -398,6 +568,7 @@ class BackupService {
             .insert(
               ShoppingItemRecordsCompanion(
                 id: Value(_string(row, 'id')),
+                contextId: Value(_optionalString(row, 'contextId')),
                 name: Value(_string(row, 'name')),
                 quantity: Value(_number(row, 'quantity')),
                 unit: Value(_string(row, 'unit')),
@@ -442,6 +613,9 @@ class BackupService {
                 startMinute: Value(_optionalInteger(row, 'startMinute')),
                 endMinute: Value(_optionalInteger(row, 'endMinute')),
                 timeZone: Value(_optionalString(row, 'timeZone')),
+                contextId: Value(_optionalString(row, 'contextId')),
+                projectId: Value(_optionalString(row, 'projectId')),
+                priority: Value(_optionalString(row, 'priority') ?? 'none'),
                 startAt: Value(_optionalDateTime(row, 'startAt')),
                 endAt: Value(_optionalDateTime(row, 'endAt')),
                 allDay: Value(_boolean(row, 'allDay')),
@@ -452,6 +626,7 @@ class BackupService {
                 readOnly: Value(_optionalBoolean(row, 'readOnly') ?? false),
                 lastCompletedAt: Value(_optionalDateTime(row, 'lastCompletedAt')),
                 repeatAfterCompletionDays: Value(_optionalInteger(row, 'repeatAfterCompletionDays')),
+                completedAt: Value(_optionalDateTime(row, 'completedAt')),
                 createdAt: Value(_dateTime(row, 'createdAt')),
                 updatedAt: Value(_dateTime(row, 'updatedAt')),
                 deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
@@ -480,6 +655,34 @@ class BackupService {
             );
       }
 
+      for (final row in habitCompletions) {
+        await _database
+            .into(_database.habitCompletionRecords)
+            .insert(
+              HabitCompletionRecordsCompanion.insert(
+                habitId: _string(row, 'habitId'),
+                dateKey: _integer(row, 'dateKey'),
+                createdAt: _dateTime(row, 'createdAt'),
+              ),
+            );
+      }
+
+      for (final row in timeEntries) {
+        await _database
+            .into(_database.timeEntryRecords)
+            .insert(
+              TimeEntryRecordsCompanion.insert(
+                id: _string(row, 'id'),
+                entryId: _string(row, 'entryId'),
+                occurrenceDateKey: Value(_optionalInteger(row, 'occurrenceDateKey')),
+                startedAt: _dateTime(row, 'startedAt'),
+                endedAt: Value(_optionalDateTime(row, 'endedAt')),
+                note: Value(_optionalString(row, 'note') ?? ''),
+                createdAt: _dateTime(row, 'createdAt'),
+              ),
+            );
+      }
+
       for (final row in reminders) {
         await _database
             .into(_database.reminderRecords)
@@ -502,6 +705,7 @@ class BackupService {
                 id: Value(_string(row, 'id')),
                 spaceId: Value(_string(row, 'spaceId')),
                 name: Value(_string(row, 'name')),
+                contextId: Value(_optionalString(row, 'contextId')),
                 timeZone: Value(_string(row, 'timeZone')),
                 cycleDays: Value(_integer(row, 'cycleDays')),
                 anchorDateKey: Value(_integer(row, 'anchorDateKey')),
@@ -566,6 +770,7 @@ class BackupService {
                 id: Value(_string(row, 'id')),
                 patternId: Value(_string(row, 'patternId')),
                 label: Value(_string(row, 'label')),
+                dayIndex: Value(_optionalInteger(row, 'dayIndex')),
                 position: Value(_integer(row, 'position')),
               ),
             );

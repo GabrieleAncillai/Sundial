@@ -3,6 +3,7 @@
 class ShoppingItem {
   const ShoppingItem({
     required this.id,
+    this.contextId,
     required this.name,
     this.quantity = 1,
     this.unit = '',
@@ -13,6 +14,7 @@ class ShoppingItem {
   });
 
   final String id;
+  final String? contextId;
   final String name;
   final double quantity;
   final String unit;
@@ -24,6 +26,8 @@ class ShoppingItem {
   final int position;
 
   ShoppingItem copyWith({
+    String? contextId,
+    bool clearContext = false,
     String? name,
     double? quantity,
     String? unit,
@@ -34,6 +38,7 @@ class ShoppingItem {
     int? position,
   }) => ShoppingItem(
     id: id,
+    contextId: clearContext ? null : (contextId ?? this.contextId),
     name: name ?? this.name,
     quantity: quantity ?? this.quantity,
     unit: unit ?? this.unit,

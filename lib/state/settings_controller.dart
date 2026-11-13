@@ -22,8 +22,75 @@ class SettingsController extends Notifier<AppSettings> {
   }
 
   Future<void> setThemeMode(ThemeMode value) async {
-    state = state.copyWith(themeMode: value);
+    final variant = switch (value) {
+      ThemeMode.light => ManeThemeVariant.light,
+      ThemeMode.dark => ManeThemeVariant.dark,
+      ThemeMode.system => ManeThemeVariant.system,
+    };
+    state = state.copyWith(themeMode: value, themeVariant: variant);
     await _repository.writeSetting(SettingsKeys.themeMode, value.name);
+    await _repository.writeSetting(SettingsKeys.themeVariant, variant.name);
+  }
+
+  Future<void> setThemeVariant(ManeThemeVariant value) async {
+    final mode = switch (value) {
+      ManeThemeVariant.light => ThemeMode.light,
+      ManeThemeVariant.dark => ThemeMode.dark,
+      ManeThemeVariant.system => ThemeMode.system,
+      ManeThemeVariant.aero => ThemeMode.light,
+    };
+    state = state.copyWith(themeVariant: value, themeMode: mode);
+    await _repository.writeSetting(SettingsKeys.themeVariant, value.name);
+    if (value != ManeThemeVariant.aero) {
+      await _repository.writeSetting(SettingsKeys.themeMode, mode.name);
+    }
+  }
+
+  Future<void> setAccentScheme(ManeAccentScheme value) async {
+    state = state.copyWith(accentScheme: value);
+    await _repository.writeSetting(SettingsKeys.colorScheme, value.name);
+  }
+
+  Future<void> setBackgroundStyle(ManeBackgroundStyle value) async {
+    state = state.copyWith(backgroundStyle: value);
+    await _repository.writeSetting(SettingsKeys.backgroundStyle, value.name);
+  }
+
+  Future<void> setBackgroundCustomColor(int value) async {
+    state = state.copyWith(backgroundCustomColor: value);
+    await _repository.writeSetting(SettingsKeys.backgroundCustomColor, '$value');
+  }
+
+  Future<void> setTextScale(double value) async {
+    final scale = value.clamp(0.85, 1.35);
+    state = state.copyWith(textScale: scale);
+    await _repository.writeSetting(SettingsKeys.textScale, '$scale');
+  }
+
+  Future<void> setNavSide(ManeNavSide value) async {
+    state = state.copyWith(navSide: value);
+    await _repository.writeSetting(SettingsKeys.navSide, value.name);
+  }
+
+  Future<void> setDateFormat(ManeDateFormat value) async {
+    state = state.copyWith(dateFormat: value);
+    await _repository.writeSetting(SettingsKeys.dateFormat, value.name);
+  }
+
+  Future<void> setPerformanceMode(bool value) async {
+    state = state.copyWith(performanceMode: value);
+    await _repository.writeSetting(SettingsKeys.performanceMode, '$value');
+  }
+
+  Future<void> setOnlineEnabled(bool value) async {
+    state = state.copyWith(onlineEnabled: value);
+    await _repository.writeSetting(SettingsKeys.onlineEnabled, '$value');
+  }
+
+  Future<void> setMcpPort(int value) async {
+    final port = value.clamp(1024, 65535);
+    state = state.copyWith(mcpPort: port);
+    await _repository.writeSetting(SettingsKeys.mcpPort, '$port');
   }
 
   Future<void> setLocale(Locale? value) async {

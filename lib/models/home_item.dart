@@ -3,6 +3,7 @@
 class HomeItem {
   const HomeItem({
     required this.id,
+    this.contextId,
     required this.name,
     this.category = '',
     this.location = '',
@@ -14,6 +15,7 @@ class HomeItem {
   });
 
   final String id;
+  final String? contextId;
   final String name;
   final String category;
   final String location;
@@ -34,6 +36,8 @@ class HomeItem {
   }
 
   HomeItem copyWith({
+    String? contextId,
+    bool clearContext = false,
     String? name,
     String? category,
     String? location,
@@ -45,6 +49,7 @@ class HomeItem {
     DateTime? lastPurchasedAt,
   }) => HomeItem(
     id: id,
+    contextId: clearContext ? null : (contextId ?? this.contextId),
     name: name ?? this.name,
     category: category ?? this.category,
     location: location ?? this.location,

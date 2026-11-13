@@ -67,24 +67,16 @@ void main() {
     expect(settings.isQuietTime(DateTime.utc(2026, 11, 9, 22, 30), 'Europe/Madrid'), isTrue);
   });
 
-  test('reads automatic backup and app lock settings safely', () {
-    final locked = AppSettings.fromMap({
+  test('reads automatic backup settings safely', () {
+    final settings = AppSettings.fromMap({
       SettingsKeys.autoBackupEnabled: 'true',
       SettingsKeys.autoBackupKeep: '10',
-      SettingsKeys.appLockEnabled: 'true',
-      SettingsKeys.appLockPinHash: 'aGFzaA==',
     });
-    expect(locked.autoBackupEnabled, isTrue);
-    expect(locked.autoBackupKeep, 10);
-    expect(locked.appLockEnabled, isTrue);
-    expect(locked.hasAppLockPin, isTrue);
+    expect(settings.autoBackupEnabled, isTrue);
+    expect(settings.autoBackupKeep, 10);
 
-    final enabledWithoutPin = AppSettings.fromMap({
-      SettingsKeys.appLockEnabled: 'true',
-      SettingsKeys.autoBackupKeep: '999',
-    });
-    expect(enabledWithoutPin.appLockEnabled, isFalse);
-    expect(enabledWithoutPin.autoBackupKeep, 20);
+    final clamped = AppSettings.fromMap({SettingsKeys.autoBackupKeep: '999'});
+    expect(clamped.autoBackupKeep, 20);
   });
 
   test('settings persist through the repository and can be cleared', () async {

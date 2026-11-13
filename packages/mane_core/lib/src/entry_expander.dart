@@ -93,16 +93,39 @@ List<EntryOccurrence> expandEntries({
       final timeZone = entry.timeZone;
       final startMinute = override?.startMinute ?? entry.startMinute;
       final baseEndMinute = override?.endMinute ?? entry.endMinute;
-      if (timeZone == null || startMinute == null || baseEndMinute == null) continue;
 
-      final startAt = instantAt(effectiveDate, startMinute, timeZone);
-      final endAt = entry.endDate == null
-          ? instantAt(effectiveDate, baseEndMinute, timeZone)
-          : instantAt(effectiveDate.addDays(entry.endDayOffset), baseEndMinute, timeZone);
-      if (!endAt.isAfter(startAt)) continue;
+      // An anytime task has a day but no clock time. It still belongs on the
+      // calendar as a date-only chip and in the task list.
+      if (startMinute == null && baseEndMinute == null) {
+        if (_inRange(effectiveDate, start, end)) {
+          result.add(
+            EntryOccurrence(
+              date: date,
+              displayDate: effectiveDate,
+              entry: occurrenceEntry,
+              completed: rule == null ? entry.status == EntryStatus.done : doneDates.contains(date),
+            ),
+          );
+        }
+        continue;
+      }
 
-      final firstDisplay = localDateAt(startAt, viewerTimeZone);
-      final lastDisplay = localDateAt(endAt.subtract(const Duration(seconds: 1)), viewerTimeZone);
+      if (timeZone == null) continue;
+
+      final startAt = startMinute == null ? null : instantAt(effectiveDate, startMinute, timeZone);
+      final endAt = baseEndMinute == null
+          ? null
+          : instantAt(
+              entry.endDate == null ? effectiveDate : effectiveDate.addDays(entry.endDayOffset),
+              baseEndMinute,
+              timeZone,
+            );
+      if (startAt != null && endAt != null && !endAt.isAfter(startAt)) continue;
+
+      final firstDisplay = localDateAt(startAt ?? endAt!, viewerTimeZone);
+      final lastDisplay = endAt == null
+          ? firstDisplay
+          : localDateAt(endAt.subtract(const Duration(seconds: 1)), viewerTimeZone);
       var display = firstDisplay;
       while (display.isOnOrBefore(lastDisplay)) {
         if (_inRange(display, start, end)) {

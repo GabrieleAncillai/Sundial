@@ -9,6 +9,7 @@ import '../models/reminder.dart';
 import '../models/search_results.dart';
 import '../models/shift_checklist.dart';
 import '../models/shopping_item.dart';
+import '../models/time_entry.dart';
 import 'app_database.dart';
 
 /// The single read/write seam for the planner.
@@ -22,6 +23,34 @@ class PlannerRepository {
   final AppDatabase _database;
 
   Stream<List<Space>> watchSpaces() => _database.watchSpaces();
+
+  Stream<List<PlannerContext>> watchContexts({String? spaceId}) => _database.watchContexts(spaceId: spaceId);
+
+  Future<void> saveContext(PlannerContext context) => _database.saveContext(context);
+
+  Future<void> deleteContext(String id) => _database.softDeleteContext(id);
+
+  Stream<List<Project>> watchProjects({String? spaceId, String? contextId}) =>
+      _database.watchProjects(spaceId: spaceId, contextId: contextId);
+
+  Future<void> saveProject(Project project) => _database.saveProject(project);
+
+  Future<void> deleteProject(String id) => _database.softDeleteProject(id);
+
+  Stream<List<Habit>> watchHabits({String? spaceId, String? contextId}) =>
+      _database.watchHabits(spaceId: spaceId, contextId: contextId);
+
+  Future<void> saveHabit(Habit habit) => _database.saveHabit(habit);
+
+  Future<void> deleteHabit(String id) => _database.softDeleteHabit(id);
+
+  Stream<Map<String, Set<LocalDate>>> watchHabitCompletions({String? habitId}) =>
+      _database.watchHabitCompletions(habitId: habitId);
+
+  Future<void> setHabitCompleted(String habitId, LocalDate date, {required bool completed}) =>
+      _database.setHabitCompleted(habitId, date, completed: completed);
+
+  Stream<List<Entry>> watchOpenEntries(LocalDate until) => _database.watchOpenEntries(until);
 
   Stream<List<Tag>> watchTags() => _database.watchTags();
 
@@ -163,6 +192,38 @@ class PlannerRepository {
       _database.setOccurrenceCompleted(entryId, date, completed: completed);
 
   Future<void> deleteEntry(String id) => _database.softDeleteEntry(id);
+
+  Stream<List<TimeEntry>> watchTimeEntriesForEntry(String entryId) =>
+      _database.watchTimeEntriesForEntry(entryId);
+
+  Future<List<TimeEntry>> readTimeEntriesBetween(DateTime startUtc, DateTime endUtc) =>
+      _database.readTimeEntriesBetween(startUtc, endUtc);
+
+  Future<TimeEntry> clockIn(EntryOccurrence occurrence, {DateTime? at}) => _database.startTimeEntry(
+    entryId: occurrence.entry.id,
+    occurrenceDateKey: occurrence.entry.recurrence == null ? null : occurrence.date.key,
+    at: at,
+  );
+
+  /// Stops the running session and, for a start-only task, records the
+  /// clock-out time as the entry's end.
+  Future<TimeEntry?> clockOut(EntryOccurrence occurrence, {DateTime? at}) async {
+    final stopped = await _database.stopTimeEntry(
+      occurrence.entry.id,
+      occurrenceDateKey: occurrence.entry.recurrence == null ? null : occurrence.date.key,
+      at: at,
+    );
+    if (stopped == null) return null;
+    final entry = occurrence.entry;
+    if (entry.isClockInTask && entry.timeZone != null) {
+      var minute = localMinuteAt(stopped.endedAt!, entry.timeZone!);
+      if (minute <= entry.startMinute!) minute += 1440;
+      await saveEntry(entry.copyWith(endMinute: minute, updatedAt: DateTime.now().toUtc()));
+    }
+    return stopped;
+  }
+
+  Future<void> clearAllData() => _database.clearAllData();
 
   Future<void> saveShiftPattern(ShiftPattern pattern) => _database.saveShiftPattern(pattern);
 

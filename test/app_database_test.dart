@@ -278,12 +278,13 @@ void main() {
 
     var entries = await database.watchEntriesBetween(monday, monday, 'Europe/Madrid').first;
     expect(entries.single.entry.tagIds, {'job-a'});
-    expect((await database.watchTags().first).single.name, 'Job A');
+    expect((await database.watchTags().first).where((tag) => tag.id == 'job-a').single.name, 'Job A');
 
     await database.softDeleteTag('job-a');
     entries = await database.watchEntriesBetween(monday, monday, 'Europe/Madrid').first;
     expect(entries.single.entry.tagIds, isEmpty);
-    expect(await database.watchTags().first, isEmpty);
+    expect((await database.watchTags().first).where((tag) => tag.id == 'job-a'), isEmpty);
+    expect(await database.watchTags().first, isNotEmpty);
   });
 
   test('stores multiple reminders per entry and replaces them on save', () async {
