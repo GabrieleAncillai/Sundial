@@ -35,7 +35,6 @@ Future<void> showEntryEditor(
   String? initialContextId,
   String? initialUnitId,
   String? initialProjectId,
-  int? initialMaintenanceDays,
   required List<Space> spaces,
 }) {
   if (entry?.readOnly == true) {
@@ -52,7 +51,6 @@ Future<void> showEntryEditor(
       initialContextId: initialContextId,
       initialUnitId: initialUnitId,
       initialProjectId: initialProjectId,
-      initialMaintenanceDays: initialMaintenanceDays,
       spaces: spaces,
     ),
   );
@@ -93,7 +91,6 @@ class EntryEditorSheet extends ConsumerStatefulWidget {
     this.initialContextId,
     this.initialUnitId,
     this.initialProjectId,
-    this.initialMaintenanceDays,
   });
 
   final List<Space> spaces;
@@ -105,7 +102,6 @@ class EntryEditorSheet extends ConsumerStatefulWidget {
   final String? initialContextId;
   final String? initialUnitId;
   final String? initialProjectId;
-  final int? initialMaintenanceDays;
 
   @override
   ConsumerState<EntryEditorSheet> createState() => _EntryEditorSheetState();
@@ -182,11 +178,6 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     _recurrence = entry?.recurrence;
     _repeatAfterCompletion = entry?.repeatAfterCompletionDays != null;
     _repeatDays = entry?.repeatAfterCompletionDays ?? 30;
-    if (entry == null && widget.initialMaintenanceDays != null) {
-      _kind = EntryKind.obligation;
-      _repeatAfterCompletion = true;
-      _repeatDays = widget.initialMaintenanceDays!;
-    }
     _tagIds = {...?entry?.tagIds};
     _skipDates = {...?entry?.recurrence?.skipDates};
     if (entry != null && entry.recurrence != null) _loadSeries(entry.id);
