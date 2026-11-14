@@ -10,7 +10,7 @@ the product-polish claims as proof.
 |---|---|
 | `flutter analyze --no-fatal-infos` | Pass, no issues |
 | `dart format --line-length 110 --output=none --set-exit-if-changed lib test packages/mane_core` | Pass |
-| `flutter test` | Pass, 204 tests |
+| `flutter test` | Pass, 206 tests |
 | `(cd packages/mane_core && dart test)` | Pass, 92 tests |
 | `flutter build linux --debug` | Pass |
 | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk flutter build apk --debug` | Pass |
@@ -138,7 +138,7 @@ the product-polish claims as proof.
 | HTTP info endpoint does not leak identity | Met | `/mane/v1/info` returns app/version/protocol/fingerprint only (`lan_test.dart`) |
 | Discovery does not leak username or device ID | Met | mDNS advertises only the pinned certificate fingerprint; peers match on it after an address change (`peer_discovery.dart`, `sync_service_test.dart`) |
 | MCP enable/writes/port, rebind, busy-port error, token rotation | Met | `McpServer.start` stops/rebinds on identity or port change; `mcp_test.dart` |
-| MCP tools expose the full model | Partial | legacy v0.9 tool set plus existing entities; new contexts/projects/habits/time sessions are not all exposed yet |
+| MCP tools expose the full model | Met | `spaces.list` (spaces/contexts/projects), `habits.list`, `time.sessions`, plus `habits.check`, `time.start` and `time.stop` behind the writes switch (`mcp_test.dart`) |
 | About GPL-3.0-only and InlitX attribution | Met (existing) | About page |
 
 ## Entry editor and task lifecycle
@@ -188,8 +188,6 @@ These are not claimed as met:
    the exact row.
 3. Habit history is a 12-week read-only view; there is no infinite archive or
    per-habit export.
-4. The MCP tool surface does not yet expose every new context/project/habit/time
-   session operation.
-5. Real-device notification, reboot, battery, LAN, MCP, sound and widget checks
+4. Real-device notification, reboot, battery, LAN, MCP, sound and widget checks
    remain the user's device checklist.
-6. The Aero concept screenshots and contrast check are pending user approval.
+5. The Aero concept screenshots and contrast check are pending user approval.

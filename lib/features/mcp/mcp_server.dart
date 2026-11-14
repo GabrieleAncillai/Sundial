@@ -320,6 +320,102 @@ class McpServer {
         return {
           'tags': [for (final tag in tags) SyncPayloads.tagJson(tag)],
         };
+      case 'spaces.list':
+        final spaces = await _repository.watchSpaces().first;
+        final contexts = await _repository.watchContexts().first;
+        final projects = await _repository.watchProjects().first;
+        return {
+          'spaces': [
+            for (final space in spaces) {'id': space.id, 'name': space.name, 'color': space.colorValue},
+          ],
+          'contexts': [
+            for (final context in contexts)
+              {
+                'id': context.id,
+                'spaceId': context.spaceId,
+                'name': context.name,
+                'description': context.description,
+                'icon': context.icon,
+                'color': context.colorValue,
+                'imagePath': context.imagePath,
+              },
+          ],
+          'projects': [
+            for (final project in projects)
+              {
+                'id': project.id,
+                'spaceId': project.spaceId,
+                'contextId': project.contextId,
+                'name': project.name,
+                'description': project.description,
+                'icon': project.icon,
+                'color': project.colorValue,
+                'imagePath': project.imagePath,
+              },
+          ],
+        };
+      case 'habits.list':
+        final habits = await _repository.watchHabits().first;
+        final completions = await _repository.watchHabitCompletions().first;
+        final weekStart = AppSettings.fromMap(await _repository.readSettings()).weekStart;
+        return {
+          'today': today.iso,
+          'habits': [
+            for (final habit in habits)
+              {
+                'id': habit.id,
+                'spaceId': habit.spaceId,
+                'contextId': habit.contextId,
+                'name': habit.name,
+                'description': habit.description,
+                'icon': habit.icon,
+                'color': habit.colorValue,
+                'targetPerWeek': habit.targetPerWeek,
+                'weekdays': habit.weekdays.toList()..sort(),
+                'progressThisWeek': habit.weekProgress(
+                  completions[habit.id] ?? const <LocalDate>{},
+                  today,
+                  weekStart,
+                ),
+                'streak': habit.streak(
+                  completions[habit.id] ?? const <LocalDate>{},
+                  today,
+                  weekStart: weekStart,
+                ),
+                'doneToday': completions[habit.id]?.contains(today) ?? false,
+                'archived': habit.archived,
+              },
+          ],
+        };
+      case 'time.sessions':
+        final start = _dateArg(arguments, 'start') ?? today.addDays(-7);
+        final end = _dateArg(arguments, 'end') ?? today;
+        if (end.isBefore(start) || end.differenceInDays(start) > 366) {
+          throw const _RpcException(-32602, 'Invalid start/end range');
+        }
+        final sessions = await _repository.readTimeEntriesBetween(
+          instantAt(start, 0, timeZone),
+          instantAt(end.addDays(1), 0, timeZone),
+        );
+        final entries = await _repository.readEntriesByIds({for (final session in sessions) session.entryId});
+        return {
+          'start': start.iso,
+          'end': end.iso,
+          'sessions': [
+            for (final session in sessions)
+              {
+                'id': session.id,
+                'entryId': session.entryId,
+                'title': entries[session.entryId]?.title,
+                'spaceId': entries[session.entryId]?.spaceId,
+                'occurrenceDateKey': session.occurrenceDateKey,
+                'startedAt': session.startedAt.toUtc().toIso8601String(),
+                'endedAt': session.endedAt?.toUtc().toIso8601String(),
+                'durationMinutes': session.durationAt(now.toUtc()).inMinutes,
+                'note': session.note,
+              },
+          ],
+        };
       case 'sleep.window':
         return _sleepWindow(arguments, today, timeZone);
       case 'plan.create':
@@ -343,9 +439,62 @@ class McpServer {
       case 'home.shopping_check':
         _requireWrites();
         return _checkShopping(arguments);
+      case 'habits.check':
+        _requireWrites();
+        return _checkHabit(arguments, today);
+      case 'time.start':
+        _requireWrites();
+        return _startSession(arguments, today);
+      case 'time.stop':
+        _requireWrites();
+        return _stopSession(arguments, today);
       default:
         throw const _RpcException(-32602, 'Unknown tool');
     }
+  }
+
+  Future<Map<String, Object?>> _checkHabit(Map<String, Object?> arguments, LocalDate today) async {
+    final habitId = _stringArg(arguments, 'habitId');
+    final habits = await _repository.watchHabits().first;
+    if (!habits.any((habit) => habit.id == habitId)) throw const _RpcException(-32602, 'Unknown habitId');
+    final date = _dateArg(arguments, 'date') ?? today;
+    final completed = arguments['completed'];
+    if (completed is! bool) throw const _RpcException(-32602, 'completed must be a boolean');
+    await _repository.setHabitCompleted(habitId, date, completed: completed);
+    return {'habitId': habitId, 'date': date.iso, 'completed': completed};
+  }
+
+  Future<Map<String, Object?>> _startSession(Map<String, Object?> arguments, LocalDate today) async {
+    final entry = await _writableEntry(_stringArg(arguments, 'entryId'));
+    final date = _dateArg(arguments, 'date') ?? entry.date ?? today;
+    final session = await _repository.clockIn(
+      EntryOccurrence(date: date, displayDate: date, entry: entry),
+      at: _clock().toUtc(),
+    );
+    return {'id': session.id, 'entryId': entry.id, 'startedAt': session.startedAt.toUtc().toIso8601String()};
+  }
+
+  Future<Map<String, Object?>> _stopSession(Map<String, Object?> arguments, LocalDate today) async {
+    final entry = await _writableEntry(_stringArg(arguments, 'entryId'));
+    final date = _dateArg(arguments, 'date') ?? entry.date ?? today;
+    final session = await _repository.clockOut(
+      EntryOccurrence(date: date, displayDate: date, entry: entry),
+      at: _clock().toUtc(),
+    );
+    if (session == null) return {'stopped': false};
+    return {
+      'stopped': true,
+      'id': session.id,
+      'entryId': entry.id,
+      'endedAt': session.endedAt?.toUtc().toIso8601String(),
+    };
+  }
+
+  Future<Entry> _writableEntry(String entryId) async {
+    final entry = await _repository.readEntry(entryId);
+    if (entry == null || entry.deletedAt != null) throw const _RpcException(-32602, 'Unknown entryId');
+    if (entry.readOnly) throw const _RpcException(-32602, 'This entry is read-only');
+    return entry;
   }
 
   (LocalDate, LocalDate) _dateRange(Map<String, Object?> arguments, LocalDate today, {int defaultDays = 7}) {
@@ -670,6 +819,27 @@ class McpServer {
         'inputSchema': {'type': 'object', 'properties': <String, Object?>{}},
       },
       {
+        'name': 'spaces.list',
+        'description': 'Spaces, jobs/homes/people contexts and projects in one call.',
+        'inputSchema': {'type': 'object', 'properties': <String, Object?>{}},
+      },
+      {
+        'name': 'habits.list',
+        'description': 'Habits with their weekday schedule, this week progress and streak.',
+        'inputSchema': {'type': 'object', 'properties': <String, Object?>{}},
+      },
+      {
+        'name': 'time.sessions',
+        'description': 'Tracked sessions between two local dates, newest data from the repository.',
+        'inputSchema': {
+          'type': 'object',
+          'properties': {
+            'start': {'type': 'string', 'description': 'YYYY-MM-DD, defaults to today - 7 days'},
+            'end': {'type': 'string', 'description': 'YYYY-MM-DD, defaults to today'},
+          },
+        },
+      },
+      {
         'name': 'sleep.window',
         'description': 'The soft sleep window for a date, using the last and first commitments.',
         'inputSchema': {
@@ -795,6 +965,43 @@ class McpServer {
               'checked': {'type': 'boolean'},
             },
             'required': ['id', 'checked'],
+          },
+        },
+        {
+          'name': 'habits.check',
+          'description': 'Mark a habit done or not done for one date.',
+          'inputSchema': {
+            'type': 'object',
+            'properties': {
+              'habitId': {'type': 'string'},
+              'date': {'type': 'string', 'description': 'YYYY-MM-DD, defaults to today'},
+              'completed': {'type': 'boolean'},
+            },
+            'required': ['habitId', 'completed'],
+          },
+        },
+        {
+          'name': 'time.start',
+          'description': 'Clock in to a writable task, keyed by its occurrence date.',
+          'inputSchema': {
+            'type': 'object',
+            'properties': {
+              'entryId': {'type': 'string'},
+              'date': {'type': 'string', 'description': 'YYYY-MM-DD for a recurring occurrence'},
+            },
+            'required': ['entryId'],
+          },
+        },
+        {
+          'name': 'time.stop',
+          'description': 'Pause a running clock-in session without writing the entry end.',
+          'inputSchema': {
+            'type': 'object',
+            'properties': {
+              'entryId': {'type': 'string'},
+              'date': {'type': 'string', 'description': 'YYYY-MM-DD for a recurring occurrence'},
+            },
+            'required': ['entryId'],
           },
         },
       ]);

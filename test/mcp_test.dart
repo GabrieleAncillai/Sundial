@@ -129,6 +129,9 @@ void main() {
         'work.shifts',
         'home.inventory',
         'tags.list',
+        'spaces.list',
+        'habits.list',
+        'time.sessions',
         'sleep.window',
       ]),
     );
@@ -415,6 +418,64 @@ void main() {
     expect(sleep['wakeTime'], '2026-11-10T06:00:00.000Z');
   });
 
+  test('exposes spaces, habits and tracked sessions', () async {
+    await database.saveContext(
+      const PlannerContext(id: 'cafe', spaceId: 'work', name: 'Cafe', colorValue: 0xFF2F7ED8),
+    );
+    await database.saveProject(
+      const Project(id: 'reno', spaceId: 'work', contextId: 'cafe', name: 'Reno', colorValue: 0xFF2FA98F),
+    );
+    await database.saveHabit(
+      const Habit(
+        id: 'walk',
+        spaceId: 'personal',
+        name: 'Walk',
+        colorValue: 0xFF00AA00,
+        targetPerWeek: 3,
+        weekdays: {1, 3, 5},
+      ),
+    );
+    await database.setHabitCompleted('walk', LocalDate.parse('2026-11-09'), completed: true);
+    await database.startTimeEntry(entryId: 'passport', at: DateTime.utc(2026, 11, 9, 10));
+    await database.stopTimeEntry('passport', at: DateTime.utc(2026, 11, 9, 10, 30));
+
+    final (_, spacesBody) = await post({
+      'jsonrpc': '2.0',
+      'id': 40,
+      'method': 'tools/call',
+      'params': {'name': 'spaces.list', 'arguments': <String, Object?>{}},
+    });
+    final spaces = _toolPayload(spacesBody);
+    expect((spaces['spaces'] as List), hasLength(3));
+    expect(((spaces['contexts'] as List).single as Map)['name'], 'Cafe');
+    expect(((spaces['projects'] as List).single as Map)['contextId'], 'cafe');
+
+    final (_, habitsBody) = await post({
+      'jsonrpc': '2.0',
+      'id': 41,
+      'method': 'tools/call',
+      'params': {'name': 'habits.list', 'arguments': <String, Object?>{}},
+    });
+    final habit = ((_toolPayload(habitsBody)['habits'] as List).single as Map);
+    expect(habit['weekdays'], [1, 3, 5]);
+    expect(habit['progressThisWeek'], 1);
+    expect(habit['doneToday'], isTrue);
+
+    final (_, sessionsBody) = await post({
+      'jsonrpc': '2.0',
+      'id': 42,
+      'method': 'tools/call',
+      'params': {
+        'name': 'time.sessions',
+        'arguments': {'start': '2026-11-09', 'end': '2026-11-09'},
+      },
+    });
+    final session = ((_toolPayload(sessionsBody)['sessions'] as List).single as Map);
+    expect(session['title'], 'Renew passport');
+    expect(session['durationMinutes'], 30);
+    expect(session['endedAt'], '2026-11-09T10:30:00.000Z');
+  });
+
   test('writes update, uncomplete, delete and shopping lines when enabled', () async {
     await server.start(identity: identity, writesEnabled: true);
 
@@ -479,6 +540,63 @@ void main() {
     });
     expect((deletedBody['result'] as Map)['isError'], isFalse);
     expect((await database.readEntry('passport'))!.deletedAt, isNotNull);
+  });
+
+  test('checks a habit and tracks a session when writes are enabled', () async {
+    await database.saveHabit(
+      const Habit(
+        id: 'walk',
+        spaceId: 'personal',
+        name: 'Walk',
+        colorValue: 0xFF00AA00,
+        targetPerWeek: 3,
+        weekdays: {1, 3, 5},
+      ),
+    );
+    await server.start(identity: identity, writesEnabled: true);
+
+    final (_, checkedBody) = await post({
+      'jsonrpc': '2.0',
+      'id': 50,
+      'method': 'tools/call',
+      'params': {
+        'name': 'habits.check',
+        'arguments': {'habitId': 'walk', 'date': '2026-11-10', 'completed': true},
+      },
+    });
+    expect(_toolPayload(checkedBody)['completed'], isTrue);
+    final completions = await database.watchHabitCompletions().first;
+    expect(completions['walk'], contains(LocalDate.parse('2026-11-10')));
+
+    final (_, startBody) = await post({
+      'jsonrpc': '2.0',
+      'id': 51,
+      'method': 'tools/call',
+      'params': {
+        'name': 'time.start',
+        'arguments': {'entryId': 'passport'},
+      },
+    });
+    expect((startBody['result'] as Map)['isError'], isFalse);
+
+    final (_, stopBody) = await post({
+      'jsonrpc': '2.0',
+      'id': 52,
+      'method': 'tools/call',
+      'params': {
+        'name': 'time.stop',
+        'arguments': {'entryId': 'passport'},
+      },
+    });
+    final stopped = _toolPayload(stopBody);
+    expect(stopped['stopped'], isTrue);
+    final sessions = await database.readTimeEntriesBetween(
+      DateTime.utc(2026, 11, 9),
+      DateTime.utc(2026, 11, 10),
+    );
+    expect(sessions.single.endedAt, isNotNull);
+    // Pausing must not write the entry end: the task keeps its shape.
+    expect((await database.readEntry('passport'))!.endMinute, isNull);
   });
 
   test('returns a JSON-RPC parse error for malformed input', () async {
