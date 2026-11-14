@@ -86,13 +86,16 @@ compliance wave fixed the data-integrity defects found by the audit:
 - Draft-v9 gadgets migrate to Home maintenance entries; mDNS advertises only the
   pinned certificate fingerprint.
 
-Validation: analyze clean, 206 app tests, 94 core tests, Linux debug and Android
+Validation: analyze clean, 208 app tests, 94 core tests, Linux debug and Android
 debug APK all pass. `docs/compliance-matrix.md` records the row-by-row status,
 including what is still open.
 
-Aero 2.0 is a stop gate: `docs/aero-2.md` is a proposal only. The existing Aero
-surface is frozen until the direction, concept screenshots and contrast report
-are approved.
+Aero 2.0 is a stop gate. `docs/aero-2.md` now carries the token candidate in
+`lib/theme/aero_colors.dart`, three rendered concept screens
+(`docs/screenshots/aero2-*.png`, `tool/screenshots/aero_concept_test.dart`) and
+a WCAG contrast table enforced by `test/aero_contrast_test.dart`. The shipped
+Aero surface is frozen until the user approves the direction; nothing in the app
+imports the new tokens yet.
 
 Screenshot evidence is rendered by `tool/screenshots/screenshot_test.dart` into
 `docs/screenshots/v1.0-*.png` plus the v2 captures

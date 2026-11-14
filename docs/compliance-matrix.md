@@ -10,7 +10,7 @@ the product-polish claims as proof.
 |---|---|
 | `flutter analyze --no-fatal-infos` | Pass, no issues |
 | `dart format --line-length 110 --output=none --set-exit-if-changed lib test packages/mane_core` | Pass |
-| `flutter test` | Pass, 206 tests |
+| `flutter test` | Pass, 208 tests |
 | `(cd packages/mane_core && dart test)` | Pass, 92 tests |
 | `flutter build linux --debug` | Pass |
 | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk flutter build apk --debug` | Pass |
@@ -190,4 +190,5 @@ These are not claimed as met:
    per-habit export.
 4. Real-device notification, reboot, battery, LAN, MCP, sound and widget checks
    remain the user's device checklist.
-5. The Aero concept screenshots and contrast check are pending user approval.
+5. Aero 2.0 concepts, tokens and the contrast report are ready; the direction
+   still needs the user's approval before any screen is restyled.
