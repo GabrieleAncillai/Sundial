@@ -69,6 +69,35 @@ void main() {
     expect(csv.codeUnitAt(0), isNot(0xFEFF));
   });
 
+  test('summary CSV reconciles rows, shares and the total', () {
+    final csv = ReportWriter.summaryCsv(data);
+    final lines = csv.split('\r\n').where((line) => line.isNotEmpty).toList();
+
+    expect(lines.first, 'Group,Tracked,Share,Completed');
+    expect(lines, contains('Home,2:00,36.4%,1'));
+    expect(lines, contains('Day job,3:30,63.6%,1'));
+    expect(lines.last, 'Total,5:30,100%,2');
+    expect(csv.codeUnitAt(0), isNot(0xFEFF));
+  });
+
+  test('summary CSV follows the report language', () {
+    final spanish = ReportData(
+      title: 'Informe',
+      rangeLabel: '2026-11-01 \u2013 2026-11-07',
+      generatedAt: DateTime(2026, 11, 12),
+      totalTracked: const Duration(hours: 1),
+      completedTasks: 1,
+      openTasks: 0,
+      rows: const [ReportRow(label: 'Trabajo', tracked: Duration(hours: 1), completed: 1)],
+      details: const [],
+      languageCode: 'es',
+    );
+
+    final csv = ReportWriter.summaryCsv(spanish);
+    expect(csv, startsWith('Grupo,Tiempo,Porcentaje,Completadas\r\n'));
+    expect(csv, endsWith('Total,1:00,100%,1\r\n'));
+  });
+
   test('durations above 24 hours keep the H:MM shape', () {
     final long = ReportData(
       title: 'Long range',

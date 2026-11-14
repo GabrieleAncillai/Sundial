@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
+import '../../../core/time/time_field.dart';
 import '../../../core/timezone/timezone_picker.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
@@ -471,18 +472,22 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
           Row(
             children: [
               Expanded(
-                child: _TimeField(
+                child: ManeTimeField(
                   label: l10n.startTime,
-                  value: _timeLabel(slot.startMinute),
-                  onTap: () => _pickTime(slot, true),
+                  valueLabel: _timeLabel(slot.startMinute),
+                  initialMinute: slot.startMinute,
+                  clearable: false,
+                  onChanged: (minute) => setState(() => _applySlotTime(slot, true, minute)),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: _TimeField(
+                child: ManeTimeField(
                   label: l10n.endTime,
-                  value: _timeLabel(slot.endMinute),
-                  onTap: () => _pickTime(slot, false),
+                  valueLabel: _timeLabel(slot.endMinute),
+                  initialMinute: slot.endMinute,
+                  clearable: false,
+                  onChanged: (minute) => setState(() => _applySlotTime(slot, false, minute)),
                 ),
               ),
             ],
@@ -539,9 +544,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
   }
 
   String _timeLabel(int minutes) {
-    final normalized = minutes % 1440;
-    final label = TimeOfDay(hour: normalized ~/ 60, minute: normalized % 60).format(context);
-    return minutes >= 1440 ? '$label ${context.l10n.overnightSuffix}' : label;
+    return formatMinuteLabel(context, minutes, overnightSuffix: context.l10n.overnightSuffix);
   }
 
   void _setCycleDays(int value) {
@@ -570,23 +573,14 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     });
   }
 
-  Future<void> _pickTime(_SlotDraft slot, bool isStart) async {
-    final current = isStart ? slot.startMinute : slot.endMinute;
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: (current ~/ 60) % 24, minute: current % 60),
-    );
-    if (picked == null || !mounted) return;
-    setState(() {
-      final value = picked.hour * 60 + picked.minute;
-      if (isStart) {
-        final duration = slot.endMinute - slot.startMinute;
-        slot.startMinute = value;
-        slot.endMinute = value + duration;
-      } else {
-        slot.endMinute = value > slot.startMinute ? value : value + 1440;
-      }
-    });
+  void _applySlotTime(_SlotDraft slot, bool isStart, int value) {
+    if (isStart) {
+      final duration = slot.endMinute - slot.startMinute;
+      slot.startMinute = value;
+      slot.endMinute = value + duration;
+    } else {
+      slot.endMinute = value > slot.startMinute ? value : value + 1440;
+    }
   }
 
   Future<void> _pickAnchorDate() async {
@@ -780,26 +774,6 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _TimeField extends StatelessWidget {
-  const _TimeField({required this.label, required this.value, required this.onTap});
-
-  final String label;
-  final String value;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
-      child: InputDecorator(
-        decoration: InputDecoration(labelText: label, isDense: true),
-        child: Text(value, maxLines: 1, overflow: TextOverflow.ellipsis),
-      ),
-    );
-  }
-}
-
 class _Preview extends StatelessWidget {
   const _Preview({required this.pattern, required this.deviceTimeZone, required this.today});
 
@@ -917,18 +891,22 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: _DialogTimeField(
+                    child: ManeTimeField(
                       label: l10n.startTime,
-                      value: _timeLabel(_startMinute),
-                      onTap: () => _pickTime(true),
+                      valueLabel: _timeLabel(_startMinute),
+                      initialMinute: _startMinute,
+                      clearable: false,
+                      onChanged: (minute) => setState(() => _startMinute = minute % 1440),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: _DialogTimeField(
+                    child: ManeTimeField(
                       label: l10n.endTime,
-                      value: _timeLabel(_endMinute),
-                      onTap: () => _pickTime(false),
+                      valueLabel: _timeLabel(_endMinute),
+                      initialMinute: _endMinute,
+                      clearable: false,
+                      onChanged: (minute) => setState(() => _endMinute = minute % 1440),
                     ),
                   ),
                 ],
@@ -950,9 +928,7 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
   }
 
   String _timeLabel(int minutes) {
-    final normalized = minutes % 1440;
-    final label = TimeOfDay(hour: normalized ~/ 60, minute: normalized % 60).format(context);
-    return minutes >= 1440 ? '$label ${context.l10n.overnightSuffix}' : label;
+    return formatMinuteLabel(context, minutes, overnightSuffix: context.l10n.overnightSuffix);
   }
 
   Future<void> _pickDate() async {
@@ -965,25 +941,6 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
     if (picked != null && mounted) setState(() => _date = LocalDate.fromDateTime(picked));
   }
 
-  Future<void> _pickTime(bool isStart) async {
-    final current = isStart ? _startMinute : _endMinute;
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: (current ~/ 60) % 24, minute: current % 60),
-    );
-    if (picked == null || !mounted) return;
-    setState(() {
-      final value = picked.hour * 60 + picked.minute;
-      if (isStart) {
-        final duration = _endMinute - _startMinute;
-        _startMinute = value;
-        _endMinute = value + duration;
-      } else {
-        _endMinute = value > _startMinute ? value : value + 1440;
-      }
-    });
-  }
-
   void _save() {
     Navigator.of(context).pop(
       ShiftException(
@@ -992,25 +949,6 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
         startMinute: _type == ShiftExceptionType.free ? null : _startMinute,
         endMinute: _type == ShiftExceptionType.free ? null : _endMinute,
         note: _noteController.text.trim(),
-      ),
-    );
-  }
-}
-
-class _DialogTimeField extends StatelessWidget {
-  const _DialogTimeField({required this.label, required this.value, required this.onTap});
-
-  final String label;
-  final String value;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: InputDecorator(
-        decoration: InputDecoration(labelText: label),
-        child: Text(value),
       ),
     );
   }

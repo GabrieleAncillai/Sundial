@@ -5,6 +5,7 @@ import 'package:mane_core/mane_core.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/i18n/reminder_label.dart';
 import '../../../core/sound/sound_service.dart';
+import '../../../core/time/time_field.dart';
 import '../../../core/timezone/timezone_picker.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../models/app_settings.dart';
@@ -954,11 +955,32 @@ class SettingsDetailPage extends ConsumerWidget {
       ),
     );
     if (confirmed != true || !context.mounted) return;
-    await ref.read(syncServiceProvider).stop();
-    await ref.read(mcpServerProvider).stop();
-    await ref.read(repositoryProvider).clearAllData();
-    await ref.read(autoBackupServiceProvider).deleteAll();
-    await deleteAllStickerImages();
+    // Stop the optional network services first. A failing service must not
+    // block the local wipe.
+    try {
+      await ref.read(syncServiceProvider).stop();
+    } catch (_) {}
+    try {
+      await ref.read(mcpServerProvider).stop();
+    } catch (_) {}
+
+    // The database wipe is atomic, so it runs first: if it fails the plan and
+    // the automatic backups are both still intact. File cleanup follows and
+    // reports a partial result instead of silently claiming success.
+    var cleared = true;
+    try {
+      await ref.read(repositoryProvider).clearAllData();
+    } catch (_) {
+      cleared = false;
+    }
+    var filesCleared = false;
+    if (cleared) {
+      try {
+        await ref.read(autoBackupServiceProvider).deleteAll();
+        await deleteAllStickerImages();
+        filesCleared = true;
+      } catch (_) {}
+    }
     await ref.read(settingsProvider.notifier).reload();
     ref.invalidate(spacesProvider);
     ref.invalidate(tagsProvider);
@@ -974,7 +996,15 @@ class SettingsDetailPage extends ConsumerWidget {
     ref.invalidate(identityProvider);
     ref.invalidate(pairedDevicesProvider);
     await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
-    if (context.mounted) _showNotice(context, l10n.dataDeleted);
+    if (!context.mounted) return;
+    _showNotice(
+      context,
+      !cleared
+          ? l10n.dataDeleteFailed
+          : filesCleared
+          ? l10n.dataDeleted
+          : l10n.dataDeleteIncomplete,
+    );
   }
 
   Future<void> _showKeepBackups(BuildContext context, WidgetRef ref) async {
@@ -1258,21 +1288,31 @@ class _HoursSheetState extends State<_HoursSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final localizations = MaterialLocalizations.of(context);
-    String label(int minute) =>
-        localizations.formatTimeOfDay(TimeOfDay(hour: minute ~/ 60, minute: minute % 60));
 
     return AppSheet(
       title: widget.title,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: OutlinedButton(onPressed: () => _pick(start: true), child: Text(label(_start))),
+              child: ManeTimeField(
+                label: l10n.startTime,
+                valueLabel: formatMinuteLabel(context, _start),
+                initialMinute: _start,
+                clearable: false,
+                onChanged: (minute) => setState(() => _start = minute % 1440),
+              ),
             ),
-            const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('–')),
+            const SizedBox(width: 10),
             Expanded(
-              child: OutlinedButton(onPressed: () => _pick(start: false), child: Text(label(_end))),
+              child: ManeTimeField(
+                label: l10n.endTime,
+                valueLabel: formatMinuteLabel(context, _end),
+                initialMinute: _end,
+                clearable: false,
+                onChanged: (minute) => setState(() => _end = minute % 1440),
+              ),
             ),
           ],
         ),
@@ -1280,22 +1320,6 @@ class _HoursSheetState extends State<_HoursSheet> {
         FilledButton(onPressed: _saving ? null : _save, child: Text(l10n.save)),
       ],
     );
-  }
-
-  Future<void> _pick({required bool start}) async {
-    final minute = start ? _start : _end;
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: minute ~/ 60, minute: minute % 60),
-    );
-    if (picked == null || !mounted) return;
-    setState(() {
-      if (start) {
-        _start = picked.hour * 60 + picked.minute;
-      } else {
-        _end = picked.hour * 60 + picked.minute;
-      }
-    });
   }
 
   Future<void> _save() async {

@@ -199,15 +199,17 @@ class SyncService {
   Future<void> _onPeer(DiscoveredPeer peer) async {
     _discovered = [
       for (final existing in _discovered)
-        if (existing.deviceId != peer.deviceId) existing,
+        if (existing.fingerprint != peer.fingerprint) existing,
       peer,
     ];
     _emit();
 
+    // Discovery advertises only the pinned certificate fingerprint, so that is
+    // what identifies a peer after its IP address changes.
     final devices = await _repository.readPairedDevices();
     PairedDevice? paired;
     for (final device in devices) {
-      if (device.id == peer.deviceId) {
+      if (device.certificateFingerprint == peer.fingerprint) {
         paired = device;
         break;
       }
@@ -215,13 +217,8 @@ class SyncService {
     if (paired == null) return;
 
     final now = _clock().toUtc();
-    await _repository.updatePairedDevicePresence(
-      peer.deviceId,
-      host: peer.host,
-      port: peer.port,
-      seenAt: now,
-    );
-    final last = _lastQueried[peer.deviceId];
+    await _repository.updatePairedDevicePresence(paired.id, host: peer.host, port: peer.port, seenAt: now);
+    final last = _lastQueried[paired.id];
     if (last != null && now.difference(last) < const Duration(seconds: 20)) return;
     await _refreshDevice(paired.copyWith(host: peer.host, port: peer.port));
     _emit();

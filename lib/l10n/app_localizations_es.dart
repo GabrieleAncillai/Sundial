@@ -1783,6 +1783,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportSummaryReport => 'Informe resumido (PDF)';
 
   @override
+  String get exportSummaryCsv => 'Resumen (CSV)';
+
+  @override
+  String get exportDetailedCsv => 'Detalle (CSV)';
+
+  @override
   String get exportDetailedReport => 'Informe detallado (PDF)';
 
   @override
@@ -1981,6 +1987,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get dataDeleted => 'Datos locales eliminados.';
+
+  @override
+  String get dataDeleteFailed => 'No se pudieron eliminar los datos locales. No se borró nada.';
+
+  @override
+  String get dataDeleteIncomplete =>
+      'Se eliminó el plan, pero algunos archivos multimedia o copias automáticas no se pudieron borrar. Revisa los permisos de almacenamiento y bórralos desde la carpeta de datos de la app.';
 
   @override
   String get nearbyDevices => 'Dispositivos cercanos';
@@ -2235,6 +2248,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get clearTime => 'Quitar la hora';
+
+  @override
+  String get time => 'Hora';
+
+  @override
+  String get setTime => 'Establecer';
+
+  @override
+  String get timeFieldInvalid => 'Escribe una hora como 9:30 o 21:30.';
 
   @override
   String get noTime => 'Sin hora';

@@ -133,16 +133,17 @@ void main() {
 
     discovery.emit(
       DiscoveredPeer(
-        deviceId: hostIdentity.deviceId,
         deviceName: hostIdentity.deviceName,
-        username: hostIdentity.username,
         fingerprint: fingerprintOfPemSync(hostIdentity.certificatePem),
         host: '127.0.0.1',
         port: hostServer.port,
       ),
     );
     await Future<void>.delayed(const Duration(milliseconds: 100));
-    expect(service.state.value.discovered.map((peer) => peer.deviceId), contains(hostIdentity.deviceId));
+    expect(
+      service.state.value.discovered.map((peer) => peer.fingerprint),
+      contains(fingerprintOfPemSync(hostIdentity.certificatePem)),
+    );
 
     await service.stop();
     expect(service.state.value.running, isFalse);

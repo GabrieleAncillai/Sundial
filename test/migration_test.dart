@@ -827,8 +827,24 @@ void main() {
     expect(entryNames, containsAll(['context_id', 'completed_at']));
     expect(entryNames, isNot(contains('space_unit_id')));
 
-    final gadgets = await database.customSelect('SELECT COUNT(*) AS total FROM gadget_records').getSingle();
-    expect(gadgets.read<int>('total'), 1);
+    // The draft gadget table is converted into a Home maintenance entry.
+    final gadget = await database.readEntry('gadget-boiler');
+    expect(gadget, isNotNull);
+    expect(gadget!.spaceId, 'home');
+    expect(gadget.contextId, isNull, reason: 'the draft unit belonged to Work');
+    expect(gadget.repeatAfterCompletionDays, 180);
+    expect(gadget.allDay, isTrue);
+    expect(gadget.timing, EntryTiming.anytime);
+    expect(gadget.date, LocalDate.parse('2027-04-30'));
+    expect(gadget.lastCompletedAt, isNull);
+    final remainingGadgets = await database
+        .customSelect("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'gadget_records'")
+        .get();
+    expect(remainingGadgets, isEmpty);
+
+    // The converted entry must keep working, not just read back.
+    final nextDue = await database.completeMaintenanceEntry('gadget-boiler', LocalDate.parse('2027-05-02'));
+    expect(nextDue, LocalDate.parse('2027-10-29'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
     expect(version.data.values.single, 10);

@@ -3275,8 +3275,20 @@ abstract class AppLocalizations {
   /// No description provided for @exportSummaryReport.
   ///
   /// In en, this message translates to:
-  /// **'Summary report (PDF)'**
+  /// **'Summary report'**
   String get exportSummaryReport;
+
+  /// No description provided for @exportSummaryCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary CSV'**
+  String get exportSummaryCsv;
+
+  /// No description provided for @exportDetailedCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed CSV'**
+  String get exportDetailedCsv;
 
   /// No description provided for @exportDetailedReport.
   ///
@@ -3661,6 +3673,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Local data deleted.'**
   String get dataDeleted;
+
+  /// No description provided for @dataDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete local data. Nothing was removed.'**
+  String get dataDeleteFailed;
+
+  /// No description provided for @dataDeleteIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'The plan was deleted, but some media or automatic backups could not be removed. Check storage permissions and delete them from the app\'s data folder.'**
+  String get dataDeleteIncomplete;
 
   /// No description provided for @nearbyDevices.
   ///
@@ -4147,6 +4171,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear time'**
   String get clearTime;
+
+  /// No description provided for @time.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get time;
+
+  /// No description provided for @setTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Set'**
+  String get setTime;
+
+  /// No description provided for @timeFieldInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a time like 9:30 or 21:30.'**
+  String get timeFieldInvalid;
 
   /// No description provided for @noTime.
   ///

@@ -125,6 +125,47 @@ abstract final class ReportWriter {
     return document.save();
   }
 
+  /// Summary CSV with the same groups, durations and shares as the summary
+  /// PDF, plus a reconciling total row.
+  static String summaryCsv(ReportData data) {
+    final rows = List<ReportRow>.of(data.rows)
+      ..sort((a, b) {
+        final byTracked = b.tracked.compareTo(a.tracked);
+        return byTracked != 0 ? byTracked : a.label.compareTo(b.label);
+      });
+    final total = data.totalTracked > Duration.zero ? data.totalTracked : _sumTracked(rows);
+    final groupHeading = _label(data, 'Group', 'Grupo');
+    final trackedHeading = _label(data, 'Tracked', 'Tiempo');
+    final shareHeading = _label(data, 'Share', 'Porcentaje');
+    final completedHeading = _label(data, 'Completed', 'Completadas');
+    final ungrouped = _label(data, 'Ungrouped', 'Sin grupo');
+    final budget = StringBuffer()
+      ..write([groupHeading, trackedHeading, shareHeading, completedHeading].map(_csvCell).join(','))
+      ..write('\r\n');
+    for (final row in rows) {
+      final label = row.label.trim().isEmpty ? ungrouped : row.label;
+      budget
+        ..write(_csvCell(label))
+        ..write(',')
+        ..write(_csvCell(_formatDuration(row.tracked)))
+        ..write(',')
+        ..write(_csvCell(_formatShare(row.tracked, total)))
+        ..write(',')
+        ..write(row.completed)
+        ..write('\r\n');
+    }
+    budget
+      ..write(_csvCell(_label(data, 'Total', 'Total')))
+      ..write(',')
+      ..write(_csvCell(_formatDuration(total)))
+      ..write(',')
+      ..write(_csvCell(total > Duration.zero ? '100%' : '0%'))
+      ..write(',')
+      ..write(rows.fold<int>(0, (sum, row) => sum + row.completed))
+      ..write('\r\n');
+    return budget.toString();
+  }
+
   /// RFC 4180 CSV with CRLF record separators and no BOM.
   static String csv(ReportData data) {
     final buffer = StringBuffer('Date,Start,End,Duration,Space,Context,Project,Task\r\n');

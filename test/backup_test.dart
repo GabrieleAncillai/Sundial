@@ -244,6 +244,8 @@ void main() {
 
     final restoreDir = await Directory.systemTemp.createTemp('mane-media-restore');
     addTearDown(() => restoreDir.delete(recursive: true));
+    // Media from the plan being replaced must not survive the import.
+    final stale = File('${restoreDir.path}/old-sticker.png')..writeAsBytesSync([9, 9]);
     final target = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
     addTearDown(target.close);
     await BackupService(target, mediaDirectory: restoreDir).importJson(exported);
@@ -252,6 +254,8 @@ void main() {
     expect(restored.imagePath, isNotNull);
     expect(restored.imagePath, startsWith(restoreDir.path));
     expect(File(restored.imagePath!).readAsBytesSync(), [1, 2, 3, 4]);
+    expect(stale.existsSync(), isFalse);
+    expect(restoreDir.listSync().whereType<File>(), hasLength(1));
   });
 
   test('restores over a populated database', () async {

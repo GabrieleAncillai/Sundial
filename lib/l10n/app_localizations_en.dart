@@ -1770,7 +1770,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportReport => 'Export report';
 
   @override
-  String get exportSummaryReport => 'Summary report (PDF)';
+  String get exportSummaryReport => 'Summary report';
+
+  @override
+  String get exportSummaryCsv => 'Summary CSV';
+
+  @override
+  String get exportDetailedCsv => 'Detailed CSV';
 
   @override
   String get exportDetailedReport => 'Detailed report (PDF)';
@@ -1971,6 +1977,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataDeleted => 'Local data deleted.';
+
+  @override
+  String get dataDeleteFailed => 'Could not delete local data. Nothing was removed.';
+
+  @override
+  String get dataDeleteIncomplete =>
+      'The plan was deleted, but some media or automatic backups could not be removed. Check storage permissions and delete them from the app\'s data folder.';
 
   @override
   String get nearbyDevices => 'Nearby devices';
@@ -2225,6 +2238,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clearTime => 'Clear time';
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get setTime => 'Set';
+
+  @override
+  String get timeFieldInvalid => 'Enter a time like 9:30 or 21:30.';
 
   @override
   String get noTime => 'No time';

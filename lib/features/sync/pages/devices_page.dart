@@ -780,8 +780,8 @@ class _GuestPairingTabState extends ConsumerState<_GuestPairingTab> {
                         child: Icon(Icons.devices_other, size: 19, color: c.accent),
                       ),
                       title: Text(state.discovered[index].deviceName),
-                      subtitle: Text(state.discovered[index].username),
-                      trailing: _selected?.deviceId == state.discovered[index].deviceId
+                      subtitle: Text(state.discovered[index].host),
+                      trailing: _selected?.fingerprint == state.discovered[index].fingerprint
                           ? Icon(Icons.check_circle, color: c.accent)
                           : null,
                       onTap: () => setState(() => _selected = state.discovered[index]),

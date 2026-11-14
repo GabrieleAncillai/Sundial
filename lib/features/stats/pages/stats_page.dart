@@ -404,11 +404,12 @@ class _StatsPageState extends ConsumerState<StatsPage> {
     }
     final totalTracked = timeEntries.fold(Duration.zero, (sum, item) => sum + item.durationAt(now));
     final data = ReportData(
-      title: value == 'summary'
-          ? l10n.exportSummaryReport
-          : value == 'detailed'
-          ? l10n.exportDetailedReport
-          : l10n.exportReportCsv,
+      title: switch (value) {
+        'summary' => l10n.exportSummaryReport,
+        'detailed' => l10n.exportDetailedReport,
+        'summaryCsv' => l10n.exportSummaryCsv,
+        _ => l10n.exportDetailedCsv,
+      },
       rangeLabel:
           '${formatFullDate(context, start.toDateTime())} – '
           '${formatFullDate(context, end.toDateTime())}',
@@ -442,11 +443,17 @@ class _StatsPageState extends ConsumerState<StatsPage> {
           dialogTitle: l10n.exportDetailedReport,
           fileName: _fileName('detailed'),
         );
+      } else if (value == 'summaryCsv') {
+        savedPath = await saveCsvFile(
+          ReportWriter.summaryCsv(data),
+          dialogTitle: l10n.exportSummaryCsv,
+          fileName: _fileName('summary').replaceAll('.pdf', '.csv'),
+        );
       } else {
         savedPath = await saveCsvFile(
           ReportWriter.csv(data),
-          dialogTitle: l10n.exportReportCsv,
-          fileName: _fileName('report').replaceAll('.pdf', '.csv'),
+          dialogTitle: l10n.exportDetailedCsv,
+          fileName: _fileName('detailed').replaceAll('.pdf', '.csv'),
         );
       }
       if (!mounted || savedPath == null) return;
@@ -478,7 +485,8 @@ class _ExportButton extends StatelessWidget {
       itemBuilder: (context) => [
         PopupMenuItem(value: 'summary', child: Text(l10n.exportSummaryReport)),
         PopupMenuItem(value: 'detailed', child: Text(l10n.exportDetailedReport)),
-        PopupMenuItem(value: 'csv', child: Text(l10n.exportReportCsv)),
+        PopupMenuItem(value: 'summaryCsv', child: Text(l10n.exportSummaryCsv)),
+        PopupMenuItem(value: 'detailedCsv', child: Text(l10n.exportDetailedCsv)),
       ],
       icon: Icon(Icons.ios_share_outlined, color: context.mc.text),
     );

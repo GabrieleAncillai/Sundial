@@ -463,6 +463,17 @@ class BackupService {
       mediaBytes[target] = bytes;
     }
 
+    // Write media before the database transaction. A write failure then leaves
+    // the existing plan untouched, and a later transaction failure only leaves
+    // unreferenced files behind for the prune below.
+    if (mediaBytes.isNotEmpty) {
+      final directory = await _mediaDir();
+      if (!directory.existsSync()) await directory.create(recursive: true);
+      for (final entry in mediaBytes.entries) {
+        await File(entry.key).writeAsBytes(entry.value, flush: true);
+      }
+    }
+
     await _database.transaction(() async {
       await _database.delete(_database.habitCompletionRecords).go();
       await _database.delete(_database.timeEntryRecords).go();
@@ -843,12 +854,21 @@ class BackupService {
       }
     });
 
-    if (mediaBytes.isNotEmpty) {
+    // The restore replaced the plan, so media carried by the old one is no
+    // longer reachable. Best effort: a failure here only leaves unused files.
+    await _pruneMedia(mediaBytes.keys.toSet());
+  }
+
+  Future<void> _pruneMedia(Set<String> keep) async {
+    try {
       final directory = await _mediaDir();
-      if (!directory.existsSync()) await directory.create(recursive: true);
-      for (final entry in mediaBytes.entries) {
-        await File(entry.key).writeAsBytes(entry.value, flush: true);
+      if (!directory.existsSync()) return;
+      await for (final entity in directory.list(followLinks: false)) {
+        if (entity is! File || keep.contains(entity.path)) continue;
+        await entity.delete();
       }
+    } catch (_) {
+      // Orphaned media is harmless; the restore already succeeded.
     }
   }
 

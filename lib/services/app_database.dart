@@ -1657,6 +1657,9 @@ class AppDatabase extends _$AppDatabase {
   /// network services afterwards.
   Future<void> clearAllData() {
     return transaction(() async {
+      // Draft-v9 builds kept gadgets in a side table. Remove any leftover so
+      // delete-all never leaves household history behind.
+      await customStatement('DROP TABLE IF EXISTS gadget_records');
       await delete(habitCompletionRecords).go();
       await delete(timeEntryRecords).go();
       await delete(completionRecords).go();
@@ -2337,8 +2340,70 @@ class AppDatabase extends _$AppDatabase {
       }
     }
 
-    // `gadget_records` has no shipped equivalent; leave it untouched so no
-    // maintenance history is destroyed by this repair.
+    // Draft gadgets are Home maintenance tasks in the shipped model. Convert
+    // each row once, then drop the draft table so no untracked household data
+    // survives a delete-all.
+    if (tableNames.contains('gadget_records')) {
+      final gadgetColumns = await columnsOf('gadget_records');
+      final gadgets = await customSelect('SELECT * FROM gadget_records').get();
+      for (final row in gadgets) {
+        final gadgetId = row.read<String>('id');
+        final migrated = await customSelect(
+          "SELECT 1 AS found FROM entry_records WHERE source = 'legacy-gadget' AND external_id = ?",
+          variables: [Variable.withString(gadgetId)],
+        ).getSingleOrNull();
+        if (migrated != null) continue;
+
+        final intervalDays = row.read<int>('interval_days');
+        final interval = intervalDays <= 0 ? 1 : intervalDays;
+        final lastServiced = gadgetColumns.contains('last_serviced_at')
+            ? row.readNullable<int>('last_serviced_at')
+            : null;
+        final createdAt = row.read<int>('created_at');
+        final updatedAt = row.read<int>('updated_at');
+        final deletedAt = gadgetColumns.contains('deleted_at') ? row.readNullable<int>('deleted_at') : null;
+        final base = DateTime.fromMillisecondsSinceEpoch((lastServiced ?? createdAt) * 1000, isUtc: true);
+        final due = LocalDate.fromDateTime(base).addDays(interval);
+
+        // Gadgets belong to Home units only. A draft gadget filed under a
+        // Work or Personal unit keeps its data but loses that context, because
+        // no shipped screen would otherwise show it.
+        String? contextId;
+        final unitId = gadgetColumns.contains('space_unit_id')
+            ? row.readNullable<String>('space_unit_id')
+            : null;
+        if (unitId != null) {
+          final unit = await customSelect(
+            'SELECT space_id FROM context_records WHERE id = ?',
+            variables: [Variable.withString(unitId)],
+          ).getSingleOrNull();
+          if (unit?.read<String>('space_id') == 'home') contextId = unitId;
+        }
+
+        await customStatement(
+          'INSERT INTO entry_records '
+          '(id, space_id, title, notes, kind, date_key, context_id, priority, all_day, status, '
+          'source, external_id, read_only, last_completed_at, repeat_after_completion_days, '
+          'created_at, updated_at, deleted_at) '
+          "VALUES (?, 'home', ?, ?, 'task', ?, ?, 'none', 1, 'open', 'legacy-gadget', ?, 0, ?, ?, ?, ?, ?)",
+          [
+            'gadget-$gadgetId',
+            row.read<String>('name'),
+            gadgetColumns.contains('notes') ? row.read<String>('notes') : '',
+            due.key,
+            contextId,
+            gadgetId,
+            lastServiced,
+            interval,
+            createdAt,
+            updatedAt,
+            deletedAt,
+          ],
+        );
+      }
+      await customStatement('DROP TABLE gadget_records');
+      tableNames = await tables();
+    }
   }
 
   Future<ShiftPattern?> _loadPattern(String id) async {

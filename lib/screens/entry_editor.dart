@@ -8,6 +8,7 @@ import '../core/i18n/l10n.dart';
 import '../core/i18n/recurrence_label.dart';
 import '../core/i18n/reminder_label.dart';
 import '../core/sound/sound_service.dart';
+import '../core/time/time_field.dart';
 import '../core/timezone/timezone_picker.dart';
 import '../core/widgets/ui_kit.dart';
 import '../theme/app_colors.dart';
@@ -456,42 +457,24 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
               ],
               if (!_allDay) ...[
                 const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _PickerRow(
-                        icon: Icons.schedule,
-                        label: l10n.starts,
-                        value: _startMinute == null ? l10n.noTime : _timeLabel(_startMinute!),
-                        onTap: _pickStartTime,
-                      ),
-                    ),
-                    if (_startMinute != null)
-                      IconButton(
-                        onPressed: () => setState(() => _startMinute = null),
-                        icon: const Icon(Icons.close, size: 18),
-                        tooltip: l10n.clearStart,
-                      ),
-                  ],
+                ManeTimeField(
+                  label: l10n.starts,
+                  icon: Icons.schedule,
+                  valueLabel: _startMinute == null ? l10n.noTime : _timeLabel(_startMinute!),
+                  initialMinute: _startMinute,
+                  clearTooltip: l10n.clearStart,
+                  onClear: () => setState(() => _startMinute = null),
+                  onChanged: (minute) => setState(() => _applyStart(minute)),
                 ),
                 const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _PickerRow(
-                        icon: _timing == EntryTiming.deadline ? Icons.flag_outlined : Icons.schedule_outlined,
-                        label: _timing == EntryTiming.deadline ? l10n.deadline : l10n.ends,
-                        value: _endMinute == null ? l10n.noTime : _timeLabel(_endMinute!),
-                        onTap: _pickEndTime,
-                      ),
-                    ),
-                    if (_endMinute != null)
-                      IconButton(
-                        onPressed: () => setState(() => _endMinute = null),
-                        icon: const Icon(Icons.close, size: 18),
-                        tooltip: l10n.clearEnd,
-                      ),
-                  ],
+                ManeTimeField(
+                  label: _timing == EntryTiming.deadline ? l10n.deadline : l10n.ends,
+                  icon: _timing == EntryTiming.deadline ? Icons.flag_outlined : Icons.schedule_outlined,
+                  valueLabel: _endMinute == null ? l10n.noTime : _timeLabel(_endMinute!),
+                  initialMinute: _endMinute,
+                  clearTooltip: l10n.clearEnd,
+                  onClear: () => setState(() => _endMinute = null),
+                  onChanged: (minute) => setState(() => _applyEnd(minute)),
                 ),
                 const SizedBox(height: 10),
                 ManeSelectField(
@@ -622,9 +605,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
   };
 
   String _timeLabel(int minutes) {
-    final normalized = minutes % 1440;
-    final label = TimeOfDay(hour: normalized ~/ 60, minute: normalized % 60).format(context);
-    return minutes >= 1440 ? '$label ${context.l10n.overnightSuffix}' : label;
+    return formatMinuteLabel(context, minutes, overnightSuffix: context.l10n.overnightSuffix);
   }
 
   Future<void> _pickDate() async {
@@ -653,41 +634,25 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     setState(() => _endDate = end.isAfter(_date) ? end : null);
   }
 
-  Future<void> _pickStartTime() async {
-    final initial = _startMinute ?? 9 * 60;
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: initial ~/ 60, minute: initial % 60),
-    );
-    if (picked == null || !mounted) return;
-    setState(() {
-      final previous = _startMinute;
-      _startMinute = picked.hour * 60 + picked.minute;
-      final end = _endMinute;
-      if (end == null) return;
-      if (previous == null) {
-        if (end <= _startMinute!) _endMinute = _startMinute! + 60;
-      } else {
-        _endMinute = _startMinute! + (end - previous);
-      }
-    });
+  void _applyStart(int minute) {
+    final previous = _startMinute;
+    _startMinute = minute;
+    final end = _endMinute;
+    if (end == null) return;
+    if (previous == null) {
+      if (end <= _startMinute!) _endMinute = _startMinute! + 60;
+    } else {
+      _endMinute = _startMinute! + (end - previous);
+    }
   }
 
-  Future<void> _pickEndTime() async {
-    final initial = _endMinute ?? 10 * 60;
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: (initial ~/ 60) % 24, minute: initial % 60),
-    );
-    if (picked == null || !mounted) return;
-    setState(() {
-      var end = picked.hour * 60 + picked.minute;
-      // A single-day end at or before the start runs into tomorrow. An explicit
-      // end date already carries the day, so keep the picked wall-clock time.
-      final start = _startMinute;
-      if (start != null && _endDate == null && end <= start) end += 1440;
-      _endMinute = end;
-    });
+  void _applyEnd(int picked) {
+    var end = picked;
+    // A single-day end at or before the start runs into tomorrow. An explicit
+    // end date already carries the day, so keep the picked wall-clock time.
+    final start = _startMinute;
+    if (start != null && _endDate == null && end <= start) end += 1440;
+    _endMinute = end;
   }
 
   Future<void> _save() async {
