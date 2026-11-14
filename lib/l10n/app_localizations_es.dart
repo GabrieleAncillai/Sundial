@@ -1597,6 +1597,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get thisWeek => 'Esta semana';
 
   @override
+  String get habitHistory => 'Historial';
+
+  @override
+  String get habitActiveDays => 'Días activos';
+
+  @override
+  String get habitCheckIns => 'Registros';
+
+  @override
+  String get habitHistoryHint => 'Los días rellenos están hechos. Los días con borde están programados.';
+
+  @override
   String get markHabitDone => 'Marcar hecho';
 
   @override

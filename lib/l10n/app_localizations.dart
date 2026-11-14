@@ -2942,6 +2942,30 @@ abstract class AppLocalizations {
   /// **'This week'**
   String get thisWeek;
 
+  /// No description provided for @habitHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get habitHistory;
+
+  /// No description provided for @habitActiveDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Active days'**
+  String get habitActiveDays;
+
+  /// No description provided for @habitCheckIns.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-ins'**
+  String get habitCheckIns;
+
+  /// No description provided for @habitHistoryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled days are done. Outlined days are scheduled.'**
+  String get habitHistoryHint;
+
   /// No description provided for @markHabitDone.
   ///
   /// In en, this message translates to:

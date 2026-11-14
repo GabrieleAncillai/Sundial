@@ -11,6 +11,7 @@ import 'package:mane/models/remote_snapshot.dart';
 import 'package:mane/models/reminder.dart';
 import 'package:mane/models/shopping_item.dart';
 import 'package:mane_core/mane_core.dart';
+import 'package:path/path.dart' as p;
 import 'package:sqlite3/open.dart';
 import 'package:sqlite3/sqlite3.dart';
 
@@ -138,7 +139,7 @@ void main() {
     expect(columns.map((row) => row.data['name']), contains('time_zone'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 10);
+    expect(version.data.values.single, 11);
   });
 
   test('migrates real v2 data and keeps tags usable', () async {
@@ -200,7 +201,7 @@ void main() {
     expect((await database.watchTags().first).single.name, 'Tax');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 10);
+    expect(version.data.values.single, 11);
   });
 
   test('migrates real v3 data and exposes the v0.3 tables', () async {
@@ -254,7 +255,7 @@ void main() {
 
     await database.saveShiftChecklistItems('missing-pattern', const []);
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 10);
+    expect(version.data.values.single, 11);
   });
 
   test('migrates real v4 data and creates the pairing tables', () async {
@@ -408,7 +409,7 @@ void main() {
     expect(paired.port, 8766);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 10);
+    expect(version.data.values.single, 11);
   });
 
   test('migrates real v5 checklist rows to per-slot keys', () async {
@@ -478,7 +479,7 @@ void main() {
     expect(saved.windDownMinutes, 20);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 10);
+    expect(version.data.values.single, 11);
   });
 
   test('migrates real v6 rows to shopping order and purchase history', () async {
@@ -535,7 +536,7 @@ void main() {
     expect(history.single.note, 'Shop run');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 10);
+    expect(version.data.values.single, 11);
   });
 
   test('migrates real v7 rows to custom reminder times and remote snapshots', () async {
@@ -610,7 +611,7 @@ void main() {
     expect(await database.readRemoteSnapshots(), isEmpty);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 10);
+    expect(version.data.values.single, 11);
   });
 
   test('migrates real v8 rows to contexts, projects, habits and tracked tasks', () async {
@@ -685,7 +686,7 @@ void main() {
     expect((await database.readShiftChecklistItems('bar')).single.dayIndex, 2);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 10);
+    expect(version.data.values.single, 11);
   });
 
   test('repairs a database written by the draft v9 build', () async {
@@ -735,9 +736,9 @@ void main() {
       ],
     );
     raw.execute(
-      'INSERT INTO habit_records (id, space_unit_id, name, icon, color, created_at, updated_at) '
-      'VALUES (?, ?, ?, ?, ?, ?, ?)',
-      ['open-shop', 'pizza', 'Open shop', 'bolt', 0xFF34C759, createdAt, createdAt],
+      'INSERT INTO habit_records (id, space_unit_id, name, icon, color, weekdays, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      ['open-shop', 'pizza', 'Open shop', 'bolt', 0xFF34C759, '1,3,5', createdAt, createdAt],
     );
     raw.execute('INSERT INTO habit_check_records (habit_id, date_key, created_at) VALUES (?, ?, ?)', [
       'open-shop',
@@ -805,6 +806,7 @@ void main() {
     final habit = (await database.watchHabits().first).single;
     expect(habit.spaceId, 'work');
     expect(habit.contextId, 'pizza');
+    expect(habit.weekdays, {1, 3, 5}, reason: 'the draft weekday schedule survives the v10 rebuild');
     final completions = await database.watchHabitCompletions().first;
     expect(completions['open-shop'], contains(LocalDate.parse('2026-11-09')));
 
@@ -847,6 +849,64 @@ void main() {
     expect(nextDue, LocalDate.parse('2027-10-29'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 10);
+    expect(version.data.values.single, 11);
+  });
+
+  test('a v10 database gains habit weekdays and keeps writing', () async {
+    final directory = await Directory.systemTemp.createTemp('mane-v10');
+    final path = p.join(directory.path, 'mane.sqlite');
+    addTearDown(() => directory.delete(recursive: true));
+    final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
+
+    final raw = sqlite3.open(path);
+    raw.execute('''
+      CREATE TABLE habit_records (
+        id TEXT NOT NULL,
+        space_id TEXT NOT NULL,
+        context_id TEXT NULL,
+        name TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        color INTEGER NOT NULL,
+        icon TEXT NOT NULL DEFAULT 'star',
+        target_per_week INTEGER NOT NULL DEFAULT 7,
+        position INTEGER NOT NULL DEFAULT 0,
+        archived INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER NULL,
+        PRIMARY KEY (id)
+      )
+    ''');
+    raw.execute(
+      'INSERT INTO habit_records (id, space_id, name, color, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['walk', 'personal', 'Walk', 0xFF00AA00, createdAt, createdAt],
+    );
+    raw.execute('PRAGMA user_version = 10');
+    raw.dispose();
+
+    final database = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(() => database.close());
+
+    final existing = (await database.watchHabits().first).single;
+    expect(existing.weekdays, {1, 2, 3, 4, 5, 6, 7});
+
+    await database.saveHabit(
+      Habit(
+        id: existing.id,
+        spaceId: existing.spaceId,
+        name: existing.name,
+        colorValue: existing.colorValue,
+        targetPerWeek: 3,
+        weekdays: const {1, 3, 5},
+        createdAt: existing.createdAt,
+      ),
+    );
+    final updated = (await database.watchHabits().first).single;
+    expect(updated.weekdays, {1, 3, 5});
+    expect(updated.targetPerWeek, 3);
+
+    final version = await database.customSelect('PRAGMA user_version').getSingle();
+    expect(version.data.values.single, 11);
   });
 }

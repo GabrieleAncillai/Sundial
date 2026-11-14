@@ -56,7 +56,14 @@ void main() {
       ),
     );
     await database.saveHabit(
-      const Habit(id: 'walk', spaceId: 'personal', name: 'Walk', colorValue: 0xFF00AA00, targetPerWeek: 3),
+      const Habit(
+        id: 'walk',
+        spaceId: 'personal',
+        name: 'Walk',
+        colorValue: 0xFF00AA00,
+        targetPerWeek: 3,
+        weekdays: {1, 3, 5},
+      ),
     );
     await database.setHabitCompleted('walk', LocalDate.parse('2026-11-09'), completed: true);
     await database.saveEntry(
@@ -194,7 +201,7 @@ void main() {
 
     final exported = await BackupService(source).exportJson();
     final payload = jsonDecode(exported) as Map<String, dynamic>;
-    expect(payload['schemaVersion'], 10);
+    expect(payload['schemaVersion'], 11);
     expect(payload.containsKey('identity'), isFalse);
     expect(payload.containsKey('pairedDevices'), isFalse);
     expect(exported, isNot(contains('cGluaGFzaA==')));
@@ -222,6 +229,7 @@ void main() {
     after.remove('exportedAt');
 
     expect(after, before);
+    expect((await target.watchHabits().first).single.weekdays, {1, 3, 5});
   });
 
   test('backups embed and restore sticker media', () async {

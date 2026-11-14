@@ -45,6 +45,7 @@ class Habit {
     required this.colorValue,
     this.icon = 'star',
     this.targetPerWeek = 7,
+    this.weekdays = const {1, 2, 3, 4, 5, 6, 7},
     this.position = 0,
     this.archived = false,
     this.createdAt,
@@ -59,38 +60,56 @@ class Habit {
   final int colorValue;
   final String icon;
   final int targetPerWeek;
+
+  /// Scheduled weekdays, 1 = Monday through 7 = Sunday. An empty set means the
+  /// habit has no fixed days and behaves like every day.
+  final Set<int> weekdays;
+
   final int position;
   final bool archived;
   final DateTime? createdAt;
   final DateTime? deletedAt;
 
-  bool get isDaily => targetPerWeek >= 7;
+  bool isScheduled(LocalDate date) => weekdays.isEmpty || weekdays.contains(date.weekday);
 
-  int get cleanTarget => targetPerWeek.clamp(1, 7);
+  int get scheduledPerWeek => weekdays.isEmpty ? 7 : weekdays.length.clamp(1, 7);
 
-  /// Completions in the week that starts on [weekStart].
+  /// A habit whose target covers every scheduled day runs a day streak;
+  /// anything lighter runs a weekly streak.
+  bool get isDaily => cleanTarget >= scheduledPerWeek;
+
+  int get cleanTarget => targetPerWeek.clamp(1, scheduledPerWeek);
+
+  /// Completions in the week that starts on [weekStart], counting only
+  /// scheduled days.
   int weekProgress(Set<LocalDate> completions, LocalDate anyDayInWeek, int weekStart) {
     final start = anyDayInWeek.startOfWeek(weekStart);
     var count = 0;
     for (var index = 0; index < 7; index++) {
-      if (completions.contains(start.addDays(index))) count++;
+      final day = start.addDays(index);
+      if (isScheduled(day) && completions.contains(day)) count++;
     }
     return count;
   }
 
-  /// Consecutive checked days for a daily habit, or completed check-ins across
-  /// qualifying weeks for a weekly-target habit.
+  /// Consecutive checked days for a daily habit, or qualifying weeks for a
+  /// weekly-target habit.
   ///
-  /// A 3x/week habit completed Monday to Wednesday keeps a three-day streak on
-  /// Sunday even though Sunday itself is unchecked. Previous weeks that met
-  /// the target add to the same count.
+  /// Unscheduled days neither add to nor break a daily streak, so a Mon/Wed/Fri
+  /// habit keeps its run across Tuesday. A 3x/week habit completed Monday to
+  /// Wednesday already has one qualifying week, and the rest of that week does
+  /// not break it.
   int streak(Set<LocalDate> completions, LocalDate today, {int weekStart = DateTime.monday}) {
     if (isDaily) {
-      var cursor = today;
-      if (!completions.contains(cursor)) cursor = cursor.addDays(-1);
+      var cursor = isScheduled(today) ? today : _previousScheduled(today);
+      if (!completions.contains(cursor)) cursor = _previousScheduled(cursor.addDays(-1));
       var count = 0;
-      while (completions.contains(cursor)) {
-        count++;
+      // A bounded walk keeps a corrupt schedule from looping forever.
+      for (var guard = 0; guard < 400; guard++) {
+        if (isScheduled(cursor)) {
+          if (!completions.contains(cursor)) break;
+          count++;
+        }
         cursor = cursor.addDays(-1);
       }
       return count;
@@ -107,5 +126,26 @@ class Habit {
       previous = previous.addDays(-7);
     }
     return count;
+  }
+
+  LocalDate _previousScheduled(LocalDate from) {
+    var cursor = from;
+    for (var guard = 0; guard < 14 && !isScheduled(cursor); guard++) {
+      cursor = cursor.addDays(-1);
+    }
+    return cursor;
+  }
+
+  /// Comma-separated weekday numbers, sorted, for storage and backups.
+  String get weekdaysKey => (weekdays.toList()..sort()).join(',');
+
+  static Set<int> parseWeekdays(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return const {1, 2, 3, 4, 5, 6, 7};
+    final parsed = <int>{};
+    for (final part in raw.split(',')) {
+      final day = int.tryParse(part.trim());
+      if (day != null && day >= 1 && day <= 7) parsed.add(day);
+    }
+    return parsed.isEmpty ? const {1, 2, 3, 4, 5, 6, 7} : parsed;
   }
 }

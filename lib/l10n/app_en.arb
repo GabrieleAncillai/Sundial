@@ -971,6 +971,10 @@
     }
   },
   "thisWeek": "This week",
+  "habitHistory": "History",
+  "habitActiveDays": "Active days",
+  "habitCheckIns": "Check-ins",
+  "habitHistoryHint": "Filled days are done. Outlined days are scheduled.",
   "markHabitDone": "Mark done",
   "habitDone": "Done today",
   "addGadget": "Add gadget",

@@ -34,7 +34,7 @@ class BackupService {
   BackupService(this._database, {Directory? mediaDirectory}) : _mediaDirectory = mediaDirectory;
 
   static const appTag = 'mane';
-  static const currentSchemaVersion = 10;
+  static const currentSchemaVersion = 11;
 
   /// The oldest payload this build still upgrades. v1 and v2 are excluded on
   /// purpose: they predate timezone-aware entries and cannot be mapped safely.
@@ -213,6 +213,7 @@ class BackupService {
             'color': row.color,
             'icon': row.icon,
             'targetPerWeek': row.targetPerWeek,
+            'weekdays': row.weekdays,
             'position': row.position,
             'archived': row.archived,
             'createdAt': _date(row.createdAt),
@@ -567,6 +568,7 @@ class BackupService {
                 color: Value(_integer(row, 'color')),
                 icon: Value(_optionalString(row, 'icon') ?? 'star'),
                 targetPerWeek: Value(_optionalInteger(row, 'targetPerWeek') ?? 7),
+                weekdays: Value(_optionalString(row, 'weekdays') ?? '1,2,3,4,5,6,7'),
                 position: Value(_optionalInteger(row, 'position') ?? 0),
                 archived: Value(_optionalBoolean(row, 'archived') ?? false),
                 createdAt: Value(_dateTime(row, 'createdAt')),

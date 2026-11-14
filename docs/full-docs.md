@@ -1043,15 +1043,20 @@ paths the audit found unsafe. The row-by-row status is in
   maintenance date from the completion day, or marks a one-off task done.
 - **Schema repair.** Schema v10 rebuilds the draft `context_records` and
   `time_entry_records` so the legacy `kind`/`updated_at` columns stop blocking
-  inserts. Legacy non-Work shift patterns are moved to Work.
-- **Backup and delete-all.** Schema 10 is accepted, schema 3–10 are upgraded,
-  sticker media is embedded as base64 and restored under the new media folder,
-  restore is tested over a populated database, and delete-all removes media and
-  automatic backups.
+  inserts. Legacy non-Work shift patterns are moved to Work, and draft gadgets
+  become Home maintenance entries (the draft table is then dropped). Schema v11
+  adds the habit weekday schedule without touching existing habits.
+- **Backup and delete-all.** Schema 11 is accepted, schema 3–11 are upgraded,
+  sticker media is embedded as base64, written before the database commit and
+  pruned when the restored plan no longer references it, restore is tested over
+  a populated database, and delete-all clears the plan atomically, then media
+  and automatic backups, reporting a partial wipe instead of claiming success.
 - **Network boundaries.** The LAN server binds a private IPv4 address (loopback
   if none exists), rejects non-private remote addresses, and its unauthenticated
-  info endpoint no longer returns username, device ID or device name. MCP
-  detects token/certificate/port changes and rebinds; stop clears sessions.
+  info endpoint no longer returns username, device ID or device name. mDNS
+  advertises only the pinned certificate fingerprint, and peers are matched by
+  it after an address change. MCP detects token/certificate/port changes and
+  rebinds; stop clears sessions.
 - **UI and data scoping.** The desktop side rail owns the persistent search
   field and filter badge; settings search indexes individual rows; Plan uses the
   900 px shell breakpoint and the all-day row shares the time gutter. Per-day

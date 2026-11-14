@@ -99,4 +99,52 @@ void main() {
     final secondWeek = {...completions, day.addDays(7), day.addDays(8), day.addDays(9)};
     expect(habit.streak(secondWeek, day.addDays(13), weekStart: DateTime.monday), 2);
   });
+
+  test('habit weekday schedules scope progress and skip off days', () {
+    // Monday, Wednesday and Friday only.
+    final habit = Habit(
+      id: 'gym',
+      spaceId: 'personal',
+      name: 'Gym',
+      colorValue: 0xFF00AA00,
+      targetPerWeek: 3,
+      weekdays: const {1, 3, 5},
+    );
+    expect(habit.cleanTarget, 3);
+    expect(habit.scheduledPerWeek, 3);
+    expect(habit.isDaily, isTrue);
+
+    final monday = LocalDate.parse('2026-11-09');
+    final wednesday = monday.addDays(2);
+    final friday = monday.addDays(4);
+    final tuesday = monday.addDays(1);
+
+    // A Tuesday check-in does not count towards a Mon/Wed/Fri habit.
+    expect(habit.weekProgress({tuesday}, monday, DateTime.monday), 0);
+    expect(habit.weekProgress({monday, wednesday, friday}, friday, DateTime.monday), 3);
+
+    // Tuesday is skipped by the day streak instead of breaking it.
+    expect(habit.streak({monday, wednesday}, wednesday, weekStart: DateTime.monday), 2);
+    expect(habit.streak({monday, wednesday}, tuesday, weekStart: DateTime.monday), 1);
+
+    // A lighter target keeps a weekly streak.
+    final twice = Habit(
+      id: 'run',
+      spaceId: 'personal',
+      name: 'Run',
+      colorValue: 0xFF00AA00,
+      targetPerWeek: 2,
+      weekdays: const {1, 3, 5},
+    );
+    expect(twice.isDaily, isFalse);
+    expect(twice.streak({monday, wednesday}, friday, weekStart: DateTime.monday), 1);
+  });
+
+  test('habit weekdays round-trip through storage', () {
+    expect(Habit.parseWeekdays('5,1,3'), {1, 3, 5});
+    expect(Habit.parseWeekdays(''), {1, 2, 3, 4, 5, 6, 7});
+    expect(Habit.parseWeekdays('0,8,2'), {2});
+    const habit = Habit(id: 'x', spaceId: 'personal', name: 'X', colorValue: 0, weekdays: {3, 1, 5});
+    expect(habit.weekdaysKey, '1,3,5');
+  });
 }

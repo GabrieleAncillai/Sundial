@@ -10,6 +10,7 @@ import '../../../state/providers.dart';
 import '../../../state/settings_controller.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
+import '../pages/habit_history_page.dart';
 import 'space_controls.dart';
 
 Future<void> showHabitEditor(
@@ -40,6 +41,7 @@ class _HabitEditorSheetState extends ConsumerState<_HabitEditorSheet> {
   late String _icon;
   late int _color;
   late int _target;
+  late Set<int> _weekdays;
   bool _busy = false;
 
   @override
@@ -50,6 +52,8 @@ class _HabitEditorSheetState extends ConsumerState<_HabitEditorSheet> {
     _icon = habit?.icon ?? (widget.recommendedIcons.isEmpty ? 'star' : widget.recommendedIcons.first);
     _color = habit?.colorValue ?? spacePalette[3];
     _target = habit?.targetPerWeek ?? 7;
+    _weekdays = {...?habit?.weekdays};
+    if (_weekdays.isEmpty) _weekdays = {1, 2, 3, 4, 5, 6, 7};
   }
 
   @override
@@ -87,6 +91,27 @@ class _HabitEditorSheetState extends ConsumerState<_HabitEditorSheet> {
           ],
         ),
         const SizedBox(height: 16),
+        Text(l10n.habitActiveDays, style: ManeType.label(12, color: c.textSecondary)),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            for (var day = 1; day <= 7; day++)
+              FilterChip(
+                label: Text(_weekdayLabel(context, day)),
+                selected: _weekdays.contains(day),
+                onSelected: (selected) => setState(() {
+                  if (selected) {
+                    _weekdays.add(day);
+                  } else if (_weekdays.length > 1) {
+                    _weekdays.remove(day);
+                  }
+                }),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
         Row(
           children: [
             ContextAvatar(icon: _icon, colorValue: _color, size: 46, radius: 14),
@@ -112,6 +137,16 @@ class _HabitEditorSheetState extends ConsumerState<_HabitEditorSheet> {
           ),
         ),
         if (widget.habit != null)
+          TextButton.icon(
+            onPressed: _busy
+                ? null
+                : () => Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute<void>(builder: (_) => HabitHistoryPage(habit: widget.habit!))),
+            icon: const Icon(Icons.history, size: 18),
+            label: Text(l10n.habitHistory),
+          ),
+        if (widget.habit != null)
           TextButton(
             onPressed: _busy ? null : _delete,
             style: TextButton.styleFrom(foregroundColor: c.danger),
@@ -119,6 +154,12 @@ class _HabitEditorSheetState extends ConsumerState<_HabitEditorSheet> {
           ),
       ],
     );
+  }
+
+  String _weekdayLabel(BuildContext context, int day) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    // 2026-11-09 is a Monday, so day 1..7 maps onto that week.
+    return DateFormat.E(locale).format(DateTime(2026, 11, 8 + day));
   }
 
   Future<void> _chooseIcon() async {
@@ -144,6 +185,7 @@ class _HabitEditorSheetState extends ConsumerState<_HabitEditorSheet> {
       colorValue: _color,
       icon: _icon,
       targetPerWeek: _target,
+      weekdays: {..._weekdays},
       position: existing?.position ?? 0,
     );
     try {
@@ -244,9 +286,10 @@ class HabitCard extends ConsumerWidget {
                   child: _DayTick(
                     date: start.addDays(index),
                     done: completions.contains(start.addDays(index)),
+                    scheduled: habit.isScheduled(start.addDays(index)),
                     today: start.addDays(index) == today,
                     color: color,
-                    onTap: start.addDays(index).isAfter(today)
+                    onTap: !habit.isScheduled(start.addDays(index)) || start.addDays(index).isAfter(today)
                         ? null
                         : () => ref
                               .read(repositoryProvider)
@@ -271,6 +314,7 @@ class _DayTick extends StatelessWidget {
   const _DayTick({
     required this.date,
     required this.done,
+    required this.scheduled,
     required this.today,
     required this.color,
     this.onTap,
@@ -278,6 +322,7 @@ class _DayTick extends StatelessWidget {
 
   final LocalDate date;
   final bool done;
+  final bool scheduled;
   final bool today;
   final Color color;
   final VoidCallback? onTap;
@@ -290,7 +335,7 @@ class _DayTick extends StatelessWidget {
       children: [
         Text(
           DateFormat.E(locale).format(date.toDateTime()).substring(0, 1),
-          style: ManeType.label(9, color: today ? color : c.textTertiary),
+          style: ManeType.label(9, color: scheduled ? (today ? color : c.textTertiary) : c.textTertiary),
         ),
         const SizedBox(height: 4),
         Pressable(
@@ -299,16 +344,18 @@ class _DayTick extends StatelessWidget {
             width: 18,
             height: 18,
             decoration: BoxDecoration(
-              color: done ? color : c.surfaceAlt,
+              color: done ? color : (scheduled ? c.surfaceAlt : Colors.transparent),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: today && !done
-                    ? color
-                    : done
-                    ? color
-                    : c.border,
-                width: today ? 1.6 : 1,
-              ),
+              border: scheduled
+                  ? Border.all(
+                      color: today && !done
+                          ? color
+                          : done
+                          ? color
+                          : c.border,
+                      width: today ? 1.6 : 1,
+                    )
+                  : null,
             ),
             child: done ? const Icon(Icons.check, size: 12, color: Colors.white) : null,
           ),

@@ -10,7 +10,7 @@ the product-polish claims as proof.
 |---|---|
 | `flutter analyze --no-fatal-infos` | Pass, no issues |
 | `dart format --line-length 110 --output=none --set-exit-if-changed lib test packages/mane_core` | Pass |
-| `flutter test` | Pass, 194 tests |
+| `flutter test` | Pass, 204 tests |
 | `(cd packages/mane_core && dart test)` | Pass, 92 tests |
 | `flutter build linux --debug` | Pass |
 | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk flutter build apk --debug` | Pass |
@@ -70,7 +70,7 @@ the product-polish claims as proof.
 | Requirement | Status | Evidence |
 |---|---|---|
 | People/groups are contexts, projects separate them | Met (existing) | contexts + projects |
-| Habits: weekly target, current-week progress, streak, history, per-day completion | Partial | target/progress/per-day exist; weekly-target streaks now count consecutive qualifying weeks and are labelled weeks. No separate habit history screen and no weekday schedule column yet |
+| Habits: weekly target, current-week progress, streak, history, per-day completion | Met | target, weekday schedule, per-day checks, day/week streak and a 12-week history page (`habit_history_page.dart`); `timing_test.dart`, `migration_test.dart` |
 | No shifts or gadgets | Met | shift restriction; Personal branch renders habits/projects only |
 | Personal detail does not show household inventory, shopping or gadgets | Met | `product_polish_widget_test.dart` |
 
@@ -81,7 +81,7 @@ the product-polish claims as proof.
 | Collapsible month/week switch | Met (existing) | `plan_page.dart` |
 | Content below calendar never clips through navigation | Met (existing) | `Expanded` layout |
 | Phone selected-day list/timeline | Met (existing) | `plan_page.dart` |
-| Desktop week time grid at 1024 px | Met | breakpoint now uses 900 window px, matching the shell |
+| Desktop week time grid at 1024 px | Met | breakpoint is now 1024 window px, so a 1024 px window gets the rail plus the week grid |
 | Drag to move, bottom-edge resize, drag empty space to create, 15-minute snap | Met (existing) | `week_time_grid.dart` |
 | Shifts are background blocks and not draggable | Met (existing) | grid guards |
 | Recurring occurrence drag changes only that occurrence | Met (existing) | recurrence override model |
@@ -99,7 +99,7 @@ the product-polish claims as proof.
 | Breakdowns per space, project, day, habits | Met (existing) | stats page |
 | Tracked time totals reconcile with breakdowns | Met | `trackedEntriesProvider` resolves sessions outside the occurrence range; `timing_data_test.dart` |
 | Clockify-style summary and detailed PDF | Met (existing) | `report_writer.dart`, `report_writer_test.dart` |
-| CSV report | Partial | detailed session CSV exists; a separate summary CSV is not implemented |
+| Summary and detailed CSV | Met | `ReportWriter.summaryCsv` and `ReportWriter.csv`; menu exports all four formats; `report_writer_test.dart` reconciles rows, shares and total |
 | No billing/rate columns | Met | writer has no money columns |
 | Compare against `docs/refs/` | Partial | structure matches; a final pixel/data comparison is still a manual review |
 
@@ -121,6 +121,7 @@ the product-polish claims as proof.
 | Week start | Met (existing) | settings |
 | Performance mode reduces blur/motion | Met (existing) | background and sheet motion |
 | Reminder defaults, work/quiet hours, sleep buffers | Met (existing) | settings + reminder planner |
+| Desktop time fields | Met | shared `ManeTimeField` opens a typed 15-minute-snap dialog on wide layouts and the platform sheet on phones; used by editor, shifts, reminders and hours |
 | Export/import backup | Met | backup service |
 | Automatic local backups with rotation | Met (existing) | auto backup service |
 | Import/export calendar | Met (existing) | ICS |
@@ -128,13 +129,14 @@ the product-polish claims as proof.
 | Export/import CSV | Met (existing) | CSV interchange |
 | Backups include media files | Met | base64 media map; restore writes files under the media folder (`backup_test.dart`) |
 | Restore over a populated database | Met | `backup_test.dart` |
-| Delete all removes plan data, media and automatic backups | Partial | `clearAllData` runs first, then media and automatic copies are removed. A failure in the later cleanup is not reported transactionally |
+| Delete all removes plan data, media and automatic backups | Met | `clearAllData` is atomic and runs first; media and automatic copies follow and a failure is reported as a partial wipe (`dataDeleteIncomplete`) |
 | One online master switch, off by default | Met | master switch is authoritative over legacy rows (`settings_test.dart`) |
 | Only when on show Devices & Sync and MCP | Met (existing) | settings page |
 | Devices & Sync discovery-first, no IP entry as primary flow | Met (existing) | mDNS/peer discovery |
 | Pairing survives IP/network changes | Met (existing) | paired device data + discovery |
 | LAN binds private interfaces only | Met | private IPv4 bind + remote-address guard; loopback fallback |
-| HTTP info endpoint does not leak identity | Met | `/mane/v1/info` returns app/version/protocol/fingerprint only (`lan_test.dart`). mDNS still advertises device identity; see the open items |
+| HTTP info endpoint does not leak identity | Met | `/mane/v1/info` returns app/version/protocol/fingerprint only (`lan_test.dart`) |
+| Discovery does not leak username or device ID | Met | mDNS advertises only the pinned certificate fingerprint; peers match on it after an address change (`peer_discovery.dart`, `sync_service_test.dart`) |
 | MCP enable/writes/port, rebind, busy-port error, token rotation | Met | `McpServer.start` stops/rebinds on identity or port change; `mcp_test.dart` |
 | MCP tools expose the full model | Partial | legacy v0.9 tool set plus existing entities; new contexts/projects/habits/time sessions are not all exposed yet |
 | About GPL-3.0-only and InlitX attribution | Met (existing) | About page |
@@ -167,11 +169,11 @@ the product-polish claims as proof.
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| v10 draft repair leaves writable tables | Partial | context/time-entry tables are rebuilt and accept writes. Draft `gadget_records` are still not read by the shipped model |
+| v10 draft repair leaves writable tables | Met | context/time-entry tables are rebuilt, and draft `gadget_records` are converted into Home maintenance entries before the draft table is dropped (`migration_test.dart`) |
 | Legacy non-Work shifts repaired | Met | migration moves them to Work |
 | Deleting a project detaches tasks | Met | `softDeleteProject`; `timing_data_test.dart` |
 | Deleting a context detaches tasks and hides owned rows | Met | `softDeleteContext`; `timing_data_test.dart` |
-| Backup accepts schema 3–10 | Met | `backup_test.dart` |
+| Backup accepts schema 3–11 | Met | `backup_test.dart` |
 | Backup validation is transactional | Met (existing) | rollback tests |
 | Delete-all removes media and automatic backups | Met | settings action |
 | Read-only import provenance preserved on re-import | Met | ICS re-import uses `saveImportedEntry` and `copyWith` |
@@ -182,24 +184,12 @@ These are not claimed as met:
 
 1. Aero 2.0 is not approved or rolled out. The existing Aero remains frozen;
    see `docs/aero-2.md`.
-2. `ManeTimeField` is not yet built. Desktop still uses the stock time dial in
-   the entry editor, shift editor and reminders.
-3. Settings search opens the owning section but does not scroll to and highlight
+2. Settings search opens the owning section but does not scroll to and highlight
    the exact row.
-4. Habit weekday schedules and a dedicated habit history screen are not in the
-   schema or UI. Weekly-target streak math is fixed.
-5. Stats has detailed CSV but not a separate summary CSV.
-6. The MCP tool surface does not yet expose every new context/project/habit/time
+3. Habit history is a 12-week read-only view; there is no infinite archive or
+   per-habit export.
+4. The MCP tool surface does not yet expose every new context/project/habit/time
    session operation.
-7. Real-device notification, reboot, battery, LAN, MCP, sound and widget checks
+5. Real-device notification, reboot, battery, LAN, MCP, sound and widget checks
    remain the user's device checklist.
-8. The Aero concept screenshots and contrast check are pending user approval.
-9. mDNS discovery still advertises the device name, device ID and username so
-   paired devices can be matched after an IP change. The HTTP info endpoint is
-   clean, but the discovery advertisement is still an unauthenticated identity
-   exposure.
-10. Backup media files are written after the database commit. A write failure
-    leaves the restored rows pointing at missing files, and an import does not
-    prune the previous media set.
-11. Draft-v9 `gadget_records` are left in SQLite but are not shown by the
-    shipped model. A dedicated gadget migration or read path is still needed.
+6. The Aero concept screenshots and contrast check are pending user approval.

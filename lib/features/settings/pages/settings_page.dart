@@ -355,12 +355,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       case _SettingRoute.about:
         Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AboutPage()));
       case _SettingRoute.detail:
-        _pushDetail(context, link.section!);
+        _pushDetail(context, link.section!, highlight: link.title);
     }
   }
 
-  void _pushDetail(BuildContext context, SettingsDetailSection section) {
-    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SettingsDetailPage(section: section)));
+  void _pushDetail(BuildContext context, SettingsDetailSection section, {String? highlight}) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SettingsDetailPage(section: section, highlight: highlight),
+      ),
+    );
   }
 
   void _notice(BuildContext context, String message) {

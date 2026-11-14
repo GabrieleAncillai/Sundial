@@ -71,11 +71,22 @@ compliance wave fixed the data-integrity defects found by the audit:
   Work are rejected. Multi-home shopping keeps its home and clear-bought is
   scoped. Low-stock lines keep their home.
 - Weekly habit streaks count the current week and consecutive qualifying weeks.
+  Habits now carry a weekday schedule (schema v11) and a 12-week history page;
+  weekly targets are clamped to the scheduled days and off-days never break a
+  day streak.
 - Desktop sidebar search is a persistent field with a filter badge; settings
-  search indexes individual rows. Date format and OLED readability were
-  corrected.
+  search indexes individual rows and now scrolls to the matching row with a
+  short highlight.
+- Desktop time fields share one typed picker with 15-minute snaps, exact minutes
+  and keyboard submit; phones keep the platform sheet.
+- Reports export a summary CSV as well as the detailed one, both reconciling
+  with the tracked total.
+- Delete-all reports a partial wipe instead of claiming success; backup media is
+  written before the database commit and orphaned media is pruned on import.
+- Draft-v9 gadgets migrate to Home maintenance entries; mDNS advertises only the
+  pinned certificate fingerprint.
 
-Validation: analyze clean, 194 app tests, 92 core tests, Linux debug and Android
+Validation: analyze clean, 204 app tests, 94 core tests, Linux debug and Android
 debug APK all pass. `docs/compliance-matrix.md` records the row-by-row status,
 including what is still open.
 

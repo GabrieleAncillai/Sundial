@@ -208,7 +208,8 @@ Implemented on `feat/product-polish`:
   completions and time sessions; entry `contextId`, `projectId`, `priority`
   and `completedAt`; shift-pattern context; per-day checklist items; home and
   shopping context. Schema v10 maps the draft-v9 space-unit/task-session
-  tables and integer priorities onto that model without losing rows.
+  tables and integer priorities onto that model without losing rows. Schema v11
+  adds habit weekday schedules.
 - Responsive shell, side-rail side setting, Today switch, space overviews and
   context details, Plan page and desktop week grid, Stats dashboard and report
   export, sectioned/searchable settings, Aero palette/background, sticker media

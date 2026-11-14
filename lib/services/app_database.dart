@@ -82,6 +82,9 @@ class HabitRecords extends Table {
   IntColumn get color => integer()();
   TextColumn get icon => text().withDefault(const Constant('star'))();
   IntColumn get targetPerWeek => integer().withDefault(const Constant(7))();
+
+  /// Scheduled weekdays, 1 = Monday through 7 = Sunday, comma separated.
+  TextColumn get weekdays => text().withDefault(const Constant('1,2,3,4,5,6,7'))();
   IntColumn get position => integer().withDefault(const Constant(0))();
   BoolColumn get archived => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime()();
@@ -474,7 +477,7 @@ class AppDatabase extends _$AppDatabase {
   final String defaultTimeZone;
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -495,6 +498,7 @@ class AppDatabase extends _$AppDatabase {
       if (from < 8) await _migrateToV8(m);
       if (from < 9) await _migrateToV9(m);
       if (from < 10) await _migrateToV10(m);
+      if (from < 11) await _migrateToV11(m);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -708,6 +712,7 @@ class AppDatabase extends _$AppDatabase {
         color: Value(habit.colorValue),
         icon: Value(habit.icon),
         targetPerWeek: Value(habit.cleanTarget),
+        weekdays: Value(habit.weekdaysKey),
         position: Value(habit.position),
         archived: Value(habit.archived),
         createdAt: Value(existing?.createdAt ?? now),
@@ -2438,6 +2443,15 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  /// Habit weekday schedules were added after v10. Existing habits keep every
+  /// day until the user narrows them.
+  Future<void> _migrateToV11(Migrator m) async {
+    final columns = await customSelect('PRAGMA table_info(habit_records)').get();
+    if (!columns.any((row) => row.read<String>('name') == 'weekdays')) {
+      await m.addColumn(habitRecords, habitRecords.weekdays);
+    }
+  }
+
   Future<void> _addV4EntryColumns(Migrator m) async {
     await m.addColumn(entryRecords, entryRecords.source);
     await m.addColumn(entryRecords, entryRecords.externalId);
@@ -2517,6 +2531,7 @@ Habit _habitFromRow(HabitRow row) => Habit(
   colorValue: row.color,
   icon: row.icon,
   targetPerWeek: row.targetPerWeek,
+  weekdays: Habit.parseWeekdays(row.weekdays),
   position: row.position,
   archived: row.archived,
   createdAt: row.createdAt,

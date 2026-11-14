@@ -971,6 +971,10 @@
     }
   },
   "thisWeek": "Esta semana",
+  "habitHistory": "Historial",
+  "habitActiveDays": "Días activos",
+  "habitCheckIns": "Registros",
+  "habitHistoryHint": "Los días rellenos están hechos. Los días con borde están programados.",
   "markHabitDone": "Marcar hecho",
   "habitDone": "Hecho hoy",
   "addGadget": "Añadir aparato",
