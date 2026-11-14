@@ -10,6 +10,7 @@ import 'package:mane/models/date_range.dart';
 import 'package:mane/services/app_database.dart';
 import 'package:mane/state/providers.dart';
 import 'package:mane/state/settings_controller.dart';
+import 'package:mane/theme/app_theme.dart';
 import 'package:mane_core/mane_core.dart';
 import 'package:sqlite3/open.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
@@ -91,6 +92,19 @@ void main() {
       backgroundStyle: ManeBackgroundStyle.oled,
     );
     expect(settings.resolvedThemeMode, ThemeMode.dark);
+    expect(ManeTheme.forSettings(settings, Brightness.dark).brightness, Brightness.dark);
+  });
+
+  test('OLED overrides the Aero light palette', () {
+    const aero = AppSettings(themeVariant: ManeThemeVariant.aero);
+    expect(ManeTheme.forSettings(aero, Brightness.dark).brightness, Brightness.light);
+
+    const aeroOled = AppSettings(
+      themeVariant: ManeThemeVariant.aero,
+      backgroundStyle: ManeBackgroundStyle.oled,
+    );
+    expect(aeroOled.resolvedThemeMode, ThemeMode.dark);
+    expect(ManeTheme.forSettings(aeroOled, Brightness.dark).brightness, Brightness.dark);
   });
 
   test('work and quiet windows use the device timezone', () {

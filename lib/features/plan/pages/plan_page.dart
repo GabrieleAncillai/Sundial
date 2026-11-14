@@ -77,9 +77,10 @@ class _PlanPageState extends ConsumerState<PlanPage> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // The shell switches to the side rail at 900 window px. Plan content
-        // loses the rail width, so use the window width here as well.
-        final desktop = MediaQuery.sizeOf(context).width >= 900;
+        // The shell switches to the side rail at 900 window px, but the week
+        // grid also needs room for the month panel. At 1024 the desktop grid
+        // is required; below that the selected-day layout is clearer.
+        final desktop = MediaQuery.sizeOf(context).width >= 1024;
         return Column(
           children: [
             Padding(
@@ -363,6 +364,10 @@ class _PlanPageState extends ConsumerState<PlanPage> {
     if (entry.readOnly) return;
     final repository = ref.read(repositoryProvider);
     final now = DateTime.now().toUtc();
+    final shapeStart = entry.timing == EntryTiming.deadline || entry.timing == EntryTiming.anytime
+        ? null
+        : start;
+    final shapeEnd = entry.timing == EntryTiming.clockIn || entry.timing == EntryTiming.anytime ? null : end;
     try {
       if (entry.recurrence != null) {
         final rule = entry.recurrence!;
@@ -372,8 +377,8 @@ class _PlanPageState extends ConsumerState<PlanPage> {
           RecurrenceOverride(
             date: occurrence.date,
             dateOverride: date == occurrence.date ? null : date,
-            startMinute: start,
-            endMinute: end,
+            startMinute: shapeStart,
+            endMinute: shapeEnd,
           ),
         ];
         await repository.saveEntry(
@@ -390,8 +395,8 @@ class _PlanPageState extends ConsumerState<PlanPage> {
           entry.copyWith(
             date: date,
             endDate: span > 0 ? date.addDays(span) : null,
-            startMinute: start,
-            endMinute: end,
+            startMinute: shapeStart,
+            endMinute: shapeEnd,
             updatedAt: now,
           ),
         );
@@ -407,7 +412,7 @@ class _PlanPageState extends ConsumerState<PlanPage> {
 
   Future<void> _resize(BuildContext context, EntryOccurrence occurrence, int end) async {
     final entry = occurrence.entry;
-    if (entry.readOnly || entry.startMinute == null) return;
+    if (entry.readOnly || entry.timing != EntryTiming.scheduled) return;
     final start = occurrence.startAt == null
         ? entry.startMinute!
         : _minuteOfDay(occurrence.startAt!, ref.read(deviceTimeZoneProvider));

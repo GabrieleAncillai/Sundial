@@ -228,6 +228,72 @@ void main() {
     expect(await database.readEntry('taxes'), isNull);
   });
 
+  test('plan.update preserves timing shape, context and tracked sessions', () async {
+    await database.saveContext(
+      const PlannerContext(id: 'cafe', spaceId: 'work', name: 'Cafe', colorValue: 0xFF2F7ED8),
+    );
+    await database.saveProject(
+      const Project(
+        id: 'reno',
+        spaceId: 'work',
+        contextId: 'cafe',
+        name: 'Renovation',
+        colorValue: 0xFF2FA98F,
+      ),
+    );
+    await database.saveEntry(
+      Entry(
+        id: 'clock',
+        spaceId: 'work',
+        title: 'Clock task',
+        date: LocalDate.parse('2026-11-09'),
+        startMinute: 9 * 60,
+        timeZone: 'Europe/Madrid',
+        contextId: 'cafe',
+        projectId: 'reno',
+        priority: EntryPriority.high,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    await server.start(identity: identity, writesEnabled: true);
+    await database.startTimeEntry(entryId: 'clock', at: now);
+
+    final (_, updatedBody) = await post({
+      'jsonrpc': '2.0',
+      'id': 60,
+      'method': 'tools/call',
+      'params': {
+        'name': 'plan.update',
+        'arguments': {'entryId': 'clock', 'title': 'Renamed'},
+      },
+    });
+    expect((updatedBody['result'] as Map)['isError'], isFalse);
+    final updated = await database.readEntry('clock');
+    expect(updated!.title, 'Renamed');
+    expect(updated.timing, EntryTiming.clockIn);
+    expect(updated.startMinute, 9 * 60);
+    expect(updated.endMinute, isNull);
+    expect(updated.contextId, 'cafe');
+    expect(updated.projectId, 'reno');
+    expect(updated.priority, EntryPriority.high);
+
+    await post({
+      'jsonrpc': '2.0',
+      'id': 61,
+      'method': 'tools/call',
+      'params': {
+        'name': 'plan.update',
+        'arguments': {'entryId': 'clock', 'status': 'done'},
+      },
+    });
+    final sessions = await database.readTimeEntriesBetween(
+      DateTime.utc(2026, 11, 9),
+      DateTime.utc(2026, 11, 10),
+    );
+    expect(sessions.single.endedAt, isNotNull);
+  });
+
   test('creates and completes a plan when writes are enabled', () async {
     await server.start(identity: identity, writesEnabled: true);
 

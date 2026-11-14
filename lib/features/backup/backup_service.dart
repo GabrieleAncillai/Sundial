@@ -746,7 +746,9 @@ class BackupService {
             .insert(
               ShiftPatternRecordsCompanion(
                 id: Value(_string(row, 'id')),
-                spaceId: Value(_string(row, 'spaceId')),
+                // Shifts are Work-only; a restored legacy row is repaired here
+                // instead of being stored invisible to every query.
+                spaceId: const Value('work'),
                 name: Value(_string(row, 'name')),
                 contextId: Value(_optionalString(row, 'contextId')),
                 timeZone: Value(_string(row, 'timeZone')),
@@ -851,8 +853,11 @@ class BackupService {
   }
 
   static String? _backupMediaPath(String? path, Map<String, String> targets) {
-    if (path == null || path.isEmpty) return path;
-    return targets[path] ?? path;
+    if (path == null || path.isEmpty) return null;
+    // Only paths carried by the backup may survive import. Keeping an arbitrary
+    // stored path would let a crafted backup point at a local file that the
+    // next export then reads.
+    return targets[path];
   }
 
   static String _date(DateTime value) => value.toUtc().toIso8601String();

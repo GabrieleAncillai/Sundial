@@ -9,6 +9,7 @@ import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../features/export/export_files.dart';
+import '../../../models/app_settings.dart';
 import '../../../models/time_entry.dart';
 import '../../../state/providers.dart';
 import '../../../state/settings_controller.dart';
@@ -418,6 +419,12 @@ class _StatsPageState extends ConsumerState<StatsPage> {
       rows: rows.values.toList(),
       details: details,
       languageCode: locale,
+      datePattern: switch (ref.read(settingsProvider).dateFormat) {
+        ManeDateFormat.dmy => 'dd/MM/yyyy',
+        ManeDateFormat.mdy => 'MM/dd/yyyy',
+        ManeDateFormat.ymd => 'yyyy/MM/dd',
+        ManeDateFormat.system => 'dd MMM yyyy',
+      },
     );
     try {
       String? savedPath;

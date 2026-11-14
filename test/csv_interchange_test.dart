@@ -92,6 +92,53 @@ void main() {
     expect(entry.source, 'csv');
   });
 
+  test('CSV round-trip preserves clock-in, deadline and anytime shapes', () async {
+    final now = DateTime.utc(2026, 11, 1, 8);
+    final day = LocalDate.parse('2026-11-09');
+    for (final entry in [
+      Entry(
+        id: 'clock',
+        spaceId: 'work',
+        title: 'Clock in',
+        date: day,
+        startMinute: 9 * 60,
+        timeZone: 'Europe/Madrid',
+        createdAt: now,
+        updatedAt: now,
+      ),
+      Entry(
+        id: 'deadline',
+        spaceId: 'personal',
+        title: 'Deadline',
+        date: day,
+        endMinute: 17 * 60,
+        timeZone: 'Europe/Madrid',
+        createdAt: now,
+        updatedAt: now,
+      ),
+      Entry(id: 'anytime', spaceId: 'home', title: 'Anytime', date: day, createdAt: now, updatedAt: now),
+    ]) {
+      await database.saveEntry(entry);
+    }
+
+    final csv = await CsvInterchangeService(
+      repository,
+    ).exportEntries(start: day, end: day, viewerTimeZone: 'Europe/Madrid');
+    final target = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(target.close);
+    await target.seedDefaults();
+    await CsvInterchangeService(
+      PlannerRepository(target),
+    ).importEntries(csv, defaultTimeZone: 'Europe/Madrid');
+
+    final imported = (await target.watchEntriesBetween(day, day, 'Europe/Madrid').first).map(
+      (item) => item.entry,
+    );
+    expect(imported.firstWhere((entry) => entry.title == 'Clock in').timing, EntryTiming.clockIn);
+    expect(imported.firstWhere((entry) => entry.title == 'Deadline').timing, EntryTiming.deadline);
+    expect(imported.firstWhere((entry) => entry.title == 'Anytime').timing, EntryTiming.anytime);
+  });
+
   test('re-importing the same entry CSV deduplicates', () async {
     final now = DateTime.utc(2026, 11, 1, 8);
     await database.saveEntry(

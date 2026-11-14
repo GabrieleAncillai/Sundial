@@ -89,14 +89,14 @@ void main() {
     final completions = {day, day.addDays(1), day.addDays(2)};
     final today = day.addDays(2);
     expect(habit.weekProgress(completions, today, DateTime.monday), 3);
-    expect(habit.streak(completions, today, weekStart: DateTime.monday), 3);
+    expect(habit.streak(completions, today, weekStart: DateTime.monday), 1);
 
-    // Sunday of the same week: the weekly target still qualifies.
+    // Sunday of the same week: the weekly target still qualifies as one week.
     final sunday = day.addDays(6);
-    expect(habit.streak(completions, sunday, weekStart: DateTime.monday), 3);
+    expect(habit.streak(completions, sunday, weekStart: DateTime.monday), 1);
 
-    // A second qualifying week adds another target's worth of check-ins.
+    // A second qualifying week makes a two-week streak.
     final secondWeek = {...completions, day.addDays(7), day.addDays(8), day.addDays(9)};
-    expect(habit.streak(secondWeek, day.addDays(13), weekStart: DateTime.monday), 6);
+    expect(habit.streak(secondWeek, day.addDays(13), weekStart: DateTime.monday), 2);
   });
 }

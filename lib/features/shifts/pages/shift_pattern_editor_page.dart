@@ -811,7 +811,6 @@ class _Preview extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.mc;
     final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final occurrences = pattern.occurrencesBetween(today, today.addDays(27), viewerTimeZone: deviceTimeZone);
     if (occurrences.isEmpty) {
       return Text(l10n.noSlots, style: ManeType.body(11.5, color: c.textSecondary));
@@ -827,7 +826,7 @@ class _Preview extends StatelessWidget {
                 SizedBox(
                   width: 92,
                   child: Text(
-                    DateFormat.MMMEd(locale).format(occurrence.displayDate.toDateTime()),
+                    formatShortDate(context, occurrence.displayDate.toDateTime()),
                     style: ManeType.body(11.5, color: c.textSecondary),
                   ),
                 ),

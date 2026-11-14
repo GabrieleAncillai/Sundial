@@ -1589,6 +1589,11 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String streakWeeks(int count) {
+    return 'Racha de $count semanas';
+  }
+
+  @override
   String get thisWeek => 'Esta semana';
 
   @override
@@ -1617,7 +1622,8 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get deleteContextBody => 'Sus tareas y notas siguen en tu plan, pero pierden esta agrupación.';
+  String get deleteContextBody =>
+      'Sus tareas siguen en tu plan pero pierden esta agrupación. Sus turnos, hábitos y vínculos del hogar se eliminan.';
 
   @override
   String get deleteProjectQuestion => '¿Eliminar este proyecto?';

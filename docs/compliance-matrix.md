@@ -10,7 +10,7 @@ the product-polish claims as proof.
 |---|---|
 | `flutter analyze --no-fatal-infos` | Pass, no issues |
 | `dart format --line-length 110 --output=none --set-exit-if-changed lib test packages/mane_core` | Pass |
-| `flutter test` | Pass, 192 tests |
+| `flutter test` | Pass, 194 tests |
 | `(cd packages/mane_core && dart test)` | Pass, 92 tests |
 | `flutter build linux --debug` | Pass |
 | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk flutter build apk --debug` | Pass |
@@ -70,7 +70,7 @@ the product-polish claims as proof.
 | Requirement | Status | Evidence |
 |---|---|---|
 | People/groups are contexts, projects separate them | Met (existing) | contexts + projects |
-| Habits: weekly target, current-week progress, streak, history, per-day completion | Partial | target/progress/per-day/streak exist; streak fixed for weekly targets. No separate habit history screen and no weekday schedule column yet |
+| Habits: weekly target, current-week progress, streak, history, per-day completion | Partial | target/progress/per-day exist; weekly-target streaks now count consecutive qualifying weeks and are labelled weeks. No separate habit history screen and no weekday schedule column yet |
 | No shifts or gadgets | Met | shift restriction; Personal branch renders habits/projects only |
 | Personal detail does not show household inventory, shopping or gadgets | Met | `product_polish_widget_test.dart` |
 
@@ -111,12 +111,12 @@ the product-polish claims as proof.
 | Search finds individual settings | Met (first pass) | row-level index added; results open the owning section. Scroll-to-highlight is not implemented |
 | Theme System/Light/Dark/Aero | Met (existing) | `AppSettings`, theme |
 | Background dots/grid/OLED/custom/plain | Met (existing) | `AppBackground` |
-| OLED is readable in light mode | Met | OLED forces a dark palette (`settings_test.dart`) |
+| OLED is readable in light mode | Met | OLED forces the dark palette, including when Aero is selected (`settings_test.dart`) |
 | Text size | Met (existing) | `textScale` |
 | Language English/Spanish | Met (existing) | ARB parity tests |
 | Interaction sounds off by default, pack, preview, six actions | Partial | assets and settings exist; a full six-action device audit is still manual |
 | Alarm sound picker used by notifications | Partial | Android channels exist; Linux uses the desktop sound; device check pending |
-| Date format applied app-wide | Met (first pass) | full dates, month/year, calendar headers and report labels use the preference |
+| Date format applied app-wide | Met (first pass) | full dates, month/year, calendar headers, shift preview and report labels use the preference |
 | Searchable IANA zone with offset/local time | Met (existing) | `timezone_picker.dart` |
 | Week start | Met (existing) | settings |
 | Performance mode reduces blur/motion | Met (existing) | background and sheet motion |
@@ -128,13 +128,13 @@ the product-polish claims as proof.
 | Export/import CSV | Met (existing) | CSV interchange |
 | Backups include media files | Met | base64 media map; restore writes files under the media folder (`backup_test.dart`) |
 | Restore over a populated database | Met | `backup_test.dart` |
-| Delete all removes plan data, media and automatic backups | Met | `clearAllData`, `deleteAllStickerImages`, `AutoBackupService.deleteAll` |
+| Delete all removes plan data, media and automatic backups | Partial | `clearAllData` runs first, then media and automatic copies are removed. A failure in the later cleanup is not reported transactionally |
 | One online master switch, off by default | Met | master switch is authoritative over legacy rows (`settings_test.dart`) |
 | Only when on show Devices & Sync and MCP | Met (existing) | settings page |
 | Devices & Sync discovery-first, no IP entry as primary flow | Met (existing) | mDNS/peer discovery |
 | Pairing survives IP/network changes | Met (existing) | paired device data + discovery |
 | LAN binds private interfaces only | Met | private IPv4 bind + remote-address guard; loopback fallback |
-| No unauthenticated username/device-ID leak | Met | `/mane/v1/info` returns app/version/protocol/fingerprint only (`lan_test.dart`) |
+| HTTP info endpoint does not leak identity | Met | `/mane/v1/info` returns app/version/protocol/fingerprint only (`lan_test.dart`). mDNS still advertises device identity; see the open items |
 | MCP enable/writes/port, rebind, busy-port error, token rotation | Met | `McpServer.start` stops/rebinds on identity or port change; `mcp_test.dart` |
 | MCP tools expose the full model | Partial | legacy v0.9 tool set plus existing entities; new contexts/projects/habits/time sessions are not all exposed yet |
 | About GPL-3.0-only and InlitX attribution | Met (existing) | About page |
@@ -144,7 +144,7 @@ the product-polish claims as proof.
 | Requirement | Status | Evidence |
 |---|---|---|
 | Editor order and inferred timing | Met | title, notes, space, context, project, categories, priority, timing fields, repeat, reminders |
-| Existing task shape survives edit | Met | init no longer invents 09:00/10:00; `entry_editor_v2_test.dart` covers all four shapes |
+| Existing task shape survives edit | Met | editor, MCP update, CSV round-trip and Plan move/resize preserve the shape; `entry_editor_v2_test.dart`, `mcp_test.dart`, `csv_interchange_test.dart` |
 | Title-only task visible everywhere | Met (existing) | fallback open-entry expansion |
 | Clear start/end, clear both | Met | editor clear buttons |
 | Clearing end = clock-in; clearing start = deadline; both = anytime | Met | `entry_editor_v2_test.dart` |
@@ -154,7 +154,7 @@ the product-polish claims as proof.
 | Resume on another day keeps separate sessions | Met (existing) | `task_clock_test.dart` |
 | Recurring sessions keyed by occurrence | Met (existing) | occurrence key |
 | Completing a recurring task affects one occurrence | Met | `repository.setCompletion`; `timing_data_test.dart` |
-| Maintenance advances from completion date | Met (existing) | `completeMaintenanceEntry` |
+| Maintenance advances from completion date | Met | task cards use today for maintenance; `completeMaintenanceEntry` advances from the completion date |
 | Read-only imports cannot be edited, completed or deleted | Met | editor sheet, TaskCard lock, repository/DB guards; `entry_editor_v2_test.dart`, `timing_data_test.dart` |
 | Add task from a job/home defaults to that unit | Met | `initialSpaceId`/`initialUnitId`; `entry_editor_v2_test.dart` |
 | Multiple reminders, offsets and absolute times | Met (existing) | reminder editor |
@@ -167,7 +167,7 @@ the product-polish claims as proof.
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| v10 draft repair leaves writable tables | Met | context/time-entry tables are rebuilt; write-after-migration test |
+| v10 draft repair leaves writable tables | Partial | context/time-entry tables are rebuilt and accept writes. Draft `gadget_records` are still not read by the shipped model |
 | Legacy non-Work shifts repaired | Met | migration moves them to Work |
 | Deleting a project detaches tasks | Met | `softDeleteProject`; `timing_data_test.dart` |
 | Deleting a context detaches tasks and hides owned rows | Met | `softDeleteContext`; `timing_data_test.dart` |
@@ -194,3 +194,12 @@ These are not claimed as met:
 7. Real-device notification, reboot, battery, LAN, MCP, sound and widget checks
    remain the user's device checklist.
 8. The Aero concept screenshots and contrast check are pending user approval.
+9. mDNS discovery still advertises the device name, device ID and username so
+   paired devices can be matched after an IP change. The HTTP info endpoint is
+   clean, but the discovery advertisement is still an unauthenticated identity
+   exposure.
+10. Backup media files are written after the database commit. A write failure
+    leaves the restored rows pointing at missing files, and an import does not
+    prune the previous media set.
+11. Draft-v9 `gadget_records` are left in SQLite but are not shown by the
+    shipped model. A dedicated gadget migration or read path is still needed.

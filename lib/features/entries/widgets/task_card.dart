@@ -189,9 +189,10 @@ class TaskCard extends ConsumerWidget {
     final existing = occurrence;
     if (existing != null) return existing;
     final today = localDateAt(DateTime.now().toUtc(), timeZone);
-    final date = entry.recurrence?.occursOn(today, entry.date ?? today) == true
-        ? today
-        : (entry.date ?? today);
+    // Maintenance and recurring cards in open lists must act on today, not on
+    // the series anchor. Using the anchor would advance the wrong due date or
+    // complete the original occurrence.
+    final date = entry.isMaintenance || entry.recurrence != null ? today : (entry.date ?? today);
     return EntryOccurrence(
       date: date,
       displayDate: date,

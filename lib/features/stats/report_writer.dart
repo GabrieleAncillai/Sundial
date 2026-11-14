@@ -130,7 +130,7 @@ abstract final class ReportWriter {
     final buffer = StringBuffer('Date,Start,End,Duration,Space,Context,Project,Task\r\n');
     for (final detail in data.details) {
       buffer
-        ..write(_csvCell(_formatDate(detail.date)))
+        ..write(_csvCell(_formatDate(detail.date, data.datePattern, data.languageCode)))
         ..write(',')
         ..write(_csvCell(_formatTime(detail.start)))
         ..write(',')
@@ -174,7 +174,7 @@ abstract final class ReportWriter {
           runSpacing: 3,
           children: [
             _meta('PROFILE', profile.isEmpty ? 'Mane' : profile),
-            _meta('GENERATED', _formatDate(data.generatedAt)),
+            _meta('GENERATED', _formatDate(data.generatedAt, data.datePattern, data.languageCode)),
           ],
         ),
         pw.SizedBox(height: 14),
@@ -310,7 +310,7 @@ abstract final class ReportWriter {
           pw.TableRow(
             decoration: i.isOdd ? pw.BoxDecoration(color: _zebra) : null,
             children: [
-              _cell(_formatDate(details[i].date)),
+              _cell(_formatDate(details[i].date, data.datePattern, data.languageCode)),
               _cell(_formatTime(details[i].start)),
               _cell(_formatTime(details[i].end)),
               _cell(_formatDuration(details[i].duration), alignRight: true),
@@ -402,11 +402,18 @@ abstract final class ReportWriter {
     return '${minutes ~/ 60}:${(minutes % 60).toString().padLeft(2, '0')}';
   }
 
-  static String _formatDate(DateTime value) {
-    final year = value.year.toString().padLeft(4, '0');
+  static String _formatDate(DateTime value, String pattern, String locale) {
     final month = value.month.toString().padLeft(2, '0');
     final day = value.day.toString().padLeft(2, '0');
-    return '$year-$month-$day';
+    final year = value.year.toString().padLeft(4, '0');
+    final months = locale.toLowerCase().startsWith('es')
+        ? const ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+        : const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return pattern
+        .replaceAll('yyyy', year)
+        .replaceAll('MMM', months[value.month - 1])
+        .replaceAll('MM', month)
+        .replaceAll('dd', day);
   }
 
   static String _formatTime(DateTime value) {

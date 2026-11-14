@@ -503,21 +503,26 @@ class McpServer {
     }
     final allDay = arguments['allDay'] is bool ? arguments['allDay'] as bool : existing.allDay;
     final date = _dateArg(arguments, 'date') ?? existing.date;
-    final endDate = _dateArg(arguments, 'endDate') ?? existing.endDate;
+    final endDate = arguments.containsKey('endDate') ? _dateArg(arguments, 'endDate') : existing.endDate;
     final timeZone = arguments['timeZone'] is String
         ? arguments['timeZone'] as String
         : (existing.timeZone ?? deviceTimeZone);
     if (!isKnownTimeZone(timeZone)) throw const _RpcException(-32602, 'Unknown timeZone');
-    final startMinute = _optionalIntArg(arguments, 'startMinute') ?? existing.startMinute ?? 9 * 60;
-    final endMinute = _optionalIntArg(arguments, 'endMinute') ?? existing.endMinute ?? startMinute + 60;
+    final startMinute = arguments.containsKey('startMinute')
+        ? _optionalIntArg(arguments, 'startMinute')
+        : existing.startMinute;
+    final endMinute = arguments.containsKey('endMinute')
+        ? _optionalIntArg(arguments, 'endMinute')
+        : existing.endMinute;
     final kind = _enumArg(EntryKind.values, arguments['kind']) ?? existing.kind;
     final status = _enumArg(EntryStatus.values, arguments['status']) ?? existing.status;
     final tagIds = (arguments['tagIds'] as List?)?.whereType<String>().toSet() ?? existing.tagIds;
+    final timed = !allDay && (startMinute != null || endMinute != null);
+    final carriesEndDate = allDay || (startMinute != null && endMinute != null);
 
     final Entry updated;
     try {
-      updated = Entry(
-        id: existing.id,
+      updated = existing.copyWith(
         spaceId: spaceId,
         title: (arguments['title'] as String?)?.trim().isNotEmpty == true
             ? (arguments['title'] as String).trim()
@@ -525,26 +530,22 @@ class McpServer {
         notes: arguments['notes'] as String? ?? existing.notes,
         kind: kind,
         date: date,
-        endDate: allDay ? endDate : null,
+        endDate: carriesEndDate ? endDate : null,
         startMinute: allDay || date == null ? null : startMinute,
         endMinute: allDay || date == null ? null : endMinute,
-        timeZone: allDay || date == null ? null : timeZone,
+        timeZone: timed && date != null ? timeZone : null,
         tagIds: tagIds,
         allDay: allDay,
-        source: existing.source,
-        externalId: existing.externalId,
-        readOnly: existing.readOnly,
-        lastCompletedAt: existing.lastCompletedAt,
-        repeatAfterCompletionDays: existing.repeatAfterCompletionDays,
-        status: status,
         recurrence: existing.recurrence,
-        createdAt: existing.createdAt,
         updatedAt: _clock().toUtc(),
       );
     } on ArgumentError catch (error) {
       throw _RpcException(-32602, '$error');
     }
     await _repository.saveEntry(updated);
+    // Status changes go through the repository so completion stops a running
+    // session and updates completedAt consistently.
+    if (status != existing.status) await _repository.setEntryStatus(existing.id, status);
     return {'id': updated.id};
   }
 

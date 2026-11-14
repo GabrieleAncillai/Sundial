@@ -152,10 +152,11 @@ class CsvInterchangeService {
       final startMinute = _parseMinute(values['start']);
       final rawEnd = _parseMinute(values['end']);
       final endDate = _parseDate(values['enddate']?.trim() ?? '');
-      // A hand-edited row without times is a date, not a broken timed entry.
-      final allDay = allDayValue || startMinute == null || rawEnd == null;
+      // Preserve the row's shape. A start-only row is a clock-in task, an
+      // end-only row is a deadline and a row with neither is an anytime task.
+      final allDay = allDayValue;
       var endMinute = rawEnd;
-      if (!allDay && endMinute != null) {
+      if (!allDay && startMinute != null && endMinute != null) {
         final dayOffset = endDate == null ? 0 : endDate.differenceInDays(date);
         if (dayOffset > 0) endMinute += dayOffset * 24 * 60;
         if (endMinute <= startMinute) endMinute = startMinute + 60;
@@ -192,6 +193,7 @@ class CsvInterchangeService {
       }
 
       final now = DateTime.now();
+      final timed = !allDay && (startMinute != null || endMinute != null);
       final entry = Entry(
         id: const Uuid().v4(),
         spaceId: spaceId,
@@ -202,7 +204,7 @@ class CsvInterchangeService {
         endDate: allDay ? endDate : null,
         startMinute: allDay ? null : startMinute,
         endMinute: allDay ? null : endMinute,
-        timeZone: allDay ? null : (timeZone.isEmpty ? defaultTimeZone : timeZone),
+        timeZone: timed ? (timeZone.isEmpty ? defaultTimeZone : timeZone) : null,
         tagIds: tagIds,
         allDay: allDay,
         status: status,

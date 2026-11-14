@@ -54,6 +54,7 @@ class ReportData {
     required this.details,
     this.profileLabel = 'Mane',
     this.languageCode = 'en',
+    this.datePattern = 'yyyy-MM-dd',
   });
 
   final String title;
@@ -66,4 +67,7 @@ class ReportData {
   final List<ReportDetail> details;
   final String profileLabel;
   final String languageCode;
+
+  /// Intl pattern for report dates, derived from the app date preference.
+  final String datePattern;
 }

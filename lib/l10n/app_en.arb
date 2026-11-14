@@ -962,6 +962,14 @@
       }
     }
   },
+  "streakWeeks": "{count} week streak",
+  "@streakWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "thisWeek": "This week",
   "markHabitDone": "Mark done",
   "habitDone": "Done today",
@@ -984,7 +992,7 @@
       }
     }
   },
-  "deleteContextBody": "Its tasks and notes stay in your plan but lose this grouping.",
+  "deleteContextBody": "Its tasks stay in your plan but lose this grouping. Its shifts, habits and household links are removed.",
   "deleteProjectQuestion": "Delete this project?",
   "deleteProjectBody": "Tasks lose this project but keep their space and context.",
   "listView": "List",

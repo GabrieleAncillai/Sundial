@@ -962,6 +962,14 @@
       }
     }
   },
+  "streakWeeks": "Racha de {count} semanas",
+  "@streakWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "thisWeek": "Esta semana",
   "markHabitDone": "Marcar hecho",
   "habitDone": "Hecho hoy",
@@ -984,7 +992,7 @@
       }
     }
   },
-  "deleteContextBody": "Sus tareas y notas siguen en tu plan, pero pierden esta agrupación.",
+  "deleteContextBody": "Sus tareas siguen en tu plan pero pierden esta agrupación. Sus turnos, hábitos y vínculos del hogar se eliminan.",
   "deleteProjectQuestion": "¿Eliminar este proyecto?",
   "deleteProjectBody": "Las tareas pierden este proyecto pero conservan su espacio y contexto.",
   "listView": "Lista",

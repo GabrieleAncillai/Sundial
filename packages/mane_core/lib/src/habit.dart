@@ -97,10 +97,13 @@ class Habit {
     }
 
     final weekStartDate = today.startOfWeek(weekStart);
-    var count = weekProgress(completions, today, weekStart);
+    // Weekly-target habits count consecutive qualifying weeks, not raw
+    // check-ins. The current week counts once its target is met; a week still
+    // in progress does not break the previous run.
+    var count = weekProgress(completions, today, weekStart) >= cleanTarget ? 1 : 0;
     var previous = weekStartDate.addDays(-7);
     while (weekProgress(completions, previous, weekStart) >= cleanTarget) {
-      count += cleanTarget;
+      count++;
       previous = previous.addDays(-7);
     }
     return count;

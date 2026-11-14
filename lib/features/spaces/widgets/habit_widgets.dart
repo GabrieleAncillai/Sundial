@@ -205,7 +205,10 @@ class HabitCard extends ConsumerWidget {
                       habit.name,
                       style: ManeType.body(14.5, weight: FontWeight.w700, color: c.text),
                     ),
-                    Text(l10n.streakDays(streak), style: ManeType.label(10.5, color: c.textTertiary)),
+                    Text(
+                      habit.isDaily ? l10n.streakDays(streak) : l10n.streakWeeks(streak),
+                      style: ManeType.label(10.5, color: c.textTertiary),
+                    ),
                   ],
                 ),
               ),

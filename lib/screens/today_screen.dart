@@ -54,6 +54,8 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     final occurrenceIds = {for (final occurrence in occurrences) occurrence.entry.id};
     final extras = (openState.value ?? const <Entry>[]).where((entry) {
       if (occurrenceIds.contains(entry.id)) return false;
+      // A recurring series only belongs in Today on a day it occurs.
+      if (entry.recurrence != null && !entry.occursOn(today)) return false;
       if (entry.spaceId != 'work') return true;
       if (settings.hideWorkSpace) return false;
       if (entry.kind == EntryKind.deadline) return true;

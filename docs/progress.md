@@ -75,7 +75,7 @@ compliance wave fixed the data-integrity defects found by the audit:
   search indexes individual rows. Date format and OLED readability were
   corrected.
 
-Validation: analyze clean, 192 app tests, 92 core tests, Linux debug and Android
+Validation: analyze clean, 194 app tests, 92 core tests, Linux debug and Android
 debug APK all pass. `docs/compliance-matrix.md` records the row-by-row status,
 including what is still open.
 

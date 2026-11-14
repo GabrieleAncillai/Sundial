@@ -2930,6 +2930,12 @@ abstract class AppLocalizations {
   /// **'{count} day streak'**
   String streakDays(int count);
 
+  /// No description provided for @streakWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} week streak'**
+  String streakWeeks(int count);
+
   /// No description provided for @thisWeek.
   ///
   /// In en, this message translates to:
@@ -2981,7 +2987,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteContextBody.
   ///
   /// In en, this message translates to:
-  /// **'Its tasks and notes stay in your plan but lose this grouping.'**
+  /// **'Its tasks stay in your plan but lose this grouping. Its shifts, habits and household links are removed.'**
   String get deleteContextBody;
 
   /// No description provided for @deleteProjectQuestion.

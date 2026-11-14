@@ -602,13 +602,12 @@ class AppDatabase extends _$AppDatabase {
       final projectIds = {for (final project in projects) project.id};
 
       // Tasks survive with their space; only the grouping is removed.
-      await (update(entryRecords)..where((row) => row.contextId.equals(id))).write(
-        EntryRecordsCompanion(contextId: Value(null), updatedAt: Value(now)),
-      );
+      await (update(entryRecords)..where((row) => row.contextId.equals(id) & row.readOnly.equals(false)))
+          .write(EntryRecordsCompanion(contextId: Value(null), updatedAt: Value(now)));
       if (projectIds.isNotEmpty) {
-        await (update(entryRecords)..where((row) => row.projectId.isIn(projectIds))).write(
-          EntryRecordsCompanion(projectId: Value(null), updatedAt: Value(now)),
-        );
+        await (update(entryRecords)
+              ..where((row) => row.projectId.isIn(projectIds) & row.readOnly.equals(false)))
+            .write(EntryRecordsCompanion(projectId: Value(null), updatedAt: Value(now)));
         await (update(projectRecords)..where((row) => row.id.isIn(projectIds))).write(
           ProjectRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
         );
@@ -673,9 +672,8 @@ class AppDatabase extends _$AppDatabase {
   Future<void> softDeleteProject(String id) {
     return transaction(() async {
       final now = DateTime.now();
-      await (update(entryRecords)..where((row) => row.projectId.equals(id))).write(
-        EntryRecordsCompanion(projectId: Value(null), updatedAt: Value(now)),
-      );
+      await (update(entryRecords)..where((row) => row.projectId.equals(id) & row.readOnly.equals(false)))
+          .write(EntryRecordsCompanion(projectId: Value(null), updatedAt: Value(now)));
       await (update(projectRecords)..where((row) => row.id.equals(id))).write(
         ProjectRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
       );

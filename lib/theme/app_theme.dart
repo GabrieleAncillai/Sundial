@@ -12,7 +12,9 @@ class ManeTheme {
   static ThemeData get dark => _build(Brightness.dark, ManeColors.dark);
 
   static ThemeData forSettings(AppSettings settings, Brightness brightness) {
-    final aero = settings.isAero;
+    // OLED paints black behind the content; Aero's pearl palette would become
+    // unreadable there, so OLED opts out of the Aero surface treatment.
+    final aero = settings.isAero && settings.backgroundStyle != ManeBackgroundStyle.oled;
     final effective = aero ? Brightness.light : brightness;
     final base = aero
         ? ManeColors.aero
