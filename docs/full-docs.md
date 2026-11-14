@@ -1045,8 +1045,8 @@ paths the audit found unsafe. The row-by-row status is in
   `time_entry_records` so the legacy `kind`/`updated_at` columns stop blocking
   inserts. Legacy non-Work shift patterns are moved to Work, and draft gadgets
   become Home maintenance entries (the draft table is then dropped). Schema v11
-  adds the habit weekday schedule without touching existing habits.
-- **Backup and delete-all.** Schema 11 is accepted, schema 3–11 are upgraded,
+  adds the habit weekday schedule, and schema v12 adds the gadget icon.
+- **Backup and delete-all.** Schema 12 is accepted, schema 3–12 are upgraded,
   sticker media is embedded as base64, written before the database commit and
   pruned when the restored plan no longer references it, restore is tested over
   a populated database, and delete-all clears the plan atomically, then media

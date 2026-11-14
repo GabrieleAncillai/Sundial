@@ -2637,6 +2637,16 @@ class $EntryRecordsTable extends EntryRecords with TableInfo<$EntryRecordsTable,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways('REFERENCES project_records (id)'),
   );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _priorityMeta = const VerificationMeta('priority');
   @override
   late final GeneratedColumn<String> priority = GeneratedColumn<String>(
@@ -2793,6 +2803,7 @@ class $EntryRecordsTable extends EntryRecords with TableInfo<$EntryRecordsTable,
     timeZone,
     contextId,
     projectId,
+    icon,
     priority,
     startAt,
     endAt,
@@ -2867,6 +2878,9 @@ class $EntryRecordsTable extends EntryRecords with TableInfo<$EntryRecordsTable,
     }
     if (data.containsKey('project_id')) {
       context.handle(_projectIdMeta, projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta));
+    }
+    if (data.containsKey('icon')) {
+      context.handle(_iconMeta, icon.isAcceptableOrUnknown(data['icon']!, _iconMeta));
     }
     if (data.containsKey('priority')) {
       context.handle(_priorityMeta, priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta));
@@ -2961,6 +2975,7 @@ class $EntryRecordsTable extends EntryRecords with TableInfo<$EntryRecordsTable,
       timeZone: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}time_zone']),
       contextId: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}context_id']),
       projectId: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}project_id']),
+      icon: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}icon'])!,
       priority: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}priority'])!,
       startAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}start_at']),
       endAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}end_at']),
@@ -3036,6 +3051,9 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
   final String? contextId;
   final String? projectId;
 
+  /// Optional icon name for home gadgets.
+  final String icon;
+
   /// One of [EntryPriority].
   final String priority;
 
@@ -3073,6 +3091,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     this.timeZone,
     this.contextId,
     this.projectId,
+    required this.icon,
     required this.priority,
     this.startAt,
     this.endAt,
@@ -3118,6 +3137,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     if (!nullToAbsent || projectId != null) {
       map['project_id'] = Variable<String>(projectId);
     }
+    map['icon'] = Variable<String>(icon);
     map['priority'] = Variable<String>(priority);
     if (!nullToAbsent || startAt != null) {
       map['start_at'] = Variable<DateTime>(startAt);
@@ -3168,6 +3188,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       timeZone: timeZone == null && nullToAbsent ? const Value.absent() : Value(timeZone),
       contextId: contextId == null && nullToAbsent ? const Value.absent() : Value(contextId),
       projectId: projectId == null && nullToAbsent ? const Value.absent() : Value(projectId),
+      icon: Value(icon),
       priority: Value(priority),
       startAt: startAt == null && nullToAbsent ? const Value.absent() : Value(startAt),
       endAt: endAt == null && nullToAbsent ? const Value.absent() : Value(endAt),
@@ -3205,6 +3226,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       timeZone: serializer.fromJson<String?>(json['timeZone']),
       contextId: serializer.fromJson<String?>(json['contextId']),
       projectId: serializer.fromJson<String?>(json['projectId']),
+      icon: serializer.fromJson<String>(json['icon']),
       priority: serializer.fromJson<String>(json['priority']),
       startAt: serializer.fromJson<DateTime?>(json['startAt']),
       endAt: serializer.fromJson<DateTime?>(json['endAt']),
@@ -3238,6 +3260,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       'timeZone': serializer.toJson<String?>(timeZone),
       'contextId': serializer.toJson<String?>(contextId),
       'projectId': serializer.toJson<String?>(projectId),
+      'icon': serializer.toJson<String>(icon),
       'priority': serializer.toJson<String>(priority),
       'startAt': serializer.toJson<DateTime?>(startAt),
       'endAt': serializer.toJson<DateTime?>(endAt),
@@ -3269,6 +3292,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     Value<String?> timeZone = const Value.absent(),
     Value<String?> contextId = const Value.absent(),
     Value<String?> projectId = const Value.absent(),
+    String? icon,
     String? priority,
     Value<DateTime?> startAt = const Value.absent(),
     Value<DateTime?> endAt = const Value.absent(),
@@ -3297,6 +3321,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     timeZone: timeZone.present ? timeZone.value : this.timeZone,
     contextId: contextId.present ? contextId.value : this.contextId,
     projectId: projectId.present ? projectId.value : this.projectId,
+    icon: icon ?? this.icon,
     priority: priority ?? this.priority,
     startAt: startAt.present ? startAt.value : this.startAt,
     endAt: endAt.present ? endAt.value : this.endAt,
@@ -3329,6 +3354,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       timeZone: data.timeZone.present ? data.timeZone.value : this.timeZone,
       contextId: data.contextId.present ? data.contextId.value : this.contextId,
       projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      icon: data.icon.present ? data.icon.value : this.icon,
       priority: data.priority.present ? data.priority.value : this.priority,
       startAt: data.startAt.present ? data.startAt.value : this.startAt,
       endAt: data.endAt.present ? data.endAt.value : this.endAt,
@@ -3364,6 +3390,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
           ..write('timeZone: $timeZone, ')
           ..write('contextId: $contextId, ')
           ..write('projectId: $projectId, ')
+          ..write('icon: $icon, ')
           ..write('priority: $priority, ')
           ..write('startAt: $startAt, ')
           ..write('endAt: $endAt, ')
@@ -3397,6 +3424,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     timeZone,
     contextId,
     projectId,
+    icon,
     priority,
     startAt,
     endAt,
@@ -3429,6 +3457,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
           other.timeZone == this.timeZone &&
           other.contextId == this.contextId &&
           other.projectId == this.projectId &&
+          other.icon == this.icon &&
           other.priority == this.priority &&
           other.startAt == this.startAt &&
           other.endAt == this.endAt &&
@@ -3459,6 +3488,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
   final Value<String?> timeZone;
   final Value<String?> contextId;
   final Value<String?> projectId;
+  final Value<String> icon;
   final Value<String> priority;
   final Value<DateTime?> startAt;
   final Value<DateTime?> endAt;
@@ -3488,6 +3518,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     this.timeZone = const Value.absent(),
     this.contextId = const Value.absent(),
     this.projectId = const Value.absent(),
+    this.icon = const Value.absent(),
     this.priority = const Value.absent(),
     this.startAt = const Value.absent(),
     this.endAt = const Value.absent(),
@@ -3518,6 +3549,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     this.timeZone = const Value.absent(),
     this.contextId = const Value.absent(),
     this.projectId = const Value.absent(),
+    this.icon = const Value.absent(),
     this.priority = const Value.absent(),
     this.startAt = const Value.absent(),
     this.endAt = const Value.absent(),
@@ -3554,6 +3586,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     Expression<String>? timeZone,
     Expression<String>? contextId,
     Expression<String>? projectId,
+    Expression<String>? icon,
     Expression<String>? priority,
     Expression<DateTime>? startAt,
     Expression<DateTime>? endAt,
@@ -3584,6 +3617,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
       if (timeZone != null) 'time_zone': timeZone,
       if (contextId != null) 'context_id': contextId,
       if (projectId != null) 'project_id': projectId,
+      if (icon != null) 'icon': icon,
       if (priority != null) 'priority': priority,
       if (startAt != null) 'start_at': startAt,
       if (endAt != null) 'end_at': endAt,
@@ -3616,6 +3650,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     Value<String?>? timeZone,
     Value<String?>? contextId,
     Value<String?>? projectId,
+    Value<String>? icon,
     Value<String>? priority,
     Value<DateTime?>? startAt,
     Value<DateTime?>? endAt,
@@ -3646,6 +3681,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
       timeZone: timeZone ?? this.timeZone,
       contextId: contextId ?? this.contextId,
       projectId: projectId ?? this.projectId,
+      icon: icon ?? this.icon,
       priority: priority ?? this.priority,
       startAt: startAt ?? this.startAt,
       endAt: endAt ?? this.endAt,
@@ -3703,6 +3739,9 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     }
     if (projectId.present) {
       map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
     }
     if (priority.present) {
       map['priority'] = Variable<String>(priority.value);
@@ -3770,6 +3809,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
           ..write('timeZone: $timeZone, ')
           ..write('contextId: $contextId, ')
           ..write('projectId: $projectId, ')
+          ..write('icon: $icon, ')
           ..write('priority: $priority, ')
           ..write('startAt: $startAt, ')
           ..write('endAt: $endAt, ')
@@ -13690,6 +13730,7 @@ typedef $$EntryRecordsTableCreateCompanionBuilder =
       Value<String?> timeZone,
       Value<String?> contextId,
       Value<String?> projectId,
+      Value<String> icon,
       Value<String> priority,
       Value<DateTime?> startAt,
       Value<DateTime?> endAt,
@@ -13721,6 +13762,7 @@ typedef $$EntryRecordsTableUpdateCompanionBuilder =
       Value<String?> timeZone,
       Value<String?> contextId,
       Value<String?> projectId,
+      Value<String> icon,
       Value<String> priority,
       Value<DateTime?> startAt,
       Value<DateTime?> endAt,
@@ -13891,6 +13933,9 @@ class $$EntryRecordsTableFilterComposer extends Composer<_$AppDatabase, $EntryRe
 
   ColumnFilters<String> get timeZone =>
       $composableBuilder(column: $table.timeZone, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get priority =>
       $composableBuilder(column: $table.priority, builder: (column) => ColumnFilters(column));
@@ -14105,6 +14150,9 @@ class $$EntryRecordsTableOrderingComposer extends Composer<_$AppDatabase, $Entry
   ColumnOrderings<String> get timeZone =>
       $composableBuilder(column: $table.timeZone, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get priority =>
       $composableBuilder(column: $table.priority, builder: (column) => ColumnOrderings(column));
 
@@ -14236,6 +14284,8 @@ class $$EntryRecordsTableAnnotationComposer extends Composer<_$AppDatabase, $Ent
 
   GeneratedColumn<String> get timeZone =>
       $composableBuilder(column: $table.timeZone, builder: (column) => column);
+
+  GeneratedColumn<String> get icon => $composableBuilder(column: $table.icon, builder: (column) => column);
 
   GeneratedColumn<String> get priority =>
       $composableBuilder(column: $table.priority, builder: (column) => column);
@@ -14461,6 +14511,7 @@ class $$EntryRecordsTableTableManager
                 Value<String?> timeZone = const Value.absent(),
                 Value<String?> contextId = const Value.absent(),
                 Value<String?> projectId = const Value.absent(),
+                Value<String> icon = const Value.absent(),
                 Value<String> priority = const Value.absent(),
                 Value<DateTime?> startAt = const Value.absent(),
                 Value<DateTime?> endAt = const Value.absent(),
@@ -14490,6 +14541,7 @@ class $$EntryRecordsTableTableManager
                 timeZone: timeZone,
                 contextId: contextId,
                 projectId: projectId,
+                icon: icon,
                 priority: priority,
                 startAt: startAt,
                 endAt: endAt,
@@ -14521,6 +14573,7 @@ class $$EntryRecordsTableTableManager
                 Value<String?> timeZone = const Value.absent(),
                 Value<String?> contextId = const Value.absent(),
                 Value<String?> projectId = const Value.absent(),
+                Value<String> icon = const Value.absent(),
                 Value<String> priority = const Value.absent(),
                 Value<DateTime?> startAt = const Value.absent(),
                 Value<DateTime?> endAt = const Value.absent(),
@@ -14550,6 +14603,7 @@ class $$EntryRecordsTableTableManager
                 timeZone: timeZone,
                 contextId: contextId,
                 projectId: projectId,
+                icon: icon,
                 priority: priority,
                 startAt: startAt,
                 endAt: endAt,

@@ -303,6 +303,9 @@ class EntryRecords extends Table {
   TextColumn get contextId => text().nullable().references(ContextRecords, #id)();
   TextColumn get projectId => text().nullable().references(ProjectRecords, #id)();
 
+  /// Optional icon name for home gadgets.
+  TextColumn get icon => text().withDefault(const Constant(''))();
+
   /// One of [EntryPriority].
   TextColumn get priority => text().withDefault(const Constant('none'))();
 
@@ -477,12 +480,16 @@ class AppDatabase extends _$AppDatabase {
   final String defaultTimeZone;
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
     onUpgrade: (m, from, to) async {
+      // The v2 backfill reads entries with the current mapper, so all current
+      // columns have to exist before it runs. The late v12 call below restores
+      // this column if a v10 table rebuild drops it.
+      if (from < 12) await _migrateToV12(m);
       // The v2 backfill reads entries with the current mapper, so all current
       // columns have to exist before it runs.
       if (from < 9) await _migrateToV9(m);
@@ -499,6 +506,7 @@ class AppDatabase extends _$AppDatabase {
       if (from < 9) await _migrateToV9(m);
       if (from < 10) await _migrateToV10(m);
       if (from < 11) await _migrateToV11(m);
+      if (from < 12) await _migrateToV12(m);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -2452,6 +2460,17 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
+  /// Home gadgets gained a per-entry icon after v11.
+  Future<void> _migrateToV12(Migrator m) async {
+    final columns = await customSelect('PRAGMA table_info(entry_records)').get();
+    // A partial or hand-made database may lack the table; real v11 files
+    // always have it, and createAll handles a fresh install.
+    if (columns.isEmpty) return;
+    if (!columns.any((row) => row.read<String>('name') == 'icon')) {
+      await m.addColumn(entryRecords, entryRecords.icon);
+    }
+  }
+
   Future<void> _addV4EntryColumns(Migrator m) async {
     await m.addColumn(entryRecords, entryRecords.source);
     await m.addColumn(entryRecords, entryRecords.externalId);
@@ -2653,6 +2672,7 @@ Entry _entryFromRow(EntryRow row, {Set<String> tagIds = const <String>{}}) => En
   timeZone: row.timeZone,
   contextId: row.contextId,
   projectId: row.projectId,
+  icon: row.icon,
   priority: EntryPriority.values.byName(row.priority),
   completedAt: row.completedAt?.toUtc(),
   tagIds: tagIds,
@@ -2686,6 +2706,7 @@ EntryRecordsCompanion _entryCompanion(Entry entry) => EntryRecordsCompanion(
   timeZone: Value(entry.timeZone),
   contextId: Value(entry.contextId),
   projectId: Value(entry.projectId),
+  icon: Value(entry.icon),
   priority: Value(entry.priority.name),
   startAt: Value(entry.startAt),
   endAt: Value(entry.endAt),

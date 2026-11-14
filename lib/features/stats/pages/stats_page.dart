@@ -79,6 +79,8 @@ class _StatsPageState extends ConsumerState<StatsPage> {
       final due = entry.endAt;
       return entry.isDeadline && due != null && due.isBefore(now.toUtc()) && entry.status == EntryStatus.open;
     }).length;
+    final shifts = ref.watch(shiftsProvider((start: start, end: end))).value ?? const <ShiftOccurrence>[];
+    final shiftTime = shifts.fold(Duration.zero, (sum, shift) => sum + shift.endAt.difference(shift.startAt));
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -178,6 +180,29 @@ class _StatsPageState extends ConsumerState<StatsPage> {
             },
           ),
           const SizedBox(height: 18),
+          SoftCard(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            child: Row(
+              children: [
+                Icon(Icons.work_history_outlined, size: 19, color: c.accent),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.shiftHours,
+                        style: ManeType.body(13.5, weight: FontWeight.w700, color: c.text),
+                      ),
+                      Text(l10n.shiftHoursHint, style: ManeType.body(10.5, color: c.textSecondary)),
+                    ],
+                  ),
+                ),
+                Text(_duration(shiftTime), style: ManeType.title(15, color: c.text)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
           SoftCard(
             padding: const EdgeInsets.fromLTRB(14, 13, 14, 12),
             child: Column(

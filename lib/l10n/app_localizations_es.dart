@@ -1618,6 +1618,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String get addGadget => 'Añadir aparato';
 
   @override
+  String get gadgetEdit => 'Editar aparato';
+
+  @override
+  String get gadgetIcon => 'Icono';
+
+  @override
+  String get gadgetIntervalDays => 'Intervalo (días)';
+
+  @override
+  String get gadgetLastServiced => 'Último mantenimiento';
+
+  @override
+  String get gadgetNeverServiced => 'Sin mantenimientos';
+
+  @override
+  String gadgetLastServicedOn(String date) {
+    return 'Último mantenimiento: $date';
+  }
+
+  @override
+  String gadgetNextDue(String date) {
+    return 'Próximo vencimiento: $date';
+  }
+
+  @override
+  String get clearDate => 'Quitar la fecha';
+
+  @override
   String get gadgetName => 'Nombre del aparato';
 
   @override
@@ -1816,6 +1844,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get totalTracked => 'Total registrado';
+
+  @override
+  String get shiftHours => 'Horas de turno';
+
+  @override
+  String get shiftHoursHint => 'Turnos programados en este rango. No cuentan como tiempo registrado.';
 
   @override
   String get shareOfTotal => 'Porcentaje';

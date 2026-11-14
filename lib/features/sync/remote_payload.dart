@@ -32,6 +32,7 @@ abstract final class SyncPayloads {
     'startMinute': entry.startMinute,
     'endMinute': entry.endMinute,
     'timeZone': entry.timeZone,
+    'icon': entry.icon,
     'startAt': entry.startAt?.toIso8601String(),
     'endAt': entry.endAt?.toIso8601String(),
     'allDay': entry.allDay,

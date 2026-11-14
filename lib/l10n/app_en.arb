@@ -978,6 +978,28 @@
   "markHabitDone": "Mark done",
   "habitDone": "Done today",
   "addGadget": "Add gadget",
+  "gadgetEdit": "Edit gadget",
+  "gadgetIcon": "Icon",
+  "gadgetIntervalDays": "Interval (days)",
+  "gadgetLastServiced": "Last serviced",
+  "gadgetNeverServiced": "Never serviced",
+  "gadgetLastServicedOn": "Last serviced {date}",
+  "@gadgetLastServicedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "gadgetNextDue": "Next due {date}",
+  "@gadgetNextDue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "clearDate": "Clear date",
   "gadgetName": "Gadget name",
   "maintenanceIntervalDays": "Days between services",
   "nextDue": "Next due {date}",
@@ -1104,6 +1126,8 @@
     }
   },
   "totalTracked": "Total tracked",
+  "shiftHours": "Shift hours",
+  "shiftHoursHint": "Scheduled shifts in this range. Not counted as tracked time.",
   "shareOfTotal": "Share",
   "noTrackedTime": "No tracked time in this range.",
   "completed": "Completed",

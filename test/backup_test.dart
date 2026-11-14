@@ -91,6 +91,7 @@ void main() {
         timeZone: 'America/New_York',
         contextId: 'cafe',
         projectId: 'reno',
+        icon: 'water_damage',
         priority: EntryPriority.medium,
         tagIds: const {'job-a'},
         status: EntryStatus.done,
@@ -201,7 +202,7 @@ void main() {
 
     final exported = await BackupService(source).exportJson();
     final payload = jsonDecode(exported) as Map<String, dynamic>;
-    expect(payload['schemaVersion'], 11);
+    expect(payload['schemaVersion'], 12);
     expect(payload.containsKey('identity'), isFalse);
     expect(payload.containsKey('pairedDevices'), isFalse);
     expect(exported, isNot(contains('cGluaGFzaA==')));

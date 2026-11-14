@@ -1608,6 +1608,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addGadget => 'Add gadget';
 
   @override
+  String get gadgetEdit => 'Edit gadget';
+
+  @override
+  String get gadgetIcon => 'Icon';
+
+  @override
+  String get gadgetIntervalDays => 'Interval (days)';
+
+  @override
+  String get gadgetLastServiced => 'Last serviced';
+
+  @override
+  String get gadgetNeverServiced => 'Never serviced';
+
+  @override
+  String gadgetLastServicedOn(String date) {
+    return 'Last serviced $date';
+  }
+
+  @override
+  String gadgetNextDue(String date) {
+    return 'Next due $date';
+  }
+
+  @override
+  String get clearDate => 'Clear date';
+
+  @override
   String get gadgetName => 'Gadget name';
 
   @override
@@ -1806,6 +1834,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get totalTracked => 'Total tracked';
+
+  @override
+  String get shiftHours => 'Shift hours';
+
+  @override
+  String get shiftHoursHint => 'Scheduled shifts in this range. Not counted as tracked time.';
 
   @override
   String get shareOfTotal => 'Share';

@@ -86,7 +86,7 @@ compliance wave fixed the data-integrity defects found by the audit:
 - Draft-v9 gadgets migrate to Home maintenance entries; mDNS advertises only the
   pinned certificate fingerprint.
 
-Validation: analyze clean, 208 app tests, 94 core tests, Linux debug and Android
+Validation: analyze clean, 208 app tests, 95 core tests, Linux debug and Android
 debug APK all pass. `docs/compliance-matrix.md` records the row-by-row status,
 including what is still open.
 

@@ -978,6 +978,28 @@
   "markHabitDone": "Marcar hecho",
   "habitDone": "Hecho hoy",
   "addGadget": "Añadir aparato",
+  "gadgetEdit": "Editar aparato",
+  "gadgetIcon": "Icono",
+  "gadgetIntervalDays": "Intervalo (días)",
+  "gadgetLastServiced": "Último mantenimiento",
+  "gadgetNeverServiced": "Sin mantenimientos",
+  "gadgetLastServicedOn": "Último mantenimiento: {date}",
+  "@gadgetLastServicedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "gadgetNextDue": "Próximo vencimiento: {date}",
+  "@gadgetNextDue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "clearDate": "Quitar la fecha",
   "gadgetName": "Nombre del aparato",
   "maintenanceIntervalDays": "Días entre revisiones",
   "nextDue": "Próxima: {date}",
@@ -1104,6 +1126,8 @@
     }
   },
   "totalTracked": "Total registrado",
+  "shiftHours": "Horas de turno",
+  "shiftHoursHint": "Turnos programados en este rango. No cuentan como tiempo registrado.",
   "shareOfTotal": "Porcentaje",
   "noTrackedTime": "No hay tiempo registrado en este rango.",
   "completed": "Completadas",

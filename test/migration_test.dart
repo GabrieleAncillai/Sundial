@@ -139,7 +139,7 @@ void main() {
     expect(columns.map((row) => row.data['name']), contains('time_zone'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 11);
+    expect(version.data.values.single, 12);
   });
 
   test('migrates real v2 data and keeps tags usable', () async {
@@ -201,7 +201,7 @@ void main() {
     expect((await database.watchTags().first).single.name, 'Tax');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 11);
+    expect(version.data.values.single, 12);
   });
 
   test('migrates real v3 data and exposes the v0.3 tables', () async {
@@ -255,7 +255,7 @@ void main() {
 
     await database.saveShiftChecklistItems('missing-pattern', const []);
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 11);
+    expect(version.data.values.single, 12);
   });
 
   test('migrates real v4 data and creates the pairing tables', () async {
@@ -409,7 +409,7 @@ void main() {
     expect(paired.port, 8766);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 11);
+    expect(version.data.values.single, 12);
   });
 
   test('migrates real v5 checklist rows to per-slot keys', () async {
@@ -479,7 +479,7 @@ void main() {
     expect(saved.windDownMinutes, 20);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 11);
+    expect(version.data.values.single, 12);
   });
 
   test('migrates real v6 rows to shopping order and purchase history', () async {
@@ -536,7 +536,7 @@ void main() {
     expect(history.single.note, 'Shop run');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 11);
+    expect(version.data.values.single, 12);
   });
 
   test('migrates real v7 rows to custom reminder times and remote snapshots', () async {
@@ -611,7 +611,7 @@ void main() {
     expect(await database.readRemoteSnapshots(), isEmpty);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 11);
+    expect(version.data.values.single, 12);
   });
 
   test('migrates real v8 rows to contexts, projects, habits and tracked tasks', () async {
@@ -686,7 +686,7 @@ void main() {
     expect((await database.readShiftChecklistItems('bar')).single.dayIndex, 2);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 11);
+    expect(version.data.values.single, 12);
   });
 
   test('repairs a database written by the draft v9 build', () async {
@@ -826,7 +826,7 @@ void main() {
 
     final entryColumns = await database.customSelect('PRAGMA table_info(entry_records)').get();
     final entryNames = entryColumns.map((row) => row.read<String>('name')).toSet();
-    expect(entryNames, containsAll(['context_id', 'completed_at']));
+    expect(entryNames, containsAll(['context_id', 'completed_at', 'icon']));
     expect(entryNames, isNot(contains('space_unit_id')));
 
     // The draft gadget table is converted into a Home maintenance entry.
@@ -849,7 +849,7 @@ void main() {
     expect(nextDue, LocalDate.parse('2027-10-29'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 11);
+    expect(version.data.values.single, 12);
   });
 
   test('a v10 database gains habit weekdays and keeps writing', () async {
@@ -907,6 +907,6 @@ void main() {
     expect(updated.targetPerWeek, 3);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 11);
+    expect(version.data.values.single, 12);
   });
 }

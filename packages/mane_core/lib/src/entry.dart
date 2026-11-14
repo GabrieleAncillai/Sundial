@@ -40,6 +40,7 @@ class Entry {
     this.timeZone,
     this.contextId,
     this.projectId,
+    this.icon = '',
     this.priority = EntryPriority.none,
     this.completedAt,
     this.tagIds = const <String>{},
@@ -89,6 +90,10 @@ class Entry {
 
   /// Optional project inside the space/context.
   final String? projectId;
+
+  /// Optional icon name from `ManeIcons`. Used by home gadgets; empty for most
+  /// entries.
+  final String icon;
 
   final EntryPriority priority;
 
@@ -204,6 +209,7 @@ class Entry {
     Object? timeZone = _unset,
     Object? contextId = _unset,
     Object? projectId = _unset,
+    String? icon,
     EntryPriority? priority,
     Object? completedAt = _unset,
     Set<String>? tagIds,
@@ -230,6 +236,7 @@ class Entry {
     timeZone: identical(timeZone, _unset) ? this.timeZone : timeZone as String?,
     contextId: identical(contextId, _unset) ? this.contextId : contextId as String?,
     projectId: identical(projectId, _unset) ? this.projectId : projectId as String?,
+    icon: icon ?? this.icon,
     priority: priority ?? this.priority,
     completedAt: identical(completedAt, _unset) ? this.completedAt : completedAt as DateTime?,
     tagIds: tagIds ?? this.tagIds,
@@ -402,4 +409,25 @@ class EntryOccurrence {
     tracked: tracked ?? this.tracked,
     clockedIn: clockedIn ?? this.clockedIn,
   );
+}
+
+/// Next due date for an interval-after-completion task.
+///
+/// The anchor is the last service date, or the current due date shifted back by
+/// the previous interval. Editing the name or the interval therefore never
+/// moves an existing due date by a whole extra interval.
+LocalDate nextMaintenanceDue({
+  LocalDate? lastServiced,
+  LocalDate? currentDue,
+  int? currentInterval,
+  required int interval,
+  required LocalDate today,
+}) {
+  final safeInterval = interval <= 0 ? 1 : interval;
+  final anchor =
+      lastServiced ??
+      (currentDue != null && currentInterval != null && currentInterval > 0
+          ? currentDue.addDays(-currentInterval)
+          : today);
+  return anchor.addDays(safeInterval);
 }

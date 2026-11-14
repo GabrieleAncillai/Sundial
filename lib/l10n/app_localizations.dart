@@ -2984,6 +2984,54 @@ abstract class AppLocalizations {
   /// **'Add gadget'**
   String get addGadget;
 
+  /// No description provided for @gadgetEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit gadget'**
+  String get gadgetEdit;
+
+  /// No description provided for @gadgetIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get gadgetIcon;
+
+  /// No description provided for @gadgetIntervalDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Interval (days)'**
+  String get gadgetIntervalDays;
+
+  /// No description provided for @gadgetLastServiced.
+  ///
+  /// In en, this message translates to:
+  /// **'Last serviced'**
+  String get gadgetLastServiced;
+
+  /// No description provided for @gadgetNeverServiced.
+  ///
+  /// In en, this message translates to:
+  /// **'Never serviced'**
+  String get gadgetNeverServiced;
+
+  /// No description provided for @gadgetLastServicedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Last serviced {date}'**
+  String gadgetLastServicedOn(String date);
+
+  /// No description provided for @gadgetNextDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Next due {date}'**
+  String gadgetNextDue(String date);
+
+  /// No description provided for @clearDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear date'**
+  String get clearDate;
+
   /// No description provided for @gadgetName.
   ///
   /// In en, this message translates to:
@@ -3343,6 +3391,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Total tracked'**
   String get totalTracked;
+
+  /// No description provided for @shiftHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Shift hours'**
+  String get shiftHours;
+
+  /// No description provided for @shiftHoursHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled shifts in this range. Not counted as tracked time.'**
+  String get shiftHoursHint;
 
   /// No description provided for @shareOfTotal.
   ///

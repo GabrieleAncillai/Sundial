@@ -62,6 +62,7 @@ the product-polish claims as proof.
 | Low-stock creates a shopping line in the correct home | Met | `low_stock.dart` now copies `contextId` |
 | “Clear bought” only clears the current home | Met | `clearCheckedShopping({contextId})`; `timing_data_test.dart` |
 | Gadgets have interval days and advance from completion | Met (existing) | `Entry.repeatAfterCompletionDays`, `completeMaintenanceEntry` |
+| Gadgets have name, icon, interval days, last serviced, notes and a due date | Met | dedicated gadget sheet stores an entry `icon`, `lastCompletedAt`, interval and notes; the due date is derived with `nextMaintenanceDue` (`gadget_sheet.dart`, `timing_test.dart`) |
 | Global inventory/shopping create rows with a home | Met | aggregate pages resolve a home first (`home_scope.dart`) |
 | No shifts for Home | Met | same shift restriction |
 
@@ -98,6 +99,7 @@ the product-polish claims as proof.
 | Dashboard with range selector and cards | Met (existing) | `stats_page.dart` |
 | Breakdowns per space, project, day, habits | Met (existing) | stats page |
 | Tracked time totals reconcile with breakdowns | Met | `trackedEntriesProvider` resolves sessions outside the occurrence range; `timing_data_test.dart` |
+| Shift time included or documented | Met | a Shift hours card sums scheduled shift durations and states that it is not tracked time |
 | Clockify-style summary and detailed PDF | Met (existing) | `report_writer.dart`, `report_writer_test.dart` |
 | Summary and detailed CSV | Met | `ReportWriter.summaryCsv` and `ReportWriter.csv`; menu exports all four formats; `report_writer_test.dart` reconciles rows, shares and total |
 | No billing/rate columns | Met | writer has no money columns |
@@ -108,7 +110,7 @@ the product-polish claims as proof.
 | Requirement | Status | Evidence |
 |---|---|---|
 | Root settings menu with search field | Met (existing) | `settings_page.dart` |
-| Search finds individual settings | Met (first pass) | row-level index added; results open the owning section. Scroll-to-highlight is not implemented |
+| Search finds individual settings | Met | row-level index; the matching row is scrolled into view and flashed (`settings_section_test.dart`) |
 | Theme System/Light/Dark/Aero | Met (existing) | `AppSettings`, theme |
 | Background dots/grid/OLED/custom/plain | Met (existing) | `AppBackground` |
 | OLED is readable in light mode | Met | OLED forces the dark palette, including when Aero is selected (`settings_test.dart`) |
@@ -173,7 +175,7 @@ the product-polish claims as proof.
 | Legacy non-Work shifts repaired | Met | migration moves them to Work |
 | Deleting a project detaches tasks | Met | `softDeleteProject`; `timing_data_test.dart` |
 | Deleting a context detaches tasks and hides owned rows | Met | `softDeleteContext`; `timing_data_test.dart` |
-| Backup accepts schema 3–11 | Met | `backup_test.dart` |
+| Backup accepts schema 3–12 | Met | `backup_test.dart` |
 | Backup validation is transactional | Met (existing) | rollback tests |
 | Delete-all removes media and automatic backups | Met | settings action |
 | Read-only import provenance preserved on re-import | Met | ICS re-import uses `saveImportedEntry` and `copyWith` |

@@ -34,7 +34,7 @@ class BackupService {
   BackupService(this._database, {Directory? mediaDirectory}) : _mediaDirectory = mediaDirectory;
 
   static const appTag = 'mane';
-  static const currentSchemaVersion = 11;
+  static const currentSchemaVersion = 12;
 
   /// The oldest payload this build still upgrades. v1 and v2 are excluded on
   /// purpose: they predate timezone-aware entries and cannot be mapped safely.
@@ -252,6 +252,7 @@ class BackupService {
             'timeZone': row.timeZone,
             'contextId': row.contextId,
             'projectId': row.projectId,
+            'icon': row.icon,
             'priority': row.priority,
             'startAt': _nullableDate(row.startAt),
             'endAt': _nullableDate(row.endAt),
@@ -671,6 +672,7 @@ class BackupService {
                 timeZone: Value(_optionalString(row, 'timeZone')),
                 contextId: Value(_optionalString(row, 'contextId')),
                 projectId: Value(_optionalString(row, 'projectId')),
+                icon: Value(_optionalString(row, 'icon') ?? ''),
                 priority: Value(_optionalString(row, 'priority') ?? 'none'),
                 startAt: Value(_optionalDateTime(row, 'startAt')),
                 endAt: Value(_optionalDateTime(row, 'endAt')),

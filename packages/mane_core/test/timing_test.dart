@@ -147,4 +147,34 @@ void main() {
     const habit = Habit(id: 'x', spaceId: 'personal', name: 'X', colorValue: 0, weekdays: {3, 1, 5});
     expect(habit.weekdaysKey, '1,3,5');
   });
+
+  test('maintenance due dates follow the service anchor', () {
+    final today = LocalDate.parse('2026-11-09');
+    final due = LocalDate.parse('2026-12-09');
+
+    // Serviced dates win over the old due date.
+    expect(
+      nextMaintenanceDue(
+        lastServiced: LocalDate.parse('2026-11-01'),
+        currentDue: due,
+        currentInterval: 30,
+        interval: 90,
+        today: today,
+      ),
+      LocalDate.parse('2027-01-30'),
+    );
+
+    // Never serviced: changing the interval keeps the anchor, not a second
+    // interval on top of the existing due date.
+    expect(
+      nextMaintenanceDue(currentDue: due, currentInterval: 30, interval: 60, today: today),
+      LocalDate.parse('2027-01-08'),
+    );
+
+    // A new gadget counts from today.
+    expect(nextMaintenanceDue(interval: 30, today: today), LocalDate.parse('2026-12-09'));
+
+    // A broken interval falls back to one day.
+    expect(nextMaintenanceDue(interval: 0, today: today), today.addDays(1));
+  });
 }
