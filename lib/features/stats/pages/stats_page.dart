@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+
 import 'package:mane_core/mane_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
@@ -51,14 +51,25 @@ class _StatsPageState extends ConsumerState<StatsPage> {
       )),
     );
     final timeEntries = timeAsync.value ?? const <TimeEntry>[];
+    final trackedEntries =
+        ref
+            .watch(
+              trackedEntriesProvider((
+                start: instantAt(start, 0, timeZone),
+                end: instantAt(end.addDays(1), 0, timeZone),
+              )),
+            )
+            .value ??
+        const <String, Entry>{};
     final occurrences = (entriesState.value ?? const <EntryOccurrence>[]).where((occurrence) {
       if (occurrence.displayDate.isBefore(start) || occurrence.displayDate.isAfter(end)) return false;
       if (occurrence.entry.spaceId != 'work') return true;
       if (settings.hideWorkSpace) return false;
       return true;
     }).toList();
-    final entryById = <String, Entry>{
+    final allEntries = <String, Entry>{
       for (final occurrence in occurrences) occurrence.entry.id: occurrence.entry,
+      ...trackedEntries,
     };
     final completed = occurrences.where((occurrence) => occurrence.completed).length;
     final total = occurrences.length;
@@ -95,7 +106,7 @@ class _StatsPageState extends ConsumerState<StatsPage> {
                 ),
               ),
               _ExportButton(
-                onSelected: (value) => _export(value, start, end, occurrences, timeEntries, entryById),
+                onSelected: (value) => _export(value, start, end, occurrences, timeEntries, allEntries),
               ),
             ],
           ),
@@ -189,7 +200,7 @@ class _StatsPageState extends ConsumerState<StatsPage> {
                   _BreakdownRow(
                     label: space.name,
                     color: Color(space.colorValue),
-                    tracked: _trackedForSpace(timeEntries, entryById, space.id, now),
+                    tracked: _trackedForSpace(timeEntries, allEntries, space.id, now),
                     completed: occurrences
                         .where((item) => item.entry.spaceId == space.id && item.completed)
                         .length,
@@ -208,18 +219,18 @@ class _StatsPageState extends ConsumerState<StatsPage> {
                   SectionLabel(l10n.byProject),
                   const SizedBox(height: 8),
                   for (final project in projects.where((project) {
-                    return timeEntries.any((time) => entryById[time.entryId]?.projectId == project.id);
+                    return timeEntries.any((time) => allEntries[time.entryId]?.projectId == project.id);
                   }))
                     _BreakdownRow(
                       label: project.name,
                       color: Color(project.colorValue),
-                      tracked: _trackedForProject(timeEntries, entryById, project.id, now),
+                      tracked: _trackedForProject(timeEntries, allEntries, project.id, now),
                       completed: occurrences
                           .where((item) => item.entry.projectId == project.id && item.completed)
                           .length,
                       totalTracked: tracked,
                     ),
-                  if (!timeEntries.any((time) => entryById[time.entryId]?.projectId != null))
+                  if (!timeEntries.any((time) => allEntries[time.entryId]?.projectId != null))
                     Text(l10n.noTrackedTime, style: ManeType.body(12, color: c.textTertiary)),
                 ],
               ),
@@ -398,8 +409,8 @@ class _StatsPageState extends ConsumerState<StatsPage> {
           ? l10n.exportDetailedReport
           : l10n.exportReportCsv,
       rangeLabel:
-          '${DateFormat.yMMMd(locale).format(start.toDateTime())} – '
-          '${DateFormat.yMMMd(locale).format(end.toDateTime())}',
+          '${formatFullDate(context, start.toDateTime())} – '
+          '${formatFullDate(context, end.toDateTime())}',
       generatedAt: now,
       totalTracked: totalTracked,
       completedTasks: occurrences.where((item) => item.completed).length,

@@ -47,7 +47,10 @@ should follow with little extra work.
 
 ## Status
 
-v0.9 shipped. The 2026-11-09 Huawei device pass closed install,
+v0.9 shipped, then `feat/product-polish` rebuilt the product surface and
+`feat/compliance-v2` repaired the data-integrity defects found in that surface.
+The row-by-row status is in [compliance-matrix.md](compliance-matrix.md). The
+2026-11-09 Huawei device pass closed install,
 notifications on API 29, timezone, LAN, MCP, backup/CSV and app lock; the widget,
 OEM battery, accessibility/contrast audit and signed release remain in
 [completion-plan.md](completion-plan.md). Reboot rescheduling is blocked by

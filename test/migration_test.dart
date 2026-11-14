@@ -783,6 +783,17 @@ void main() {
     expect(contexts.map((context) => context.id), contains('pizza'));
     expect(contexts.firstWhere((context) => context.id == 'pizza').name, 'Pida Pizza');
 
+    // The repaired tables must accept new rows, not just read old ones.
+    await database.saveContext(
+      const PlannerContext(id: 'delivery', spaceId: 'work', name: 'Delivery', colorValue: 0xFF2F7ED8),
+    );
+    expect(
+      (await database.watchContexts(spaceId: 'work').first).map((context) => context.id),
+      contains('delivery'),
+    );
+    await database.startTimeEntry(entryId: 'shift', at: DateTime.utc(2026, 11, 1, 2));
+    await database.stopTimeEntry('shift', at: DateTime.utc(2026, 11, 1, 2, 15));
+
     final projects = await database.watchProjects().first;
     expect(projects.single.contextId, 'pizza');
 
@@ -801,8 +812,10 @@ void main() {
       DateTime.utc(2026, 11, 1),
       DateTime.utc(2026, 11, 2),
     );
-    expect(sessions.single.note, 'Prep');
-    expect(sessions.single.endedAt, DateTime.utc(2026, 11, 1, 0, 30));
+    expect(sessions, hasLength(2));
+    expect(sessions.first.note, 'Prep');
+    expect(sessions.first.endedAt, DateTime.utc(2026, 11, 1, 0, 30));
+    expect(sessions.last.endedAt, DateTime.utc(2026, 11, 1, 2, 15));
 
     final patterns = await database.watchShiftPatterns().first;
     expect(patterns.single.contextId, 'pizza');

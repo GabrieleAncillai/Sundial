@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 
@@ -74,6 +75,24 @@ void main() {
     );
     return host;
   }
+
+  test('the unauthenticated info endpoint does not leak identity', () async {
+    final http = HttpClient()..badCertificateCallback = (_, _, _) => true;
+    try {
+      final request = await http.getUrl(
+        Uri(scheme: 'https', host: '127.0.0.1', port: server.port, path: '/mane/v1/info'),
+      );
+      final response = await request.close();
+      final body = jsonDecode(await utf8.decoder.bind(response).join()) as Map<String, dynamic>;
+      expect(body['app'], 'mane');
+      expect(body.containsKey('deviceId'), isFalse);
+      expect(body.containsKey('deviceName'), isFalse);
+      expect(body.containsKey('username'), isFalse);
+      expect(body['fingerprint'], isNotEmpty);
+    } finally {
+      http.close(force: true);
+    }
+  });
 
   test('pairs two devices and answers an authenticated summary', () async {
     final host = await pairHost();

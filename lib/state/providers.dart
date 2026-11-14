@@ -106,6 +106,17 @@ final timeEntriesRangeProvider = FutureProvider.family<List<TimeEntry>, ({DateTi
   (ref, range) => ref.watch(repositoryProvider).readTimeEntriesBetween(range.start, range.end),
 );
 
+/// Entries referenced by tracked sessions, even when they are outside the
+/// visible occurrence range. Reports use this so totals always reconcile.
+final trackedEntriesProvider = FutureProvider.family<Map<String, Entry>, ({DateTime start, DateTime end})>((
+  ref,
+  range,
+) async {
+  final sessions = await ref.watch(timeEntriesRangeProvider(range).future);
+  final ids = {for (final session in sessions) session.entryId};
+  return ref.watch(repositoryProvider).readEntriesByIds(ids);
+});
+
 final tagsProvider = StreamProvider<List<Tag>>((ref) => ref.watch(repositoryProvider).watchTags());
 
 final homeItemsProvider = StreamProvider<List<HomeItem>>(

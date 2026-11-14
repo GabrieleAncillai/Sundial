@@ -133,30 +133,33 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
         ),
         SizedBox(
           height: allDayLines * 17.0,
-          child: Row(
-            children: [
-              for (var index = 0; index < 7; index++)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (final item in allDayByDay[index]!.take(3))
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 2),
-                            child: _AllDayChip(occurrence: item, onTap: () => widget.onOpen(item)),
-                          ),
-                        if (allDayByDay[index]!.length > 3)
-                          Text(
-                            '+${allDayByDay[index]!.length - 3}',
-                            style: ManeType.label(8, color: c.textTertiary),
-                          ),
-                      ],
+          child: Padding(
+            padding: const EdgeInsets.only(left: _gutter),
+            child: Row(
+              children: [
+                for (var index = 0; index < 7; index++)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (final item in allDayByDay[index]!.take(3))
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 2),
+                              child: _AllDayChip(occurrence: item, onTap: () => widget.onOpen(item)),
+                            ),
+                          if (allDayByDay[index]!.length > 3)
+                            Text(
+                              '+${allDayByDay[index]!.length - 3}',
+                              style: ManeType.label(8, color: c.textTertiary),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 4),

@@ -39,6 +39,17 @@ class _ShiftChecklistSectionState extends ConsumerState<ShiftChecklistSection> {
     _future = _load();
   }
 
+  @override
+  void didUpdateWidget(covariant ShiftChecklistSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.patternId != widget.patternId ||
+        oldWidget.date != widget.date ||
+        oldWidget.slotKey != widget.slotKey ||
+        oldWidget.dayIndex != widget.dayIndex) {
+      setState(() => _future = _load());
+    }
+  }
+
   Future<(List<ShiftChecklistItem>, Set<String>)> _load() async {
     final repository = ref.read(repositoryProvider);
     final items = (await repository.readShiftChecklistItems(

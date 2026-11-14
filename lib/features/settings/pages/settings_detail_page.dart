@@ -23,6 +23,7 @@ import '../../import/gymmane_import.dart';
 import '../../import/ics_import_service.dart';
 import '../../import/import_dialogs.dart';
 import '../../import/import_files.dart';
+import '../../media/media_store.dart';
 import '../../shifts/pages/shift_patterns_page.dart';
 import '../../spaces/widgets/space_controls.dart';
 import '../../tags/pages/tags_page.dart';
@@ -956,6 +957,8 @@ class SettingsDetailPage extends ConsumerWidget {
     await ref.read(syncServiceProvider).stop();
     await ref.read(mcpServerProvider).stop();
     await ref.read(repositoryProvider).clearAllData();
+    await ref.read(autoBackupServiceProvider).deleteAll();
+    await deleteAllStickerImages();
     await ref.read(settingsProvider.notifier).reload();
     ref.invalidate(spacesProvider);
     ref.invalidate(tagsProvider);

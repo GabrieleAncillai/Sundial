@@ -193,6 +193,7 @@ class Entry {
   }
 
   Entry copyWith({
+    String? spaceId,
     String? title,
     String? notes,
     EntryKind? kind,
@@ -218,7 +219,7 @@ class Entry {
     Object? deletedAt = _unset,
   }) => Entry(
     id: id,
-    spaceId: spaceId,
+    spaceId: spaceId ?? this.spaceId,
     title: title ?? this.title,
     notes: notes ?? this.notes,
     kind: kind ?? this.kind,

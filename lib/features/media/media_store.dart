@@ -20,3 +20,10 @@ Future<void> deleteStickerImage(String? path) async {
   final file = File(path);
   if (await file.exists()) await file.delete();
 }
+
+/// Removes every sticker copied into the app's private media folder.
+Future<void> deleteAllStickerImages() async {
+  final support = await getApplicationSupportDirectory();
+  final directory = Directory(p.join(support.path, 'media'));
+  if (directory.existsSync()) await directory.delete(recursive: true);
+}

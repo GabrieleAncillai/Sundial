@@ -44,6 +44,45 @@ report save dialogs on both platforms, and a real-device audio check for the
 SoundPool bridge, `aplay` fallback and per-sound notification channels. The old app-lock feature and its tests
 are deleted; legacy settings rows are ignored and still excluded from backups.
 
+## 2026-11-13 compliance v2
+
+`feat/compliance-v2` was built from the preserved v1.2 snapshot. The first
+compliance wave fixed the data-integrity defects found by the audit:
+
+- Entry edits preserve the four timing shapes and imported provenance; the
+  editor no longer invents 09:00/10:00 times. Add-from-unit passes space/unit.
+- Read-only imports are guarded in the editor, task cards, repository and
+  database. Re-import uses a separate importer write path.
+- Schema v10 repairs the draft context/time-entry tables in place and moves
+  legacy non-Work shift patterns to Work.
+- The online master switch is authoritative; MCP token rotation and port changes
+  rebind the running endpoint and reject the old token.
+- Completion has one repository path, stops running sessions, scopes recurring
+  occurrences and advances maintenance dates.
+- Backups accept schema 3–10, embed media as base64 and restore over a populated
+  database. Delete-all removes media and automatic backups.
+- LAN binds a private IPv4 interface and the unauthenticated info endpoint no
+  longer leaks username/device ID.
+- Per-day checklists refresh on date changes; cycle changes clamp stale day
+  indexes. Plan uses the 900 px shell breakpoint and aligns the all-day gutter.
+- Stats resolves tracked sessions outside the selected occurrence range, so
+  totals and breakdowns reconcile.
+- Context/project deletion detaches tasks and hides owned rows; shifts outside
+  Work are rejected. Multi-home shopping keeps its home and clear-bought is
+  scoped. Low-stock lines keep their home.
+- Weekly habit streaks count the current week and consecutive qualifying weeks.
+- Desktop sidebar search is a persistent field with a filter badge; settings
+  search indexes individual rows. Date format and OLED readability were
+  corrected.
+
+Validation: analyze clean, 192 app tests, 92 core tests, Linux debug and Android
+debug APK all pass. `docs/compliance-matrix.md` records the row-by-row status,
+including what is still open.
+
+Aero 2.0 is a stop gate: `docs/aero-2.md` is a proposal only. The existing Aero
+surface is frozen until the direction, concept screenshots and contrast report
+are approved.
+
 Screenshot evidence is rendered by `tool/screenshots/screenshot_test.dart` into
 `docs/screenshots/v1.0-*.png` plus the v2 captures
 `docs/screenshots/v1.2-today-aero.png` and

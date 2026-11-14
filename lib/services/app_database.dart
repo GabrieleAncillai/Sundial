@@ -595,11 +595,41 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  Future<void> softDeleteContext(String id) async {
-    final now = DateTime.now();
-    await (update(contextRecords)..where((row) => row.id.equals(id))).write(
-      ContextRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
-    );
+  Future<void> softDeleteContext(String id) {
+    return transaction(() async {
+      final now = DateTime.now();
+      final projects = await (select(projectRecords)..where((row) => row.contextId.equals(id))).get();
+      final projectIds = {for (final project in projects) project.id};
+
+      // Tasks survive with their space; only the grouping is removed.
+      await (update(entryRecords)..where((row) => row.contextId.equals(id))).write(
+        EntryRecordsCompanion(contextId: Value(null), updatedAt: Value(now)),
+      );
+      if (projectIds.isNotEmpty) {
+        await (update(entryRecords)..where((row) => row.projectId.isIn(projectIds))).write(
+          EntryRecordsCompanion(projectId: Value(null), updatedAt: Value(now)),
+        );
+        await (update(projectRecords)..where((row) => row.id.isIn(projectIds))).write(
+          ProjectRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+        );
+      }
+
+      await (update(shiftPatternRecords)..where((row) => row.contextId.equals(id))).write(
+        ShiftPatternRecordsCompanion(contextId: Value(null), deletedAt: Value(now), updatedAt: Value(now)),
+      );
+      await (update(habitRecords)..where((row) => row.contextId.equals(id))).write(
+        HabitRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+      );
+      await (update(homeItemRecords)..where((row) => row.contextId.equals(id))).write(
+        HomeItemRecordsCompanion(contextId: Value(null), updatedAt: Value(now)),
+      );
+      await (update(shoppingItemRecords)..where((row) => row.contextId.equals(id))).write(
+        ShoppingItemRecordsCompanion(contextId: Value(null), updatedAt: Value(now)),
+      );
+      await (update(contextRecords)..where((row) => row.id.equals(id))).write(
+        ContextRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+      );
+    });
   }
 
   Stream<List<Project>> watchProjects({String? spaceId, String? contextId}) {
@@ -640,11 +670,16 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  Future<void> softDeleteProject(String id) async {
-    final now = DateTime.now();
-    await (update(projectRecords)..where((row) => row.id.equals(id))).write(
-      ProjectRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
-    );
+  Future<void> softDeleteProject(String id) {
+    return transaction(() async {
+      final now = DateTime.now();
+      await (update(entryRecords)..where((row) => row.projectId.equals(id))).write(
+        EntryRecordsCompanion(projectId: Value(null), updatedAt: Value(now)),
+      );
+      await (update(projectRecords)..where((row) => row.id.equals(id))).write(
+        ProjectRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+      );
+    });
   }
 
   Stream<List<Habit>> watchHabits({String? spaceId, String? contextId}) {
@@ -750,6 +785,8 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<TimeEntry> startTimeEntry({required String entryId, int? occurrenceDateKey, DateTime? at}) async {
+    final entryRow = await (select(entryRecords)..where((row) => row.id.equals(entryId))).getSingleOrNull();
+    if (entryRow?.readOnly == true) throw StateError('Imported entries are read-only');
     final now = (at ?? DateTime.now()).toUtc();
     final open = await readOpenTimeEntry(entryId, occurrenceDateKey: occurrenceDateKey);
     if (open != null) return open;
@@ -922,14 +959,22 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Stream<List<ShiftOccurrence>> watchShiftsBetween(LocalDate start, LocalDate end, String viewerTimeZone) {
-    final query = select(shiftPatternRecords).join([
-      leftOuterJoin(shiftSlotRecords, shiftSlotRecords.patternId.equalsExp(shiftPatternRecords.id)),
-      leftOuterJoin(shiftExceptionRecords, shiftExceptionRecords.patternId.equalsExp(shiftPatternRecords.id)),
-      leftOuterJoin(
-        shiftPatternTagRecords,
-        shiftPatternTagRecords.patternId.equalsExp(shiftPatternRecords.id),
-      ),
-    ])..where(shiftPatternRecords.deletedAt.isNull() & shiftPatternRecords.enabled.equals(true));
+    final query =
+        select(shiftPatternRecords).join([
+          leftOuterJoin(shiftSlotRecords, shiftSlotRecords.patternId.equalsExp(shiftPatternRecords.id)),
+          leftOuterJoin(
+            shiftExceptionRecords,
+            shiftExceptionRecords.patternId.equalsExp(shiftPatternRecords.id),
+          ),
+          leftOuterJoin(
+            shiftPatternTagRecords,
+            shiftPatternTagRecords.patternId.equalsExp(shiftPatternRecords.id),
+          ),
+        ])..where(
+          shiftPatternRecords.deletedAt.isNull() &
+              shiftPatternRecords.enabled.equals(true) &
+              shiftPatternRecords.spaceId.equals('work'),
+        );
 
     return query.watch().map((rows) {
       final occurrences = <ShiftOccurrence>[];
@@ -963,7 +1008,7 @@ class AppDatabase extends _$AppDatabase {
         shiftPatternTagRecords,
         shiftPatternTagRecords.patternId.equalsExp(shiftPatternRecords.id),
       ),
-    ])..where(shiftPatternRecords.deletedAt.isNull());
+    ])..where(shiftPatternRecords.deletedAt.isNull() & shiftPatternRecords.spaceId.equals('work'));
 
     return query.watch().map((rows) {
       final patterns = _patternsFromRows(rows);
@@ -976,8 +1021,14 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  Future<void> saveEntry(Entry entry) {
+  Future<void> saveEntry(Entry entry, {bool allowReadOnly = false}) {
     return transaction(() async {
+      final existing = await (select(
+        entryRecords,
+      )..where((row) => row.id.equals(entry.id))).getSingleOrNull();
+      if (existing?.readOnly == true && !allowReadOnly) {
+        throw StateError('Imported entries are read-only');
+      }
       await into(entryRecords).insertOnConflictUpdate(_entryCompanion(entry));
       await (delete(entryTagRecords)..where((row) => row.entryId.equals(entry.id))).go();
       for (final tagId in entry.tagIds) {
@@ -1143,10 +1194,12 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  Future<void> clearCheckedShopping() async {
+  Future<void> clearCheckedShopping({String? contextId}) async {
     final now = DateTime.now();
-    await (update(shoppingItemRecords)..where((row) => row.checked.equals(true) & row.deletedAt.isNull()))
-        .write(ShoppingItemRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)));
+    final query = update(shoppingItemRecords)
+      ..where((row) => row.checked.equals(true) & row.deletedAt.isNull());
+    if (contextId != null) query.where((row) => row.contextId.equals(contextId));
+    await query.write(ShoppingItemRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)));
   }
 
   Future<void> deleteShoppingItem(String id) async {
@@ -1556,6 +1609,7 @@ class AppDatabase extends _$AppDatabase {
     if (row == null || row.readOnly || interval == null || interval <= 0) return null;
     final currentDate = row.dateKey == null ? null : LocalDate.fromKey(row.dateKey!);
     if (currentDate == null) return null;
+    await stopTimeEntry(id);
 
     final now = DateTime.now();
     final nextDate = completionDate.addDays(interval);
@@ -1587,6 +1641,9 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> setEntryStatus(String id, EntryStatus status) async {
+    final existing = await (select(entryRecords)..where((row) => row.id.equals(id))).getSingleOrNull();
+    if (existing?.readOnly == true) throw StateError('Imported entries are read-only');
+    if (status == EntryStatus.done) await stopTimeEntry(id);
     final now = DateTime.now();
     await (update(entryRecords)..where((row) => row.id.equals(id))).write(
       EntryRecordsCompanion(
@@ -1636,6 +1693,19 @@ class AppDatabase extends _$AppDatabase {
     return _entryFromRow(row, tagIds: {for (final tag in tags) tag.tagId});
   }
 
+  /// Resolves tracked sessions whose entries are outside the visible range.
+  Future<Map<String, Entry>> readEntriesByIds(Set<String> ids) async {
+    if (ids.isEmpty) return const <String, Entry>{};
+    final rows = await (select(entryRecords)..where((row) => row.id.isIn(ids))).get();
+    if (rows.isEmpty) return const <String, Entry>{};
+    final tagRows = await (select(entryTagRecords)..where((tag) => tag.entryId.isIn(ids))).get();
+    final tags = <String, Set<String>>{};
+    for (final tag in tagRows) {
+      (tags[tag.entryId] ??= <String>{}).add(tag.tagId);
+    }
+    return {for (final row in rows) row.id: _entryFromRow(row, tagIds: tags[row.id] ?? const <String>{})};
+  }
+
   Future<List<Reminder>> readRemindersForEntry(String entryId) async {
     final rows = await (select(reminderRecords)..where((row) => row.entryId.equals(entryId))).get();
     final reminders = rows.map(_reminderFromRow).toList()
@@ -1676,7 +1746,10 @@ class AppDatabase extends _$AppDatabase {
   /// Marks one occurrence of a recurring entry done without touching the
   /// others. Used by daily chores and shift checklists.
   Future<void> setOccurrenceCompleted(String entryId, LocalDate date, {required bool completed}) async {
+    final existing = await (select(entryRecords)..where((row) => row.id.equals(entryId))).getSingleOrNull();
+    if (existing?.readOnly == true) throw StateError('Imported entries are read-only');
     if (completed) {
+      await stopTimeEntry(entryId, occurrenceDateKey: date.key);
       await into(completionRecords).insertOnConflictUpdate(
         CompletionRecordsCompanion.insert(entryId: entryId, dateKey: date.key, createdAt: DateTime.now()),
       );
@@ -1689,6 +1762,8 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> softDeleteEntry(String id) async {
+    final existing = await (select(entryRecords)..where((row) => row.id.equals(id))).getSingleOrNull();
+    if (existing?.readOnly == true) throw StateError('Imported entries are read-only');
     final now = DateTime.now();
     await (update(entryRecords)..where((row) => row.id.equals(id))).write(
       EntryRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
@@ -1696,6 +1771,9 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> saveShiftPattern(ShiftPattern pattern) {
+    if (pattern.spaceId != 'work') {
+      throw ArgumentError.value(pattern.spaceId, 'spaceId', 'Shifts belong to the Work space');
+    }
     return transaction(() async {
       final now = DateTime.now();
       final existing = await (select(
@@ -2121,6 +2199,12 @@ class AppDatabase extends _$AppDatabase {
       if (!contextColumns.contains('description')) {
         await m.addColumn(contextRecords, contextRecords.description);
       }
+      // The draft table carried NOT NULL columns the shipped model never
+      // writes. Rebuild it so new contexts can be inserted after migration.
+      if (contextColumns.contains('kind')) {
+        await m.alterTable(TableMigration(contextRecords));
+        tableNames = await tables();
+      }
     }
 
     if (tableNames.contains('habit_check_records') && !tableNames.contains('habit_completion_records')) {
@@ -2136,6 +2220,12 @@ class AppDatabase extends _$AppDatabase {
       final timeColumns = await columnsOf('time_entry_records');
       if (!timeColumns.contains('occurrence_date_key')) {
         await m.addColumn(timeEntryRecords, timeEntryRecords.occurrenceDateKey);
+      }
+      // The draft session table kept a NOT NULL updated_at that the shipped
+      // model does not write. Rebuild it instead of leaving inserts broken.
+      if (timeColumns.contains('updated_at')) {
+        await m.alterTable(TableMigration(timeEntryRecords));
+        tableNames = await tables();
       }
     }
 
@@ -2220,6 +2310,9 @@ class AppDatabase extends _$AppDatabase {
           'UPDATE shift_pattern_records SET context_id = space_unit_id WHERE context_id IS NULL',
         );
       }
+      // Shifts are a Work concept. Legacy Home/Personal patterns are repaired
+      // into Work instead of disappearing from the calendar.
+      await customStatement("UPDATE shift_pattern_records SET space_id = 'work' WHERE space_id != 'work'");
     }
 
     if (tableNames.contains('home_item_records')) {

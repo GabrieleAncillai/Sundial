@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mane/core/i18n/l10n.dart';
 import 'package:mane/features/shifts/pages/shift_pattern_editor_page.dart';
+import 'package:mane/models/shift_checklist.dart';
 import 'package:mane/models/app_settings.dart';
 import 'package:mane/services/app_database.dart';
 import 'package:mane/state/providers.dart';
@@ -18,6 +19,66 @@ void main() {
   setUpAll(() {
     open.overrideFor(OperatingSystem.linux, () => DynamicLibrary.open('libsqlite3.so.0'));
     initializeTimeZones();
+  });
+
+  testWidgets('shrinking the cycle clamps checklist day indexes', (tester) async {
+    tester.view.physicalSize = const Size(500, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final database = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(database.close);
+    await database.seedDefaults();
+    final pattern = ShiftPattern(
+      id: 'rotation',
+      spaceId: 'work',
+      name: 'Rotation',
+      timeZone: 'Europe/Madrid',
+      cycleDays: 7,
+      anchorDate: LocalDate.parse('2026-11-09'),
+    );
+    await database.saveShiftPattern(pattern);
+    await database.saveShiftChecklistItems('rotation', const [
+      ShiftChecklistItem(id: 'sunday', patternId: 'rotation', label: 'Sunday prep', dayIndex: 6),
+    ]);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          databaseProvider.overrideWithValue(database),
+          deviceTimeZoneProvider.overrideWith(() => DeviceTimeZoneController(initial: 'Europe/Madrid')),
+          nowProvider.overrideWithValue(DateTime.utc(2026, 11, 9, 8)),
+          initialSettingsProvider.overrideWithValue(const AppSettings()),
+        ],
+        child: MaterialApp(
+          theme: ManeTheme.light,
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ShiftPatternEditorPage(pattern: pattern),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    for (var index = 0; index < 4; index++) {
+      await tester.tap(find.byIcon(Icons.remove_circle_outline).first);
+      await tester.pump();
+    }
+    await tester.scrollUntilVisible(
+      find.text('Save pattern'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(find.text('Save pattern'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save pattern'));
+    await tester.pumpAndSettle();
+
+    expect((await database.readShiftChecklistItems('rotation')).single.dayIndex, isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
   });
 
   testWidgets('creates a pattern with a slot and saves it', (tester) async {
@@ -54,9 +115,11 @@ void main() {
 
     await tester.scrollUntilVisible(
       find.text('Save pattern'),
-      400,
+      200,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.ensureVisible(find.text('Save pattern'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Save pattern'));
     await tester.pump(const Duration(milliseconds: 500));
 

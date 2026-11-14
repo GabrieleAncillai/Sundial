@@ -13,16 +13,14 @@ planned, optional, automatic when possible, and never required for the core to
 work.
 
 **Status:** v0.9 shipped, then `feat/product-polish` rebuilt the product
-surface. The branch adds a responsive shell (bottom nav on phones, configurable
-side rail on desktop), Today list/timeline switching, Work/Home/Personal space
-overviews with jobs/homes/people, projects, habits, per-day shift checklists, a
-collapsible Plan with a desktop week grid, a Stats dashboard with PDF/CSV
-reports, sectioned/searchable settings, an Aero theme, background and text-size
-preferences, discovery-first device pairing, a configurable MCP port, and schema
-v9 (contexts, projects, habits, tracked sessions, task priorities). The old app
-lock is removed from the UI. See [docs/product-polish.md](docs/product-polish.md)
-and [docs/progress.md](docs/progress.md). Reboot rescheduling is blocked by
-EMUI and documented as an OEM limitation.
+surface. `feat/compliance-v2` is the current branch: it preserves that surface
+and fixes the audit's data-integrity and security defects (entry shape
+preservation, read-only imports, one completion path, v10 repair, backup media,
+private LAN binding, MCP rebinding, scoped home data, stats reconciliation and
+more). The row-by-row status is in
+[docs/compliance-matrix.md](docs/compliance-matrix.md). Aero 2.0 is a proposal
+awaiting approval in [docs/aero-2.md](docs/aero-2.md), not a shipped theme.
+Reboot rescheduling is blocked by EMUI and documented as an OEM limitation.
 
 ## Docs
 
@@ -31,6 +29,9 @@ EMUI and documented as an OEM limitation.
   feature matrix, scenarios and acceptance criteria.
 - [Compliance audit](docs/compliance-audit.md): the constraint audit and open
   findings.
+- [Compliance v2 matrix](docs/compliance-matrix.md): what the current branch
+  verifies and what remains open.
+- [Aero 2.0 brief](docs/aero-2.md): proposal and approval gate.
 - [Full docs](docs/full-docs.md): architecture, data model, feature areas,
   roadmap and decisions.
 - [Reference map](docs/reference-map.md): the exact GymMane and Streak files to

@@ -15,7 +15,9 @@ import '../../../widgets/entry_widgets.dart';
 import '../../home_inventory/pages/home_inventory_page.dart';
 
 class SearchPage extends ConsumerStatefulWidget {
-  const SearchPage({super.key});
+  const SearchPage({super.key, this.initialQuery});
+
+  final String? initialQuery;
 
   @override
   ConsumerState<SearchPage> createState() => _SearchPageState();
@@ -27,6 +29,16 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   Timer? _debounce;
   Future<SearchResults>? _results;
   String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initialQuery?.trim() ?? '';
+    if (initial.isEmpty) return;
+    _controller.text = initial;
+    _query = initial;
+    _results = ref.read(repositoryProvider).search(initial);
+  }
 
   @override
   void dispose() {

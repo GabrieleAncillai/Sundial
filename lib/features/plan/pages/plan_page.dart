@@ -77,7 +77,9 @@ class _PlanPageState extends ConsumerState<PlanPage> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final desktop = constraints.maxWidth >= 980;
+        // The shell switches to the side rail at 900 window px. Plan content
+        // loses the rail width, so use the window width here as well.
+        final desktop = MediaQuery.sizeOf(context).width >= 900;
         return Column(
           children: [
             Padding(

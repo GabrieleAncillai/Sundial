@@ -258,6 +258,7 @@
   "remindersOff": "No reminders",
   "notificationPermissionDenied": "Notifications are off. Enable them in system settings so reminders can reach you.",
   "couldNotLoadReminders": "Could not load reminders: {error}",
+  "remindersUnavailable": "Reminders could not be read, so they were left unchanged.",
   "@couldNotLoadReminders": {
     "placeholders": {
       "error": {
@@ -833,6 +834,7 @@
   "personalSpace": "Personal",
   "jobs": "Jobs",
   "homes": "Homes",
+  "chooseHome": "Choose a home",
   "peopleAndGroups": "People & groups",
   "projectsSection": "Projects",
   "householdSection": "Household",
@@ -984,7 +986,7 @@
   },
   "deleteContextBody": "Its tasks and notes stay in your plan but lose this grouping.",
   "deleteProjectQuestion": "Delete this project?",
-  "deleteProjectBody": "Tasks keep their space and context.",
+  "deleteProjectBody": "Tasks lose this project but keep their space and context.",
   "listView": "List",
   "timelineView": "Timeline",
   "progressToday": "Today's progress",
@@ -1140,7 +1142,22 @@
   "mcpPort": "Port",
   "mcpPortHint": "Loopback port between 1024 and 65535.",
   "applyPort": "Apply port",
-  "portSaved": "MCP port saved. Restart the endpoint to apply it.",
+  "portSaved": "MCP endpoint now uses port {port}.",
+  "@portSaved": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
+  "mcpPortUnavailable": "Could not use port {port}. It may already be in use.",
+  "@mcpPortUnavailable": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
   "deleteAllData": "Delete all data",
   "deleteAllDataSubtitle": "Remove the plan, devices, backups links and settings from this device.",
   "deleteAllDataQuestion": "Delete all local data?",

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+
 import 'package:mane_core/mane_core.dart';
 
+import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../screens/entry_editor.dart';
@@ -148,17 +149,16 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   }
 
   String _title() {
-    final locale = Localizations.localeOf(context).toLanguageTag();
     if (_mode == _CalendarMode.month) {
-      return DateFormat.yMMMM(locale).format(_visibleMonth.toDateTime());
+      return formatMonthYear(context, _visibleMonth.toDateTime());
     }
     if (_mode == _CalendarMode.day) {
-      return DateFormat.yMMMMEEEEd(locale).format(_selected.toDateTime());
+      return formatFullDate(context, _selected.toDateTime());
     }
     final start = _selected.startOfWeek(ref.read(settingsProvider).weekStart);
     final end = start.addDays(6);
-    final format = DateFormat.MMMd(locale);
-    return '${format.format(start.toDateTime())} – ${format.format(end.toDateTime())}';
+    return '${formatShortDate(context, start.toDateTime())} – '
+        '${formatShortDate(context, end.toDateTime())}';
   }
 
   void _select(LocalDate date) {

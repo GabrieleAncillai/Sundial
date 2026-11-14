@@ -160,12 +160,17 @@ class AppSettings {
   Duration get windDown => Duration(minutes: sleepWindDownMinutes);
   Duration get wakeBuffer => Duration(minutes: sleepWakeBufferMinutes);
 
-  ThemeMode get resolvedThemeMode => switch (themeVariant) {
-    ManeThemeVariant.light => ThemeMode.light,
-    ManeThemeVariant.dark => ThemeMode.dark,
-    ManeThemeVariant.aero => ThemeMode.light,
-    ManeThemeVariant.system => ThemeMode.system,
-  };
+  ThemeMode get resolvedThemeMode {
+    // OLED paints black behind the content; a light palette would become
+    // unreadable, so OLED is always a dark surface.
+    if (backgroundStyle == ManeBackgroundStyle.oled) return ThemeMode.dark;
+    return switch (themeVariant) {
+      ManeThemeVariant.light => ThemeMode.light,
+      ManeThemeVariant.dark => ThemeMode.dark,
+      ManeThemeVariant.aero => ThemeMode.light,
+      ManeThemeVariant.system => ThemeMode.system,
+    };
+  }
 
   bool get isAero => themeVariant == ManeThemeVariant.aero;
 
@@ -212,10 +217,11 @@ class AppSettings {
       soundPack: _soundPack(values[SettingsKeys.soundPack]),
       alarmSound: _alarmSound(values[SettingsKeys.alarmSound]),
       timezoneOverride: _timezone(values[SettingsKeys.timezoneOverride]),
-      onlineEnabled:
-          values[SettingsKeys.onlineEnabled] == 'true' ||
-          values[SettingsKeys.syncEnabled] == 'true' ||
-          values[SettingsKeys.mcpEnabled] == 'true',
+      // The master switch is authoritative once written. Legacy rows without
+      // it keep the old derived behaviour so existing installs stay online.
+      onlineEnabled: values.containsKey(SettingsKeys.onlineEnabled)
+          ? values[SettingsKeys.onlineEnabled] == 'true'
+          : (values[SettingsKeys.syncEnabled] == 'true' || values[SettingsKeys.mcpEnabled] == 'true'),
       mcpPort: _mcpPort(values[SettingsKeys.mcpPort]),
       locale: localeValue == null || localeValue.isEmpty || localeValue == 'system'
           ? null

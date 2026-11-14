@@ -8,6 +8,7 @@ import '../../../models/shopping_item.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
+import '../home_scope.dart';
 import '../low_stock.dart';
 import '../widgets/shopping_item_sheet.dart';
 
@@ -38,10 +39,7 @@ class ShoppingListPage extends ConsumerWidget {
     return ManePage(
       title: l10n.shoppingList,
       subtitle: items.isEmpty ? null : l10n.shoppingProgress(done, items.length),
-      floatingAction: ManeAddButton(
-        tooltip: l10n.addShoppingItem,
-        onTap: () => showShoppingItemSheet(context, contextId: contextId),
-      ),
+      floatingAction: ManeAddButton(tooltip: l10n.addShoppingItem, onTap: () => _addItem(context, ref)),
       child: ListView(
         padding: const EdgeInsets.only(bottom: 88),
         children: [
@@ -90,7 +88,7 @@ class ShoppingListPage extends ConsumerWidget {
               title: l10n.shoppingListEmpty,
               message: l10n.shoppingListSubtitle,
               action: FilledButton.tonalIcon(
-                onPressed: () => showShoppingItemSheet(context, contextId: contextId),
+                onPressed: () => _addItem(context, ref),
                 icon: const Icon(Icons.add, size: 18),
                 label: Text(l10n.addShoppingItem),
               ),
@@ -176,6 +174,12 @@ class ShoppingListPage extends ConsumerWidget {
     );
   }
 
+  Future<void> _addItem(BuildContext context, WidgetRef ref) async {
+    final homeId = await chooseHomeScope(context, ref, contextId: contextId);
+    if (homeId == null || !context.mounted) return;
+    await showShoppingItemSheet(context, contextId: homeId);
+  }
+
   Future<void> _clearBought(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
@@ -192,7 +196,9 @@ class ShoppingListPage extends ConsumerWidget {
         ],
       ),
     );
-    if (confirmed == true) await ref.read(repositoryProvider).clearCheckedShopping();
+    if (confirmed == true) {
+      await ref.read(repositoryProvider).clearCheckedShopping(contextId: contextId);
+    }
   }
 
   static List<_ShoppingGroup> _groupItems(

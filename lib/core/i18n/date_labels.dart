@@ -34,6 +34,18 @@ String formatFullDate(BuildContext context, DateTime date) {
   };
 }
 
+/// A compact date for ranges and chips. The order still follows the user's
+/// date-format preference.
+String formatShortDate(BuildContext context, DateTime date) {
+  final locale = Localizations.localeOf(context).toLanguageTag();
+  return switch (AppSettingsScope.maybeOf(context)?.dateFormat ?? ManeDateFormat.system) {
+    ManeDateFormat.dmy => DateFormat('dd/MM', locale).format(date),
+    ManeDateFormat.mdy => DateFormat('MM/dd', locale).format(date),
+    ManeDateFormat.ymd => DateFormat('yyyy/MM/dd', locale).format(date),
+    ManeDateFormat.system => DateFormat.MMMd(locale).format(date),
+  };
+}
+
 /// Formats a month and year according to the date-format preference.
 String formatMonthYear(BuildContext context, DateTime date) {
   final locale = Localizations.localeOf(context).toLanguageTag();

@@ -34,11 +34,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
     final controller = ref.read(settingsProvider.notifier);
-    final links = _links(l10n);
+    final entries = _entries(l10n);
     final query = _query.trim().toLowerCase();
     final matches = query.isEmpty
         ? const <_SettingLink>[]
-        : links.where((link) => link.matches(query)).toList();
+        : entries.where((entry) => entry.matches(query)).toList();
     final pairedCount = ref.watch(pairedDevicesProvider).value?.length ?? 0;
 
     return ManePage(
@@ -153,47 +153,186 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  List<_SettingLink> _links(AppLocalizations l10n) => [
+  List<_SettingLink> _entries(AppLocalizations l10n) => [
     _SettingLink(
       icon: Icons.palette_outlined,
-      title: l10n.appearanceSection,
-      subtitle: l10n.appearanceSubtitle,
-      keywords: 'theme aero colour color background dots grid oled text size apariencia tema fondo',
+      title: l10n.theme,
+      subtitle: l10n.appearanceSection,
+      keywords: 'theme system light dark aero tema',
       section: SettingsDetailSection.appearance,
     ),
     _SettingLink(
-      icon: Icons.tune,
-      title: l10n.preferencesSection,
-      subtitle: l10n.preferencesSubtitle,
-      keywords:
-          'language time zone sound alarm interaction aero date week start navigation side performance hours quiet reminders sleep categories tags shifts inventory shopping maintenance idioma fecha semana zona horaria sonido alarma',
+      icon: Icons.wallpaper_outlined,
+      title: l10n.background,
+      subtitle: l10n.appearanceSection,
+      keywords: 'background dots grid oled custom plain fondo',
+      section: SettingsDetailSection.appearance,
+    ),
+    _SettingLink(
+      icon: Icons.format_size,
+      title: l10n.textSize,
+      subtitle: l10n.appearanceSection,
+      keywords: 'text size font scale tamano texto',
+      section: SettingsDetailSection.appearance,
+    ),
+    _SettingLink(
+      icon: Icons.language,
+      title: l10n.language,
+      subtitle: l10n.preferencesSection,
+      keywords: 'language english spanish idioma',
       section: SettingsDetailSection.preferences,
     ),
     _SettingLink(
-      icon: Icons.storage_outlined,
-      title: l10n.dataSection,
-      subtitle: l10n.dataSubtitle,
-      keywords: 'backup restore import export calendar csv companion delete data copia datos',
+      icon: Icons.volume_up_outlined,
+      title: l10n.interactionSounds,
+      subtitle: l10n.preferencesSection,
+      keywords: 'sound interaction tap toggle confirm back error sonido',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.notifications_active_outlined,
+      title: l10n.alarmSounds,
+      subtitle: l10n.preferencesSection,
+      keywords: 'alarm reminder sound alarma recordatorio',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.event_outlined,
+      title: l10n.dateFormatLabel,
+      subtitle: l10n.preferencesSection,
+      keywords: 'date format fecha formato',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.public,
+      title: l10n.timeZone,
+      subtitle: l10n.preferencesSection,
+      keywords: 'time zone iana city offset zona horaria',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.today_outlined,
+      title: l10n.weekStartsOn,
+      subtitle: l10n.preferencesSection,
+      keywords: 'week start monday sunday semana',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.speed,
+      title: l10n.performanceMode,
+      subtitle: l10n.preferencesSection,
+      keywords: 'performance blur motion rendimiento',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.view_sidebar_outlined,
+      title: l10n.navigationSide,
+      subtitle: l10n.preferencesSection,
+      keywords: 'navigation side rail left right navegacion',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.notifications_outlined,
+      title: l10n.defaultReminders,
+      subtitle: l10n.preferencesSection,
+      keywords: 'default reminders lead recordatorios',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.work_outline,
+      title: l10n.workHours,
+      subtitle: l10n.preferencesSection,
+      keywords: 'work hours visibilidad trabajo horario',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.bedtime_outlined,
+      title: l10n.quietHours,
+      subtitle: l10n.preferencesSection,
+      keywords: 'quiet hours silence silencio',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.nightlight_outlined,
+      title: l10n.sleepWindow,
+      subtitle: l10n.preferencesSection,
+      keywords: 'sleep window commute wind down buffers sueno descanso',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.file_upload_outlined,
+      title: l10n.exportBackup,
+      subtitle: l10n.dataSection,
+      keywords: 'export backup copia exportar',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.file_download_outlined,
+      title: l10n.importBackup,
+      subtitle: l10n.dataSection,
+      keywords: 'import restore backup restaurar importar',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.history,
+      title: l10n.automaticBackups,
+      subtitle: l10n.dataSection,
+      keywords: 'automatic backups rotation copias automaticas',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.calendar_month_outlined,
+      title: l10n.importCalendar,
+      subtitle: l10n.dataSection,
+      keywords: 'import calendar ics importar calendario',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.calendar_today_outlined,
+      title: l10n.exportCalendar,
+      subtitle: l10n.dataSection,
+      keywords: 'export calendar ics exportar calendario',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.table_chart_outlined,
+      title: l10n.exportCsv,
+      subtitle: l10n.dataSection,
+      keywords: 'export csv exportar',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.table_view_outlined,
+      title: l10n.importCsv,
+      subtitle: l10n.dataSection,
+      keywords: 'import csv importar',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.delete_forever_outlined,
+      title: l10n.deleteAllData,
+      subtitle: l10n.dataSection,
+      keywords: 'delete all data erase borrar datos',
       section: SettingsDetailSection.data,
     ),
     _SettingLink(
       icon: Icons.devices_other,
       title: l10n.devicesAndSync,
-      subtitle: l10n.devicesAndSyncSubtitle,
+      subtitle: l10n.onlineSection,
       keywords: 'devices sync lan pair nearby network dispositivos sincronizar red',
       route: _SettingRoute.devices,
     ),
     _SettingLink(
       icon: Icons.terminal,
       title: l10n.mcpServer,
-      subtitle: l10n.mcpEndpointSubtitle,
+      subtitle: l10n.onlineSection,
       keywords: 'mcp server port tools servidor puerto',
       route: _SettingRoute.mcp,
     ),
     _SettingLink(
       icon: Icons.info_outline,
       title: l10n.about,
-      subtitle: l10n.aboutSubtitle,
+      subtitle: l10n.about,
       keywords: 'about license version credits acerca licencia',
       route: _SettingRoute.about,
     ),

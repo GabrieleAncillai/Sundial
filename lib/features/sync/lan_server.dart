@@ -81,12 +81,8 @@ class LanServer {
     final context = SecurityContext()
       ..useCertificateChainBytes(utf8.encode(identity.certificatePem))
       ..usePrivateKeyBytes(utf8.encode(identity.privateKeyPem));
-    final server = await HttpServer.bindSecure(
-      address ?? InternetAddress.anyIPv4,
-      port,
-      context,
-      shared: false,
-    );
+    final bindAddress = address ?? await _privateBindAddress();
+    final server = await HttpServer.bindSecure(bindAddress, port, context, shared: false);
     _server = server;
     server.listen(_handle, onError: (Object _) {});
     return server.port;
@@ -116,8 +112,39 @@ class LanServer {
     _pairAttempts = 0;
   }
 
+  /// Bind to a private LAN address, never every interface. A device with no
+  /// private IPv4 address (for example a VPN-only host) stays on loopback so
+  /// the endpoint is not exposed to a public or tethered network.
+  Future<InternetAddress> _privateBindAddress() async {
+    try {
+      final interfaces = await NetworkInterface.list(type: InternetAddressType.IPv4, includeLoopback: false);
+      for (final interface in interfaces) {
+        for (final address in interface.addresses) {
+          if (_isPrivateAddress(address)) return address;
+        }
+      }
+    } on Object {
+      // Fall through to loopback; discovery can still work on localhost.
+    }
+    return InternetAddress.loopbackIPv4;
+  }
+
+  static bool _isPrivateAddress(InternetAddress address) {
+    final bytes = address.rawAddress;
+    if (bytes.length != 4) return false;
+    if (bytes[0] == 10) return true;
+    if (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) return true;
+    if (bytes[0] == 192 && bytes[1] == 168) return true;
+    return false;
+  }
+
   Future<void> _handle(HttpRequest request) async {
     try {
+      final remote = request.connectionInfo?.remoteAddress;
+      if (remote != null && !remote.isLoopback && !_isPrivateAddress(remote)) {
+        await _json(request.response, HttpStatus.forbidden, {'error': 'private_network_only'});
+        return;
+      }
       final path = request.uri.path;
       if (request.method == 'GET' && path == '/mane/v1/info') {
         await _handleInfo(request);
@@ -147,13 +174,13 @@ class LanServer {
       await _json(request.response, HttpStatus.serviceUnavailable, {'error': 'not_ready'});
       return;
     }
+    // No identity here: this endpoint is reachable before pairing. The
+    // certificate fingerprint is public and is checked by the client. Device
+    // identity is returned only in the authenticated pair response.
     await _json(request.response, HttpStatus.ok, {
       'app': 'mane',
       'version': appVersion,
       'protocol': protocolVersion,
-      'deviceId': identity.deviceId,
-      'deviceName': identity.deviceName,
-      'username': identity.username,
       'fingerprint': _fingerprint,
       'pairing': pairingSession != null,
       'port': port,

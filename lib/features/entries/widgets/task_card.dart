@@ -54,11 +54,17 @@ class TaskCard extends ConsumerWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _Check(
-              completed: completed,
-              color: Color(plannerContext?.colorValue ?? _spaceColor(spaces)),
-              onTap: () => _toggleComplete(ref),
-            ),
+            if (entry.readOnly)
+              Padding(
+                padding: const EdgeInsets.only(top: 2, right: 2),
+                child: Icon(Icons.lock_outline, size: 20, color: c.textTertiary),
+              )
+            else
+              _Check(
+                completed: completed,
+                color: Color(plannerContext?.colorValue ?? _spaceColor(spaces)),
+                onTap: () => _toggleComplete(ref, timeZone),
+              ),
             const SizedBox(width: 11),
             Expanded(
               child: Column(
@@ -127,7 +133,7 @@ class TaskCard extends ConsumerWidget {
                 ],
               ),
             ),
-            if (!completed && entry.timing != EntryTiming.scheduled)
+            if (!entry.readOnly && !completed && entry.timing != EntryTiming.scheduled)
               Padding(
                 padding: const EdgeInsets.only(left: 4),
                 child: IconButton(
@@ -182,7 +188,10 @@ class TaskCard extends ConsumerWidget {
   EntryOccurrence _asOccurrence(String timeZone) {
     final existing = occurrence;
     if (existing != null) return existing;
-    final date = entry.date ?? localDateAt(DateTime.now(), timeZone);
+    final today = localDateAt(DateTime.now().toUtc(), timeZone);
+    final date = entry.recurrence?.occursOn(today, entry.date ?? today) == true
+        ? today
+        : (entry.date ?? today);
     return EntryOccurrence(
       date: date,
       displayDate: date,
@@ -193,18 +202,16 @@ class TaskCard extends ConsumerWidget {
     );
   }
 
-  Future<void> _toggleComplete(WidgetRef ref) async {
+  Future<void> _toggleComplete(WidgetRef ref, String timeZone) async {
+    if (entry.readOnly) return;
     final completed = occurrence?.completed ?? entry.isDone;
     final repository = ref.read(repositoryProvider);
-    if (entry.recurrence != null && occurrence != null) {
-      await repository.setOccurrenceCompleted(entry.id, occurrence!.date, !completed);
-    } else {
-      await repository.setEntryStatus(entry.id, completed ? EntryStatus.open : EntryStatus.done);
-    }
+    await repository.setCompletion(_asOccurrence(timeZone), completed: !completed);
     ref.read(soundControllerProvider).play(completed ? UiSound.toggleOff : UiSound.toggleOn);
   }
 
   Future<void> _toggleClock(WidgetRef ref, String timeZone) async {
+    if (entry.readOnly) return;
     final repository = ref.read(repositoryProvider);
     final occ = _asOccurrence(timeZone);
     final running = _relevant(

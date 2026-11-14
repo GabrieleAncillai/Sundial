@@ -209,9 +209,18 @@ class McpPage extends ConsumerWidget {
     controller.dispose();
     final parsed = int.tryParse(result?.trim() ?? '');
     if (parsed == null || parsed < 1024 || parsed > 65535) return;
+    final previous = ref.read(settingsProvider).mcpPort;
     await ref.read(settingsProvider.notifier).setMcpPort(parsed);
-    await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
+    try {
+      await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
+    } on Object {
+      await ref.read(settingsProvider.notifier).setMcpPort(previous);
+      await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.mcpPortUnavailable(parsed))));
+      return;
+    }
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.portSaved)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.portSaved(parsed))));
   }
 }

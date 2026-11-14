@@ -111,8 +111,13 @@ class ContextDetailPage extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           FilledButton.tonalIcon(
-            onPressed: () =>
-                showEntryEditor(context, initialDate: today, initialContextId: contextId, spaces: spaces),
+            onPressed: () => showEntryEditor(
+              context,
+              initialDate: today,
+              initialSpaceId: spaceId,
+              initialUnitId: contextId,
+              spaces: spaces,
+            ),
             icon: const Icon(Icons.add_task, size: 18),
             label: Text(l10n.addTaskFor(item.name)),
           ),
@@ -121,16 +126,17 @@ class ContextDetailPage extends ConsumerWidget {
             SectionLabel(l10n.shifts),
             const SizedBox(height: 8),
             _ShiftsSection(contextId: contextId),
-          ],
-          if (!isPersonal) ...[
             const SizedBox(height: 22),
-            SectionLabel(isWork ? l10n.projectsSection : l10n.householdSection),
-            const SizedBox(height: 8),
-            if (isWork) _ProjectsSection(spaceId: spaceId, contextIds: contexts, projectContextId: contextId),
+            _ProjectsBlock(
+              spaceId: spaceId,
+              contexts: contexts,
+              contextId: contextId,
+              recommendedIcons: recommended,
+            ),
           ],
-          if (!isWork) ...[
+          if (!isWork && !isPersonal) ...[
             const SizedBox(height: 22),
-            SectionLabel(l10n.inventorySection),
+            SectionLabel(l10n.householdSection),
             const SizedBox(height: 8),
             _LinkRow(
               icon: Icons.inventory_2_outlined,
@@ -158,6 +164,13 @@ class ContextDetailPage extends ConsumerWidget {
                 context,
               ).push(MaterialPageRoute<void>(builder: (_) => MaintenancePage(contextId: contextId))),
             ),
+            const SizedBox(height: 22),
+            _ProjectsBlock(
+              spaceId: spaceId,
+              contexts: contexts,
+              contextId: contextId,
+              recommendedIcons: recommended,
+            ),
           ],
           if (isPersonal) ...[
             const SizedBox(height: 22),
@@ -173,27 +186,13 @@ class ContextDetailPage extends ConsumerWidget {
               ],
             ),
             _HabitsSection(contextId: contextId, recommendedIcons: recommended),
-          ],
-          if (!isWork) ...[
             const SizedBox(height: 22),
-            Row(
-              children: [
-                Expanded(child: SectionLabel(l10n.projectsSection)),
-                TextButton.icon(
-                  onPressed: () => showProjectEditor(
-                    context,
-                    spaceId: spaceId,
-                    title: l10n.newProject,
-                    contextId: contextId,
-                    contexts: contexts,
-                    recommendedIcons: recommended,
-                  ),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: Text(l10n.addProject),
-                ),
-              ],
+            _ProjectsBlock(
+              spaceId: spaceId,
+              contexts: contexts,
+              contextId: contextId,
+              recommendedIcons: recommended,
             ),
-            _ProjectsSection(spaceId: spaceId, contextIds: contexts, projectContextId: contextId),
           ],
           if (tasks.isNotEmpty) ...[
             const SizedBox(height: 22),
@@ -258,6 +257,49 @@ class _ShiftsSection extends ConsumerWidget {
             label: Text(l10n.newShiftPattern),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _ProjectsBlock extends StatelessWidget {
+  const _ProjectsBlock({
+    required this.spaceId,
+    required this.contexts,
+    required this.contextId,
+    required this.recommendedIcons,
+  });
+
+  final String spaceId;
+  final List<PlannerContext> contexts;
+  final String contextId;
+  final List<String> recommendedIcons;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(child: SectionLabel(l10n.projectsSection)),
+            TextButton.icon(
+              onPressed: () => showProjectEditor(
+                context,
+                spaceId: spaceId,
+                title: l10n.newProject,
+                contextId: contextId,
+                contexts: contexts,
+                recommendedIcons: recommendedIcons,
+              ),
+              icon: const Icon(Icons.add, size: 18),
+              label: Text(l10n.addProject),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        _ProjectsSection(spaceId: spaceId, contextIds: contexts, projectContextId: contextId),
       ],
     );
   }

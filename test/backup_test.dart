@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -193,7 +194,7 @@ void main() {
 
     final exported = await BackupService(source).exportJson();
     final payload = jsonDecode(exported) as Map<String, dynamic>;
-    expect(payload['schemaVersion'], 9);
+    expect(payload['schemaVersion'], 10);
     expect(payload.containsKey('identity'), isFalse);
     expect(payload.containsKey('pairedDevices'), isFalse);
     expect(exported, isNot(contains('cGluaGFzaA==')));
@@ -221,6 +222,83 @@ void main() {
     after.remove('exportedAt');
 
     expect(after, before);
+  });
+
+  test('backups embed and restore sticker media', () async {
+    final mediaDir = await Directory.systemTemp.createTemp('mane-media');
+    addTearDown(() => mediaDir.delete(recursive: true));
+    final sticker = File('${mediaDir.path}/cafe.png')..writeAsBytesSync([1, 2, 3, 4]);
+    await source.saveContext(
+      PlannerContext(
+        id: 'cafe',
+        spaceId: 'work',
+        name: 'Cafe',
+        colorValue: 0xFF2F7ED8,
+        imagePath: sticker.path,
+      ),
+    );
+
+    final exported = await BackupService(source, mediaDirectory: mediaDir).exportJson();
+    final payload = jsonDecode(exported) as Map<String, Object?>;
+    expect((payload['media'] as Map).keys, contains(sticker.path));
+
+    final restoreDir = await Directory.systemTemp.createTemp('mane-media-restore');
+    addTearDown(() => restoreDir.delete(recursive: true));
+    final target = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(target.close);
+    await BackupService(target, mediaDirectory: restoreDir).importJson(exported);
+
+    final restored = (await target.watchContexts().first).single;
+    expect(restored.imagePath, isNotNull);
+    expect(restored.imagePath, startsWith(restoreDir.path));
+    expect(File(restored.imagePath!).readAsBytesSync(), [1, 2, 3, 4]);
+  });
+
+  test('restores over a populated database', () async {
+    await seedRealData(source);
+    final exported = await BackupService(source).exportJson();
+
+    final target = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(target.close);
+    await target.seedDefaults();
+    await target.saveEntry(
+      Entry(
+        id: 'stale',
+        spaceId: 'personal',
+        title: 'Stale row',
+        date: LocalDate.parse('2026-11-01'),
+        allDay: true,
+        createdAt: DateTime.utc(2026, 11, 1),
+        updatedAt: DateTime.utc(2026, 11, 1),
+      ),
+    );
+
+    await BackupService(target).importJson(exported);
+
+    expect(await target.readEntry('stale'), isNull);
+    final before = Map<String, Object?>.from(jsonDecode(exported) as Map);
+    final after = Map<String, Object?>.from(jsonDecode(await BackupService(target).exportJson()) as Map);
+    before.remove('exportedAt');
+    after.remove('exportedAt');
+    expect(after, before);
+  });
+
+  test('accepts a schema v9 backup', () async {
+    await seedRealData(source);
+    final payload = jsonDecode(await BackupService(source).exportJson()) as Map<String, Object?>;
+    payload['schemaVersion'] = 9;
+
+    final target = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(target.close);
+    await BackupService(target).importJson(jsonEncode(payload));
+
+    expect((await target.watchContexts().first).single.id, 'cafe');
+    expect(
+      (await target
+          .watchEntriesBetween(LocalDate.parse('2026-11-09'), LocalDate.parse('2026-11-09'), 'Europe/Madrid')
+          .first),
+      isNotEmpty,
+    );
   });
 
   test('rejects a corrupt file without touching existing data', () async {

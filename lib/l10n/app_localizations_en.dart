@@ -379,6 +379,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get remindersUnavailable => 'Reminders could not be read, so they were left unchanged.';
+
+  @override
   String get dataAndBackup => 'Data and backup';
 
   @override
@@ -1304,6 +1307,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homes => 'Homes';
 
   @override
+  String get chooseHome => 'Choose a home';
+
+  @override
   String get peopleAndGroups => 'People & groups';
 
   @override
@@ -1607,7 +1613,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteProjectQuestion => 'Delete this project?';
 
   @override
-  String get deleteProjectBody => 'Tasks keep their space and context.';
+  String get deleteProjectBody => 'Tasks lose this project but keep their space and context.';
 
   @override
   String get listView => 'List';
@@ -1935,7 +1941,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get applyPort => 'Apply port';
 
   @override
-  String get portSaved => 'MCP port saved. Restart the endpoint to apply it.';
+  String portSaved(int port) {
+    return 'MCP endpoint now uses port $port.';
+  }
+
+  @override
+  String mcpPortUnavailable(int port) {
+    return 'Could not use port $port. It may already be in use.';
+  }
 
   @override
   String get deleteAllData => 'Delete all data';

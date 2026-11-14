@@ -38,6 +38,8 @@ class _AppShellState extends ConsumerState<AppShell>
   int _index = 0;
   Timer? _clockTimer;
   late final AnimationController _swap;
+  final _sideSearch = TextEditingController();
+  final _sideSearchFocus = FocusNode();
 
   static const _destinations = <_Destination>[
     _Destination(label: _Label.today, icon: Icons.today_outlined, selectedIcon: Icons.today),
@@ -63,6 +65,8 @@ class _AppShellState extends ConsumerState<AppShell>
   void dispose() {
     _clockTimer?.cancel();
     _swap.dispose();
+    _sideSearch.dispose();
+    _sideSearchFocus.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -228,10 +232,13 @@ class _AppShellState extends ConsumerState<AppShell>
                     index: _index,
                     items: _destinations,
                     settings: settings,
+                    searchController: _sideSearch,
+                    searchFocus: _sideSearchFocus,
+                    onSearchSubmitted: _submitSideSearch,
+                    filterCount: ref.watch(tagFilterProvider).length,
                     onSelected: _selectTab,
                     onAdd: () => showEntryEditor(context, spaces: spaces),
                     onSettings: _openSettings,
-                    onSearch: _openSearch,
                     onFilter: () => showTagFilterSheet(context),
                   );
                   return Row(
@@ -274,21 +281,21 @@ class _AppShellState extends ConsumerState<AppShell>
                 Text(l10n.appName, style: ManeType.headline(21, color: c.text)),
               ],
               const Spacer(),
-              GlassIconButton(icon: Icons.search, tooltip: l10n.search, onTap: _openSearch),
-              const SizedBox(width: 8),
-              GlassIconButton(
-                icon: filterCount > 0 ? Icons.filter_alt : Icons.filter_alt_outlined,
-                tooltip: l10n.filterByTag,
-                onTap: () => showTagFilterSheet(context),
-                badge: filterCount == 0
-                    ? null
-                    : Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                        decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(8)),
-                        child: Text('$filterCount', style: ManeType.label(9, color: c.onAccent)),
-                      ),
-              ),
               if (!desktop) ...[
+                GlassIconButton(icon: Icons.search, tooltip: l10n.search, onTap: _openSearch),
+                const SizedBox(width: 8),
+                GlassIconButton(
+                  icon: filterCount > 0 ? Icons.filter_alt : Icons.filter_alt_outlined,
+                  tooltip: l10n.filterByTag,
+                  onTap: () => showTagFilterSheet(context),
+                  badge: filterCount == 0
+                      ? null
+                      : Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(8)),
+                          child: Text('$filterCount', style: ManeType.label(9, color: c.onAccent)),
+                        ),
+                ),
                 const SizedBox(width: 8),
                 GlassIconButton(icon: Icons.settings_outlined, tooltip: l10n.settings, onTap: _openSettings),
               ],
@@ -347,7 +354,18 @@ class _AppShellState extends ConsumerState<AppShell>
   }
 
   void _openSearch() {
+    if (MediaQuery.sizeOf(context).width >= 900) {
+      _sideSearchFocus.requestFocus();
+      return;
+    }
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SearchPage()));
+  }
+
+  void _submitSideSearch(String value) {
+    final query = value.trim();
+    if (query.isEmpty) return;
+    _sideSearchFocus.unfocus();
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SearchPage(initialQuery: query)));
   }
 
   static String _label(BuildContext context, _Label label) => switch (label) {
@@ -375,20 +393,26 @@ class _SideRail extends StatelessWidget {
     required this.index,
     required this.items,
     required this.settings,
+    required this.searchController,
+    required this.searchFocus,
+    required this.onSearchSubmitted,
+    required this.filterCount,
     required this.onSelected,
     required this.onAdd,
     required this.onSettings,
-    required this.onSearch,
     required this.onFilter,
   });
 
   final int index;
   final List<_Destination> items;
   final AppSettings settings;
+  final TextEditingController searchController;
+  final FocusNode searchFocus;
+  final ValueChanged<String> onSearchSubmitted;
+  final int filterCount;
   final ValueChanged<int> onSelected;
   final VoidCallback onAdd;
   final VoidCallback onSettings;
-  final VoidCallback onSearch;
   final VoidCallback onFilter;
 
   @override
@@ -426,16 +450,28 @@ class _SideRail extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: TextButton.icon(
-                    onPressed: onSearch,
-                    icon: const Icon(Icons.search, size: 18),
-                    label: Text(l10n.search),
+                  child: TextField(
+                    controller: searchController,
+                    focusNode: searchFocus,
+                    textInputAction: TextInputAction.search,
+                    onSubmitted: onSearchSubmitted,
+                    decoration: InputDecoration(
+                      hintText: l10n.searchHint,
+                      prefixIcon: const Icon(Icons.search, size: 18),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
                   ),
                 ),
+                const SizedBox(width: 4),
                 IconButton(
                   onPressed: onFilter,
                   tooltip: l10n.filterByTag,
-                  icon: const Icon(Icons.filter_alt_outlined, size: 19),
+                  icon: Badge(
+                    isLabelVisible: filterCount > 0,
+                    label: Text('$filterCount'),
+                    child: const Icon(Icons.filter_alt_outlined, size: 19),
+                  ),
                 ),
               ],
             ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:mane_core/mane_core.dart';
 
+import '../core/i18n/date_labels.dart';
 import '../core/i18n/l10n.dart';
 import '../core/widgets/ui_kit.dart';
 import '../state/providers.dart';
@@ -99,8 +100,6 @@ class _WeekHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.mc;
     final end = start.addDays(6);
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final format = DateFormat.MMMd(locale);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -109,7 +108,8 @@ class _WeekHeader extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                '${format.format(start.toDateTime())} – ${format.format(end.toDateTime())}',
+                '${formatShortDate(context, start.toDateTime())} – '
+                '${formatShortDate(context, end.toDateTime())}',
                 style: ManeType.headline(23, color: c.text),
               ),
             ),

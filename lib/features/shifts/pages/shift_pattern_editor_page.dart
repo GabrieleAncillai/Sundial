@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:mane_core/mane_core.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/timezone/timezone_picker.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -48,7 +49,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     _deviceTimeZone = ref.read(deviceTimeZoneProvider);
     _nameController = TextEditingController(text: pattern?.name ?? '');
     _timeZoneController = TextEditingController(text: pattern?.timeZone ?? _deviceTimeZone);
-    _spaceId = pattern?.spaceId ?? 'work';
+    _spaceId = 'work';
     _contextId = pattern?.contextId ?? widget.contextId;
     _cycleDays = pattern?.cycleDays ?? 7;
     _anchorDate = pattern?.anchorDate ?? localDateAt(ref.read(nowProvider), _deviceTimeZone);
@@ -76,7 +77,12 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       if (!mounted) return;
       setState(() {
         _checklist = [
-          for (final item in items) _ChecklistDraft(id: item.id, label: item.label, dayIndex: item.dayIndex),
+          for (final item in items)
+            _ChecklistDraft(
+              id: item.id,
+              label: item.label,
+              dayIndex: item.dayIndex != null && item.dayIndex! < _cycleDays ? item.dayIndex : null,
+            ),
         ];
         _checklistLoading = false;
       });
@@ -124,7 +130,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
+    _spaceId = 'work';
     final availableTags = (ref.watch(tagsProvider).value ?? const <Tag>[])
         .where((tag) => tag.appliesTo(_spaceId))
         .toList();
@@ -133,8 +139,6 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       _contextId = null;
     }
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final activeSpace = spaces.any((space) => space.id == _spaceId) ? _spaceId : spaces.first.id;
-    _spaceId = activeSpace;
 
     final preview = _preview();
     final conflicts = preview?.findConflicts() ?? const <ShiftConflict>[];
@@ -155,46 +159,6 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(labelText: l10n.patternName, border: const OutlineInputBorder()),
               validator: (value) => value == null || value.trim().isEmpty ? l10n.patternNameRequired : null,
-            ),
-            const SizedBox(height: 12),
-            ManeSelectField(
-              label: l10n.space,
-              valueLabel: spaces.where((space) => space.id == _spaceId).firstOrNull?.name ?? _spaceId,
-              leading: Container(
-                width: 9,
-                height: 9,
-                decoration: BoxDecoration(
-                  color: Color(
-                    spaces.where((space) => space.id == _spaceId).firstOrNull?.colorValue ?? 0xFF4A6FA5,
-                  ),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              onTap: () async {
-                final picked = await showManeSelectSheet<String>(
-                  context: context,
-                  title: l10n.space,
-                  selected: _spaceId,
-                  options: [
-                    for (final space in spaces)
-                      ManeSelectOption(
-                        value: space.id,
-                        label: space.name,
-                        leading: Container(
-                          width: 9,
-                          height: 9,
-                          decoration: BoxDecoration(color: Color(space.colorValue), shape: BoxShape.circle),
-                        ),
-                      ),
-                  ],
-                );
-                if (picked != null && mounted) {
-                  setState(() {
-                    _spaceId = picked;
-                    _contextId = null;
-                  });
-                }
-              },
             ),
             if (contexts.isNotEmpty) ...[
               const SizedBox(height: 12),
@@ -320,7 +284,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
                   labelText: l10n.anchorDate,
                   prefixIcon: const Icon(Icons.event_outlined, size: 20),
                 ),
-                child: Text(DateFormat.yMMMMEEEEd(locale).format(_anchorDate.toDateTime())),
+                child: Text(formatFullDate(context, _anchorDate.toDateTime())),
               ),
             ),
             const SizedBox(height: 20),
@@ -453,7 +417,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
                 ),
               ),
               Text(
-                DateFormat.MMMd(locale).format(date.toDateTime()),
+                formatShortDate(context, date.toDateTime()),
                 style: ManeType.body(11.5, color: context.mc.textSecondary),
               ),
             ],
@@ -555,7 +519,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${DateFormat.yMMMd(locale).format(exception.date.toDateTime())} · $type$times',
+                    '${formatFullDate(context, exception.date.toDateTime())} · $type$times',
                     style: ManeType.body(12.5, color: context.mc.text),
                   ),
                   if (exception.note.isNotEmpty)
@@ -584,6 +548,11 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     setState(() {
       _cycleDays = value;
       _slots.removeWhere((slot) => slot.dayIndex >= value);
+      // A stale day index would make the dropdown value invalid and crash.
+      _checklist = [
+        for (final item in _checklist)
+          item.dayIndex != null && item.dayIndex! >= value ? item.copyWith(dayIndex: null) : item,
+      ];
     });
   }
 
@@ -918,7 +887,6 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     return AlertDialog(
       title: Text(l10n.addException),
       content: SingleChildScrollView(
@@ -929,7 +897,7 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
               onTap: _pickDate,
               child: InputDecorator(
                 decoration: InputDecoration(labelText: l10n.exceptionDate),
-                child: Text(DateFormat.yMMMd(locale).format(_date.toDateTime())),
+                child: Text(formatFullDate(context, _date.toDateTime())),
               ),
             ),
             const SizedBox(height: 10),

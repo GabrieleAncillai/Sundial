@@ -11,18 +11,8 @@ import '../../services/planner_repository.dart';
 import 'pairing_crypto.dart';
 
 class RemoteInfo {
-  const RemoteInfo({
-    required this.deviceId,
-    required this.deviceName,
-    required this.username,
-    required this.fingerprint,
-    required this.port,
-    required this.protocol,
-  });
+  const RemoteInfo({required this.fingerprint, required this.port, required this.protocol});
 
-  final String deviceId;
-  final String deviceName;
-  final String username;
   final String fingerprint;
   final int port;
   final int protocol;
@@ -61,9 +51,6 @@ class LanClient {
       }
       if (captured.isEmpty) throw const LanClientException('No certificate was presented');
       final info = RemoteInfo(
-        deviceId: '${json['deviceId']}',
-        deviceName: '${json['deviceName']}',
-        username: '${json['username']}',
         fingerprint: captured.last,
         port: json['port'] is int ? json['port'] as int : port,
         protocol: json['protocol'] is int ? json['protocol'] as int : 0,
@@ -90,12 +77,6 @@ class LanClient {
     required int myServerPort,
   }) async {
     final info = await fetchInfo(host: host, port: port);
-    if (info.deviceId == identity.deviceId) {
-      throw const LanClientException('That is this device');
-    }
-    if (info.username.trim().toLowerCase() != identity.username.trim().toLowerCase()) {
-      throw const LanClientException('The username does not match this device');
-    }
 
     final pairingKey = await PairingCrypto.derivePairingKey(
       code: code,
@@ -143,6 +124,15 @@ class LanClient {
       if (json is! Map<String, dynamic> || json['ok'] != true) {
         throw const LanClientException('The code was not accepted');
       }
+      final hostDeviceId = json['deviceId'];
+      final hostDeviceName = json['deviceName'];
+      final hostUsername = json['username'];
+      if (hostDeviceId is! String || hostDeviceName is! String || hostUsername is! String) {
+        throw const LanClientException('The device did not identify itself after pairing');
+      }
+      if (hostDeviceId == identity.deviceId) {
+        throw const LanClientException('That is this device');
+      }
       if (captures.isEmpty || captures.last != info.fingerprint) {
         throw const LanClientException('The device certificate changed during pairing');
       }
@@ -155,9 +145,9 @@ class LanClient {
       }
       final now = _clock().toUtc();
       final paired = PairedDevice(
-        id: info.deviceId,
-        name: info.deviceName,
-        username: info.username,
+        id: hostDeviceId,
+        name: hostDeviceName,
+        username: hostUsername,
         certificateFingerprint: info.fingerprint,
         sharedKey: sharedKey,
         host: host,

@@ -379,6 +379,9 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get remindersUnavailable => 'No se pudieron leer los recordatorios, así que se dejaron sin cambios.';
+
+  @override
   String get dataAndBackup => 'Datos y copia de seguridad';
 
   @override
@@ -1314,6 +1317,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homes => 'Casas';
 
   @override
+  String get chooseHome => 'Elige una casa';
+
+  @override
   String get peopleAndGroups => 'Personas y grupos';
 
   @override
@@ -1617,7 +1623,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get deleteProjectQuestion => '¿Eliminar este proyecto?';
 
   @override
-  String get deleteProjectBody => 'Las tareas conservan su espacio y contexto.';
+  String get deleteProjectBody => 'Las tareas pierden este proyecto pero conservan su espacio y contexto.';
 
   @override
   String get listView => 'Lista';
@@ -1945,7 +1951,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get applyPort => 'Aplicar puerto';
 
   @override
-  String get portSaved => 'Puerto MCP guardado. Reinicia el endpoint para aplicarlo.';
+  String portSaved(int port) {
+    return 'El endpoint MCP ahora usa el puerto $port.';
+  }
+
+  @override
+  String mcpPortUnavailable(int port) {
+    return 'No se pudo usar el puerto $port. Puede que ya esté en uso.';
+  }
 
   @override
   String get deleteAllData => 'Eliminar todos los datos';

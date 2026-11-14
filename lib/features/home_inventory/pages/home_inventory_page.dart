@@ -8,6 +8,7 @@ import '../../../models/home_purchase.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
+import '../home_scope.dart';
 import '../low_stock.dart';
 import '../widgets/home_item_sheet.dart';
 
@@ -29,17 +30,14 @@ class HomeInventoryPage extends ConsumerWidget {
     return ManePage(
       title: l10n.homeInventory,
       subtitle: l10n.homeInventorySubtitle,
-      floatingAction: ManeAddButton(
-        tooltip: l10n.addHomeItem,
-        onTap: () => showHomeItemSheet(context, contextId: contextId),
-      ),
+      floatingAction: ManeAddButton(tooltip: l10n.addHomeItem, onTap: () => _addItem(context, ref)),
       child: items.isEmpty
           ? AppEmptyState(
               icon: Icons.inventory_2_outlined,
               title: l10n.homeInventoryEmpty,
               message: l10n.homeInventorySubtitle,
               action: FilledButton.tonalIcon(
-                onPressed: () => showHomeItemSheet(context, contextId: contextId),
+                onPressed: () => _addItem(context, ref),
                 icon: const Icon(Icons.add, size: 18),
                 label: Text(l10n.addHomeItem),
               ),
@@ -69,6 +67,12 @@ class HomeInventoryPage extends ConsumerWidget {
               ],
             ),
     );
+  }
+
+  Future<void> _addItem(BuildContext context, WidgetRef ref) async {
+    final homeId = await chooseHomeScope(context, ref, contextId: contextId);
+    if (homeId == null || !context.mounted) return;
+    await showHomeItemSheet(context, contextId: homeId);
   }
 
   Future<void> _addLowStock(BuildContext context, WidgetRef ref, List<HomeItem> lowStock) async {

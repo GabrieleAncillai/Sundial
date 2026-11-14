@@ -92,6 +92,74 @@ void main() {
     ),
   );
 
+  final shapes = <({String name, int? start, int? end, EntryTiming timing})>[
+    (name: 'scheduled', start: 9 * 60, end: 10 * 60, timing: EntryTiming.scheduled),
+    (name: 'clock-in', start: 9 * 60, end: null, timing: EntryTiming.clockIn),
+    (name: 'deadline', start: null, end: 17 * 60, timing: EntryTiming.deadline),
+    (name: 'anytime', start: null, end: null, timing: EntryTiming.anytime),
+  ];
+
+  for (final shape in shapes) {
+    testWidgets('editing a ${shape.name} task keeps its shape', (tester) async {
+      final entry = Entry(
+        id: 'shape-${shape.name}',
+        spaceId: 'personal',
+        title: '${shape.name} task',
+        date: today,
+        startMinute: shape.start,
+        endMinute: shape.end,
+        timeZone: shape.start == null && shape.end == null ? null : 'Europe/Madrid',
+        createdAt: now,
+        updatedAt: now,
+      );
+      await database.saveEntry(entry);
+
+      await tester.pumpWidget(host(editorLauncher(fallbackSpaces, entry: entry), const AppSettings()));
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      await scrollTo(tester, find.text('Save changes'));
+      await tester.tap(find.text('Save changes'));
+      await tester.pumpAndSettle();
+
+      final saved = await database.readEntry(entry.id);
+      expect(saved, isNotNull);
+      expect(saved!.timing, shape.timing);
+      expect(saved.startMinute, shape.start);
+      expect(saved.endMinute, shape.end);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(seconds: 1));
+    });
+  }
+
+  testWidgets('a read-only entry opens without edit or delete controls', (tester) async {
+    final entry = Entry(
+      id: 'imported',
+      spaceId: 'personal',
+      title: 'Imported',
+      date: today,
+      allDay: true,
+      source: 'ics',
+      externalId: 'uid:imported',
+      readOnly: true,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await database.saveEntry(entry);
+
+    await tester.pumpWidget(host(editorLauncher(fallbackSpaces, entry: entry), const AppSettings()));
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Imported calendar event'), findsOneWidget);
+    expect(find.text('Save changes'), findsNothing);
+    expect(find.text('Delete'), findsNothing);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
   testWidgets('clearing the end turns a scheduled task into a clock-in task', (tester) async {
     final entry = Entry(
       id: 'task',
@@ -123,6 +191,39 @@ void main() {
     expect(saved.startMinute, 9 * 60);
     expect(saved.timing, EntryTiming.clockIn);
     expect(saved.endAt, isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('adding from a unit defaults to that space and unit', (tester) async {
+    await database.saveContext(
+      const PlannerContext(id: 'cafe', spaceId: 'work', name: 'Cafe', colorValue: 0xFF2F7ED8),
+    );
+
+    await tester.pumpWidget(
+      host(
+        Builder(
+          builder: (context) => Center(
+            child: TextButton(
+              onPressed: () => showEntryEditor(
+                context,
+                initialSpaceId: 'work',
+                initialUnitId: 'cafe',
+                spaces: fallbackSpaces,
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+        const AppSettings(defaultReminderOffsets: <int>[]),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Work'), findsOneWidget);
+    expect(find.text('Cafe'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(seconds: 1));

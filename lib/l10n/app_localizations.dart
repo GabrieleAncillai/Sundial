@@ -746,6 +746,12 @@ abstract class AppLocalizations {
   /// **'Could not load reminders: {error}'**
   String couldNotLoadReminders(String error);
 
+  /// No description provided for @remindersUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders could not be read, so they were left unchanged.'**
+  String get remindersUnavailable;
+
   /// No description provided for @dataAndBackup.
   ///
   /// In en, this message translates to:
@@ -2450,6 +2456,12 @@ abstract class AppLocalizations {
   /// **'Homes'**
   String get homes;
 
+  /// No description provided for @chooseHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a home'**
+  String get chooseHome;
+
   /// No description provided for @peopleAndGroups.
   ///
   /// In en, this message translates to:
@@ -2981,7 +2993,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteProjectBody.
   ///
   /// In en, this message translates to:
-  /// **'Tasks keep their space and context.'**
+  /// **'Tasks lose this project but keep their space and context.'**
   String get deleteProjectBody;
 
   /// No description provided for @listView.
@@ -3605,8 +3617,14 @@ abstract class AppLocalizations {
   /// No description provided for @portSaved.
   ///
   /// In en, this message translates to:
-  /// **'MCP port saved. Restart the endpoint to apply it.'**
-  String get portSaved;
+  /// **'MCP endpoint now uses port {port}.'**
+  String portSaved(int port);
+
+  /// No description provided for @mcpPortUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not use port {port}. It may already be in use.'**
+  String mcpPortUnavailable(int port);
 
   /// No description provided for @deleteAllData.
   ///

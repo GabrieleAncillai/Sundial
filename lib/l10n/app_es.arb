@@ -258,6 +258,7 @@
   "remindersOff": "Sin recordatorios",
   "notificationPermissionDenied": "Las notificaciones están desactivadas. Actívalas en los ajustes del sistema para que te lleguen los recordatorios.",
   "couldNotLoadReminders": "No se pudieron cargar los recordatorios: {error}",
+  "remindersUnavailable": "No se pudieron leer los recordatorios, así que se dejaron sin cambios.",
   "@couldNotLoadReminders": {
     "placeholders": {
       "error": {
@@ -833,6 +834,7 @@
   "personalSpace": "Personal",
   "jobs": "Trabajos",
   "homes": "Casas",
+  "chooseHome": "Elige una casa",
   "peopleAndGroups": "Personas y grupos",
   "projectsSection": "Proyectos",
   "householdSection": "Hogar",
@@ -984,7 +986,7 @@
   },
   "deleteContextBody": "Sus tareas y notas siguen en tu plan, pero pierden esta agrupación.",
   "deleteProjectQuestion": "¿Eliminar este proyecto?",
-  "deleteProjectBody": "Las tareas conservan su espacio y contexto.",
+  "deleteProjectBody": "Las tareas pierden este proyecto pero conservan su espacio y contexto.",
   "listView": "Lista",
   "timelineView": "Horario",
   "progressToday": "Progreso de hoy",
@@ -1140,7 +1142,22 @@
   "mcpPort": "Puerto",
   "mcpPortHint": "Puerto local entre 1024 y 65535.",
   "applyPort": "Aplicar puerto",
-  "portSaved": "Puerto MCP guardado. Reinicia el endpoint para aplicarlo.",
+  "portSaved": "El endpoint MCP ahora usa el puerto {port}.",
+  "@portSaved": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
+  "mcpPortUnavailable": "No se pudo usar el puerto {port}. Puede que ya esté en uso.",
+  "@mcpPortUnavailable": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
   "deleteAllData": "Eliminar todos los datos",
   "deleteAllDataSubtitle": "Quita el plan, dispositivos, enlaces de copia y ajustes de este dispositivo.",
   "deleteAllDataQuestion": "¿Eliminar todos los datos locales?",

@@ -73,6 +73,26 @@ void main() {
     expect(fallback.timezoneOverride, isEmpty);
   });
 
+  test('the online master switch is authoritative over legacy rows', () {
+    final off = AppSettings.fromMap({
+      SettingsKeys.onlineEnabled: 'false',
+      SettingsKeys.syncEnabled: 'true',
+      SettingsKeys.mcpEnabled: 'true',
+    });
+    expect(off.onlineEnabled, isFalse);
+
+    final legacyOn = AppSettings.fromMap({SettingsKeys.syncEnabled: 'true'});
+    expect(legacyOn.onlineEnabled, isTrue);
+  });
+
+  test('OLED forces a readable dark palette', () {
+    const settings = AppSettings(
+      themeVariant: ManeThemeVariant.light,
+      backgroundStyle: ManeBackgroundStyle.oled,
+    );
+    expect(settings.resolvedThemeMode, ThemeMode.dark);
+  });
+
   test('work and quiet windows use the device timezone', () {
     const settings = AppSettings(
       workHoursEnabled: true,

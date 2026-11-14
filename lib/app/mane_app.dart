@@ -19,7 +19,7 @@ class ManeApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: ManeTheme.forSettings(settings, Brightness.light),
       darkTheme: ManeTheme.forSettings(settings, Brightness.dark),
-      themeMode: settings.isAero ? ThemeMode.light : settings.resolvedThemeMode,
+      themeMode: settings.resolvedThemeMode,
       locale: settings.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

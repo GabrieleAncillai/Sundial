@@ -53,8 +53,17 @@ class McpServer {
     InternetAddress? address,
   }) async {
     if (_server != null) {
-      _writesEnabled = writesEnabled;
-      return _server!.port;
+      final identityChanged =
+          _identity?.mcpToken != identity.mcpToken ||
+          _identity?.privateKeyPem != identity.privateKeyPem ||
+          _identity?.certificatePem != identity.certificatePem;
+      final portChanged = port != 0 && port != _server!.port;
+      if (!identityChanged && !portChanged) {
+        _writesEnabled = writesEnabled;
+        return _server!.port;
+      }
+      // A rotated token or a new port must take effect without an app restart.
+      await stop();
     }
     _identity = identity;
     _writesEnabled = writesEnabled;
@@ -65,6 +74,7 @@ class McpServer {
   }
 
   Future<void> stop() async {
+    _sessions.clear();
     await _server?.close(force: true);
     _server = null;
   }

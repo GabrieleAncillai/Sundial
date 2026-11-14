@@ -244,9 +244,10 @@ Known follow-ups:
 - The week grid interactions need a manual pass with a mouse on Linux and a
   trackpad on Android; the grid is desktop-only by design.
 - The sticker editor and report save dialogs need a real-device pass. Sticker
-  PNGs live in the app support `media/` folder; the JSON backup currently stores
-  their local paths but does not embed the image bytes, so restoring on another
-  device falls back to the built-in icon until media export is added.
+  PNGs live in the app support `media/` folder. The compliance-v2 backup embeds
+  referenced images as base64 and restores them into the new device's media
+  folder, so restoring on another device no longer falls back to the built-in
+  icon.
 - The old app-lock implementation and its tests have been deleted. Legacy
   settings rows are ignored; the backup service keeps stripping the old
   salt/hash keys so an older database cannot leak them.

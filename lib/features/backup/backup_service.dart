@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:drift/drift.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../../services/app_database.dart';
 
@@ -28,10 +31,10 @@ class BackupVersionException implements Exception {
 /// timestamps, IANA zones, recurrence rules and soft deletes are preserved so
 /// a round trip is lossless.
 class BackupService {
-  BackupService(this._database);
+  BackupService(this._database, {Directory? mediaDirectory}) : _mediaDirectory = mediaDirectory;
 
   static const appTag = 'mane';
-  static const currentSchemaVersion = 9;
+  static const currentSchemaVersion = 10;
 
   /// The oldest payload this build still upgrades. v1 and v2 are excluded on
   /// purpose: they predate timezone-aware entries and cannot be mapped safely.
@@ -49,6 +52,14 @@ class BackupService {
   };
 
   final AppDatabase _database;
+  final Directory? _mediaDirectory;
+
+  Future<Directory> _mediaDir() async {
+    final override = _mediaDirectory;
+    if (override != null) return override;
+    final support = await getApplicationSupportDirectory();
+    return Directory(p.join(support.path, 'media'));
+  }
 
   Future<String> exportJson() async {
     final spaces = await _database.select(_database.spaceRecords).get();
@@ -116,9 +127,21 @@ class BackupService {
     homePurchases.sort((a, b) => a.id.compareTo(b.id));
     settings.sort((a, b) => a.key.compareTo(b.key));
 
+    final media = <String, String>{};
+    for (final path in [
+      for (final row in contexts) row.imagePath,
+      for (final row in projects) row.imagePath,
+    ]) {
+      if (path == null || path.isEmpty || media.containsKey(path)) continue;
+      final file = File(path);
+      if (!await file.exists()) continue;
+      media[path] = base64Encode(await file.readAsBytes());
+    }
+
     final payload = <String, Object?>{
       'app': appTag,
       'schemaVersion': currentSchemaVersion,
+      'media': media,
       'exportedAt': DateTime.now().toUtc().toIso8601String(),
       'spaces': [
         for (final row in spaces)
@@ -419,6 +442,26 @@ class BackupService {
     final shoppingItems = _maps(payload, 'shoppingItems');
     final homePurchases = _maps(payload, 'homePurchases');
     final settings = _map(payload, 'settings');
+    final media = _map(payload, 'media');
+    final mediaTargets = <String, String>{};
+    final mediaBytes = <String, Uint8List>{};
+    var mediaIndex = 0;
+    for (final entry in media.entries) {
+      final encoded = entry.value;
+      if (encoded is! String || encoded.isEmpty) continue;
+      final Uint8List bytes;
+      try {
+        bytes = base64Decode(encoded);
+      } on FormatException {
+        throw BackupFormatException('media contains invalid base64');
+      }
+      final name = p.basename(entry.key).isEmpty
+          ? 'sticker-${mediaIndex++}.png'
+          : 'backup-${mediaIndex++}-${p.basename(entry.key)}';
+      final target = p.join((await _mediaDir()).path, name);
+      mediaTargets[entry.key] = target;
+      mediaBytes[target] = bytes;
+    }
 
     await _database.transaction(() async {
       await _database.delete(_database.habitCompletionRecords).go();
@@ -470,7 +513,7 @@ class BackupService {
                 description: Value(_optionalString(row, 'description') ?? ''),
                 color: Value(_integer(row, 'color')),
                 icon: Value(_optionalString(row, 'icon') ?? 'folder'),
-                imagePath: Value(_optionalString(row, 'imagePath')),
+                imagePath: Value(_backupMediaPath(_optionalString(row, 'imagePath'), mediaTargets)),
                 position: Value(_optionalInteger(row, 'position') ?? 0),
                 createdAt: Value(_dateTime(row, 'createdAt')),
                 updatedAt: Value(_dateTime(row, 'updatedAt')),
@@ -491,7 +534,7 @@ class BackupService {
                 description: Value(_optionalString(row, 'description') ?? ''),
                 color: Value(_integer(row, 'color')),
                 icon: Value(_optionalString(row, 'icon') ?? 'folder'),
-                imagePath: Value(_optionalString(row, 'imagePath')),
+                imagePath: Value(_backupMediaPath(_optionalString(row, 'imagePath'), mediaTargets)),
                 position: Value(_optionalInteger(row, 'position') ?? 0),
                 createdAt: Value(_dateTime(row, 'createdAt')),
                 updatedAt: Value(_dateTime(row, 'updatedAt')),
@@ -797,6 +840,19 @@ class BackupService {
             .insert(SettingRecordsCompanion.insert(key: entry.key, value: '${entry.value}'));
       }
     });
+
+    if (mediaBytes.isNotEmpty) {
+      final directory = await _mediaDir();
+      if (!directory.existsSync()) await directory.create(recursive: true);
+      for (final entry in mediaBytes.entries) {
+        await File(entry.key).writeAsBytes(entry.value, flush: true);
+      }
+    }
+  }
+
+  static String? _backupMediaPath(String? path, Map<String, String> targets) {
+    if (path == null || path.isEmpty) return path;
+    return targets[path] ?? path;
   }
 
   static String _date(DateTime value) => value.toUtc().toIso8601String();

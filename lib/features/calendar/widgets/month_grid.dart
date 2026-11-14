@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+
 import 'package:mane_core/mane_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
@@ -36,8 +36,6 @@ class MonthGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.mc;
     final first = month.startOfWeek(weekStart);
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final dayFormat = DateFormat.MMMd(locale);
     final weekdays = weekdaysFrom(weekStart);
 
     return Column(
@@ -68,7 +66,7 @@ class MonthGrid extends StatelessWidget {
                     today: today,
                     markerColors: markers[first.addDays(row * 7 + column).key] ?? const <int>{},
                     hasShift: shiftDays.contains(first.addDays(row * 7 + column).key),
-                    semanticsDate: dayFormat.format(first.addDays(row * 7 + column).toDateTime()),
+                    semanticsDate: formatFullDate(context, first.addDays(row * 7 + column).toDateTime()),
                     onTap: () => onSelected(first.addDays(row * 7 + column)),
                   ),
                 ),

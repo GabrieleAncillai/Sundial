@@ -64,6 +64,13 @@ class AutoBackupService {
     return DateTime.tryParse('${day.substring(0, 4)}-${day.substring(4, 6)}-${day.substring(6, 8)}');
   }
 
+  /// Removes every automatic copy. Used by the explicit delete-all action.
+  Future<void> deleteAll() async {
+    final dir = await _directory();
+    if (!dir.existsSync()) return;
+    await dir.delete(recursive: true);
+  }
+
   Future<File> runNow({int keep = 5}) async {
     final dir = await _directory();
     if (!dir.existsSync()) await dir.create(recursive: true);

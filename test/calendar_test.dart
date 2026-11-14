@@ -51,7 +51,7 @@ void main() {
     await tester.pumpWidget(host());
     await tester.pump();
 
-    expect(find.bySemanticsLabel(RegExp(r'Nov 9, 0 items')), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp(r'November 9, 2026, 0 items')), findsOneWidget);
     handle.dispose();
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(seconds: 1));

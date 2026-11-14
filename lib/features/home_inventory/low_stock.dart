@@ -17,6 +17,7 @@ Future<int> addLowStockToShopping(WidgetRef ref, Iterable<HomeItem> lowStock) as
     await repository.saveShoppingItem(
       ShoppingItem(
         id: const Uuid().v4(),
+        contextId: item.contextId,
         name: item.name,
         quantity: item.suggestedPurchase,
         unit: item.unit,

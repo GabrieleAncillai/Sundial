@@ -78,22 +78,27 @@ class Habit {
     return count;
   }
 
-  /// Consecutive checked days ending at [today], or at yesterday when today is
-  /// not checked yet. A weekly habit that already met this week's target keeps
-  /// the streak alive through the remaining days of the week.
+  /// Consecutive checked days for a daily habit, or completed check-ins across
+  /// qualifying weeks for a weekly-target habit.
+  ///
+  /// A 3x/week habit completed Monday to Wednesday keeps a three-day streak on
+  /// Sunday even though Sunday itself is unchecked. Previous weeks that met
+  /// the target add to the same count.
   int streak(Set<LocalDate> completions, LocalDate today, {int weekStart = DateTime.monday}) {
-    var cursor = today;
-    if (!completions.contains(cursor)) cursor = cursor.addDays(-1);
-    var count = 0;
-    while (completions.contains(cursor)) {
-      count++;
-      cursor = cursor.addDays(-1);
+    if (isDaily) {
+      var cursor = today;
+      if (!completions.contains(cursor)) cursor = cursor.addDays(-1);
+      var count = 0;
+      while (completions.contains(cursor)) {
+        count++;
+        cursor = cursor.addDays(-1);
+      }
+      return count;
     }
-    if (count > 0 || isDaily) return count;
 
     final weekStartDate = today.startOfWeek(weekStart);
-    if (weekProgress(completions, today, weekStart) < cleanTarget) return 0;
-    var previous = weekStartDate.addDays(-1);
+    var count = weekProgress(completions, today, weekStart);
+    var previous = weekStartDate.addDays(-7);
     while (weekProgress(completions, previous, weekStart) >= cleanTarget) {
       count += cleanTarget;
       previous = previous.addDays(-7);

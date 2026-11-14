@@ -1023,3 +1023,51 @@ status. The important architecture additions are:
   `v1.0-stats-desktop.png`, `v1.0-personal-mobile.png`,
   `v1.0-settings-mobile.png`, `v1.0-appearance-mobile.png`,
   `v1.2-today-aero.png` and `v1.2-preferences-mobile.png`.
+
+### Compliance v2 (2026-11-13)
+
+`feat/compliance-v2` keeps the product-polish architecture and repairs the
+paths the audit found unsafe. The row-by-row status is in
+[compliance-matrix.md](compliance-matrix.md).
+
+- **Entry lifecycle.** Editing reads the existing `startMinute`/`endMinute`
+  instead of defaulting them, and saves through `Entry.copyWith`, so scheduled,
+  clock-in, deadline and anytime shapes, provenance, completion and maintenance
+  fields survive. Add-from-unit passes `initialSpaceId`/`initialUnitId`.
+- **Read-only imports.** The editor opens a read-only sheet, task cards hide
+  completion/clock controls, and the repository/database reject edits, status
+  changes, occurrence completion and deletion. ICS re-import has an explicit
+  `saveImportedEntry` path.
+- **One completion path.** `PlannerRepository.setCompletion` stops a running
+  session, scopes a recurring completion to its occurrence, advances a
+  maintenance date from the completion day, or marks a one-off task done.
+- **Schema repair.** Schema v10 rebuilds the draft `context_records` and
+  `time_entry_records` so the legacy `kind`/`updated_at` columns stop blocking
+  inserts. Legacy non-Work shift patterns are moved to Work.
+- **Backup and delete-all.** Schema 10 is accepted, schema 3–10 are upgraded,
+  sticker media is embedded as base64 and restored under the new media folder,
+  restore is tested over a populated database, and delete-all removes media and
+  automatic backups.
+- **Network boundaries.** The LAN server binds a private IPv4 address (loopback
+  if none exists), rejects non-private remote addresses, and its unauthenticated
+  info endpoint no longer returns username, device ID or device name. MCP
+  detects token/certificate/port changes and rebinds; stop clears sessions.
+- **UI and data scoping.** The desktop side rail owns the persistent search
+  field and filter badge; settings search indexes individual rows; Plan uses the
+  900 px shell breakpoint and the all-day row shares the time gutter. Per-day
+  checklists reload when their date/slot changes and cycle shrinking clamps stale
+  indexes. Context/project deletion detaches tasks and hides owned shifts,
+  habits, projects and household rows. Shopping keeps its home and clear-bought
+  is scoped; low-stock lines keep their home. Weekly habit streaks count the
+  current qualifying week and consecutive previous weeks.
+- **Stats.** Tracked sessions resolve their entries even when the entry is
+  outside the selected occurrence range, so the tracked-time total and the
+  per-space/project breakdowns reconcile.
+- **Date format and OLED.** Full dates, month/year, calendar headers and report
+  ranges use the preference; OLED forces a dark palette so light text is not
+  painted on black.
+
+Still open: Aero 2.0 approval and rollout (`docs/aero-2.md`), the shared desktop
+`ManeTimeField`, scroll-to-highlight for settings search, a summary CSV report,
+habit weekday schedules/history, the full new-model MCP surface, and the user's
+real-device checklist.

@@ -135,6 +135,35 @@ void main() {
     expect(tools.map((tool) => tool['name']), isNot(contains('plan.create')));
   });
 
+  test('a rotated token takes effect without restarting the app', () async {
+    final rotated = identity.copyWith(mcpToken: 'rotated-token');
+    await server.start(identity: rotated, writesEnabled: false, port: server.boundPort);
+
+    final (oldStatus, _) = await post({
+      'jsonrpc': '2.0',
+      'id': 1,
+      'method': 'tools/list',
+    }, token: 'secret-token');
+    expect(oldStatus, HttpStatus.unauthorized);
+
+    final (newStatus, _) = await post({
+      'jsonrpc': '2.0',
+      'id': 2,
+      'method': 'tools/list',
+    }, token: 'rotated-token');
+    expect(newStatus, HttpStatus.ok);
+  });
+
+  test('a new port rebinds the running endpoint', () async {
+    final probe = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+    final freePort = probe.port;
+    await probe.close();
+
+    final bound = await server.start(identity: identity, writesEnabled: false, port: freePort);
+    expect(bound, freePort);
+    expect(server.boundPort, freePort);
+  });
+
   test('returns a session id and accepts streaming responses', () async {
     final (_, initialized, headers) = await postFull({
       'jsonrpc': '2.0',

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:mane_core/mane_core.dart';
 
+import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
@@ -109,9 +110,7 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
           children: [
             Expanded(
               child: Text(
-                DateFormat.yMMMMEEEEd(
-                  Localizations.localeOf(context).toLanguageTag(),
-                ).format(day.toDateTime()),
+                formatFullDate(context, day.toDateTime()),
                 style: ManeType.title(15, color: c.text),
               ),
             ),

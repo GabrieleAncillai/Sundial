@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
@@ -384,7 +385,10 @@ class _PairedDeviceCard extends ConsumerWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final lastSeen = device.lastSeenAt == null
         ? l10n.neverReached
-        : l10n.lastSeen(DateFormat.yMMMd(locale).add_Hm().format(device.lastSeenAt!.toLocal()));
+        : l10n.lastSeen(
+            '${formatFullDate(context, device.lastSeenAt!.toLocal())} '
+            '${DateFormat.Hm(locale).format(device.lastSeenAt!.toLocal())}',
+          );
 
     return SoftCard(
       margin: const EdgeInsets.only(bottom: 10),

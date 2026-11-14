@@ -30,11 +30,16 @@ Future<void> showEntryEditor(
   LocalDate? initialDate,
   int? initialStartMinute,
   int? initialEndMinute,
+  String? initialSpaceId,
   String? initialContextId,
+  String? initialUnitId,
   String? initialProjectId,
   int? initialMaintenanceDays,
   required List<Space> spaces,
 }) {
+  if (entry?.readOnly == true) {
+    return _showReadOnlyEntry(context, entry!);
+  }
   return showAppSheet<void>(
     context: context,
     builder: (context) => EntryEditorSheet(
@@ -42,10 +47,35 @@ Future<void> showEntryEditor(
       initialDate: initialDate,
       initialStartMinute: initialStartMinute,
       initialEndMinute: initialEndMinute,
+      initialSpaceId: initialSpaceId,
       initialContextId: initialContextId,
+      initialUnitId: initialUnitId,
       initialProjectId: initialProjectId,
       initialMaintenanceDays: initialMaintenanceDays,
       spaces: spaces,
+    ),
+  );
+}
+
+Future<void> _showReadOnlyEntry(BuildContext context, Entry entry) {
+  final l10n = context.l10n;
+  final c = context.mc;
+  return showAppSheet<void>(
+    context: context,
+    builder: (sheetContext) => AppSheet(
+      children: [
+        Text(entry.title, style: ManeType.headline(21, color: c.text)),
+        const SizedBox(height: 6),
+        Text(l10n.importedEvent, style: ManeType.label(12, color: c.accent)),
+        const SizedBox(height: 12),
+        Text(l10n.readOnlyNotice, style: ManeType.body(14, color: c.textSecondary)),
+        if (entry.notes.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          Text(entry.notes, style: ManeType.body(14, color: c.text)),
+        ],
+        const SizedBox(height: 22),
+        FilledButton(onPressed: () => Navigator.of(sheetContext).pop(), child: Text(l10n.close)),
+      ],
     ),
   );
 }
@@ -58,7 +88,9 @@ class EntryEditorSheet extends ConsumerStatefulWidget {
     this.initialDate,
     this.initialStartMinute,
     this.initialEndMinute,
+    this.initialSpaceId,
     this.initialContextId,
+    this.initialUnitId,
     this.initialProjectId,
     this.initialMaintenanceDays,
   });
@@ -68,7 +100,9 @@ class EntryEditorSheet extends ConsumerStatefulWidget {
   final LocalDate? initialDate;
   final int? initialStartMinute;
   final int? initialEndMinute;
+  final String? initialSpaceId;
   final String? initialContextId;
+  final String? initialUnitId;
   final String? initialProjectId;
   final int? initialMaintenanceDays;
 
@@ -101,6 +135,8 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
   late Set<int> _reminderTimes;
   bool _onlyThisOccurrence = false;
   bool _remindersLoaded = true;
+  bool _remindersLoadFailed = false;
+  List<Reminder> _disabledReminders = const <Reminder>[];
   bool _saving = false;
 
   List<Space> get _spaces => widget.spaces.isEmpty ? _editorFallbackSpaces : widget.spaces;
@@ -122,18 +158,21 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     _deviceTimeZone = ref.read(deviceTimeZoneProvider);
     _titleController = TextEditingController(text: entry?.title ?? '');
     _notesController = TextEditingController(text: entry?.notes ?? '');
-    _spaceId = entry != null && _spaces.any((space) => space.id == entry.spaceId)
-        ? entry.spaceId
+    final requestedSpace = entry?.spaceId ?? widget.initialSpaceId;
+    _spaceId = requestedSpace != null && _spaces.any((space) => space.id == requestedSpace)
+        ? requestedSpace
         : _spaces.first.id;
     _kind = entry?.kind ?? EntryKind.task;
     _priority = entry?.priority ?? EntryPriority.none;
-    _contextId = entry?.contextId ?? widget.initialContextId;
+    _contextId = entry?.contextId ?? widget.initialUnitId ?? widget.initialContextId;
     _projectId = entry?.projectId ?? widget.initialProjectId;
     _date = entry?.date ?? widget.initialDate ?? localDateAt(ref.read(nowProvider), _deviceTimeZone);
     _endDate = entry?.endDate;
     _allDay = entry?.allDay ?? false;
-    _startMinute = entry?.startMinute ?? widget.initialStartMinute ?? 9 * 60;
-    _endMinute = entry?.endMinute ?? widget.initialEndMinute ?? 10 * 60;
+    // Never invent times for an existing entry: a clock-in, deadline or anytime
+    // task must keep its shape after an edit.
+    _startMinute = entry != null ? entry.startMinute : (widget.initialStartMinute ?? 9 * 60);
+    _endMinute = entry != null ? entry.endMinute : (widget.initialEndMinute ?? 10 * 60);
     final planningZone = ref.read(settingsProvider).timezoneOverride;
     _timeZone = entry?.timeZone ?? (planningZone.isEmpty ? _deviceTimeZone : planningZone);
     _recurrence = entry?.recurrence;
@@ -170,11 +209,15 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
           for (final reminder in reminders)
             if (reminder.enabled && reminder.timeMinute != null) reminder.timeMinute!,
         };
+        _disabledReminders = reminders.where((reminder) => !reminder.enabled).toList();
         _remindersLoaded = true;
       });
     } catch (error) {
       if (!mounted) return;
-      setState(() => _remindersLoaded = true);
+      setState(() {
+        _remindersLoaded = true;
+        _remindersLoadFailed = true;
+      });
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(context.l10n.couldNotLoadReminders('$error'))));
@@ -192,6 +235,24 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
   Widget build(BuildContext context) {
     final c = context.mc;
     final l10n = context.l10n;
+    if (widget.entry?.readOnly == true) {
+      final entry = widget.entry!;
+      return AppSheet(
+        children: [
+          Text(entry.title, style: ManeType.headline(21, color: c.text)),
+          const SizedBox(height: 6),
+          Text(l10n.importedEvent, style: ManeType.label(12, color: c.accent)),
+          const SizedBox(height: 12),
+          Text(l10n.readOnlyNotice, style: ManeType.body(14, color: c.textSecondary)),
+          if (entry.notes.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Text(entry.notes, style: ManeType.body(14, color: c.text)),
+          ],
+          const SizedBox(height: 22),
+          FilledButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.close)),
+        ],
+      );
+    }
     final title = widget.entry == null ? l10n.newEntry : l10n.editEntry;
     final availableTags = (ref.watch(tagsProvider).value ?? const <Tag>[])
         .where((tag) => tag.appliesTo(_spaceId))
@@ -343,18 +404,22 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                   }
                 }),
               ),
-              if (!_allDay) ...[
-                ManeSelectField(
-                  label: l10n.timing,
-                  valueLabel: _timingLabel(context, _timing),
-                  leading: Icon(_timingIcon(_timing)),
-                  onTap: () => _pickTiming(context),
-                ),
+              if (!_allDay)
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 6, 0, 0),
-                  child: Text(_timingHint(context, _timing), style: ManeType.body(11, color: c.textTertiary)),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      Icon(_timingIcon(_timing), size: 16, color: c.textTertiary),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _timingHint(context, _timing),
+                          style: ManeType.body(11.5, color: c.textTertiary),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
               const SizedBox(height: 10),
               _PickerRow(
                 icon: Icons.event_outlined,
@@ -490,7 +555,9 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                   ),
                 ],
               ),
-              if (_reminderOffsets.isEmpty && _reminderTimes.isEmpty)
+              if (_remindersLoadFailed)
+                Text(l10n.remindersUnavailable, style: ManeType.body(11.5, color: c.danger))
+              else if (_reminderOffsets.isEmpty && _reminderTimes.isEmpty)
                 Text(l10n.remindersOff, style: ManeType.body(11.5, color: c.textTertiary))
               else
                 Wrap(
@@ -539,13 +606,6 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
       ],
     );
   }
-
-  String _timingLabel(BuildContext context, EntryTiming timing) => switch (timing) {
-    EntryTiming.scheduled => context.l10n.timingScheduled,
-    EntryTiming.clockIn => context.l10n.timingClockIn,
-    EntryTiming.deadline => context.l10n.timingDeadline,
-    EntryTiming.anytime => context.l10n.timingAnytime,
-  };
 
   String _timingHint(BuildContext context, EntryTiming timing) => switch (timing) {
     EntryTiming.scheduled => context.l10n.timingScheduledHint,
@@ -634,6 +694,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     final form = _formKey.currentState;
     if (form == null || !form.validate()) return;
     final existing = widget.entry;
+    if (existing?.readOnly == true) return;
     final scheduled = !_allDay && _startMinute != null && _endMinute != null;
     final endDate = (scheduled || _allDay) && _endDate != null && _endDate!.isAfter(_date) ? _endDate : null;
     if (scheduled && endDate == null && _endMinute! <= _startMinute!) {
@@ -668,46 +729,69 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
       recurrence = existing.recurrence!.copyWith(skipDates: _skipDates, overrides: overrides);
     }
 
-    final entry = Entry(
-      id: existing?.id ?? const Uuid().v4(),
-      spaceId: _spaceId,
-      title: singleOccurrence ? existing!.title : title,
-      notes: singleOccurrence ? existing!.notes : notes,
-      kind: _kind,
-      date: singleOccurrence ? existing!.date : _date,
-      endDate: singleOccurrence ? existing!.endDate : endDate,
-      startMinute: singleOccurrence ? existing!.startMinute : (_allDay ? null : _startMinute),
-      endMinute: singleOccurrence ? existing!.endMinute : (_allDay ? null : _endMinute),
-      timeZone: singleOccurrence
-          ? existing!.timeZone
-          : (_allDay || (_startMinute == null && _endMinute == null) ? null : _timeZone),
-      contextId: singleOccurrence ? existing!.contextId : _contextId,
-      projectId: singleOccurrence ? existing!.projectId : _projectId,
-      priority: _priority,
-      tagIds: _tagIds,
-      allDay: singleOccurrence ? existing!.allDay : _allDay,
-      status: existing?.status ?? EntryStatus.open,
-      recurrence: recurrence,
-      repeatAfterCompletionDays: _repeatAfterCompletion ? (_repeatDays <= 0 ? 1 : _repeatDays) : null,
-      createdAt: existing?.createdAt ?? now,
-      updatedAt: now,
-    );
+    final entry = existing == null
+        ? Entry(
+            id: const Uuid().v4(),
+            spaceId: _spaceId,
+            title: title,
+            notes: notes,
+            kind: _kind,
+            date: _date,
+            endDate: endDate,
+            startMinute: _allDay ? null : _startMinute,
+            endMinute: _allDay ? null : _endMinute,
+            timeZone: _allDay || (_startMinute == null && _endMinute == null) ? null : _timeZone,
+            contextId: _contextId,
+            projectId: _projectId,
+            priority: _priority,
+            tagIds: _tagIds,
+            allDay: _allDay,
+            recurrence: recurrence,
+            repeatAfterCompletionDays: _repeatAfterCompletion ? (_repeatDays <= 0 ? 1 : _repeatDays) : null,
+            createdAt: now,
+            updatedAt: now,
+          )
+        : existing.copyWith(
+            spaceId: _spaceId,
+            title: singleOccurrence ? existing.title : title,
+            notes: singleOccurrence ? existing.notes : notes,
+            kind: _kind,
+            date: singleOccurrence ? existing.date : _date,
+            endDate: singleOccurrence ? existing.endDate : endDate,
+            startMinute: singleOccurrence ? existing.startMinute : (_allDay ? null : _startMinute),
+            endMinute: singleOccurrence ? existing.endMinute : (_allDay ? null : _endMinute),
+            timeZone: singleOccurrence
+                ? existing.timeZone
+                : (_allDay || (_startMinute == null && _endMinute == null) ? null : _timeZone),
+            contextId: singleOccurrence ? existing.contextId : _contextId,
+            projectId: singleOccurrence ? existing.projectId : _projectId,
+            priority: _priority,
+            tagIds: _tagIds,
+            allDay: singleOccurrence ? existing.allDay : _allDay,
+            recurrence: recurrence,
+            repeatAfterCompletionDays: _repeatAfterCompletion ? (_repeatDays <= 0 ? 1 : _repeatDays) : null,
+            updatedAt: now,
+          );
 
     try {
       final repository = ref.read(repositoryProvider);
       await repository.saveEntry(entry);
-      await repository.saveRemindersForEntry(entry.id, [
-        for (final offset in _reminderOffsets)
-          Reminder(id: Reminder.idFor(entry.id, offset), entryId: entry.id, offsetMinutes: offset),
-        for (final minute in _reminderTimes)
-          Reminder(
-            id: Reminder.timeIdFor(entry.id, minute),
-            entryId: entry.id,
-            offsetMinutes: 0,
-            timeMinute: minute,
-          ),
-      ]);
-      if (_reminderOffsets.isNotEmpty || _reminderTimes.isNotEmpty) {
+      // A failed reminder read must not silently erase reminders on save.
+      if (!_remindersLoadFailed) {
+        await repository.saveRemindersForEntry(entry.id, [
+          ..._disabledReminders,
+          for (final offset in _reminderOffsets)
+            Reminder(id: Reminder.idFor(entry.id, offset), entryId: entry.id, offsetMinutes: offset),
+          for (final minute in _reminderTimes)
+            Reminder(
+              id: Reminder.timeIdFor(entry.id, minute),
+              entryId: entry.id,
+              offsetMinutes: 0,
+              timeMinute: minute,
+            ),
+        ]);
+      }
+      if (!_remindersLoadFailed && (_reminderOffsets.isNotEmpty || _reminderTimes.isNotEmpty)) {
         final allowed = await ref.read(notificationServiceProvider).ensurePermissions();
         if (!allowed && mounted) {
           ScaffoldMessenger.of(
@@ -733,7 +817,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
 
   Future<void> _delete() async {
     final entry = widget.entry;
-    if (entry == null) return;
+    if (entry == null || entry.readOnly) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -944,44 +1028,6 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     );
     if (picked == null || !mounted) return;
     setState(() => _projectId = picked.isEmpty ? null : picked);
-  }
-
-  Future<void> _pickTiming(BuildContext context) async {
-    final l10n = context.l10n;
-    final picked = await showManeSelectSheet<EntryTiming>(
-      context: context,
-      title: l10n.timing,
-      selected: _timing,
-      options: [
-        for (final timing in EntryTiming.values)
-          ManeSelectOption(value: timing, label: _timingLabel(context, timing)),
-      ],
-    );
-    if (picked != null && mounted) _applyTiming(picked);
-  }
-
-  void _applyTiming(EntryTiming timing) {
-    setState(() {
-      _allDay = false;
-      switch (timing) {
-        case EntryTiming.scheduled:
-          _startMinute ??= 9 * 60;
-          _endMinute ??= _startMinute! + 60;
-          if (_endMinute! <= _startMinute!) _endMinute = _startMinute! + 60;
-        case EntryTiming.clockIn:
-          _startMinute ??= 9 * 60;
-          _endMinute = null;
-          _endDate = null;
-        case EntryTiming.deadline:
-          _endMinute ??= 10 * 60;
-          _startMinute = null;
-          _endDate = null;
-        case EntryTiming.anytime:
-          _startMinute = null;
-          _endMinute = null;
-          _endDate = null;
-      }
-    });
   }
 
   Future<void> _pickTimeZone(BuildContext context) async {

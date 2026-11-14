@@ -8,6 +8,7 @@ import '../../../screens/entry_editor.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
+import '../home_scope.dart';
 
 /// Interval-after-completion tasks, grouped by due and upcoming. Completing a
 /// task moves its next date forward from today and records the history.
@@ -45,29 +46,14 @@ class MaintenancePage extends ConsumerWidget {
     return ManePage(
       title: l10n.maintenance,
       subtitle: l10n.maintenanceSubtitle,
-      floatingAction: ManeAddButton(
-        tooltip: l10n.addGadget,
-        onTap: () => showEntryEditor(
-          context,
-          initialDate: today,
-          initialContextId: contextId,
-          initialMaintenanceDays: 30,
-          spaces: ref.watch(spacesProvider).value ?? fallbackSpaces,
-        ),
-      ),
+      floatingAction: ManeAddButton(tooltip: l10n.addGadget, onTap: () => _addGadget(context, ref, today)),
       child: tasks.isEmpty
           ? AppEmptyState(
               icon: Icons.build_circle_outlined,
               title: l10n.maintenanceNone,
               message: l10n.maintenanceSubtitle,
               action: FilledButton.tonalIcon(
-                onPressed: () => showEntryEditor(
-                  context,
-                  initialDate: today,
-                  initialContextId: contextId,
-                  initialMaintenanceDays: 30,
-                  spaces: ref.watch(spacesProvider).value ?? fallbackSpaces,
-                ),
+                onPressed: () => _addGadget(context, ref, today),
                 icon: const Icon(Icons.add, size: 18),
                 label: Text(l10n.addGadget),
               ),
@@ -113,6 +99,19 @@ class MaintenancePage extends ConsumerWidget {
                 ),
               ],
             ),
+    );
+  }
+
+  Future<void> _addGadget(BuildContext context, WidgetRef ref, LocalDate today) async {
+    final homeId = await chooseHomeScope(context, ref, contextId: contextId);
+    if (homeId == null || !context.mounted) return;
+    await showEntryEditor(
+      context,
+      initialDate: today,
+      initialSpaceId: 'home',
+      initialUnitId: homeId,
+      initialMaintenanceDays: 30,
+      spaces: ref.watch(spacesProvider).value ?? fallbackSpaces,
     );
   }
 }

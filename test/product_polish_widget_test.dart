@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mane/core/i18n/l10n.dart';
 import 'package:mane/features/calendar/widgets/day_timeline.dart';
+import 'package:mane/features/spaces/pages/context_detail_page.dart';
 import 'package:mane/features/settings/pages/settings_page.dart';
 import 'package:mane/features/stats/pages/stats_page.dart';
 import 'package:mane/models/app_settings.dart';
@@ -60,6 +61,39 @@ void main() {
       home: Scaffold(body: child),
     ),
   );
+
+  testWidgets('personal detail does not show household sections', (tester) async {
+    await database.saveContext(
+      const PlannerContext(id: 'mom', spaceId: 'personal', name: 'Mom', colorValue: 0xFFB07D5C),
+    );
+
+    await tester.pumpWidget(host(const ContextDetailPage(spaceId: 'personal', contextId: 'mom')));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(find.text('HABITS'), 300, scrollable: find.byType(Scrollable).last);
+    expect(find.text('HABITS'), findsOneWidget);
+    expect(find.text('Home inventory'), findsNothing);
+    expect(find.text('Shopping list'), findsNothing);
+    expect(find.text('Gadgets'), findsNothing);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('work detail offers adding a project', (tester) async {
+    await database.saveContext(
+      const PlannerContext(id: 'cafe', spaceId: 'work', name: 'Cafe', colorValue: 0xFF2F7ED8),
+    );
+
+    await tester.pumpWidget(host(const ContextDetailPage(spaceId: 'work', contextId: 'cafe')));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(find.text('Add project'), 300, scrollable: find.byType(Scrollable).last);
+    expect(find.text('Add project'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
 
   testWidgets('Today switches between the friendly list and the timeline', (tester) async {
     await tester.pumpWidget(host(const TodayScreen()));

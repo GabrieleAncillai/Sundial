@@ -74,7 +74,8 @@ class PlannerRepository {
 
   Future<void> moveShoppingItem(String id, int delta) => _database.moveShoppingItem(id, delta);
 
-  Future<void> clearCheckedShopping() => _database.clearCheckedShopping();
+  Future<void> clearCheckedShopping({String? contextId}) =>
+      _database.clearCheckedShopping(contextId: contextId);
 
   Future<void> adjustHomeQuantity(String id, double delta, {String note = ''}) =>
       _database.adjustHomeQuantity(id, delta, note: note);
@@ -177,7 +178,13 @@ class PlannerRepository {
 
   Future<void> saveEntry(Entry entry) => _database.saveEntry(entry);
 
+  /// Importers replace their own read-only rows. User-facing writes use
+  /// [saveEntry] and are rejected for those rows.
+  Future<void> saveImportedEntry(Entry entry) => _database.saveEntry(entry, allowReadOnly: true);
+
   Future<Entry?> readEntry(String id) => _database.readEntry(id);
+
+  Future<Map<String, Entry>> readEntriesByIds(Set<String> ids) => _database.readEntriesByIds(ids);
 
   Future<List<Reminder>> readRemindersForEntry(String entryId) => _database.readRemindersForEntry(entryId);
 
@@ -190,6 +197,34 @@ class PlannerRepository {
 
   Future<void> setOccurrenceCompleted(String entryId, LocalDate date, bool completed) =>
       _database.setOccurrenceCompleted(entryId, date, completed: completed);
+
+  /// One completion path for every task surface.
+  ///
+  /// Recurring tasks are completed per occurrence, maintenance tasks advance
+  /// their next date, and a running clock session is closed when the task is
+  /// marked done. Read-only imports are refused by the database layer.
+  Future<void> setCompletion(EntryOccurrence occurrence, {required bool completed, DateTime? at}) async {
+    final entry = occurrence.entry;
+    if (entry.readOnly) throw StateError('Imported entries are read-only');
+    if (completed) {
+      if (entry.repeatAfterCompletionDays != null) {
+        await _database.completeMaintenanceEntry(entry.id, occurrence.date);
+        return;
+      }
+      if (entry.recurrence != null) {
+        await _database.setOccurrenceCompleted(entry.id, occurrence.date, completed: true);
+        return;
+      }
+      await _database.setEntryStatus(entry.id, EntryStatus.done);
+      return;
+    }
+
+    if (entry.recurrence != null) {
+      await _database.setOccurrenceCompleted(entry.id, occurrence.date, completed: false);
+    } else {
+      await _database.setEntryStatus(entry.id, EntryStatus.open);
+    }
+  }
 
   Future<void> deleteEntry(String id) => _database.softDeleteEntry(id);
 
