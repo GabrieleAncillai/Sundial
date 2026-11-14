@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart';
+import 'package:mane_core/mane_core.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -445,6 +446,11 @@ class BackupService {
     final homePurchases = _maps(payload, 'homePurchases');
     final settings = _map(payload, 'settings');
     final media = _map(payload, 'media');
+
+    // Semantic validation runs before any write. Enum names and recurrence
+    // JSON are read with `byName`/`fromJson` later, so a crafted or stale value
+    // must be rejected here instead of corrupting a readable database.
+    _validateEntries(entries);
     final mediaTargets = <String, String>{};
     final mediaBytes = <String, Uint8List>{};
     var mediaIndex = 0;
@@ -475,6 +481,10 @@ class BackupService {
         await File(entry.key).writeAsBytes(entry.value, flush: true);
       }
     }
+
+    // Media the outgoing plan referenced is the only set the restore may
+    // remove. A backup without media must never wipe unrelated local files.
+    final previousMedia = await _referencedMediaPaths();
 
     await _database.transaction(() async {
       await _database.delete(_database.habitCompletionRecords).go();
@@ -858,21 +868,77 @@ class BackupService {
       }
     });
 
-    // The restore replaced the plan, so media carried by the old one is no
-    // longer reachable. Best effort: a failure here only leaves unused files.
-    await _pruneMedia(mediaBytes.keys.toSet());
+    // The restore replaced the plan, so media that belonged to the old one is
+    // no longer reachable. Best effort: a failure here only leaves unused files.
+    await _pruneMedia(previousMedia, keep: mediaBytes.keys.toSet());
   }
 
-  Future<void> _pruneMedia(Set<String> keep) async {
+  Future<Set<String>> _referencedMediaPaths() async {
+    final paths = <String>{};
+    for (final row in await _database.select(_database.contextRecords).get()) {
+      final path = row.imagePath;
+      if (path != null && path.isNotEmpty) paths.add(path);
+    }
+    for (final row in await _database.select(_database.projectRecords).get()) {
+      final path = row.imagePath;
+      if (path != null && path.isNotEmpty) paths.add(path);
+    }
+    return paths;
+  }
+
+  Future<void> _pruneMedia(Set<String> previous, {required Set<String> keep}) async {
     try {
       final directory = await _mediaDir();
-      if (!directory.existsSync()) return;
-      await for (final entity in directory.list(followLinks: false)) {
-        if (entity is! File || keep.contains(entity.path)) continue;
-        await entity.delete();
+      final root = p.normalize(directory.absolute.path);
+      for (final path in previous) {
+        if (keep.contains(path)) continue;
+        final normalized = p.normalize(File(path).absolute.path);
+        // Never delete outside the managed media folder.
+        if (!p.isWithin(root, normalized)) continue;
+        final file = File(normalized);
+        if (await file.exists()) await file.delete();
       }
     } catch (_) {
       // Orphaned media is harmless; the restore already succeeded.
+    }
+  }
+
+  static void _validateEntries(List<Map<String, Object?>> entries) {
+    for (final row in entries) {
+      for (final field in const ['id', 'spaceId', 'title']) {
+        final value = _optionalString(row, field);
+        if (value == null || value.isEmpty) {
+          throw BackupFormatException('entry is missing $field');
+        }
+      }
+      final kind = row['kind'];
+      if (kind is! String || !EntryKind.values.any((value) => value.name == kind)) {
+        throw BackupFormatException('entry has an unknown kind');
+      }
+      final status = row['status'];
+      if (status is! String || !EntryStatus.values.any((value) => value.name == status)) {
+        throw BackupFormatException('entry has an unknown status');
+      }
+      final priority = row['priority'];
+      if (priority != null &&
+          (priority is! String || !EntryPriority.values.any((value) => value.name == priority))) {
+        throw BackupFormatException('entry has an unknown priority');
+      }
+      final zone = _optionalString(row, 'timeZone');
+      if (zone != null && zone.isNotEmpty && !isKnownTimeZone(zone)) {
+        throw BackupFormatException('entry has an unknown timezone');
+      }
+      final rawRecurrence = row['recurrenceJson'];
+      if (rawRecurrence != null) {
+        if (rawRecurrence is! String) throw BackupFormatException('entry recurrence is invalid');
+        try {
+          final decoded = jsonDecode(rawRecurrence);
+          if (decoded is! Map) throw const FormatException('not an object');
+          RecurrenceRule.fromJson(Map<String, Object?>.from(decoded));
+        } on Object {
+          throw BackupFormatException('entry recurrence is invalid');
+        }
+      }
     }
   }
 

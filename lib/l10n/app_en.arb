@@ -639,6 +639,14 @@
   "hostHint": "192.168.1.20",
   "mcpEndpoint": "Local MCP endpoint",
   "mcpEndpointSubtitle": "Read-only by default, loopback only, off unless enabled.",
+  "mcpStartFailed": "Could not start the MCP server: {error}",
+  "@mcpStartFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "mcpWriteTools": "Allow write tools",
   "mcpWriteToolsSubtitle": "Lets the local agent create and complete entries.",
   "mcpToken": "Access token",

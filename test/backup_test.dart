@@ -255,8 +255,14 @@ void main() {
     addTearDown(() => restoreDir.delete(recursive: true));
     // Media from the plan being replaced must not survive the import.
     final stale = File('${restoreDir.path}/old-sticker.png')..writeAsBytesSync([9, 9]);
+    // A file the plan never referenced is not ours to delete.
+    final orphan = File('${restoreDir.path}/orphan.png')..writeAsBytesSync([8, 8]);
     final target = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
     addTearDown(target.close);
+    await target.seedDefaults();
+    await target.saveContext(
+      PlannerContext(id: 'old', spaceId: 'work', name: 'Old', colorValue: 0xFF000000, imagePath: stale.path),
+    );
     await BackupService(target, mediaDirectory: restoreDir).importJson(exported);
 
     final restored = (await target.watchContexts().first).single;
@@ -264,7 +270,7 @@ void main() {
     expect(restored.imagePath, startsWith(restoreDir.path));
     expect(File(restored.imagePath!).readAsBytesSync(), [1, 2, 3, 4]);
     expect(stale.existsSync(), isFalse);
-    expect(restoreDir.listSync().whereType<File>(), hasLength(1));
+    expect(orphan.existsSync(), isTrue);
   });
 
   test('restores over a populated database', () async {
@@ -412,6 +418,42 @@ void main() {
         .watchEntriesBetween(LocalDate.parse('2026-11-09'), LocalDate.parse('2026-11-09'), 'Europe/Madrid')
         .first;
     expect(loaded.single.entry.id, 'keep');
+  });
+
+  test('rejects unknown enum names and recurrence JSON before writing', () async {
+    await source.saveEntry(
+      Entry(
+        id: 'keep',
+        spaceId: 'home',
+        title: 'Keep me',
+        date: LocalDate.parse('2026-11-09'),
+        allDay: true,
+        createdAt: DateTime.utc(2026, 11, 1),
+        updatedAt: DateTime.utc(2026, 11, 1),
+      ),
+    );
+
+    for (final mutate in <void Function(Map<String, Object?>)>[
+      (row) => row['priority'] = 'urgent',
+      (row) => row['kind'] = 'chore',
+      (row) => row['status'] = 'pending',
+      (row) => row['timeZone'] = 'Mars/Olympus',
+      (row) => row['recurrenceJson'] = '{"frequency":"hourly"}',
+    ]) {
+      final payload = jsonDecode(await BackupService(source).exportJson()) as Map<String, Object?>;
+      final entries = payload['entries']! as List<Object?>;
+      mutate(entries.single! as Map<String, Object?>);
+
+      await expectLater(
+        BackupService(source).importJson(jsonEncode(payload)),
+        throwsA(isA<BackupFormatException>()),
+      );
+      final loaded = await source
+          .watchEntriesBetween(LocalDate.parse('2026-11-09'), LocalDate.parse('2026-11-09'), 'Europe/Madrid')
+          .first;
+      expect(loaded.single.entry.id, 'keep');
+      expect(loaded.single.entry.priority, EntryPriority.none);
+    }
   });
 
   test('upgrades a v3 payload and leaves device-local settings behind', () async {

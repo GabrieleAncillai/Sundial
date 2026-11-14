@@ -11,6 +11,7 @@ import 'package:mane/features/spaces/pages/context_detail_page.dart';
 import 'package:mane/features/settings/pages/settings_page.dart';
 import 'package:mane/features/stats/pages/stats_page.dart';
 import 'package:mane/models/app_settings.dart';
+import 'package:mane/models/shift_checklist.dart';
 import 'package:mane/screens/today_screen.dart';
 import 'package:mane/services/app_database.dart';
 import 'package:mane/state/providers.dart';
@@ -106,6 +107,36 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(DayTimeline), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('Today list exposes the shift checklist', (tester) async {
+    await database.saveShiftPattern(
+      ShiftPattern(
+        id: 'shift',
+        spaceId: 'work',
+        name: 'Evening',
+        timeZone: 'Europe/Madrid',
+        cycleDays: 7,
+        anchorDate: today,
+        slots: const [ShiftSlot(dayIndex: 0, startMinute: 15 * 60, endMinute: 23 * 60, label: 'Floor')],
+      ),
+    );
+    await database.saveShiftChecklistItems('shift', const [
+      ShiftChecklistItem(id: 'item', patternId: 'shift', label: 'Count the till'),
+    ]);
+
+    await tester.pumpWidget(host(const TodayScreen()));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Count the till'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Count the till'), findsOneWidget);
+
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(seconds: 1));
   });

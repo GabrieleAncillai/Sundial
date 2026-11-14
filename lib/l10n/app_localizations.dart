@@ -1880,6 +1880,12 @@ abstract class AppLocalizations {
   /// **'Read-only by default, loopback only, off unless enabled.'**
   String get mcpEndpointSubtitle;
 
+  /// No description provided for @mcpStartFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start the MCP server: {error}'**
+  String mcpStartFailed(String error);
+
   /// No description provided for @mcpWriteTools.
   ///
   /// In en, this message translates to:

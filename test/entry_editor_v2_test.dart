@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:ui' as ui;
 
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -132,6 +133,66 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
     });
   }
+
+  testWidgets('editing one occurrence writes an override, not the series', (tester) async {
+    tester.view.physicalSize = const ui.Size(800, 1500);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final series = Entry(
+      id: 'watering',
+      spaceId: 'personal',
+      title: 'Water plants',
+      date: today,
+      allDay: true,
+      recurrence: const RecurrenceRule(frequency: RecurrenceFrequency.daily),
+      createdAt: now,
+      updatedAt: now,
+    );
+    await database.saveEntry(series);
+    final occurrence = expandEntries(
+      entries: [series],
+      start: today.addDays(1),
+      end: today.addDays(1),
+      viewerTimeZone: 'Europe/Madrid',
+    ).single;
+
+    await tester.pumpWidget(
+      host(
+        Builder(
+          builder: (context) => Center(
+            child: TextButton(
+              onPressed: () => showEntryEditor(
+                context,
+                entry: occurrence.entry,
+                initialDate: occurrence.date,
+                spaces: fallbackSpaces,
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+        const AppSettings(),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    await scrollTo(tester, find.text('Only this occurrence'));
+    await tester.tap(find.widgetWithText(SwitchListTile, 'Only this occurrence'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, 'Water the ferns');
+    await scrollTo(tester, find.text('Save changes'));
+    await tester.tap(find.text('Save changes'));
+    await tester.pumpAndSettle();
+
+    final saved = await database.readEntry('watering');
+    expect(saved!.title, 'Water plants');
+    final override = saved.recurrence!.overrides.singleWhere((item) => item.date == occurrence.date);
+    expect(override.title, 'Water the ferns');
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
 
   testWidgets('a read-only entry opens without edit or delete controls', (tester) async {
     final entry = Entry(

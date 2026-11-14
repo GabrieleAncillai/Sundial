@@ -167,6 +167,18 @@ void main() {
     expect(server.boundPort, freePort);
   });
 
+  test('a busy port reports an error instead of pretending to run', () async {
+    final blocker = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+    addTearDown(blocker.close);
+
+    await expectLater(
+      server.start(identity: identity, writesEnabled: false, port: blocker.port),
+      throwsA(anything),
+    );
+    expect(server.lastError, isNotNull);
+    expect(server.boundPort, 0);
+  });
+
   test('returns a session id and accepts streaming responses', () async {
     final (_, initialized, headers) = await postFull({
       'jsonrpc': '2.0',
@@ -474,6 +486,63 @@ void main() {
     expect(session['title'], 'Renew passport');
     expect(session['durationMinutes'], 30);
     expect(session['endedAt'], '2026-11-09T10:30:00.000Z');
+  });
+
+  test('plan.update routes completion through the lifecycle', () async {
+    final today = LocalDate.parse('2026-11-09');
+    await database.saveEntry(
+      Entry(
+        id: 'water',
+        spaceId: 'personal',
+        title: 'Water',
+        date: today,
+        allDay: true,
+        recurrence: const RecurrenceRule(frequency: RecurrenceFrequency.daily),
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    await database.saveEntry(
+      Entry(
+        id: 'pump',
+        spaceId: 'home',
+        title: 'Pump',
+        date: today,
+        allDay: true,
+        repeatAfterCompletionDays: 30,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    await server.start(identity: identity, writesEnabled: true);
+
+    final (_, recurringBody) = await post({
+      'jsonrpc': '2.0',
+      'id': 60,
+      'method': 'tools/call',
+      'params': {
+        'name': 'plan.update',
+        'arguments': {'entryId': 'water', 'status': 'done', 'date': '2026-11-10'},
+      },
+    });
+    expect((recurringBody['result'] as Map)['isError'], isFalse);
+    final series = await database.readEntry('water');
+    expect(series!.status, EntryStatus.open, reason: 'only the occurrence completes');
+    final occurrences = await database.watchEntriesBetween(today, today.addDays(1), 'Europe/Madrid').first;
+    expect(occurrences.singleWhere((item) => item.date == LocalDate.parse('2026-11-10')).completed, isTrue);
+
+    final (_, maintenanceBody) = await post({
+      'jsonrpc': '2.0',
+      'id': 61,
+      'method': 'tools/call',
+      'params': {
+        'name': 'plan.update',
+        'arguments': {'entryId': 'pump', 'status': 'done'},
+      },
+    });
+    expect((maintenanceBody['result'] as Map)['isError'], isFalse);
+    final pump = await database.readEntry('pump');
+    expect(pump!.date, today.addDays(30));
   });
 
   test('writes update, uncomplete, delete and shopping lines when enabled', () async {

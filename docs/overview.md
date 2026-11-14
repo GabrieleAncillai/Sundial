@@ -50,9 +50,10 @@ should follow with little extra work.
 v0.9 shipped, then `feat/product-polish` rebuilt the product surface and
 `feat/compliance-v2` repaired the data-integrity defects found in that surface.
 The row-by-row status is in [compliance-matrix.md](compliance-matrix.md). The
-2026-11-09 Huawei device pass closed install,
-notifications on API 29, timezone, LAN, MCP, backup/CSV and app lock; the widget,
-OEM battery, accessibility/contrast audit and signed release remain in
+2026-11-09 Huawei device pass closed install, notifications on API 29, timezone,
+LAN, MCP and backup/CSV; the app-lock feature was removed from the product, so
+that part of the old note no longer applies. The widget, OEM battery,
+accessibility/contrast audit and signed release remain in
 [completion-plan.md](completion-plan.md). Reboot rescheduling is blocked by
 EMUI. See [device-run-2026-11-09.md](device-run-2026-11-09.md). Today, Week
 and Calendar tabs (with a 24-hour day timeline), tags, flexible shifts with

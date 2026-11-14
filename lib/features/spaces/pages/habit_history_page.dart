@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:mane_core/mane_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
@@ -94,8 +93,7 @@ class _WeekRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final label = DateFormat.MMMd(locale).format(start.toDateTime());
+    final label = formatShortDate(context, start.toDateTime());
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
       child: Row(

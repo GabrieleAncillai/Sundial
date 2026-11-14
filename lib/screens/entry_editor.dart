@@ -135,6 +135,8 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
   late Set<int> _reminderOffsets;
   late Set<int> _reminderTimes;
   bool _onlyThisOccurrence = false;
+  Entry? _series;
+  RecurrenceOverride? _initialOverride;
   bool _remindersLoaded = true;
   bool _remindersLoadFailed = false;
   List<Reminder> _disabledReminders = const <Reminder>[];
@@ -167,7 +169,8 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     _priority = entry?.priority ?? EntryPriority.none;
     _contextId = entry?.contextId ?? widget.initialUnitId ?? widget.initialContextId;
     _projectId = entry?.projectId ?? widget.initialProjectId;
-    _date = entry?.date ?? widget.initialDate ?? localDateAt(ref.read(nowProvider), _deviceTimeZone);
+    final occurrence = entry != null && entry.recurrence != null && widget.initialDate != null;
+    _date = occurrence ? widget.initialDate! : (entry?.date ?? widget.initialDate ?? _today());
     _endDate = entry?.endDate;
     _allDay = entry?.allDay ?? false;
     // Never invent times for an existing entry: a clock-in, deadline or anytime
@@ -186,6 +189,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     }
     _tagIds = {...?entry?.tagIds};
     _skipDates = {...?entry?.recurrence?.skipDates};
+    if (entry != null && entry.recurrence != null) _loadSeries(entry.id);
     if (entry == null) {
       _reminderOffsets = {...ref.read(settingsProvider).defaultReminderOffsets};
       _reminderTimes = <int>{};
@@ -195,6 +199,55 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
       _remindersLoaded = false;
       _loadReminders(entry.id);
     }
+  }
+
+  LocalDate _today() => localDateAt(ref.read(nowProvider), _deviceTimeZone);
+
+  /// Loads the stored series for a recurring occurrence.
+  ///
+  /// Cards open the editor with the expanded occurrence, whose title and notes
+  /// already include the override. Saving that copy back would write the
+  /// override into the whole series, so edits are always based on the stored
+  /// series and scoped to one occurrence explicitly.
+  Future<void> _loadSeries(String entryId) async {
+    final series = await ref.read(repositoryProvider).readEntry(entryId);
+    if (!mounted || series == null || series.recurrence == null) return;
+    final date = widget.initialDate;
+    RecurrenceOverride? override;
+    if (date != null) {
+      for (final candidate in series.recurrence!.overrides) {
+        if (candidate.date == date) {
+          override = candidate;
+          break;
+        }
+      }
+    }
+    setState(() {
+      _series = series;
+      _initialOverride = override;
+      _recurrence = series.recurrence;
+      _skipDates = {...?series.recurrence?.skipDates};
+      _date = override?.effectiveDate ?? date ?? series.date ?? _date;
+      _startMinute = override?.startMinute ?? series.startMinute;
+      _endMinute = override?.endMinute ?? series.endMinute;
+      _allDay = override?.allDay ?? series.allDay;
+      _titleController.text = override?.title ?? series.title;
+      _notesController.text = override?.notes ?? series.notes;
+    });
+  }
+
+  void _setOnlyThisOccurrence(bool value) {
+    final series = _series;
+    if (series == null) {
+      setState(() => _onlyThisOccurrence = value);
+      return;
+    }
+    final override = _initialOverride;
+    setState(() {
+      _onlyThisOccurrence = value;
+      _titleController.text = value ? (override?.title ?? series.title) : series.title;
+      _notesController.text = value ? (override?.notes ?? series.notes) : series.notes;
+    });
   }
 
   Future<void> _loadReminders(String entryId) async {
@@ -504,7 +557,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                   title: Text(l10n.onlyThisOccurrence),
                   subtitle: Text(l10n.onlyThisOccurrenceSubtitle),
                   value: _onlyThisOccurrence,
-                  onChanged: (value) => setState(() => _onlyThisOccurrence = value),
+                  onChanged: _setOnlyThisOccurrence,
                 ),
                 Align(
                   alignment: Alignment.centerLeft,
@@ -660,6 +713,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     if (form == null || !form.validate()) return;
     final existing = widget.entry;
     if (existing?.readOnly == true) return;
+    final base = _series ?? existing;
     final scheduled = !_allDay && _startMinute != null && _endMinute != null;
     final endDate = (scheduled || _allDay) && _endDate != null && _endDate!.isAfter(_date) ? _endDate : null;
     if (scheduled && endDate == null && _endMinute! <= _startMinute!) {
@@ -667,8 +721,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.endAfterStartError)));
       return;
     }
-    final singleOccurrence =
-        _onlyThisOccurrence && existing?.recurrence != null && widget.initialDate != null;
+    final singleOccurrence = _onlyThisOccurrence && base?.recurrence != null && widget.initialDate != null;
 
     setState(() => _saving = true);
     final now = DateTime.now();
@@ -678,23 +731,29 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     if (recurrence != null) recurrence = recurrence.copyWith(skipDates: _skipDates);
     if (singleOccurrence) {
       final original = widget.initialDate!;
+      final series = base!;
       final overrides = [
-        ...existing!.recurrence!.overrides.where((override) => override.date != original),
+        ...series.recurrence!.overrides.where((override) => override.date != original),
         if (!_skipDates.contains(original))
           RecurrenceOverride(
             date: original,
             dateOverride: _date == original ? null : _date,
             startMinute: _allDay ? null : _startMinute,
             endMinute: _allDay ? null : _endMinute,
-            allDay: _allDay == existing.allDay ? null : _allDay,
-            title: title == existing.title ? null : title,
-            notes: notes == existing.notes ? null : notes,
+            allDay: _allDay == series.allDay ? null : _allDay,
+            title: title == series.title ? null : title,
+            notes: notes == series.notes ? null : notes,
           ),
       ];
-      recurrence = existing.recurrence!.copyWith(skipDates: _skipDates, overrides: overrides);
+      recurrence = series.recurrence!.copyWith(skipDates: _skipDates, overrides: overrides);
     }
 
-    final entry = existing == null
+    // Editing an occurrence must not move the series anchor or rewrite its
+    // times. Timing changes stay scoped to the occurrence.
+    final fromOccurrence = _series != null && widget.initialDate != null;
+    final writeSeriesTiming = !fromOccurrence || _initialOverride == null;
+
+    final entry = base == null
         ? Entry(
             id: const Uuid().v4(),
             spaceId: _spaceId,
@@ -716,41 +775,43 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
             createdAt: now,
             updatedAt: now,
           )
-        : existing.copyWith(
+        : base.copyWith(
             spaceId: _spaceId,
-            title: singleOccurrence ? existing.title : title,
-            notes: singleOccurrence ? existing.notes : notes,
+            title: singleOccurrence ? base.title : title,
+            notes: singleOccurrence ? base.notes : notes,
             kind: _kind,
-            date: singleOccurrence ? existing.date : _date,
-            endDate: singleOccurrence ? existing.endDate : endDate,
-            startMinute: singleOccurrence ? existing.startMinute : (_allDay ? null : _startMinute),
-            endMinute: singleOccurrence ? existing.endMinute : (_allDay ? null : _endMinute),
-            timeZone: singleOccurrence
-                ? existing.timeZone
-                : (_allDay || (_startMinute == null && _endMinute == null) ? null : _timeZone),
-            contextId: singleOccurrence ? existing.contextId : _contextId,
-            projectId: singleOccurrence ? existing.projectId : _projectId,
+            contextId: singleOccurrence ? base.contextId : _contextId,
+            projectId: singleOccurrence ? base.projectId : _projectId,
             priority: _priority,
             tagIds: _tagIds,
-            allDay: singleOccurrence ? existing.allDay : _allDay,
             recurrence: recurrence,
             repeatAfterCompletionDays: _repeatAfterCompletion ? (_repeatDays <= 0 ? 1 : _repeatDays) : null,
-            updatedAt: now,
+            updatedAt: now.toUtc(),
+          );
+    final resolved = singleOccurrence || !writeSeriesTiming
+        ? entry
+        : entry.copyWith(
+            date: _date,
+            endDate: endDate,
+            startMinute: _allDay ? null : _startMinute,
+            endMinute: _allDay ? null : _endMinute,
+            timeZone: _allDay || (_startMinute == null && _endMinute == null) ? null : _timeZone,
+            allDay: _allDay,
           );
 
     try {
       final repository = ref.read(repositoryProvider);
-      await repository.saveEntry(entry);
+      await repository.saveEntry(resolved);
       // A failed reminder read must not silently erase reminders on save.
       if (!_remindersLoadFailed) {
-        await repository.saveRemindersForEntry(entry.id, [
+        await repository.saveRemindersForEntry(resolved.id, [
           ..._disabledReminders,
           for (final offset in _reminderOffsets)
-            Reminder(id: Reminder.idFor(entry.id, offset), entryId: entry.id, offsetMinutes: offset),
+            Reminder(id: Reminder.idFor(resolved.id, offset), entryId: resolved.id, offsetMinutes: offset),
           for (final minute in _reminderTimes)
             Reminder(
-              id: Reminder.timeIdFor(entry.id, minute),
-              entryId: entry.id,
+              id: Reminder.timeIdFor(resolved.id, minute),
+              entryId: resolved.id,
               offsetMinutes: 0,
               timeMinute: minute,
             ),

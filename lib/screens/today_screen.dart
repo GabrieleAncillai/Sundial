@@ -9,6 +9,7 @@ import '../core/widgets/ui_kit.dart';
 import '../features/calendar/widgets/day_timeline.dart';
 import '../features/entries/widgets/task_card.dart';
 import '../features/sleep/sleep_window_card.dart';
+import '../features/shifts/widgets/shift_checklist_view.dart';
 import '../state/providers.dart';
 import '../state/settings_controller.dart';
 import '../theme/app_colors.dart';
@@ -97,7 +98,18 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
           if (shifts.isNotEmpty) ...[
             const SizedBox(height: 14),
             SectionLabel(l10n.shiftsSection),
-            for (final item in shifts) ShiftTile(occurrence: item),
+            for (final item in shifts) ...[
+              ShiftTile(occurrence: item),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 2, 0, 10),
+                child: ShiftChecklistSection(
+                  patternId: item.pattern.id,
+                  date: item.date,
+                  slotKey: item.slotKey,
+                  dayIndex: item.pattern.cycleIndexFor(item.date),
+                ),
+              ),
+            ],
           ],
           const SizedBox(height: 12),
           if (entriesState.hasError)

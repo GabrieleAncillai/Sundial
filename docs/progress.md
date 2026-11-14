@@ -59,12 +59,14 @@ compliance wave fixed the data-integrity defects found by the audit:
   rebind the running endpoint and reject the old token.
 - Completion has one repository path, stops running sessions, scopes recurring
   occurrences and advances maintenance dates.
-- Backups accept schema 3–10, embed media as base64 and restore over a populated
-  database. Delete-all removes media and automatic backups.
+- Backups accept schema 3–12, embed media as base64 and restore over a populated
+  database. Delete-all removes media and automatic backups in a foreign-key-safe
+  order.
 - LAN binds a private IPv4 interface and the unauthenticated info endpoint no
   longer leaks username/device ID.
 - Per-day checklists refresh on date changes; cycle changes clamp stale day
-  indexes. Plan uses the 900 px shell breakpoint and aligns the all-day gutter.
+  indexes. Plan uses the 1024 px week-grid breakpoint and aligns the all-day
+  gutter. Today's list renders the shift checklist, not only the timeline.
 - Stats resolves tracked sessions outside the selected occurrence range, so
   totals and breakdowns reconcile.
 - Context/project deletion detaches tasks and hides owned rows; shifts outside
@@ -82,11 +84,16 @@ compliance wave fixed the data-integrity defects found by the audit:
 - Reports export a summary CSV as well as the detailed one, both reconciling
   with the tracked total.
 - Delete-all reports a partial wipe instead of claiming success; backup media is
-  written before the database commit and orphaned media is pruned on import.
-- Draft-v9 gadgets migrate to Home maintenance entries; mDNS advertises only the
-  pinned certificate fingerprint.
+  written before the database commit and only media the replaced plan referenced
+  is pruned. Import validates enum names, timezones and recurrence JSON before
+  writing.
+- Draft-v9 gadgets migrate to Home maintenance entries, the v10 repair also runs
+  for files a broken v1.2 build already stamped as v10, and mDNS advertises the
+  certificate fingerprint plus the device name, never the username or device ID.
+- Editing a recurring occurrence writes an override instead of the series, and
+  Plan drag/resize keeps an existing override's text.
 
-Validation: analyze clean, 208 app tests, 95 core tests, Linux debug and Android
+Validation: analyze clean, 215 app tests, 95 core tests, Linux debug and Android
 debug APK all pass. `docs/compliance-matrix.md` records the row-by-row status,
 including what is still open.
 

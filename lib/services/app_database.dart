@@ -504,7 +504,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 7) await _migrateToV7(m);
       if (from < 8) await _migrateToV8(m);
       if (from < 9) await _migrateToV9(m);
-      if (from < 10) await _migrateToV10(m);
+      // A v1.2 build already reported v10 while leaving the draft columns and
+      // gadgets behind, so the repair must also run for v10 and v11 files.
+      if (from < 12) await _migrateToV10(m);
       if (from < 11) await _migrateToV11(m);
       if (from < 12) await _migrateToV12(m);
     },
@@ -1685,8 +1687,10 @@ class AppDatabase extends _$AppDatabase {
       await delete(shiftSlotRecords).go();
       await delete(shiftExceptionRecords).go();
       await delete(shiftPatternRecords).go();
-      await delete(shoppingItemRecords).go();
+      // Purchases reference both the shopping line they came from and the
+      // inventory item, so they must go first.
       await delete(homePurchaseRecords).go();
+      await delete(shoppingItemRecords).go();
       await delete(homeItemRecords).go();
       await delete(projectRecords).go();
       await delete(habitRecords).go();

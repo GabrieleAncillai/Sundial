@@ -391,8 +391,9 @@ class _SettingLink {
   final SettingsDetailSection? section;
   final _SettingRoute route;
 
-  bool matches(String query) =>
-      title.toLowerCase().contains(query) ||
-      subtitle.toLowerCase().contains(query) ||
-      keywords.toLowerCase().contains(query);
+  bool matches(String query) {
+    final haystack = '$title $subtitle $keywords'.toLowerCase();
+    final tokens = query.toLowerCase().split(RegExp(r'\s+')).where((token) => token.isNotEmpty);
+    return tokens.every(haystack.contains);
+  }
 }

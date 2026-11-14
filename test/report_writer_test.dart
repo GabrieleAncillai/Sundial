@@ -121,4 +121,32 @@ void main() {
 
     expect(ReportWriter.csv(long), contains(',27:05,'));
   });
+
+  test('detailed CSV uses the report language', () {
+    final spanish = ReportData(
+      title: 'Informe',
+      rangeLabel: '2026-11-01 \u2013 2026-11-07',
+      generatedAt: DateTime(2026, 11, 12),
+      totalTracked: const Duration(hours: 1),
+      completedTasks: 0,
+      openTasks: 0,
+      rows: const [],
+      details: [
+        ReportDetail(
+          date: DateTime(2026, 11, 2),
+          start: DateTime(2026, 11, 2, 9),
+          end: DateTime(2026, 11, 2, 10),
+          duration: const Duration(hours: 1),
+          title: 'Revisión',
+          space: 'Trabajo',
+        ),
+      ],
+      languageCode: 'es',
+    );
+
+    expect(
+      ReportWriter.csv(spanish),
+      startsWith('Fecha,Inicio,Fin,Duración,Espacio,Contexto,Proyecto,Tarea\r\n'),
+    );
+  });
 }

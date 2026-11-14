@@ -4,6 +4,11 @@ Status: v0.9, audited 2026-11-09. This audit covers the project rules in
 `AGENTS.md`, `CONTRIBUTING.md`, the public docs and the private scenario brief.
 The private brief is reviewed locally; its details are not copied here.
 
+Historical note: the app lock described below was removed from the product in
+`feat/product-polish`. `feat/compliance-v2` also removed its settings keys and
+keeps only the backup filter that strips legacy lock secrets. The app-lock lines
+in this audit describe the v0.9 state, not the current product.
+
 A real-device pass on 2026-11-09 fixed an app-lock bypass above pushed routes,
 two notification-action/snooze defects and a CSV import duplication bug. The
 widget and OEM battery checks are still open; reboot rescheduling is blocked by

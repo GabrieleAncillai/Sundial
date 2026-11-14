@@ -168,7 +168,17 @@ abstract final class ReportWriter {
 
   /// RFC 4180 CSV with CRLF record separators and no BOM.
   static String csv(ReportData data) {
-    final buffer = StringBuffer('Date,Start,End,Duration,Space,Context,Project,Task\r\n');
+    final headers = [
+      _label(data, 'Date', 'Fecha'),
+      _label(data, 'Start', 'Inicio'),
+      _label(data, 'End', 'Fin'),
+      _label(data, 'Duration', 'Duración'),
+      _label(data, 'Space', 'Espacio'),
+      _label(data, 'Context', 'Contexto'),
+      _label(data, 'Project', 'Proyecto'),
+      _label(data, 'Task', 'Tarea'),
+    ];
+    final buffer = StringBuffer('${headers.map(_csvCell).join(',')}\r\n');
     for (final detail in data.details) {
       buffer
         ..write(_csvCell(_formatDate(detail.date, data.datePattern, data.languageCode)))
@@ -274,7 +284,9 @@ abstract final class ReportWriter {
         return byTracked != 0 ? byTracked : a.label.compareTo(b.label);
       });
     if (rows.isEmpty) {
-      return _empty('No tracked time in this range.');
+      return _empty(
+        _label(data, 'No tracked time in this range.', 'No hay tiempo registrado en este rango.'),
+      );
     }
 
     final total = data.totalTracked > Duration.zero ? data.totalTracked : _sumTracked(rows);
@@ -293,17 +305,17 @@ abstract final class ReportWriter {
           repeat: true,
           decoration: pw.BoxDecoration(color: _headerFill),
           children: [
-            _heading('Group'),
-            _heading('Tracked', alignRight: true),
-            _heading('Share', alignRight: true),
-            _heading('Completed', alignRight: true),
+            _heading(_label(data, 'Group', 'Grupo')),
+            _heading(_label(data, 'Tracked', 'Tiempo'), alignRight: true),
+            _heading(_label(data, 'Share', 'Porcentaje'), alignRight: true),
+            _heading(_label(data, 'Completed', 'Completadas'), alignRight: true),
           ],
         ),
         for (var i = 0; i < rows.length; i++)
           pw.TableRow(
             decoration: i.isOdd ? pw.BoxDecoration(color: _zebra) : null,
             children: [
-              _cell(rows[i].label.trim().isEmpty ? 'Ungrouped' : rows[i].label),
+              _cell(rows[i].label.trim().isEmpty ? _label(data, 'Ungrouped', 'Sin grupo') : rows[i].label),
               _cell(_formatDuration(rows[i].tracked), alignRight: true),
               _cell(_formatShare(rows[i].tracked, total), alignRight: true),
               _cell('${rows[i].completed}', alignRight: true),
@@ -316,7 +328,13 @@ abstract final class ReportWriter {
   static pw.Widget _detailTable(ReportData data) {
     final details = data.details.where((detail) => detail.duration > Duration.zero).toList(growable: false);
     if (details.isEmpty) {
-      return _empty('No sessions with tracked time in this range.');
+      return _empty(
+        _label(
+          data,
+          'No sessions with tracked time in this range.',
+          'No hay sesiones con tiempo registrado en este rango.',
+        ),
+      );
     }
 
     return pw.Table(
@@ -337,14 +355,14 @@ abstract final class ReportWriter {
           repeat: true,
           decoration: pw.BoxDecoration(color: _headerFill),
           children: [
-            _heading('Date'),
-            _heading('Start'),
-            _heading('End'),
-            _heading('Duration'),
-            _heading('Space'),
-            _heading('Context'),
-            _heading('Project'),
-            _heading('Task'),
+            _heading(_label(data, 'Date', 'Fecha')),
+            _heading(_label(data, 'Start', 'Inicio')),
+            _heading(_label(data, 'End', 'Fin')),
+            _heading(_label(data, 'Duration', 'Duración')),
+            _heading(_label(data, 'Space', 'Espacio')),
+            _heading(_label(data, 'Context', 'Contexto')),
+            _heading(_label(data, 'Project', 'Proyecto')),
+            _heading(_label(data, 'Task', 'Tarea')),
           ],
         ),
         for (var i = 0; i < details.length; i++)

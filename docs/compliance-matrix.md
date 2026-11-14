@@ -10,7 +10,7 @@ the product-polish claims as proof.
 |---|---|
 | `flutter analyze --no-fatal-infos` | Pass, no issues |
 | `dart format --line-length 110 --output=none --set-exit-if-changed lib test packages/mane_core` | Pass |
-| `flutter test` | Pass, 208 tests |
+| `flutter test` | Pass, 215 tests |
 | `(cd packages/mane_core && dart test)` | Pass, 92 tests |
 | `flutter build linux --debug` | Pass |
 | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk flutter build apk --debug` | Pass |
@@ -86,7 +86,7 @@ the product-polish claims as proof.
 | Drag to move, bottom-edge resize, drag empty space to create, 15-minute snap | Met (existing) | `week_time_grid.dart` |
 | Shifts are background blocks and not draggable | Met (existing) | grid guards |
 | Recurring occurrence drag changes only that occurrence | Met (existing) | recurrence override model |
-| No title/notes corruption on overridden occurrences | Met (existing) | editor uses series title/notes plus override |
+| No title/notes corruption on overridden occurrences | Met (editor), Met by inspection (Plan) | the editor saves overrides against the stored series (`entry_editor_v2_test.dart`); Plan drag/resize reads the stored series and preserves an existing override's text, with no dedicated widget test |
 | Cross-timezone drag keeps the end date | Met (existing) | override date handling |
 | All-day row aligns with day columns | Met | gutter added to the all-day row |
 | Current-time line only on today | Met (existing) | `_DayColumn` |
@@ -131,16 +131,16 @@ the product-polish claims as proof.
 | Export/import CSV | Met (existing) | CSV interchange |
 | Backups include media files | Met | base64 media map; restore writes files under the media folder (`backup_test.dart`) |
 | Restore over a populated database | Met | `backup_test.dart` |
-| Delete all removes plan data, media and automatic backups | Met | `clearAllData` is atomic and runs first; media and automatic copies follow and a failure is reported as a partial wipe (`dataDeleteIncomplete`) |
+| Delete all removes plan data, media and automatic backups | Met | `clearAllData` deletes purchase rows before shopping lines (FK-safe) and is atomic; media and automatic copies follow, and a failure is reported as a partial wipe (`dataDeleteIncomplete`); `timing_data_test.dart` clears a checked-off purchase |
 | One online master switch, off by default | Met | master switch is authoritative over legacy rows (`settings_test.dart`) |
 | Only when on show Devices & Sync and MCP | Met (existing) | settings page |
 | Devices & Sync discovery-first, no IP entry as primary flow | Met (existing) | mDNS/peer discovery |
 | Pairing survives IP/network changes | Met (existing) | paired device data + discovery |
 | LAN binds private interfaces only | Met | private IPv4 bind + remote-address guard; loopback fallback |
 | HTTP info endpoint does not leak identity | Met | `/mane/v1/info` returns app/version/protocol/fingerprint only (`lan_test.dart`) |
-| Discovery does not leak username or device ID | Met | mDNS advertises only the pinned certificate fingerprint; peers match on it after an address change (`peer_discovery.dart`, `sync_service_test.dart`) |
-| MCP enable/writes/port, rebind, busy-port error, token rotation | Met | `McpServer.start` stops/rebinds on identity or port change; `mcp_test.dart` |
-| MCP tools expose the full model | Met | `spaces.list` (spaces/contexts/projects), `habits.list`, `time.sessions`, plus `habits.check`, `time.start` and `time.stop` behind the writes switch (`mcp_test.dart`) |
+| Discovery does not leak username or device ID | Met | mDNS advertises the certificate fingerprint and the user-chosen device name, never the username or device ID; peers match on the fingerprint after an address change (`peer_discovery.dart`, `sync_service_test.dart`) |
+| MCP enable/writes/port, rebind, busy-port error, token rotation | Met | `McpServer.start` stops/rebinds on identity or port change, exposes `lastError` on a busy port and the switch reverts; `mcp_test.dart` |
+| MCP tools expose the full model | Met (read) | reads cover spaces/contexts/projects, habits and time sessions; writes cover plan, shopping, habits and clock sessions. Context/project creation is not a write tool (`mcp_test.dart`) |
 | About GPL-3.0-only and InlitX attribution | Met (existing) | About page |
 
 ## Entry editor and task lifecycle
@@ -171,13 +171,13 @@ the product-polish claims as proof.
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| v10 draft repair leaves writable tables | Met | context/time-entry tables are rebuilt, and draft `gadget_records` are converted into Home maintenance entries before the draft table is dropped (`migration_test.dart`) |
+| v10 draft repair leaves writable tables | Met | the repair now runs for v9, v10 and v11 files, rebuilds context/time-entry tables, converts draft gadgets and drops the draft table; `migration_test.dart` covers a broken v1.2 file stamped as v10 |
 | Legacy non-Work shifts repaired | Met | migration moves them to Work |
 | Deleting a project detaches tasks | Met | `softDeleteProject`; `timing_data_test.dart` |
 | Deleting a context detaches tasks and hides owned rows | Met | `softDeleteContext`; `timing_data_test.dart` |
-| Backup accepts schema 3–12 | Met | `backup_test.dart` |
-| Backup validation is transactional | Met (existing) | rollback tests |
-| Delete-all removes media and automatic backups | Met | settings action |
+| Backup accepts schema 3–12 | Met | `backup_test.dart` covers v3, v4 and a v9 payload; the v9 fixture is a current export relabelled, so a true v9 fixture is still missing |
+| Backup validation is transactional | Met | rollback tests plus semantic validation of enum names, timezones and recurrence JSON before any write (`backup_test.dart`) |
+| Delete-all removes media and automatic backups | Met | settings action; purchase rows are removed before shopping lines (`timing_data_test.dart`) |
 | Read-only import provenance preserved on re-import | Met | ICS re-import uses `saveImportedEntry` and `copyWith` |
 
 ## Known open items
@@ -185,12 +185,17 @@ the product-polish claims as proof.
 These are not claimed as met:
 
 1. Aero 2.0 is not approved or rolled out. The existing Aero remains frozen;
-   see `docs/aero-2.md`.
-2. Settings search opens the owning section but does not scroll to and highlight
-   the exact row.
-3. Habit history is a 12-week read-only view; there is no infinite archive or
+   see `docs/aero-2.md`. Concepts, tokens and the contrast report are ready and
+   waiting for the user's sign-off.
+2. Habit history is a 12-week read-only view; there is no infinite archive or
    per-habit export.
-4. Real-device notification, reboot, battery, LAN, MCP, sound and widget checks
+3. Real-device notification, reboot, battery, LAN, MCP, sound and widget checks
    remain the user's device checklist.
-5. Aero 2.0 concepts, tokens and the contrast report are ready; the direction
-   still needs the user's approval before any screen is restyled.
+4. LAN discovery and pairing recover from an address change, but the server
+   itself does not rebind when the network interface changes while it is
+   running; a restart (or app resume) is still required.
+5. The Settings search index covers the shipped rows but not every sub-field.
+6. Plan drag/resize now converts the dropped device-zone minutes into the
+   entry's stored zone and preserves the end date, but it has no dedicated
+   widget test; the matrix relies on code inspection plus the editor's override
+   test.

@@ -383,11 +383,20 @@ void main() {
         updatedAt: now,
       ),
     );
+    // A completed shopping line leaves a purchase row behind. Deleting the
+    // shopping line before its purchase row breaks the foreign key.
+    await database.saveHomeItem(const HomeItem(id: 'rice', name: 'Rice', quantity: 1, unit: 'kg'));
+    await database.saveShoppingItem(
+      const ShoppingItem(id: 'rice-line', name: 'Rice', quantity: 2, unit: 'kg', homeItemId: 'rice'),
+    );
+    await database.setShoppingChecked('rice-line', true);
     await repository.clearAllData();
 
     expect(await repository.readEntry('task'), isNull);
     expect(await database.watchContexts().first, isEmpty);
     expect((await database.watchSpaces().first).map((space) => space.id), ['personal', 'work', 'home']);
     expect(await database.watchTags().first, isNotEmpty);
+    expect(await database.watchShoppingItems().first, isEmpty);
+    expect(await database.watchHomeItems().first, isEmpty);
   });
 }

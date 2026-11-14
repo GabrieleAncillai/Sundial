@@ -1000,6 +1000,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get mcpEndpointSubtitle => 'Solo lectura por defecto, solo loopback y apagado salvo que lo actives.';
 
   @override
+  String mcpStartFailed(String error) {
+    return 'No se pudo iniciar el servidor MCP: $error';
+  }
+
+  @override
   String get mcpWriteTools => 'Permitir herramientas de escritura';
 
   @override

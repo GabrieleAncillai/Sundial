@@ -909,4 +909,90 @@ void main() {
     final version = await database.customSelect('PRAGMA user_version').getSingle();
     expect(version.data.values.single, 12);
   });
+
+  test('repairs the draft leftovers a v1.2 build reported as v10', () async {
+    final directory = await Directory.systemTemp.createTemp('mane-broken-v10');
+    final path = p.join(directory.path, 'mane.sqlite');
+    addTearDown(() => directory.delete(recursive: true));
+    final now = DateTime.utc(2026, 11, 9, 10);
+
+    // Start from a healthy file, then reintroduce the draft-only NOT NULL
+    // columns and gadgets exactly as the earlier build left them.
+    final first = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    await first.seedDefaults();
+    await first.saveContext(
+      const PlannerContext(id: 'house', spaceId: 'home', name: 'House', colorValue: 0xFF5B7F6B),
+    );
+    await first.saveEntry(
+      Entry(
+        id: 'boiler-task',
+        spaceId: 'home',
+        title: 'Boiler task',
+        date: LocalDate.parse('2026-11-09'),
+        allDay: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    await first.close();
+
+    final raw = sqlite3.open(path);
+    raw.execute("ALTER TABLE context_records ADD COLUMN kind TEXT NOT NULL DEFAULT 'job'");
+    raw.execute('ALTER TABLE time_entry_records ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0');
+    raw.execute('''
+      CREATE TABLE gadget_records (
+        id TEXT NOT NULL PRIMARY KEY,
+        space_unit_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT '',
+        icon TEXT NOT NULL DEFAULT '',
+        interval_days INTEGER NOT NULL,
+        last_serviced_at INTEGER NULL,
+        notes TEXT NOT NULL DEFAULT '',
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER NULL
+      )
+    ''');
+    raw.execute(
+      'INSERT INTO gadget_records (id, space_unit_id, name, interval_days, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        'wash',
+        'house',
+        'Washing machine',
+        90,
+        now.millisecondsSinceEpoch ~/ 1000,
+        now.millisecondsSinceEpoch ~/ 1000,
+      ],
+    );
+    raw.execute('PRAGMA user_version = 10');
+    raw.dispose();
+
+    final repaired = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(() => repaired.close());
+
+    // The rebuilt tables accept new writes instead of hitting the NOT NULL
+    // columns the shipped model never fills.
+    await repaired.saveContext(
+      const PlannerContext(id: 'flat', spaceId: 'work', name: 'Flat', colorValue: 0xFF2F7ED8),
+    );
+    await repaired.startTimeEntry(entryId: 'boiler-task', at: DateTime.utc(2026, 11, 9, 11));
+    await repaired.stopTimeEntry('boiler-task', at: DateTime.utc(2026, 11, 9, 11, 15));
+
+    // The draft gadget becomes a Home maintenance entry and its table is gone.
+    final gadget = await repaired.readEntry('gadget-wash');
+    expect(gadget, isNotNull);
+    expect(gadget!.spaceId, 'home');
+    expect(gadget.contextId, 'house');
+    expect(gadget.repeatAfterCompletionDays, 90);
+    expect(gadget.title, 'Washing machine');
+    final draftTable = await repaired
+        .customSelect("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'gadget_records'")
+        .get();
+    expect(draftTable, isEmpty);
+
+    final version = await repaired.customSelect('PRAGMA user_version').getSingle();
+    expect(version.data.values.single, 12);
+  });
 }

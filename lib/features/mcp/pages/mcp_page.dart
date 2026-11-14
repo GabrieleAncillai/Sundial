@@ -56,6 +56,17 @@ class McpPage extends ConsumerWidget {
                   onChanged: (value) async {
                     await controller.setMcpEnabled(value);
                     await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
+                    final error = ref.read(mcpServerProvider).lastError;
+                    if (value && error != null) {
+                      // A busy or invalid port must not leave the switch on.
+                      await controller.setMcpEnabled(false);
+                      await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(context.l10n.mcpStartFailed(error))));
+                      }
+                    }
                   },
                 ),
                 SettingsSwitchRow(
@@ -154,6 +165,7 @@ class McpPage extends ConsumerWidget {
                       SelectableText(
                         'personal.today  work.next_shifts  plan.range\n'
                         'plan.search  plan.get  work.shifts  tags.list\n'
+                        'spaces.list  habits.list  time.sessions\n'
                         'home.shopping  home.inventory  sleep.window',
                         style: ManeType.body(
                           11.5,
@@ -165,7 +177,8 @@ class McpPage extends ConsumerWidget {
                         SelectableText(
                           'plan.create  plan.update  plan.complete\n'
                           'plan.uncomplete  plan.delete\n'
-                          'home.shopping_add  home.shopping_check',
+                          'home.shopping_add  home.shopping_check\n'
+                          'habits.check  time.start  time.stop',
                           style: ManeType.body(
                             11.5,
                             color: context.mc.textSecondary,

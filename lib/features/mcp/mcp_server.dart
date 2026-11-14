@@ -44,6 +44,10 @@ class McpServer {
   bool _writesEnabled = false;
   final Map<String, DateTime> _sessions = {};
 
+  /// Last bind failure, cleared on a successful start. Settings uses it to
+  /// revert the switch instead of showing a server that is not running.
+  String? lastError;
+
   int get boundPort => _server?.port ?? 0;
 
   Future<int> start({
@@ -52,6 +56,7 @@ class McpServer {
     int port = 0,
     InternetAddress? address,
   }) async {
+    lastError = null;
     if (_server != null) {
       final identityChanged =
           _identity?.mcpToken != identity.mcpToken ||
@@ -67,10 +72,17 @@ class McpServer {
     }
     _identity = identity;
     _writesEnabled = writesEnabled;
-    final server = await HttpServer.bind(address ?? InternetAddress.loopbackIPv4, port, shared: false);
-    _server = server;
-    server.listen(_handle, onError: (Object _) {});
-    return server.port;
+    try {
+      final server = await HttpServer.bind(address ?? InternetAddress.loopbackIPv4, port, shared: false);
+      _server = server;
+      server.listen(_handle, onError: (Object _) {});
+      return server.port;
+    } catch (error) {
+      // The settings switch reports this instead of leaving an unhandled async
+      // error and a switch that lies about the server state.
+      lastError = '$error';
+      rethrow;
+    }
   }
 
   Future<void> stop() async {
@@ -692,10 +704,38 @@ class McpServer {
       throw _RpcException(-32602, '$error');
     }
     await _repository.saveEntry(updated);
-    // Status changes go through the repository so completion stops a running
-    // session and updates completedAt consistently.
-    if (status != existing.status) await _repository.setEntryStatus(existing.id, status);
+    // Status changes go through the same lifecycle path as the UI so a
+    // maintenance date advances, a recurring series completes one occurrence,
+    // and a running session stops.
+    if (status != existing.status) {
+      await _applyStatus(existing, status, arguments, deviceTimeZone);
+    }
     return {'id': updated.id};
+  }
+
+  Future<void> _applyStatus(
+    Entry entry,
+    EntryStatus status,
+    Map<String, Object?> arguments,
+    String timeZone,
+  ) async {
+    if (status == EntryStatus.done && entry.isMaintenance) {
+      await _repository.completeMaintenanceEntry(entry.id, localDateAt(_clock(), timeZone));
+      return;
+    }
+    if (entry.recurrence != null) {
+      final raw = arguments['date'];
+      if (raw is! String) throw const _RpcException(-32602, 'date is required for a recurring entry');
+      final LocalDate date;
+      try {
+        date = LocalDate.parse(raw);
+      } on FormatException {
+        throw const _RpcException(-32602, 'date must be YYYY-MM-DD');
+      }
+      await _repository.setOccurrenceCompleted(entry.id, date, status == EntryStatus.done);
+      return;
+    }
+    await _repository.setEntryStatus(entry.id, status);
   }
 
   Future<Map<String, Object?>> _deletePlan(Map<String, Object?> arguments) async {
@@ -711,8 +751,15 @@ class McpServer {
 
   Future<Map<String, Object?>> _addShopping(Map<String, Object?> arguments) async {
     final name = _stringArg(arguments, 'name').trim();
+    final requestedHome = arguments['contextId'] as String?;
+    final homes = await _repository.watchContexts(spaceId: 'home').first;
+    final contextId = requestedHome ?? (homes.isEmpty ? null : homes.first.id);
+    if (contextId != null && !homes.any((home) => home.id == contextId)) {
+      throw const _RpcException(-32602, 'Unknown contextId for a Home line');
+    }
     final item = ShoppingItem(
       id: const Uuid().v4(),
+      contextId: contextId,
       name: name,
       quantity: _numberArg(arguments, 'quantity', 1).clamp(0.01, double.infinity).toDouble(),
       unit: arguments['unit'] as String? ?? '',
@@ -720,7 +767,7 @@ class McpServer {
       homeItemId: arguments['homeItemId'] as String?,
     );
     await _repository.saveShoppingItem(item);
-    return {'id': item.id};
+    return {'id': item.id, 'contextId': item.contextId};
   }
 
   Future<Map<String, Object?>> _checkShopping(Map<String, Object?> arguments) async {
@@ -950,6 +997,7 @@ class McpServer {
               'quantity': {'type': 'number', 'minimum': 0.01, 'default': 1},
               'unit': {'type': 'string'},
               'note': {'type': 'string'},
+              'contextId': {'type': 'string', 'description': 'A Home context. Defaults to the first home.'},
               'homeItemId': {'type': 'string'},
             },
             'required': ['name'],

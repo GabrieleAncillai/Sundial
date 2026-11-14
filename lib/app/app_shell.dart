@@ -161,6 +161,9 @@ class _AppShellState extends ConsumerState<AppShell>
     final repository = ref.read(repositoryProvider);
     final entry = await repository.readEntry(entryId);
     if (entry == null || entry.deletedAt != null) return;
+    // Imported entries are read-only. A notification action that arrives late
+    // must be ignored, not thrown as an unhandled error.
+    if (entry.readOnly) return;
     final timeZone = ref.read(deviceTimeZoneProvider);
     final today = localDateAt(ref.read(nowProvider), timeZone);
 

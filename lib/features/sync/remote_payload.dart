@@ -33,6 +33,10 @@ abstract final class SyncPayloads {
     'endMinute': entry.endMinute,
     'timeZone': entry.timeZone,
     'icon': entry.icon,
+    'contextId': entry.contextId,
+    'projectId': entry.projectId,
+    'priority': entry.priority.name,
+    'completedAt': entry.completedAt?.toIso8601String(),
     'startAt': entry.startAt?.toIso8601String(),
     'endAt': entry.endAt?.toIso8601String(),
     'allDay': entry.allDay,
@@ -67,6 +71,7 @@ abstract final class SyncPayloads {
 
   static Map<String, Object?> homeItemJson(HomeItem item) => {
     'id': item.id,
+    'contextId': item.contextId,
     'name': item.name,
     'category': item.category,
     'location': item.location,
@@ -80,6 +85,7 @@ abstract final class SyncPayloads {
 
   static Map<String, Object?> shoppingItemJson(ShoppingItem item) => {
     'id': item.id,
+    'contextId': item.contextId,
     'name': item.name,
     'quantity': item.quantity,
     'unit': item.unit,

@@ -994,6 +994,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mcpEndpointSubtitle => 'Read-only by default, loopback only, off unless enabled.';
 
   @override
+  String mcpStartFailed(String error) {
+    return 'Could not start the MCP server: $error';
+  }
+
+  @override
   String get mcpWriteTools => 'Allow write tools';
 
   @override

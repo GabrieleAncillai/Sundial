@@ -363,40 +363,66 @@ class _PlanPageState extends ConsumerState<PlanPage> {
     final entry = occurrence.entry;
     if (entry.readOnly) return;
     final repository = ref.read(repositoryProvider);
+    // The grid and task cards hand back the expanded occurrence, whose title
+    // and notes already include the override. Persist against the stored series
+    // so an occurrence rename never rewrites every occurrence.
+    final series = await repository.readEntry(entry.id) ?? entry;
+    if (series.readOnly) return;
     final now = DateTime.now().toUtc();
-    final shapeStart = entry.timing == EntryTiming.deadline || entry.timing == EntryTiming.anytime
+    // The grid gives wall-clock minutes in the device zone. Store them in the
+    // entry's own zone so an entry defined elsewhere keeps its local clock time.
+    final deviceZone = ref.read(deviceTimeZoneProvider);
+    final storedZone = series.timeZone;
+    final LocalDate targetDate;
+    final int targetStart;
+    if (storedZone != null && storedZone != deviceZone && series.timing != EntryTiming.anytime) {
+      final instant = instantAt(date, start, deviceZone);
+      targetDate = localDateAt(instant, storedZone);
+      targetStart = localMinuteAt(instant, storedZone);
+    } else {
+      targetDate = date;
+      targetStart = start;
+    }
+    final shapeStart = series.timing == EntryTiming.deadline || series.timing == EntryTiming.anytime
         ? null
-        : start;
-    final shapeEnd = entry.timing == EntryTiming.clockIn || entry.timing == EntryTiming.anytime ? null : end;
+        : targetStart;
+    final targetEnd = storedZone != null && storedZone != deviceZone && series.timing == EntryTiming.deadline
+        ? localMinuteAt(instantAt(date, end, deviceZone), storedZone)
+        : end;
+    final shapedEnd = _movedEnd(series, targetStart, targetEnd);
     try {
-      if (entry.recurrence != null) {
-        final rule = entry.recurrence!;
+      if (series.recurrence != null) {
+        final rule = series.recurrence!;
+        final previous = _existingOverride(rule, occurrence.date);
         final overrides = [
           for (final override in rule.overrides)
             if (override.date != occurrence.date) override,
           RecurrenceOverride(
             date: occurrence.date,
-            dateOverride: date == occurrence.date ? null : date,
+            dateOverride: targetDate == occurrence.date ? null : targetDate,
             startMinute: shapeStart,
-            endMinute: shapeEnd,
+            endMinute: shapedEnd,
+            allDay: previous?.allDay,
+            title: previous?.title,
+            notes: previous?.notes,
           ),
         ];
         await repository.saveEntry(
-          entry.copyWith(
+          series.copyWith(
             recurrence: rule.copyWith(overrides: overrides),
             updatedAt: now,
           ),
         );
       } else {
-        final span = entry.date != null && entry.endDate != null
-            ? entry.endDate!.differenceInDays(entry.date!)
+        final span = series.date != null && series.endDate != null
+            ? series.endDate!.differenceInDays(series.date!)
             : 0;
         await repository.saveEntry(
-          entry.copyWith(
-            date: date,
-            endDate: span > 0 ? date.addDays(span) : null,
+          series.copyWith(
+            date: targetDate,
+            endDate: span > 0 ? targetDate.addDays(span) : null,
             startMinute: shapeStart,
-            endMinute: shapeEnd,
+            endMinute: shapedEnd,
             updatedAt: now,
           ),
         );
@@ -410,37 +436,64 @@ class _PlanPageState extends ConsumerState<PlanPage> {
     }
   }
 
+  /// End minute for a moved block. A multi-day timed entry keeps its template
+  /// end on the shifted end date; a single-day entry keeps its duration.
+  int? _movedEnd(Entry series, int start, int end) {
+    if (series.timing == EntryTiming.clockIn || series.timing == EntryTiming.anytime) return null;
+    if (series.endDate != null) return series.endMinute;
+    final templateStart = series.startMinute;
+    final templateEnd = series.endMinute;
+    if (templateStart == null || templateEnd == null) return end;
+    return start + (templateEnd - templateStart);
+  }
+
+  RecurrenceOverride? _existingOverride(RecurrenceRule rule, LocalDate date) {
+    for (final override in rule.overrides) {
+      if (override.date == date) return override;
+    }
+    return null;
+  }
+
   Future<void> _resize(BuildContext context, EntryOccurrence occurrence, int end) async {
-    final entry = occurrence.entry;
-    if (entry.readOnly || entry.timing != EntryTiming.scheduled) return;
-    final start = occurrence.startAt == null
-        ? entry.startMinute!
-        : _minuteOfDay(occurrence.startAt!, ref.read(deviceTimeZoneProvider));
-    var safeEnd = math.max(start + 15, end);
-    if (entry.endDate != null) safeEnd = math.min(1439, safeEnd);
     final repository = ref.read(repositoryProvider);
+    final series = await repository.readEntry(occurrence.entry.id) ?? occurrence.entry;
+    if (series.readOnly || series.timing != EntryTiming.scheduled) return;
+    final deviceZone = ref.read(deviceTimeZoneProvider);
+    final storedZone = series.timeZone ?? deviceZone;
+    final start = occurrence.startAt == null
+        ? series.startMinute!
+        : _minuteOfDay(occurrence.startAt!, storedZone);
+    final endMinute = storedZone == deviceZone
+        ? end
+        : _minuteOfDay(instantAt(occurrence.displayDate, end, deviceZone), storedZone);
+    var safeEnd = math.max(start + 15, endMinute);
+    if (series.endDate != null) safeEnd = math.min(1439, safeEnd);
     final now = DateTime.now().toUtc();
     try {
-      if (entry.recurrence != null) {
-        final rule = entry.recurrence!;
+      if (series.recurrence != null) {
+        final rule = series.recurrence!;
+        final previous = _existingOverride(rule, occurrence.date);
         final overrides = [
           for (final override in rule.overrides)
             if (override.date != occurrence.date) override,
           RecurrenceOverride(
             date: occurrence.date,
-            dateOverride: null,
+            dateOverride: previous?.dateOverride,
             startMinute: start,
             endMinute: safeEnd,
+            allDay: previous?.allDay,
+            title: previous?.title,
+            notes: previous?.notes,
           ),
         ];
         await repository.saveEntry(
-          entry.copyWith(
+          series.copyWith(
             recurrence: rule.copyWith(overrides: overrides),
             updatedAt: now,
           ),
         );
       } else {
-        await repository.saveEntry(entry.copyWith(endMinute: safeEnd, updatedAt: now));
+        await repository.saveEntry(series.copyWith(endMinute: safeEnd, updatedAt: now));
       }
       await ref.read(reminderCoordinatorProvider).reschedule();
     } catch (error) {

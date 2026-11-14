@@ -146,6 +146,13 @@ class TaskCard extends ConsumerWidget {
                   visualDensity: VisualDensity.compact,
                 ),
               ),
+            if (!entry.readOnly && !completed && entry.isClockInTask && running)
+              IconButton(
+                tooltip: l10n.finishTask,
+                onPressed: () => _finish(ref, timeZone),
+                icon: Icon(Icons.stop_circle_outlined, color: c.textSecondary),
+                visualDensity: VisualDensity.compact,
+              ),
           ],
         ),
       ),
@@ -224,6 +231,14 @@ class TaskCard extends ConsumerWidget {
       await repository.clockIn(occ);
     }
     ref.read(soundControllerProvider).play(running ? UiSound.toggleOff : UiSound.toggleOn);
+  }
+
+  Future<void> _finish(WidgetRef ref, String timeZone) async {
+    if (entry.readOnly) return;
+    final occ = _asOccurrence(timeZone);
+    await ref.read(repositoryProvider).finishTracked(occ, at: DateTime.now().toUtc());
+    await ref.read(reminderCoordinatorProvider).reschedule();
+    ref.read(soundControllerProvider).play(UiSound.confirm);
   }
 
   String _timeLabel(BuildContext context, DateTime startAt, DateTime? endAt, String timeZone) {

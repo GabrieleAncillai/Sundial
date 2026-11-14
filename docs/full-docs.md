@@ -1053,26 +1053,33 @@ paths the audit found unsafe. The row-by-row status is in
   and automatic backups, reporting a partial wipe instead of claiming success.
 - **Network boundaries.** The LAN server binds a private IPv4 address (loopback
   if none exists), rejects non-private remote addresses, and its unauthenticated
-  info endpoint no longer returns username, device ID or device name. mDNS
-  advertises only the pinned certificate fingerprint, and peers are matched by
-  it after an address change. MCP detects token/certificate/port changes and
-  rebinds; stop clears sessions.
+  info endpoint no longer returns username, device ID or device name. mDNS no
+  longer advertises the username or device ID; it advertises the pinned
+  certificate fingerprint and the user-chosen device name, and peers are matched
+  by fingerprint after an address change. MCP detects token/certificate/port
+  changes and rebinds; stop clears sessions.
 - **UI and data scoping.** The desktop side rail owns the persistent search
-  field and filter badge; settings search indexes individual rows; Plan uses the
-  900 px shell breakpoint and the all-day row shares the time gutter. Per-day
-  checklists reload when their date/slot changes and cycle shrinking clamps stale
-  indexes. Context/project deletion detaches tasks and hides owned shifts,
-  habits, projects and household rows. Shopping keeps its home and clear-bought
-  is scoped; low-stock lines keep their home. Weekly habit streaks count the
-  current qualifying week and consecutive previous weeks.
+  field and filter badge; settings search indexes individual rows and scrolls to
+  the match; Plan uses the 1024 px week-grid breakpoint and the all-day row
+  shares the time gutter. Per-day checklists reload when their date/slot changes
+  and cycle shrinking clamps stale indexes. Context/project deletion detaches
+  tasks and hides owned shifts, habits, projects and household rows. Shopping
+  keeps its home and clear-bought is scoped; low-stock lines keep their home.
+  Weekly habit streaks count the current qualifying week and consecutive
+  previous weeks; habits carry a weekday schedule and a 12-week history.
+  Editing a recurring occurrence writes an override instead of the series.
+- **Backup and recovery details.** Delete-all removes purchase rows before their
+  shopping lines (the foreign-key order), imports validate enum names,
+  timezones and recurrence JSON before writing, and a restore only removes media
+  the replaced plan actually referenced.
 - **Stats.** Tracked sessions resolve their entries even when the entry is
   outside the selected occurrence range, so the tracked-time total and the
-  per-space/project breakdowns reconcile.
+  per-space/project breakdowns reconcile. A shift-hours card reports scheduled
+  shift time separately from tracked time.
 - **Date format and OLED.** Full dates, month/year, calendar headers and report
   ranges use the preference; OLED forces a dark palette so light text is not
   painted on black.
 
-Still open: Aero 2.0 approval and rollout (`docs/aero-2.md`), the shared desktop
-`ManeTimeField`, scroll-to-highlight for settings search, a summary CSV report,
-habit weekday schedules/history, the full new-model MCP surface, and the user's
-real-device checklist.
+Still open: Aero 2.0 approval and rollout (`docs/aero-2.md`), LAN rebind after a
+network change, timezone-aware Plan drags for entries stored in another zone,
+and the user's real-device checklist.

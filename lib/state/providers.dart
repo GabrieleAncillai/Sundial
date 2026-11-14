@@ -256,7 +256,12 @@ class ServiceCoordinator {
     }
     final identity = await repository.readIdentity();
     if (settings.onlineEnabled && settings.mcpEnabled && identity != null) {
-      await mcp.start(identity: identity, writesEnabled: settings.mcpWritesEnabled, port: settings.mcpPort);
+      try {
+        await mcp.start(identity: identity, writesEnabled: settings.mcpWritesEnabled, port: settings.mcpPort);
+      } catch (_) {
+        // A busy or invalid port must not take the app down. The switch checks
+        // `mcp.lastError` and reverts with a notice.
+      }
     } else {
       await mcp.stop();
     }
