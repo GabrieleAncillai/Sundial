@@ -181,6 +181,19 @@ class _TimeEntryDialogState extends State<_TimeEntryDialog> {
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    // The route is only in the tree after the first frame, so the prefilled
+    // value and the keyboard focus are prepared then. Selecting the value lets
+    // typing replace the old time instead of appending to it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _controller.selection = TextSelection(baseOffset: 0, extentOffset: _controller.text.length);
+      _focus.requestFocus();
+    });
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     _focus.dispose();
@@ -212,54 +225,51 @@ class _TimeEntryDialogState extends State<_TimeEntryDialog> {
     final c = context.mc;
     return CallbackShortcuts(
       bindings: {const SingleActivator(LogicalKeyboardKey.escape): () => Navigator.of(context).pop()},
-      child: Focus(
-        autofocus: true,
-        child: AlertDialog(
-          title: Text(widget.title ?? l10n.time),
-          content: SizedBox(
-            width: 280,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: _controller,
-                  focusNode: _focus,
-                  autofocus: true,
-                  textInputAction: TextInputAction.done,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  onSubmitted: (_) => _submit(),
-                  onChanged: (_) {
-                    if (_error != null) setState(() => _error = null);
-                  },
-                  decoration: InputDecoration(
-                    hintText: _use24Hour ? '21:30' : '9:30 PM',
-                    errorText: _error,
-                    prefixIcon: const Icon(Icons.schedule, size: 19),
-                  ),
+      child: AlertDialog(
+        title: Text(widget.title ?? l10n.time),
+        content: SizedBox(
+          width: 280,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _controller,
+                focusNode: _focus,
+                autofocus: true,
+                textInputAction: TextInputAction.done,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                onSubmitted: (_) => _submit(),
+                onChanged: (_) {
+                  if (_error != null) setState(() => _error = null);
+                },
+                decoration: InputDecoration(
+                  hintText: _use24Hour ? '21:30' : '9:30 PM',
+                  errorText: _error,
+                  prefixIcon: const Icon(Icons.schedule, size: 19),
                 ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 6,
-                  children: [
-                    for (final minute in const [0, 15, 30, 45])
-                      ChoiceChip(
-                        label: Text(':${minute.toString().padLeft(2, '0')}'),
-                        selected: (_parse() ?? -1) % 60 == minute,
-                        onSelected: (_) => _snap(minute),
-                        labelStyle: ManeType.label(12, color: c.textSecondary),
-                        showCheckmark: false,
-                      ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 6,
+                children: [
+                  for (final minute in const [0, 15, 30, 45])
+                    ChoiceChip(
+                      label: Text(':${minute.toString().padLeft(2, '0')}'),
+                      selected: (_parse() ?? -1) % 60 == minute,
+                      onSelected: (_) => _snap(minute),
+                      labelStyle: ManeType.label(12, color: c.textSecondary),
+                      showCheckmark: false,
+                    ),
+                ],
+              ),
+            ],
           ),
-          actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.cancel)),
-            FilledButton(onPressed: _submit, child: Text(l10n.setTime)),
-          ],
         ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.cancel)),
+          FilledButton(onPressed: _submit, child: Text(l10n.setTime)),
+        ],
       ),
     );
   }
