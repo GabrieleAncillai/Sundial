@@ -7,7 +7,7 @@ import '../settings_scope.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 
-/// The width at which Mane swaps a phone sheet for a floating desktop dialog.
+/// The width at which Sundial swaps a phone sheet for a floating desktop dialog.
 /// Mirrors the shell breakpoint in `lib/app/app_shell.dart`.
 const double appSheetCompactBreakpoint = 900;
 
@@ -246,14 +246,14 @@ class AppSheet extends StatelessWidget {
           Text(
             title!,
             textAlign: wide ? TextAlign.start : TextAlign.center,
-            style: ManeType.headline(wide ? 21 : 19, color: c.text),
+            style: SundialType.headline(wide ? 21 : 19, color: c.text),
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 5),
             Text(
               subtitle!,
               textAlign: wide ? TextAlign.start : TextAlign.center,
-              style: ManeType.body(13, color: c.textSecondary),
+              style: SundialType.body(13, color: c.textSecondary),
             ),
           ],
         ],
@@ -324,10 +324,10 @@ class SheetTitle extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: ManeType.headline(20, color: c.text)),
+              Text(title, style: SundialType.headline(20, color: c.text)),
               if (subtitle != null) ...[
                 const SizedBox(height: 4),
-                Text(subtitle!, style: ManeType.body(13, color: c.textSecondary)),
+                Text(subtitle!, style: SundialType.body(13, color: c.textSecondary)),
               ],
             ],
           ),
@@ -371,7 +371,7 @@ class SheetAction extends StatelessWidget {
               Icon(icon, size: 20, color: color),
               const SizedBox(width: 14),
               Expanded(
-                child: Text(label, style: ManeType.body(14, color: c.text)),
+                child: Text(label, style: SundialType.body(14, color: c.text)),
               ),
               if (trailing != null) Icon(trailing, size: 18, color: c.textTertiary),
             ],

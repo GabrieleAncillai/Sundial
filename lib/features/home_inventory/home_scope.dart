@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../core/i18n/l10n.dart';
 import '../../core/widgets/ui_kit.dart';
@@ -19,13 +19,13 @@ Future<String?> chooseHomeScope(BuildContext context, WidgetRef ref, {required S
     return null;
   }
   if (homes.length == 1) return homes.single.id;
-  return showManeSelectSheet<String>(
+  return showSundialSelectSheet<String>(
     context: context,
     title: context.l10n.chooseHome,
     selected: homes.first.id,
     options: [
       for (final home in homes)
-        ManeSelectOption(
+        SundialSelectOption(
           value: home.id,
           label: home.name,
           leading: Container(

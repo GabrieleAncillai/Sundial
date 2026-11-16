@@ -1,14 +1,14 @@
 # Overview
 
-Mane is a local-first planner for commitments that recur across personal life,
+Sundial is a local-first planner for commitments that recur across personal life,
 work and home. One app, three spaces: **Personal**, **Work** and **Home**.
 
 Most people keep their obligations in too many places: work calendars, chat,
-task boards, notes apps, messages and their own head. Mane puts the day, week
+task boards, notes apps, messages and their own head. Sundial puts the day, week
 and month back into one calendar, so collisions are visible before they become
 problems.
 
-## What Mane does
+## What Sundial does
 
 - **One calendar** for the day, week and month. Work shifts are background
   blocks; home and personal obligations sit in front of them.
@@ -78,6 +78,6 @@ covered. The constraint audit is in [compliance-audit.md](compliance-audit.md).
 - [Contributing](../CONTRIBUTING.md): setup, layout, house style and tests.
 - [Agent brief](../AGENTS.md): self-contained kickoff prompt for a coding agent.
 
-Mane is GPL-3.0-only, the same license as its primary references. See
+Sundial is GPL-3.0-only, the same license as its primary references. See
 [LICENSE](../LICENSE), [ADDITIONAL_TERMS.md](../ADDITIONAL_TERMS.md) and
 [CREDITS.md](../CREDITS.md).

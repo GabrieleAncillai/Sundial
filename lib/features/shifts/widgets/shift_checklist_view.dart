@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../theme/app_colors.dart';
@@ -98,7 +98,7 @@ class _ShiftChecklistSectionState extends ConsumerState<ShiftChecklistSection> {
               Text(
                 '${context.l10n.shiftChecklist} · '
                 '${context.l10n.checklistDone(completed, items.length)}',
-                style: ManeType.label(10.5, color: c.textTertiary),
+                style: SundialType.label(10.5, color: c.textTertiary),
               ),
               for (final item in items)
                 CheckboxListTile(
@@ -106,7 +106,7 @@ class _ShiftChecklistSectionState extends ConsumerState<ShiftChecklistSection> {
                   contentPadding: EdgeInsets.zero,
                   controlAffinity: ListTileControlAffinity.leading,
                   value: done.contains(item.id),
-                  title: Text(item.label, style: ManeType.body(13, color: c.text)),
+                  title: Text(item.label, style: SundialType.body(13, color: c.text)),
                   onChanged: (value) => _toggle(item, value == true),
                 ),
             ],

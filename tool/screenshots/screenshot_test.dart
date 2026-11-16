@@ -10,18 +10,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/app/app_shell.dart';
-import 'package:mane/core/i18n/l10n.dart';
-import 'package:mane/core/settings_scope.dart';
-import 'package:mane/models/app_settings.dart';
-import 'package:mane/models/home_item.dart';
-import 'package:mane/models/shopping_item.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/services/notification_service.dart';
-import 'package:mane/state/providers.dart';
-import 'package:mane/state/settings_controller.dart';
-import 'package:mane/theme/app_theme.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/app/app_shell.dart';
+import 'package:sundial/core/i18n/l10n.dart';
+import 'package:sundial/core/settings_scope.dart';
+import 'package:sundial/models/app_settings.dart';
+import 'package:sundial/models/home_item.dart';
+import 'package:sundial/models/shopping_item.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/services/notification_service.dart';
+import 'package:sundial/state/providers.dart';
+import 'package:sundial/state/settings_controller.dart';
+import 'package:sundial/theme/app_theme.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 
 const _phone = (size: Size(1290, 2796), dpr: 3.0);
@@ -203,7 +203,7 @@ void main() {
       'v1.2-today-aero.png',
       database,
       view: _phone,
-      settings: const AppSettings(themeVariant: ManeThemeVariant.aero),
+      settings: const AppSettings(themeVariant: SundialThemeVariant.aero),
     );
   });
 }
@@ -262,7 +262,7 @@ Future<void> _renderShell(
           settings: settings,
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
-            theme: ManeTheme.forSettings(settings, Brightness.light),
+            theme: SundialTheme.forSettings(settings, Brightness.light),
             locale: const Locale('en'),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

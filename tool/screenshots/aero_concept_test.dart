@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/theme/aero_colors.dart';
+import 'package:sundial/theme/aero_colors.dart';
 
 /// Renders the three Aero 2.0 concept screens required before approval.
 ///
@@ -666,7 +666,7 @@ class _Rail extends StatelessWidget {
                 child: Icon(Icons.pets, size: 17, color: tokens.onAccentFill),
               ),
               const SizedBox(width: 9),
-              Text('Mane', style: _body(17, tokens.ink, weight: FontWeight.w800)),
+              Text('Sundial', style: _body(17, tokens.ink, weight: FontWeight.w800)),
             ],
           ),
           const SizedBox(height: 16),

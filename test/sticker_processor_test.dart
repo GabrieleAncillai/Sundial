@@ -2,7 +2,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/media/sticker_processor.dart';
+import 'package:sundial/features/media/sticker_processor.dart';
 
 Future<Uint8List> _encodeRedSquareOnWhite() async {
   final recorder = ui.PictureRecorder();

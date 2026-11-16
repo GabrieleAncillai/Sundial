@@ -9,7 +9,7 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get appName => 'Mane';
+  String get appName => 'Sundial';
 
   @override
   String get today => 'Hoy';
@@ -452,10 +452,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get backupInvalid => 'Este archivo no es una copia válida de Mane.';
+  String get backupInvalid => 'Este archivo no es una copia válida de Sundial.';
 
   @override
-  String get backupFuture => 'Esta copia viene de una versión más reciente de Mane.';
+  String get backupFuture => 'Esta copia viene de una versión más reciente de Sundial.';
 
   @override
   String get importConfirmTitle => '¿Sustituir tus datos?';
@@ -511,13 +511,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get basedOnGymMane => 'Basado en GymMane de InlitX';
+  String get basedOnSundial => 'Basado en Sundial por Gabriele Ancillai';
 
   @override
-  String get basedOnStreak => 'Basado en Streak de InlitX';
-
-  @override
-  String get basedOnMane => 'Basado en Mane por los colaboradores de Mane';
+  String get inspiredBy => 'Inspirado en GymMane y Streak de InlitX';
 
   @override
   String version(String version) {
@@ -529,14 +526,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get licenseBody =>
-      'Mane es software libre bajo GPL-3.0-only. Se ofrece sin garantía. Consulta LICENSE y ADDITIONAL_TERMS.md en el repositorio.';
+      'Sundial es software libre bajo GPL-3.0-only. Se ofrece sin garantía. Consulta LICENSE y ADDITIONAL_TERMS.md en el repositorio.';
 
   @override
   String get credits => 'Créditos';
 
   @override
-  String get creditsBody =>
-      'Creado tomando como referencia GymMane y Streak de InlitX. Basado en Mane por los colaboradores de Mane.';
+  String get creditsBody => 'Un proyecto independiente de Gabriele Ancillai.';
 
   @override
   String get tagsManager => 'Etiquetas';
@@ -930,7 +926,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get discoveredOnNetwork => 'Encontrados en esta red';
 
   @override
-  String get noDiscoveredDevices => 'Todavía no se han encontrado otros dispositivos Mane.';
+  String get noDiscoveredDevices => 'Todavía no se han encontrado otros dispositivos Sundial.';
 
   @override
   String get address => 'Dirección';
@@ -1664,6 +1660,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get clearDate => 'Quitar la fecha';
 
   @override
+  String get clearText => 'Borrar texto';
+
+  @override
   String get gadgetName => 'Nombre del aparato';
 
   @override
@@ -2063,11 +2062,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get nearbyDevices => 'Dispositivos cercanos';
 
   @override
-  String get scanningDevices => 'Buscando dispositivos Mane en esta red…';
+  String get scanningDevices => 'Buscando dispositivos Sundial en esta red…';
 
   @override
   String get noNearbyDevices =>
-      'No se han encontrado dispositivos Mane. Asegúrate de que el otro dispositivo tiene las funciones en línea activadas.';
+      'No se han encontrado dispositivos Sundial. Asegúrate de que el otro dispositivo tiene las funciones en línea activadas.';
 
   @override
   String pairWithDevice(String name) {
@@ -2087,7 +2086,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get syncExplainer =>
-      'Mane encuentra tus otros dispositivos en la red local. El emparejamiento guarda una clave compartida una sola vez, así que cambiar de red o de IP no rompe el vínculo. La sincronización es de solo lectura y nunca sustituye tu plan local.';
+      'Sundial encuentra tus otros dispositivos en la red local. El emparejamiento guarda una clave compartida una sola vez, así que cambiar de red o de IP no rompe el vínculo. La sincronización es de solo lectura y nunca sustituye tu plan local.';
 
   @override
   String get pairSuccess => 'Dispositivo emparejado.';

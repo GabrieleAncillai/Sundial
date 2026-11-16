@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../core/i18n/l10n.dart';
 import '../../state/providers.dart';
@@ -93,12 +93,12 @@ class SleepWindowCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.sleepWindow, style: ManeType.label(13, color: c.text)),
+                Text(l10n.sleepWindow, style: SundialType.label(13, color: c.text)),
                 const SizedBox(height: 2),
-                Text(lines.join(' · '), style: ManeType.body(11.5, color: c.textSecondary)),
+                Text(lines.join(' · '), style: SundialType.body(11.5, color: c.textSecondary)),
                 if (window.warning) ...[
                   const SizedBox(height: 4),
-                  Text(l10n.sleepWarning, style: ManeType.body(11.5, color: c.danger)),
+                  Text(l10n.sleepWarning, style: SundialType.body(11.5, color: c.danger)),
                 ],
               ],
             ),

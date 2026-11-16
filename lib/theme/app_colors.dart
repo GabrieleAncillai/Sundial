@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// Mane's hand-authored palette. Screens should read these tokens through
+/// Sundial's hand-authored palette. Screens should read these tokens through
 /// `context.mc` instead of deriving colours from generated Material roles.
 @immutable
-class ManeColors extends ThemeExtension<ManeColors> {
-  const ManeColors({
+class SundialColors extends ThemeExtension<SundialColors> {
+  const SundialColors({
     required this.pageBg,
     required this.surface,
     required this.surfaceAlt,
@@ -66,7 +66,7 @@ class ManeColors extends ThemeExtension<ManeColors> {
   final Color glassEdge;
   final Color shadow;
 
-  static const light = ManeColors(
+  static const light = SundialColors(
     pageBg: Color(0xFFF6F4EF),
     surface: Color(0xFFFFFEFA),
     surfaceAlt: Color(0xFFEFECE5),
@@ -98,7 +98,7 @@ class ManeColors extends ThemeExtension<ManeColors> {
     shadow: Color(0x1A000000),
   );
 
-  static const dark = ManeColors(
+  static const dark = SundialColors(
     pageBg: Color(0xFF0F1210),
     surface: Color(0xFF191D1A),
     surfaceAlt: Color(0xFF222823),
@@ -130,7 +130,7 @@ class ManeColors extends ThemeExtension<ManeColors> {
     shadow: Color(0x66000000),
   );
 
-  static const aero = ManeColors(
+  static const aero = SundialColors(
     pageBg: Color(0xFFDFF3FF),
     surface: Color(0xFFF9FDFF),
     surfaceAlt: Color(0xFFEAF7FE),
@@ -163,7 +163,7 @@ class ManeColors extends ThemeExtension<ManeColors> {
   );
 
   /// Applies one of the accent presets without touching the space colours.
-  ManeColors withAccent(Color accent, {Color? onAccent}) => copyWith(
+  SundialColors withAccent(Color accent, {Color? onAccent}) => copyWith(
     accent: accent,
     accentSoft: accent.withValues(alpha: 0.16),
     onAccent: onAccent ?? _contrastOn(accent),
@@ -186,7 +186,7 @@ class ManeColors extends ThemeExtension<ManeColors> {
   };
 
   @override
-  ManeColors copyWith({
+  SundialColors copyWith({
     Color? pageBg,
     Color? surface,
     Color? surfaceAlt,
@@ -217,7 +217,7 @@ class ManeColors extends ThemeExtension<ManeColors> {
     Color? glassEdge,
     Color? shadow,
   }) {
-    return ManeColors(
+    return SundialColors(
       pageBg: pageBg ?? this.pageBg,
       surface: surface ?? this.surface,
       surfaceAlt: surfaceAlt ?? this.surfaceAlt,
@@ -251,10 +251,10 @@ class ManeColors extends ThemeExtension<ManeColors> {
   }
 
   @override
-  ManeColors lerp(ManeColors? other, double t) {
+  SundialColors lerp(SundialColors? other, double t) {
     if (other == null) return this;
     Color c(Color a, Color b) => Color.lerp(a, b, t)!;
-    return ManeColors(
+    return SundialColors(
       pageBg: c(pageBg, other.pageBg),
       surface: c(surface, other.surface),
       surfaceAlt: c(surfaceAlt, other.surfaceAlt),
@@ -288,6 +288,6 @@ class ManeColors extends ThemeExtension<ManeColors> {
   }
 }
 
-extension ManeColorsContext on BuildContext {
-  ManeColors get mc => Theme.of(this).extension<ManeColors>() ?? ManeColors.light;
+extension SundialColorsContext on BuildContext {
+  SundialColors get mc => Theme.of(this).extension<SundialColors>() ?? SundialColors.light;
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
@@ -20,7 +20,7 @@ class RepeatSelection {
 
 enum _RepeatEnd { never, onDate, afterCount }
 
-/// Opens Streak-style repeat controls plus Mane's repeat-after-completion mode.
+/// Opens Streak-style repeat controls plus Sundial's repeat-after-completion mode.
 Future<RepeatSelection?> showRepeatEditor(
   BuildContext context, {
   required RepeatSelection initial,
@@ -119,7 +119,7 @@ class _RepeatEditorSheetState extends State<_RepeatEditorSheet> {
           ),
         ] else ...[
           const SizedBox(height: 8),
-          Text(l10n.repeat, style: ManeType.label(12, color: c.textSecondary)),
+          Text(l10n.repeat, style: SundialType.label(12, color: c.textSecondary)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 7,
@@ -137,7 +137,7 @@ class _RepeatEditorSheetState extends State<_RepeatEditorSheet> {
             _intervalRow(context),
             if (_frequency == RecurrenceFrequency.weekly) ...[
               const SizedBox(height: 14),
-              Text(l10n.repeatOnDays, style: ManeType.label(12, color: c.textSecondary)),
+              Text(l10n.repeatOnDays, style: SundialType.label(12, color: c.textSecondary)),
               const SizedBox(height: 7),
               Wrap(
                 spacing: 6,
@@ -160,12 +160,12 @@ class _RepeatEditorSheetState extends State<_RepeatEditorSheet> {
             ],
             if (_frequency == RecurrenceFrequency.monthly) ...[
               const SizedBox(height: 14),
-              Text(l10n.repeatMonthlyMode, style: ManeType.label(12, color: c.textSecondary)),
+              Text(l10n.repeatMonthlyMode, style: SundialType.label(12, color: c.textSecondary)),
               const SizedBox(height: 7),
-              ManeSegmented<bool>(
+              SundialSegmented<bool>(
                 segments: [
-                  ManeSegment(value: false, label: l10n.repeatMonthlyDay),
-                  ManeSegment(value: true, label: l10n.repeatMonthlyOrdinal),
+                  SundialSegment(value: false, label: l10n.repeatMonthlyDay),
+                  SundialSegment(value: true, label: l10n.repeatMonthlyOrdinal),
                 ],
                 selected: _monthlyOrdinal,
                 onChanged: (value) => setState(() => _monthlyOrdinal = value),
@@ -176,7 +176,7 @@ class _RepeatEditorSheetState extends State<_RepeatEditorSheet> {
                 Row(
                   children: [
                     Expanded(
-                      child: ManeSelectField(
+                      child: SundialSelectField(
                         label: l10n.repeatMonthlyOrdinal,
                         valueLabel: _ordinalLabel(context, _ordinal),
                         onTap: () => _pickOrdinal(context),
@@ -184,7 +184,7 @@ class _RepeatEditorSheetState extends State<_RepeatEditorSheet> {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: ManeSelectField(
+                      child: SundialSelectField(
                         label: l10n.repeatOnDays,
                         valueLabel: shortWeekday(context, _ordinalWeekday),
                         onTap: () => _pickOrdinalWeekday(context),
@@ -197,7 +197,7 @@ class _RepeatEditorSheetState extends State<_RepeatEditorSheet> {
                   padding: const EdgeInsets.only(top: 7),
                   child: Text(
                     l10n.recurrenceOnDayOfMonth(widget.anchor.day),
-                    style: ManeType.body(12, color: c.textSecondary),
+                    style: SundialType.body(12, color: c.textSecondary),
                   ),
                 ),
             ],
@@ -206,17 +206,17 @@ class _RepeatEditorSheetState extends State<_RepeatEditorSheet> {
                 padding: const EdgeInsets.only(top: 7),
                 child: Text(
                   formatFullDate(context, widget.anchor.toDateTime()),
-                  style: ManeType.body(12, color: c.textSecondary),
+                  style: SundialType.body(12, color: c.textSecondary),
                 ),
               ),
             const SizedBox(height: 16),
-            Text(l10n.repeatEnds, style: ManeType.label(12, color: c.textSecondary)),
+            Text(l10n.repeatEnds, style: SundialType.label(12, color: c.textSecondary)),
             const SizedBox(height: 7),
-            ManeSegmented<_RepeatEnd>(
+            SundialSegmented<_RepeatEnd>(
               segments: [
-                ManeSegment(value: _RepeatEnd.never, label: l10n.repeatEndsNever),
-                ManeSegment(value: _RepeatEnd.onDate, label: l10n.repeatEndsOnDate),
-                ManeSegment(value: _RepeatEnd.afterCount, label: l10n.repeatEndsAfter),
+                SundialSegment(value: _RepeatEnd.never, label: l10n.repeatEndsNever),
+                SundialSegment(value: _RepeatEnd.onDate, label: l10n.repeatEndsOnDate),
+                SundialSegment(value: _RepeatEnd.afterCount, label: l10n.repeatEndsAfter),
               ],
               selected: _end,
               onChanged: (value) => setState(() {
@@ -229,7 +229,7 @@ class _RepeatEditorSheetState extends State<_RepeatEditorSheet> {
             ),
             if (_end == _RepeatEnd.onDate) ...[
               const SizedBox(height: 9),
-              ManeSelectField(
+              SundialSelectField(
                 label: l10n.repeatEndDate,
                 valueLabel: formatFullDate(context, (_until ?? widget.anchor).toDateTime()),
                 leading: const Icon(Icons.event_outlined),
@@ -276,7 +276,7 @@ class _RepeatEditorSheetState extends State<_RepeatEditorSheet> {
     };
     return Row(
       children: [
-        Text(l10n.repeatEvery, style: ManeType.body(13, color: context.mc.textSecondary)),
+        Text(l10n.repeatEvery, style: SundialType.body(13, color: context.mc.textSecondary)),
         const SizedBox(width: 10),
         SizedBox(
           width: 70,
@@ -289,7 +289,7 @@ class _RepeatEditorSheetState extends State<_RepeatEditorSheet> {
           ),
         ),
         const SizedBox(width: 10),
-        Text(unit, style: ManeType.body(13, color: context.mc.textSecondary)),
+        Text(unit, style: SundialType.body(13, color: context.mc.textSecondary)),
       ],
     );
   }
@@ -307,13 +307,13 @@ class _RepeatEditorSheetState extends State<_RepeatEditorSheet> {
 
   Future<void> _pickOrdinal(BuildContext context) async {
     final l10n = context.l10n;
-    final picked = await showManeSelectSheet<int>(
+    final picked = await showSundialSelectSheet<int>(
       context: context,
       title: l10n.repeatMonthlyOrdinal,
       selected: _ordinal,
       options: [
         for (final value in [1, 2, 3, 4, -1])
-          ManeSelectOption(value: value, label: _ordinalLabel(context, value)),
+          SundialSelectOption(value: value, label: _ordinalLabel(context, value)),
       ],
     );
     if (picked != null && mounted) setState(() => _ordinal = picked);
@@ -321,13 +321,13 @@ class _RepeatEditorSheetState extends State<_RepeatEditorSheet> {
 
   Future<void> _pickOrdinalWeekday(BuildContext context) async {
     final l10n = context.l10n;
-    final picked = await showManeSelectSheet<int>(
+    final picked = await showSundialSelectSheet<int>(
       context: context,
       title: l10n.repeatOnDays,
       selected: _ordinalWeekday,
       options: [
         for (final weekday in weekdaysFrom(DateTime.monday))
-          ManeSelectOption(value: weekday, label: shortWeekday(context, weekday)),
+          SundialSelectOption(value: weekday, label: shortWeekday(context, weekday)),
       ],
     );
     if (picked != null && mounted) setState(() => _ordinalWeekday = picked);

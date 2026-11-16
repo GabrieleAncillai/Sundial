@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/date_labels.dart';
 import '../core/i18n/l10n.dart';
@@ -79,10 +79,10 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Expanded(child: _TodayHeader(date: today)),
-              ManeSegmented<_TodayMode>(
+              SundialSegmented<_TodayMode>(
                 segments: [
-                  ManeSegment(value: _TodayMode.list, label: l10n.listView, icon: Icons.checklist),
-                  ManeSegment(
+                  SundialSegment(value: _TodayMode.list, label: l10n.listView, icon: Icons.checklist),
+                  SundialSegment(
                     value: _TodayMode.timeline,
                     label: l10n.timelineView,
                     icon: Icons.view_day_outlined,
@@ -187,10 +187,10 @@ class _TodayHeader extends StatelessWidget {
         SectionLabel(context.l10n.today, color: c.accent),
         Text(
           DateFormat('EEEE', locale).format(date.toDateTime()),
-          style: ManeType.display(31, color: c.text),
+          style: SundialType.display(31, color: c.text),
         ),
         const SizedBox(height: 2),
-        Text(formatFullDate(context, date.toDateTime()), style: ManeType.body(14, color: c.textSecondary)),
+        Text(formatFullDate(context, date.toDateTime()), style: SundialType.body(14, color: c.textSecondary)),
       ],
     );
   }
@@ -213,11 +213,11 @@ class _ProgressCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(context.l10n.progressToday, style: ManeType.label(11.5, color: c.textSecondary)),
+              Text(context.l10n.progressToday, style: SundialType.label(11.5, color: c.textSecondary)),
               const Spacer(),
               Text(
                 total == 0 ? context.l10n.noPlanToday : context.l10n.doneOfTotal(done, total),
-                style: ManeType.label(11.5, color: c.textSecondary),
+                style: SundialType.label(11.5, color: c.textSecondary),
               ),
             ],
           ),
@@ -233,7 +233,7 @@ class _ProgressCard extends StatelessWidget {
           ),
           if (total > 0 && done == total) ...[
             const SizedBox(height: 8),
-            Text(context.l10n.allDone, style: ManeType.body(11.5, color: c.success)),
+            Text(context.l10n.allDone, style: SundialType.body(11.5, color: c.success)),
           ],
         ],
       ),
@@ -296,7 +296,7 @@ class _TodayList extends StatelessWidget {
                 decoration: BoxDecoration(color: Color(space.colorValue), shape: BoxShape.circle),
               ),
               const SizedBox(width: 8),
-              Text(space.name.toUpperCase(), style: ManeType.kicker(color: c.textTertiary)),
+              Text(space.name.toUpperCase(), style: SundialType.kicker(color: c.textTertiary)),
             ],
           ),
         )
@@ -304,7 +304,7 @@ class _TodayList extends StatelessWidget {
         ..addAll(items);
     }
     if (shifts.isEmpty && children.isEmpty) {
-      return Text(l10n.noPlanToday, style: ManeType.body(12.5, color: c.textTertiary));
+      return Text(l10n.noPlanToday, style: SundialType.body(12.5, color: c.textTertiary));
     }
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children);
   }
@@ -358,7 +358,7 @@ class _TodayTimeline extends StatelessWidget {
         if (occurrences.isEmpty && shifts.isEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 12),
-            child: Text(context.l10n.noPlanToday, style: ManeType.body(12.5, color: c.textTertiary)),
+            child: Text(context.l10n.noPlanToday, style: SundialType.body(12.5, color: c.textTertiary)),
           ),
         if (shifts.isNotEmpty) const SizedBox(height: 4),
       ],
@@ -387,7 +387,7 @@ class _ErrorNotice extends StatelessWidget {
           Icon(Icons.error_outline, size: 18, color: c.danger),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(text, style: ManeType.body(12.5, color: c.danger)),
+            child: Text(text, style: SundialType.body(12.5, color: c.danger)),
           ),
         ],
       ),

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-/// The bundled reference typeface and Mane's type scale.
+/// The bundled reference typeface and Sundial's type scale.
 ///
-/// Nunito is the face GymMane uses for its small-app shell. Mane keeps one
+/// Nunito is the face GymMane uses for its small-app shell. Sundial keeps one
 /// family across display, body and labels so the hierarchy comes from weight,
 /// size and spacing rather than a second font.
-class ManeType {
-  ManeType._();
+class SundialType {
+  SundialType._();
 
   static const family = 'Nunito';
 

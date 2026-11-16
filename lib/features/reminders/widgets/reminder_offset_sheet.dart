@@ -90,7 +90,7 @@ class _ReminderSelectionSheetState extends State<ReminderSelectionSheet> {
           ),
         ),
         const SizedBox(height: 8),
-        Text(l10n.customReminderHint, style: ManeType.body(11.5, color: c.textTertiary)),
+        Text(l10n.customReminderHint, style: SundialType.body(11.5, color: c.textTertiary)),
         const SizedBox(height: 16),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(ReminderSelection(offsets: _offsets, times: _times)),
@@ -101,7 +101,7 @@ class _ReminderSelectionSheetState extends State<ReminderSelectionSheet> {
   }
 
   Future<void> _addTime() async {
-    final picked = await showManeTimePicker(context, initialMinute: 9 * 60);
+    final picked = await showSundialTimePicker(context, initialMinute: 9 * 60);
     if (picked == null) return;
     setState(() => _times.add(picked % 1440));
   }

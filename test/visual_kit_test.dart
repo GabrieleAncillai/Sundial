@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/core/widgets/ui_kit.dart';
-import 'package:mane/theme/app_colors.dart';
-import 'package:mane/theme/app_theme.dart';
+import 'package:sundial/core/widgets/ui_kit.dart';
+import 'package:sundial/theme/app_colors.dart';
+import 'package:sundial/theme/app_theme.dart';
 
 void main() {
-  testWidgets('the theme carries Mane tokens, Nunito and component shapes', (tester) async {
-    final theme = ManeTheme.light;
-    final colors = theme.extension<ManeColors>();
+  testWidgets('the theme carries Sundial tokens, Nunito and component shapes', (tester) async {
+    final theme = SundialTheme.light;
+    final colors = theme.extension<SundialColors>();
 
     expect(colors, isNotNull);
-    expect(colors!.accent, ManeColors.light.accent);
+    expect(colors!.accent, SundialColors.light.accent);
     expect(theme.textTheme.bodyMedium?.fontFamily, 'Nunito');
     expect(theme.textTheme.displayLarge?.fontWeight, FontWeight.w800);
     expect(theme.appBarTheme.backgroundColor, Colors.transparent);
     expect(theme.snackBarTheme.behavior, SnackBarBehavior.floating);
     expect(theme.filledButtonTheme.style?.shape?.resolve({}), isA<StadiumBorder>());
     expect(theme.bottomSheetTheme.shape, isA<RoundedRectangleBorder>());
-    expect(theme.cardTheme.color, ManeColors.light.surface);
+    expect(theme.cardTheme.color, SundialColors.light.surface);
   });
 
   testWidgets('the shared kit renders and responds', (tester) async {
@@ -25,7 +25,7 @@ void main() {
     var toggled = false;
     await tester.pumpWidget(
       MaterialApp(
-        theme: ManeTheme.light,
+        theme: SundialTheme.light,
         home: Scaffold(
           body: StatefulBuilder(
             builder: (context, setState) => ListView(
@@ -65,12 +65,12 @@ void main() {
     var selected = 0;
     await tester.pumpWidget(
       MaterialApp(
-        theme: ManeTheme.light,
+        theme: SundialTheme.light,
         home: Scaffold(
           body: StatefulBuilder(
             builder: (context, setState) => Align(
               alignment: Alignment.bottomCenter,
-              child: ManeNavBar(
+              child: SundialNavBar(
                 index: selected,
                 onSelected: (value) => setState(() => selected = value),
                 items: const [
@@ -101,8 +101,8 @@ void main() {
   testWidgets('a pushed page uses the custom header, not an AppBar', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        theme: ManeTheme.light,
-        home: const ManePage(title: 'Tags', subtitle: 'Jobs and people', child: Text('Body')),
+        theme: SundialTheme.light,
+        home: const SundialPage(title: 'Tags', subtitle: 'Jobs and people', child: Text('Body')),
       ),
     );
 
@@ -115,7 +115,7 @@ void main() {
   testWidgets('a sheet opens with the reference handle and title', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        theme: ManeTheme.light,
+        theme: SundialTheme.light,
         home: Builder(
           builder: (context) => Scaffold(
             body: Center(

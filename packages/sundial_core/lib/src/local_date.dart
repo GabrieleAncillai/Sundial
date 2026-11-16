@@ -1,6 +1,6 @@
 /// A date on the calendar, with no time and no time zone.
 ///
-/// Mane stores wall-clock dates and minutes from midnight, not instants.
+/// Sundial stores wall-clock dates and minutes from midnight, not instants.
 /// A 09:00 habit should stay at 09:00 when the device changes time zone, and
 /// a UTC-4 / UTC-5 work schedule should not drift by an hour.
 class LocalDate implements Comparable<LocalDate> {

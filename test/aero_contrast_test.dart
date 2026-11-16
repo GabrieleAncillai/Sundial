@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/theme/aero_colors.dart';
+import 'package:sundial/theme/aero_colors.dart';
 
 void main() {
   void expectContrast(String name, double actual, double minimum) {

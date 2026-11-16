@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
-import '../../../core/icons/mane_icons.dart';
+import '../../../core/icons/sundial_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
@@ -55,10 +55,10 @@ class SpaceOverviewPage extends ConsumerWidget {
         ? l10n.newPerson
         : l10n.newHome;
     final recommended = isWork
-        ? ManeIcons.workRecommended
+        ? SundialIcons.workRecommended
         : isPersonal
-        ? ManeIcons.personalRecommended
-        : ManeIcons.homeRecommended;
+        ? SundialIcons.personalRecommended
+        : SundialIcons.homeRecommended;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
@@ -86,8 +86,8 @@ class SpaceOverviewPage extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: ManeType.headline(26, color: c.text)),
-                  Text(subtitle, style: ManeType.body(12.5, color: c.textSecondary)),
+                  Text(title, style: SundialType.headline(26, color: c.text)),
+                  Text(subtitle, style: SundialType.body(12.5, color: c.textSecondary)),
                 ],
               ),
             ),
@@ -194,7 +194,7 @@ class SpaceOverviewPage extends ConsumerWidget {
           ],
         ),
         if (projects.isEmpty)
-          Text(l10n.noProjectsHint, style: ManeType.body(12, color: c.textTertiary))
+          Text(l10n.noProjectsHint, style: SundialType.body(12, color: c.textTertiary))
         else
           Wrap(
             spacing: 10,
@@ -237,7 +237,7 @@ class SpaceOverviewPage extends ConsumerWidget {
             ],
           ),
           if (habits.isEmpty)
-            Text(l10n.noHabitsHint, style: ManeType.body(12, color: c.textTertiary))
+            Text(l10n.noHabitsHint, style: SundialType.body(12, color: c.textTertiary))
           else
             for (final habit in habits)
               Padding(
@@ -309,7 +309,7 @@ class _CountPill extends StatelessWidget {
         children: [
           Icon(icon, size: 14, color: c.textSecondary),
           const SizedBox(width: 6),
-          Text(label, style: ManeType.label(10.5, color: c.textSecondary)),
+          Text(label, style: SundialType.label(10.5, color: c.textSecondary)),
         ],
       ),
     );
@@ -367,7 +367,7 @@ class _ContextCard extends StatelessWidget {
               item.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: ManeType.title(16, color: c.text),
+              style: SundialType.title(16, color: c.text),
             ),
             if (item.description.isNotEmpty) ...[
               const SizedBox(height: 2),
@@ -375,13 +375,13 @@ class _ContextCard extends StatelessWidget {
                 item.description,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: ManeType.body(11.5, color: c.textSecondary),
+                style: SundialType.body(11.5, color: c.textSecondary),
               ),
             ],
             const SizedBox(height: 10),
             Text(
               '${context.l10n.taskCount(taskCount)} · ${context.l10n.projectCount(projectCount)}',
-              style: ManeType.label(9.5, color: c.textTertiary),
+              style: SundialType.label(9.5, color: c.textTertiary),
             ),
           ],
         ),
@@ -421,7 +421,7 @@ class _ProjectChip extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               project.name,
-              style: ManeType.body(12.5, weight: FontWeight.w700, color: c.text),
+              style: SundialType.body(12.5, weight: FontWeight.w700, color: c.text),
             ),
           ],
         ),
@@ -465,13 +465,13 @@ class _QuickLink extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: ManeType.body(13, weight: FontWeight.w700, color: c.text),
+                    style: SundialType.body(13, weight: FontWeight.w700, color: c.text),
                   ),
                   Text(
                     subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: ManeType.body(10.5, color: c.textSecondary),
+                    style: SundialType.body(10.5, color: c.textSecondary),
                   ),
                 ],
               ),

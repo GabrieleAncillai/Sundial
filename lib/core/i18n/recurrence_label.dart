@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../i18n/date_labels.dart';
 import '../i18n/l10n.dart';

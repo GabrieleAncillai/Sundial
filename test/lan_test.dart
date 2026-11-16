@@ -5,15 +5,15 @@ import 'dart:io';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/sync/device_certificate.dart';
-import 'package:mane/features/sync/lan_client.dart';
-import 'package:mane/features/sync/lan_server.dart';
-import 'package:mane/features/sync/pairing_crypto.dart';
-import 'package:mane/models/local_identity.dart';
-import 'package:mane/models/paired_device.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/services/planner_repository.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/features/sync/device_certificate.dart';
+import 'package:sundial/features/sync/lan_client.dart';
+import 'package:sundial/features/sync/lan_server.dart';
+import 'package:sundial/features/sync/pairing_crypto.dart';
+import 'package:sundial/models/local_identity.dart';
+import 'package:sundial/models/paired_device.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/services/planner_repository.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 
 void main() {
@@ -80,11 +80,11 @@ void main() {
     final http = HttpClient()..badCertificateCallback = (_, _, _) => true;
     try {
       final request = await http.getUrl(
-        Uri(scheme: 'https', host: '127.0.0.1', port: server.port, path: '/mane/v1/info'),
+        Uri(scheme: 'https', host: '127.0.0.1', port: server.port, path: '/sundial/v1/info'),
       );
       final response = await request.close();
       final body = jsonDecode(await utf8.decoder.bind(response).join()) as Map<String, dynamic>;
-      expect(body['app'], 'mane');
+      expect(body['app'], 'sundial');
       expect(body.containsKey('deviceId'), isFalse);
       expect(body.containsKey('deviceName'), isFalse);
       expect(body.containsKey('username'), isFalse);
@@ -136,7 +136,7 @@ void main() {
 
   test('answers each signed request once and rejects a replay', () async {
     final host = await pairHost();
-    final path = Uri(path: '/mane/v1/query', queryParameters: {'resource': 'summary'}).toString();
+    final path = Uri(path: '/sundial/v1/query', queryParameters: {'resource': 'summary'}).toString();
     final timestamp = now.millisecondsSinceEpoch ~/ 1000;
     const nonce = 'replay-test-nonce';
     final signature = await PairingCrypto.signRequest(
@@ -156,14 +156,14 @@ void main() {
             scheme: 'https',
             host: '127.0.0.1',
             port: server.port,
-            path: '/mane/v1/query',
+            path: '/sundial/v1/query',
             queryParameters: {'resource': 'summary'},
           ),
         );
-        request.headers.set('x-mane-device', guestIdentity.deviceId);
-        request.headers.set('x-mane-timestamp', '$timestamp');
-        request.headers.set('x-mane-nonce', nonce);
-        request.headers.set('x-mane-signature', signature);
+        request.headers.set('x-sundial-device', guestIdentity.deviceId);
+        request.headers.set('x-sundial-timestamp', '$timestamp');
+        request.headers.set('x-sundial-nonce', nonce);
+        request.headers.set('x-sundial-signature', signature);
         final response = await request.close();
         await response.drain<void>();
         return response.statusCode;

@@ -1,4 +1,4 @@
--- Mane schema v1, captured from the generated Drift schema before v0.1.5.
+-- Sundial schema v1, captured from the generated Drift schema before v0.1.5.
 -- The migration test loads this file into a real SQLite database, inserts v1
 -- rows, and then opens AppDatabase so the v2 migration runs against real data.
 CREATE TABLE "space_records" ("id" TEXT NOT NULL, "name" TEXT NOT NULL, "color" INTEGER NOT NULL, "position" INTEGER NOT NULL DEFAULT 0, "created_at" INTEGER NOT NULL, "updated_at" INTEGER NOT NULL, "deleted_at" INTEGER NULL, PRIMARY KEY ("id"));

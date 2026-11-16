@@ -87,7 +87,7 @@ abstract final class PairingCrypto {
     required String username,
     int iterations = pairingIterations,
   }) async {
-    final salt = utf8.encode('mane-pair|$hostFingerprint|$guestFingerprint|$username');
+    final salt = utf8.encode('sundial-pair|$hostFingerprint|$guestFingerprint|$username');
     final key = await Pbkdf2.hmacSha256(
       iterations: iterations,
       bits: 256,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-abstract final class ManeIcons {
+abstract final class SundialIcons {
   static const Map<String, IconData> all = {
     // Work and office.
     'laptop': Icons.laptop,

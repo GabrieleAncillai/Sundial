@@ -79,7 +79,7 @@ abstract final class ReportWriter {
   static Future<Uint8List> summaryPdf(ReportData data) {
     final summaryTitle = _label(data, 'Summary report', 'Informe resumido');
     final byGroup = _label(data, 'BY GROUP', 'POR GRUPO');
-    final document = pw.Document(title: summaryTitle, author: 'Mane', creator: 'Mane');
+    final document = pw.Document(title: summaryTitle, author: 'Sundial', creator: 'Sundial');
     document.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
@@ -105,7 +105,7 @@ abstract final class ReportWriter {
   static Future<Uint8List> detailedPdf(ReportData data) {
     final detailedTitle = _label(data, 'Detailed report', 'Informe detallado');
     final sessions = _label(data, 'SESSIONS', 'SESIONES');
-    final document = pw.Document(title: detailedTitle, author: 'Mane', creator: 'Mane');
+    final document = pw.Document(title: detailedTitle, author: 'Sundial', creator: 'Sundial');
     document.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
@@ -224,7 +224,7 @@ abstract final class ReportWriter {
           spacing: 18,
           runSpacing: 3,
           children: [
-            _meta('PROFILE', profile.isEmpty ? 'Mane' : profile),
+            _meta('PROFILE', profile.isEmpty ? 'Sundial' : profile),
             _meta('GENERATED', _formatDate(data.generatedAt, data.datePattern, data.languageCode)),
           ],
         ),
@@ -410,7 +410,7 @@ abstract final class ReportWriter {
   }
 
   static pw.Widget _footer(pw.Context context, ReportData data) {
-    final footer = _label(data, 'Created with Mane', 'Creado con Mane');
+    final footer = _label(data, 'Created with Sundial', 'Creado con Sundial');
     final pageLabel = _label(data, 'Page', 'Página');
     return pw.Column(
       mainAxisSize: pw.MainAxisSize.min,

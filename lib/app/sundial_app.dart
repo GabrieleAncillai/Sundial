@@ -8,8 +8,8 @@ import '../state/settings_controller.dart';
 import '../theme/app_theme.dart';
 import 'app_shell.dart';
 
-class ManeApp extends ConsumerWidget {
-  const ManeApp({super.key});
+class SundialApp extends ConsumerWidget {
+  const SundialApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,8 +17,8 @@ class ManeApp extends ConsumerWidget {
     return MaterialApp(
       onGenerateTitle: (context) => context.l10n.appName,
       debugShowCheckedModeBanner: false,
-      theme: ManeTheme.forSettings(settings, Brightness.light),
-      darkTheme: ManeTheme.forSettings(settings, Brightness.dark),
+      theme: SundialTheme.forSettings(settings, Brightness.light),
+      darkTheme: SundialTheme.forSettings(settings, Brightness.dark),
       themeMode: settings.resolvedThemeMode,
       locale: settings.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -26,7 +26,7 @@ class ManeApp extends ConsumerWidget {
       builder: (context, child) {
         final media = MediaQuery.of(context);
         return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: ManeTheme.systemBars(Theme.of(context).brightness),
+          value: SundialTheme.systemBars(Theme.of(context).brightness),
           child: MediaQuery(
             data: media.copyWith(
               textScaler: TextScaler.linear(settings.textScale),

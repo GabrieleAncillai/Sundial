@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../app_version.dart';
 import '../../models/local_identity.dart';
@@ -146,15 +146,15 @@ class LanServer {
         return;
       }
       final path = request.uri.path;
-      if (request.method == 'GET' && path == '/mane/v1/info') {
+      if (request.method == 'GET' && path == '/sundial/v1/info') {
         await _handleInfo(request);
         return;
       }
-      if (request.method == 'POST' && path == '/mane/v1/pair') {
+      if (request.method == 'POST' && path == '/sundial/v1/pair') {
         await _handlePair(request);
         return;
       }
-      if (request.method == 'GET' && path == '/mane/v1/query') {
+      if (request.method == 'GET' && path == '/sundial/v1/query') {
         await _handleQuery(request);
         return;
       }
@@ -178,7 +178,7 @@ class LanServer {
     // certificate fingerprint is public and is checked by the client. Device
     // identity is returned only in the authenticated pair response.
     await _json(request.response, HttpStatus.ok, {
-      'app': 'mane',
+      'app': 'sundial',
       'version': appVersion,
       'protocol': protocolVersion,
       'fingerprint': _fingerprint,
@@ -299,10 +299,10 @@ class LanServer {
       return;
     }
 
-    final deviceId = request.headers.value('x-mane-device');
-    final timestampRaw = request.headers.value('x-mane-timestamp');
-    final nonce = request.headers.value('x-mane-nonce');
-    final signature = request.headers.value('x-mane-signature');
+    final deviceId = request.headers.value('x-sundial-device');
+    final timestampRaw = request.headers.value('x-sundial-timestamp');
+    final nonce = request.headers.value('x-sundial-nonce');
+    final signature = request.headers.value('x-sundial-signature');
     if (deviceId == null || timestampRaw == null || nonce == null || signature == null) {
       await _json(request.response, HttpStatus.unauthorized, {'error': 'unauthorized'});
       return;

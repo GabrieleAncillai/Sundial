@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:description="@string/mane_widget_description"
-    android:initialLayout="@layout/mane_today_widget"
+    android:description="@string/sundial_widget_description"
+    android:initialLayout="@layout/sundial_today_widget"
     android:minWidth="250dp"
     android:minHeight="110dp"
     android:resizeMode="horizontal|vertical"

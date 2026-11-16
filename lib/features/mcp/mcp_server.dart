@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../app_version.dart';
@@ -204,7 +204,7 @@ class McpServer {
           'capabilities': {
             'tools': {'listChanged': false},
           },
-          'serverInfo': {'name': 'mane', 'version': appVersion},
+          'serverInfo': {'name': 'sundial', 'version': appVersion},
         };
       case 'ping':
         return <String, Object?>{};
@@ -780,7 +780,7 @@ class McpServer {
 
   void _requireWrites() {
     if (!_writesEnabled) {
-      throw const _RpcException(-32602, 'Write tools are disabled in Mane settings');
+      throw const _RpcException(-32602, 'Write tools are disabled in Sundial settings');
     }
   }
 
@@ -1059,7 +1059,7 @@ class McpServer {
 
   String _bearerToken(HttpRequest request) {
     final header = request.headers.value(HttpHeaders.authorizationHeader);
-    if (header == null) return request.headers.value('x-mane-mcp-token') ?? '';
+    if (header == null) return request.headers.value('x-sundial-mcp-token') ?? '';
     if (!header.toLowerCase().startsWith('bearer ')) return '';
     return header.substring(7).trim();
   }

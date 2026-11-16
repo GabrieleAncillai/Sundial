@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'Mane';
+  String get appName => 'Sundial';
 
   @override
   String get today => 'Today';
@@ -451,10 +451,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get backupInvalid => 'This file is not a valid Mane backup.';
+  String get backupInvalid => 'This file is not a valid Sundial backup.';
 
   @override
-  String get backupFuture => 'This backup comes from a newer version of Mane.';
+  String get backupFuture => 'This backup comes from a newer version of Sundial.';
 
   @override
   String get importConfirmTitle => 'Replace your data?';
@@ -507,13 +507,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get basedOnGymMane => 'Based on GymMane by InlitX';
+  String get basedOnSundial => 'Based on Sundial by Gabriele Ancillai';
 
   @override
-  String get basedOnStreak => 'Based on Streak by InlitX';
-
-  @override
-  String get basedOnMane => 'Based on Mane by the Mane contributors';
+  String get inspiredBy => 'Inspired by GymMane and Streak by InlitX';
 
   @override
   String version(String version) {
@@ -525,14 +522,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseBody =>
-      'Mane is free software under GPL-3.0-only. It comes with no warranty. See LICENSE and ADDITIONAL_TERMS.md in the repository.';
+      'Sundial is free software under GPL-3.0-only. It comes with no warranty. See LICENSE and ADDITIONAL_TERMS.md in the repository.';
 
   @override
   String get credits => 'Credits';
 
   @override
-  String get creditsBody =>
-      'Built with reference to GymMane and Streak by InlitX. Based on Mane by the Mane contributors.';
+  String get creditsBody => 'An independent project by Gabriele Ancillai.';
 
   @override
   String get tagsManager => 'Tags';
@@ -924,7 +920,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discoveredOnNetwork => 'Found on this network';
 
   @override
-  String get noDiscoveredDevices => 'No other Mane devices found yet.';
+  String get noDiscoveredDevices => 'No other Sundial devices found yet.';
 
   @override
   String get address => 'Address';
@@ -1653,6 +1649,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearDate => 'Clear date';
 
   @override
+  String get clearText => 'Clear text';
+
+  @override
   String get gadgetName => 'Gadget name';
 
   @override
@@ -2052,11 +2051,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nearbyDevices => 'Nearby devices';
 
   @override
-  String get scanningDevices => 'Looking for Mane devices on this network…';
+  String get scanningDevices => 'Looking for Sundial devices on this network…';
 
   @override
   String get noNearbyDevices =>
-      'No nearby Mane devices found. Make sure the other device has online functionalities enabled.';
+      'No nearby Sundial devices found. Make sure the other device has online functionalities enabled.';
 
   @override
   String pairWithDevice(String name) {
@@ -2076,7 +2075,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncExplainer =>
-      'Mane finds your other devices on the local network. Pairing stores a shared key once, so changing networks or IP addresses does not break the link. Sync stays read-only and never replaces your local plan.';
+      'Sundial finds your other devices on the local network. Pairing stores a shared key once, so changing networks or IP addresses does not break the link. Sync stays read-only and never replaces your local plan.';
 
   @override
   String get pairSuccess => 'Device paired.';

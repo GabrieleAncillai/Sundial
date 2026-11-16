@@ -1,4 +1,4 @@
--- Mane schema v2, captured from the generated Drift schema before tags.
+-- Sundial schema v2, captured from the generated Drift schema before tags.
 -- The migration test loads this file, inserts v2 rows, and opens AppDatabase
 -- so the v3 migration runs against real data.
 CREATE TABLE "space_records" ("id" TEXT NOT NULL, "name" TEXT NOT NULL, "color" INTEGER NOT NULL, "position" INTEGER NOT NULL DEFAULT 0, "created_at" INTEGER NOT NULL, "updated_at" INTEGER NOT NULL, "deleted_at" INTEGER NULL, PRIMARY KEY ("id"));

@@ -1,6 +1,6 @@
 {
   "@@locale": "es",
-  "appName": "Mane",
+  "appName": "Sundial",
   "today": "Hoy",
   "week": "Semana",
   "calendar": "Calendario",
@@ -336,8 +336,8 @@
       }
     }
   },
-  "backupInvalid": "Este archivo no es una copia válida de Mane.",
-  "backupFuture": "Esta copia viene de una versión más reciente de Mane.",
+  "backupInvalid": "Este archivo no es una copia válida de Sundial.",
+  "backupFuture": "Esta copia viene de una versión más reciente de Sundial.",
   "importConfirmTitle": "¿Sustituir tus datos?",
   "importConfirmBody": "La copia sustituye todas las entradas, turnos, etiquetas y ajustes de este dispositivo.",
   "syncAndAgent": "Sincronización y agente local",
@@ -361,9 +361,8 @@
       }
     }
   },
-  "basedOnGymMane": "Basado en GymMane de InlitX",
-  "basedOnStreak": "Basado en Streak de InlitX",
-  "basedOnMane": "Basado en Mane por los colaboradores de Mane",
+  "basedOnSundial": "Basado en Sundial por Gabriele Ancillai",
+  "inspiredBy": "Inspirado en GymMane y Streak de InlitX",
   "version": "Versión {version}",
   "@version": {
     "placeholders": {
@@ -373,9 +372,9 @@
     }
   },
   "license": "Licencia",
-  "licenseBody": "Mane es software libre bajo GPL-3.0-only. Se ofrece sin garantía. Consulta LICENSE y ADDITIONAL_TERMS.md en el repositorio.",
+  "licenseBody": "Sundial es software libre bajo GPL-3.0-only. Se ofrece sin garantía. Consulta LICENSE y ADDITIONAL_TERMS.md en el repositorio.",
   "credits": "Créditos",
-  "creditsBody": "Creado tomando como referencia GymMane y Streak de InlitX. Basado en Mane por los colaboradores de Mane.",
+  "creditsBody": "Un proyecto independiente de Gabriele Ancillai.",
   "tagsManager": "Etiquetas",
   "homeInventory": "Inventario del hogar",
   "homeInventorySubtitle": "Cantidades, lugares y niveles de reposición.",
@@ -581,7 +580,7 @@
     }
   },
   "discoveredOnNetwork": "Encontrados en esta red",
-  "noDiscoveredDevices": "Todavía no se han encontrado otros dispositivos Mane.",
+  "noDiscoveredDevices": "Todavía no se han encontrado otros dispositivos Sundial.",
   "address": "Dirección",
   "port": "Puerto",
   "code": "Código",
@@ -1012,6 +1011,7 @@
     }
   },
   "clearDate": "Quitar la fecha",
+  "clearText": "Borrar texto",
   "gadgetName": "Nombre del aparato",
   "maintenanceIntervalDays": "Días entre revisiones",
   "nextDue": "Próxima: {date}",
@@ -1216,8 +1216,8 @@
   "dataDeleteFailed": "No se pudieron eliminar los datos locales. No se borró nada.",
   "dataDeleteIncomplete": "Se eliminó el plan, pero algunos archivos multimedia o copias automáticas no se pudieron borrar. Revisa los permisos de almacenamiento y bórralos desde la carpeta de datos de la app.",
   "nearbyDevices": "Dispositivos cercanos",
-  "scanningDevices": "Buscando dispositivos Mane en esta red…",
-  "noNearbyDevices": "No se han encontrado dispositivos Mane. Asegúrate de que el otro dispositivo tiene las funciones en línea activadas.",
+  "scanningDevices": "Buscando dispositivos Sundial en esta red…",
+  "noNearbyDevices": "No se han encontrado dispositivos Sundial. Asegúrate de que el otro dispositivo tiene las funciones en línea activadas.",
   "pairWithDevice": "Emparejar con {name}",
   "@pairWithDevice": {
     "placeholders": {
@@ -1236,7 +1236,7 @@
       }
     }
   },
-  "syncExplainer": "Mane encuentra tus otros dispositivos en la red local. El emparejamiento guarda una clave compartida una sola vez, así que cambiar de red o de IP no rompe el vínculo. La sincronización es de solo lectura y nunca sustituye tu plan local.",
+  "syncExplainer": "Sundial encuentra tus otros dispositivos en la red local. El emparejamiento guarda una clave compartida una sola vez, así que cambiar de red o de IP no rompe el vínculo. La sincronización es de solo lectura y nunca sustituye tu plan local.",
   "pairSuccess": "Dispositivo emparejado.",
   "pairFailed": "No se pudo emparejar: {error}",
   "@pairFailed": {

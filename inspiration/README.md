@@ -1,6 +1,6 @@
 # Inspiration
 
-Reference screenshots for the visual direction of Mane. They do not have to be
+Reference screenshots for the visual direction of Sundial. They do not have to be
 productivity apps. A bank, a music player, a game, anything with a detail worth
 borrowing is welcome.
 

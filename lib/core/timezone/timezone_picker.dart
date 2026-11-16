@@ -6,7 +6,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../widgets/app_sheet.dart';
-import '../widgets/mane_search_field.dart';
+import '../widgets/sundial_search_field.dart';
 import '../widgets/pressable.dart';
 
 /// Opens a searchable IANA time-zone picker.
@@ -142,7 +142,7 @@ class _TimeZonePickerSheetState extends State<_TimeZonePickerSheet> {
     return AppSheet(
       title: widget.title,
       children: [
-        ManeSearchField(
+        SundialSearchField(
           controller: _searchController,
           hint: widget.searchHint,
           autofocus: true,
@@ -163,7 +163,7 @@ class _TimeZonePickerSheetState extends State<_TimeZonePickerSheet> {
           height: MediaQuery.sizeOf(context).height * 0.55,
           child: matches.isEmpty
               ? Center(
-                  child: Text(widget.emptyText, style: ManeType.body(13, color: c.textSecondary)),
+                  child: Text(widget.emptyText, style: SundialType.body(13, color: c.textSecondary)),
                 )
               : ListView.separated(
                   padding: EdgeInsets.zero,
@@ -247,20 +247,20 @@ class _ZoneRow extends StatelessWidget {
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: ManeType.title(14.5, color: c.text),
+                    style: SundialType.title(14.5, color: c.text),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: ManeType.body(12, color: c.textSecondary),
+                    style: SundialType.body(12, color: c.textSecondary),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 10),
-            Text(time, style: ManeType.label(13, color: c.textSecondary)),
+            Text(time, style: SundialType.label(13, color: c.textSecondary)),
             if (selected) ...[const SizedBox(width: 8), Icon(Icons.check_rounded, size: 18, color: c.accent)],
           ],
         ),

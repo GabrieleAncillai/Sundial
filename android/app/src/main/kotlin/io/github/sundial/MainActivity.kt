@@ -1,4 +1,4 @@
-package io.github.gabrieleancillai.mane
+package io.github.sundial
 
 import android.media.AudioAttributes
 import android.media.SoundPool
@@ -55,8 +55,8 @@ class MainActivity : FlutterActivity() {
 
     private fun play(alarm: String?, pack: String?, file: String?): Boolean {
         val name = when {
-            alarm != null -> "mane_alarm_$alarm"
-            pack != null && file != null -> "mane_${pack}_$file"
+            alarm != null -> "sundial_alarm_$alarm"
+            pack != null && file != null -> "sundial_${pack}_$file"
             else -> return false
         }
         if (!isValidResourceName(name)) return false
@@ -105,7 +105,7 @@ class MainActivity : FlutterActivity() {
     }
 
     private companion object {
-        const val CHANNEL = "mane/sound"
+        const val CHANNEL = "sundial/sound"
         const val MAX_STREAMS = 4
     }
 }

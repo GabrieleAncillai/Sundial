@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../core/sound/sound_service.dart';
@@ -78,7 +78,7 @@ class TaskCard extends ConsumerWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style:
-                              ManeType.body(
+                              SundialType.body(
                                 compact ? 13.5 : 14.5,
                                 weight: FontWeight.w700,
                                 color: completed ? c.textTertiary : c.text,
@@ -314,7 +314,7 @@ class _PriorityChip extends StatelessWidget {
       decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(7)),
       child: Text(
         label,
-        style: ManeType.label(9.5, color: color).copyWith(fontWeight: FontWeight.w800),
+        style: SundialType.label(9.5, color: color).copyWith(fontWeight: FontWeight.w800),
       ),
     );
   }
@@ -335,7 +335,7 @@ class _Meta extends StatelessWidget {
       children: [
         Icon(icon, size: tinyIcon ? 7 : 13, color: color),
         const SizedBox(width: 4),
-        Text(text, style: ManeType.label(10.5, color: color)),
+        Text(text, style: SundialType.label(10.5, color: color)),
       ],
     );
   }

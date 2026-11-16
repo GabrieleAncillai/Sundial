@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
@@ -105,12 +105,12 @@ class _PlanPageState extends ConsumerState<PlanPage> {
             if (entriesState.hasError)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ManeNotice(text: l10n.couldNotLoadDay('${entriesState.error}')),
+                child: SundialNotice(text: l10n.couldNotLoadDay('${entriesState.error}')),
               ),
             if (shiftsState.hasError)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ManeNotice(text: l10n.couldNotLoadShifts('${shiftsState.error}')),
+                child: SundialNotice(text: l10n.couldNotLoadShifts('${shiftsState.error}')),
               ),
             Expanded(
               child: desktop
@@ -192,12 +192,12 @@ class _PlanPageState extends ConsumerState<PlanPage> {
         Row(
           children: [
             Expanded(
-              child: Text(l10n.selectedDay, style: ManeType.label(11, color: context.mc.textTertiary)),
+              child: Text(l10n.selectedDay, style: SundialType.label(11, color: context.mc.textTertiary)),
             ),
-            ManeSegmented<_MobileMode>(
+            SundialSegmented<_MobileMode>(
               segments: [
-                ManeSegment(value: _MobileMode.list, label: l10n.listView, icon: Icons.checklist),
-                ManeSegment(
+                SundialSegment(value: _MobileMode.list, label: l10n.listView, icon: Icons.checklist),
+                SundialSegment(
                   value: _MobileMode.timeline,
                   label: l10n.timelineView,
                   icon: Icons.view_day_outlined,
@@ -555,7 +555,7 @@ class _PlanHeader extends StatelessWidget {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: ManeType.headline(24, color: c.text),
+                style: SundialType.headline(24, color: c.text),
               ),
             ],
           ),

@@ -1,6 +1,8 @@
-# Mane
+# Sundial
 
-A local-first planner for the week and month as they actually happen. One app,
+A local-first planner for life, work and home.
+
+Sundial is built for the week and month as they actually happen. One app,
 three spaces: **Personal**, **Work** and **Home**.
 
 Work shifts, house inventory and maintenance, personal admin and the dates that
@@ -118,7 +120,7 @@ Reboot rescheduling is blocked by EMUI and documented as an OEM limitation.
   set, streamable HTTP sessions and write tools behind a second setting.
 - Global search across entry titles and notes, tag names and household items.
 - An Android home-screen widget with today's plan and the next shift.
-- A reference-style visual foundation: Nunito, `ManeColors`/`ManeType`, component
+- A reference-style visual foundation: Nunito, `SundialColors`/`SundialType`, component
   themes, a shared UI kit, a floating shell and a dotted paper background.
 - Accessibility basics: semantics on calendar days and shifts, text scaling in
   the calendar, keyboard shortcuts for search and tab switching.
@@ -156,7 +158,7 @@ Reboot rescheduling is blocked by EMUI and documented as an OEM limitation.
   certificate, `bonsoir` for mDNS
 - Android and Linux desktop from one codebase
 
-The stack audit is done: Mane keeps Drift + Riverpod. The planner needs
+The stack audit is done: Sundial keeps Drift + Riverpod. The planner needs
 date-range queries, entry/completion joins and a transactional backup import,
 which the reference projects' local JSON stores do not provide directly.
 Riverpod's overrides keep the clock, timezone and database injectable in tests.
@@ -169,21 +171,21 @@ There is no second state-management system. See
 lib/
   app/         MaterialApp and the shell
   features/    calendar, shifts, home inventory, settings, backup, sync, mcp
-  models/      plain data classes that are not in mane_core
+  models/      plain data classes that are not in sundial_core
   screens/     one file per screen
   services/    database, repository, platform side effects
   state/       providers and app state
   theme/       colors and text styles
   widgets/     shared UI pieces
 packages/
-  mane_core/   pure Dart domain model, recurrence and shift rules
+  sundial_core/  pure Dart domain model, recurrence and shift rules
 docs/
 inspiration/
 ```
 
 The core package has no Flutter imports on purpose. The UI, a future LAN server
 and the MCP adapter share the same rules. The target is Streak's feature-first
-layout as Mane grows; see [docs/full-docs.md](docs/full-docs.md).
+layout as Sundial grows; see [docs/full-docs.md](docs/full-docs.md).
 
 ## Run
 
@@ -201,7 +203,7 @@ hook. JIT mode avoids that.
 
 ```bash
 flutter test
-(cd packages/mane_core && dart test)
+(cd packages/sundial_core && dart test)
 ```
 
 ## License

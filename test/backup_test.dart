@@ -5,14 +5,14 @@ import 'dart:io';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/backup/backup_service.dart';
-import 'package:mane/models/home_item.dart';
-import 'package:mane/models/local_identity.dart';
-import 'package:mane/models/paired_device.dart';
-import 'package:mane/models/reminder.dart';
-import 'package:mane/models/shopping_item.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/features/backup/backup_service.dart';
+import 'package:sundial/models/home_item.dart';
+import 'package:sundial/models/local_identity.dart';
+import 'package:sundial/models/paired_device.dart';
+import 'package:sundial/models/reminder.dart';
+import 'package:sundial/models/shopping_item.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 
 void main() {
@@ -234,7 +234,7 @@ void main() {
   });
 
   test('backups embed and restore sticker media', () async {
-    final mediaDir = await Directory.systemTemp.createTemp('mane-media');
+    final mediaDir = await Directory.systemTemp.createTemp('sundial-media');
     addTearDown(() => mediaDir.delete(recursive: true));
     final sticker = File('${mediaDir.path}/cafe.png')..writeAsBytesSync([1, 2, 3, 4]);
     await source.saveContext(
@@ -251,7 +251,7 @@ void main() {
     final payload = jsonDecode(exported) as Map<String, Object?>;
     expect((payload['media'] as Map).keys, contains(sticker.path));
 
-    final restoreDir = await Directory.systemTemp.createTemp('mane-media-restore');
+    final restoreDir = await Directory.systemTemp.createTemp('sundial-media-restore');
     addTearDown(() => restoreDir.delete(recursive: true));
     // Media from the plan being replaced must not survive the import.
     final stale = File('${restoreDir.path}/old-sticker.png')..writeAsBytesSync([9, 9]);
@@ -465,7 +465,7 @@ void main() {
     expect(jsonEncode(exported), isNot(contains('cGluaGFzaA==')));
 
     final legacy = <String, Object?>{
-      'app': 'mane',
+      'app': 'sundial',
       'schemaVersion': 3,
       'exportedAt': DateTime.utc(2026, 11, 1).toIso8601String(),
       'spaces': [
@@ -530,7 +530,7 @@ void main() {
 
   test('upgrades a v4 payload with home items and shopping', () async {
     final legacy = <String, Object?>{
-      'app': 'mane',
+      'app': 'sundial',
       'schemaVersion': 4,
       'exportedAt': DateTime.utc(2026, 11, 1).toIso8601String(),
       'spaces': [
@@ -587,7 +587,7 @@ void main() {
   });
 
   test('rejects payloads older than the supported upgrade window', () async {
-    final legacy = <String, Object?>{'app': 'mane', 'schemaVersion': 2, 'spaces': <Object?>[]};
+    final legacy = <String, Object?>{'app': 'sundial', 'schemaVersion': 2, 'spaces': <Object?>[]};
     await expectLater(
       BackupService(source).importJson(jsonEncode(legacy)),
       throwsA(isA<BackupFormatException>()),

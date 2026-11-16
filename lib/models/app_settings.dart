@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
 
@@ -41,19 +41,19 @@ abstract final class SettingsKeys {
   static const timezoneOverride = 'timezoneOverride';
 }
 
-enum ManeThemeVariant { system, light, dark, aero }
+enum SundialThemeVariant { system, light, dark, aero }
 
-enum ManeAccentScheme { sage, ocean, sunset, violet, mono }
+enum SundialAccentScheme { sage, ocean, sunset, violet, mono }
 
-enum ManeBackgroundStyle { dots, grid, oled, plain, custom }
+enum SundialBackgroundStyle { dots, grid, oled, plain, custom }
 
-enum ManeNavSide { left, right }
+enum SundialNavSide { left, right }
 
-enum ManeDateFormat { system, dmy, mdy, ymd }
+enum SundialDateFormat { system, dmy, mdy, ymd }
 
-enum ManeSoundPack { soft, aero }
+enum SundialSoundPack { soft, aero }
 
-enum ManeAlarmSound { soft, chime, bright }
+enum SundialAlarmSound { soft, chime, bright }
 
 /// App-wide preferences. Persisted in the `setting_records` table.
 class AppSettings {
@@ -78,19 +78,19 @@ class AppSettings {
     this.quietHoursEnabled = false,
     this.quietHoursStartMinute = 22 * 60,
     this.quietHoursEndMinute = 7 * 60,
-    this.themeVariant = ManeThemeVariant.system,
-    this.accentScheme = ManeAccentScheme.sage,
-    this.backgroundStyle = ManeBackgroundStyle.dots,
+    this.themeVariant = SundialThemeVariant.system,
+    this.accentScheme = SundialAccentScheme.sage,
+    this.backgroundStyle = SundialBackgroundStyle.dots,
     this.backgroundCustomColor = 0xFFF6F4EF,
     this.textScale = 1,
-    this.navSide = ManeNavSide.left,
-    this.dateFormat = ManeDateFormat.system,
+    this.navSide = SundialNavSide.left,
+    this.dateFormat = SundialDateFormat.system,
     this.performanceMode = false,
     this.onlineEnabled = false,
     this.mcpPort = 8765,
     this.soundsEnabled = false,
-    this.soundPack = ManeSoundPack.aero,
-    this.alarmSound = ManeAlarmSound.chime,
+    this.soundPack = SundialSoundPack.aero,
+    this.alarmSound = SundialAlarmSound.chime,
     this.timezoneOverride = '',
   });
 
@@ -131,13 +131,13 @@ class AppSettings {
   final int quietHoursStartMinute;
   final int quietHoursEndMinute;
 
-  final ManeThemeVariant themeVariant;
-  final ManeAccentScheme accentScheme;
-  final ManeBackgroundStyle backgroundStyle;
+  final SundialThemeVariant themeVariant;
+  final SundialAccentScheme accentScheme;
+  final SundialBackgroundStyle backgroundStyle;
   final int backgroundCustomColor;
   final double textScale;
-  final ManeNavSide navSide;
-  final ManeDateFormat dateFormat;
+  final SundialNavSide navSide;
+  final SundialDateFormat dateFormat;
 
   /// Reduces blur, shadows and long animations on low-end devices.
   final bool performanceMode;
@@ -148,10 +148,10 @@ class AppSettings {
 
   /// Short interaction blips. Off by default so a first launch stays quiet.
   final bool soundsEnabled;
-  final ManeSoundPack soundPack;
+  final SundialSoundPack soundPack;
 
   /// Sound played by scheduled reminders.
-  final ManeAlarmSound alarmSound;
+  final SundialAlarmSound alarmSound;
 
   /// IANA zone used for new timed entries. Empty follows the device zone.
   final String timezoneOverride;
@@ -163,16 +163,16 @@ class AppSettings {
   ThemeMode get resolvedThemeMode {
     // OLED paints black behind the content; a light palette would become
     // unreadable, so OLED is always a dark surface.
-    if (backgroundStyle == ManeBackgroundStyle.oled) return ThemeMode.dark;
+    if (backgroundStyle == SundialBackgroundStyle.oled) return ThemeMode.dark;
     return switch (themeVariant) {
-      ManeThemeVariant.light => ThemeMode.light,
-      ManeThemeVariant.dark => ThemeMode.dark,
-      ManeThemeVariant.aero => ThemeMode.light,
-      ManeThemeVariant.system => ThemeMode.system,
+      SundialThemeVariant.light => ThemeMode.light,
+      SundialThemeVariant.dark => ThemeMode.dark,
+      SundialThemeVariant.aero => ThemeMode.light,
+      SundialThemeVariant.system => ThemeMode.system,
     };
   }
 
-  bool get isAero => themeVariant == ManeThemeVariant.aero;
+  bool get isAero => themeVariant == SundialThemeVariant.aero;
 
   bool get canUseNetwork => onlineEnabled;
 
@@ -210,7 +210,7 @@ class AppSettings {
       backgroundStyle: _backgroundStyle(values[SettingsKeys.backgroundStyle]),
       backgroundCustomColor: int.tryParse(values[SettingsKeys.backgroundCustomColor] ?? '') ?? 0xFFF6F4EF,
       textScale: _textScale(values[SettingsKeys.textScale]),
-      navSide: values[SettingsKeys.navSide] == 'right' ? ManeNavSide.right : ManeNavSide.left,
+      navSide: values[SettingsKeys.navSide] == 'right' ? SundialNavSide.right : SundialNavSide.left,
       dateFormat: _dateFormat(values[SettingsKeys.dateFormat]),
       performanceMode: values[SettingsKeys.performanceMode] == 'true',
       soundsEnabled: values[SettingsKeys.soundsEnabled] == 'true',
@@ -253,53 +253,53 @@ class AppSettings {
     return parsed.clamp(1, 20);
   }
 
-  static ManeThemeVariant _themeVariant(Map<String, String> values) {
+  static SundialThemeVariant _themeVariant(Map<String, String> values) {
     final explicit = values[SettingsKeys.themeVariant];
     if (explicit != null) {
-      for (final variant in ManeThemeVariant.values) {
+      for (final variant in SundialThemeVariant.values) {
         if (variant.name == explicit) return variant;
       }
     }
     return switch (values[SettingsKeys.themeMode]) {
-      'light' => ManeThemeVariant.light,
-      'dark' => ManeThemeVariant.dark,
-      _ => ManeThemeVariant.system,
+      'light' => SundialThemeVariant.light,
+      'dark' => SundialThemeVariant.dark,
+      _ => SundialThemeVariant.system,
     };
   }
 
-  static ManeAccentScheme _accentScheme(String? value) {
-    for (final scheme in ManeAccentScheme.values) {
+  static SundialAccentScheme _accentScheme(String? value) {
+    for (final scheme in SundialAccentScheme.values) {
       if (scheme.name == value) return scheme;
     }
-    return ManeAccentScheme.sage;
+    return SundialAccentScheme.sage;
   }
 
-  static ManeBackgroundStyle _backgroundStyle(String? value) {
-    for (final style in ManeBackgroundStyle.values) {
+  static SundialBackgroundStyle _backgroundStyle(String? value) {
+    for (final style in SundialBackgroundStyle.values) {
       if (style.name == value) return style;
     }
-    return ManeBackgroundStyle.dots;
+    return SundialBackgroundStyle.dots;
   }
 
-  static ManeDateFormat _dateFormat(String? value) {
-    for (final format in ManeDateFormat.values) {
+  static SundialDateFormat _dateFormat(String? value) {
+    for (final format in SundialDateFormat.values) {
       if (format.name == value) return format;
     }
-    return ManeDateFormat.system;
+    return SundialDateFormat.system;
   }
 
-  static ManeSoundPack _soundPack(String? value) {
-    for (final pack in ManeSoundPack.values) {
+  static SundialSoundPack _soundPack(String? value) {
+    for (final pack in SundialSoundPack.values) {
       if (pack.name == value) return pack;
     }
-    return ManeSoundPack.aero;
+    return SundialSoundPack.aero;
   }
 
-  static ManeAlarmSound _alarmSound(String? value) {
-    for (final sound in ManeAlarmSound.values) {
+  static SundialAlarmSound _alarmSound(String? value) {
+    for (final sound in SundialAlarmSound.values) {
       if (sound.name == value) return sound;
     }
-    return ManeAlarmSound.chime;
+    return SundialAlarmSound.chime;
   }
 
   static String _timezone(String? value) {
@@ -346,19 +346,19 @@ class AppSettings {
     bool? quietHoursEnabled,
     int? quietHoursStartMinute,
     int? quietHoursEndMinute,
-    ManeThemeVariant? themeVariant,
-    ManeAccentScheme? accentScheme,
-    ManeBackgroundStyle? backgroundStyle,
+    SundialThemeVariant? themeVariant,
+    SundialAccentScheme? accentScheme,
+    SundialBackgroundStyle? backgroundStyle,
     int? backgroundCustomColor,
     double? textScale,
-    ManeNavSide? navSide,
-    ManeDateFormat? dateFormat,
+    SundialNavSide? navSide,
+    SundialDateFormat? dateFormat,
     bool? performanceMode,
     bool? onlineEnabled,
     int? mcpPort,
     bool? soundsEnabled,
-    ManeSoundPack? soundPack,
-    ManeAlarmSound? alarmSound,
+    SundialSoundPack? soundPack,
+    SundialAlarmSound? alarmSound,
     String? timezoneOverride,
   }) => AppSettings(
     themeMode: themeMode ?? this.themeMode,

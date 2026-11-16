@@ -1,5 +1,5 @@
-name: mane_core
-description: Domain model, recurrence rules and shift patterns for Mane.
+name: sundial_core
+description: Domain model, recurrence rules and shift patterns for Sundial.
 version: 0.1.0
 publish_to: none
 

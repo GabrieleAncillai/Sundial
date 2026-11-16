@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/sync/device_certificate.dart';
+import 'package:sundial/features/sync/device_certificate.dart';
 
 void main() {
   test('generates a self-signed certificate and a stable SHA-256 fingerprint', () async {

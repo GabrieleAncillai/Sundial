@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
-import '../../../core/icons/mane_icons.dart';
+import '../../../core/icons/sundial_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../screens/entry_editor.dart';
 import '../../../state/providers.dart';
@@ -36,7 +36,7 @@ class ContextDetailPage extends ConsumerWidget {
     final contexts = ref.watch(contextsProvider(spaceId)).value ?? const <PlannerContext>[];
     final item = contexts.where((candidate) => candidate.id == contextId).firstOrNull;
     if (item == null) {
-      return ManePage(title: l10n.context, child: const SizedBox.shrink());
+      return SundialPage(title: l10n.context, child: const SizedBox.shrink());
     }
 
     final projects = ref.watch(contextProjectsProvider(contextId)).value ?? const <Project>[];
@@ -46,13 +46,13 @@ class ContextDetailPage extends ConsumerWidget {
     final isWork = spaceId == 'work';
     final isPersonal = spaceId == 'personal';
     final recommended = isWork
-        ? ManeIcons.workRecommended
+        ? SundialIcons.workRecommended
         : isPersonal
-        ? ManeIcons.personalRecommended
-        : ManeIcons.homeRecommended;
+        ? SundialIcons.personalRecommended
+        : SundialIcons.homeRecommended;
     final accents = Color(item.colorValue);
 
-    return ManePage(
+    return SundialPage(
       title: item.name,
       subtitle: space.name,
       actions: [
@@ -94,7 +94,7 @@ class ContextDetailPage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (item.description.isNotEmpty)
-                      Text(item.description, style: ManeType.body(13, color: c.textSecondary)),
+                      Text(item.description, style: SundialType.body(13, color: c.textSecondary)),
                     const SizedBox(height: 6),
                     Wrap(
                       spacing: 8,
@@ -317,7 +317,7 @@ class _ProjectsSection extends ConsumerWidget {
     final l10n = context.l10n;
     final projects = ref.watch(contextProjectsProvider(projectContextId)).value ?? const <Project>[];
     if (projects.isEmpty) {
-      return Text(l10n.noProjectsHint, style: ManeType.body(12, color: context.mc.textTertiary));
+      return Text(l10n.noProjectsHint, style: SundialType.body(12, color: context.mc.textTertiary));
     }
     final isWork = spaceId == 'work';
     final isPersonal = spaceId == 'personal';
@@ -334,10 +334,10 @@ class _ProjectsSection extends ConsumerWidget {
               project: project,
               contexts: contextIds,
               recommendedIcons: isWork
-                  ? ManeIcons.workRecommended
+                  ? SundialIcons.workRecommended
                   : isPersonal
-                  ? ManeIcons.personalRecommended
-                  : ManeIcons.homeRecommended,
+                  ? SundialIcons.personalRecommended
+                  : SundialIcons.homeRecommended,
             ),
             child: Container(
               padding: const EdgeInsets.fromLTRB(9, 8, 13, 8),
@@ -362,14 +362,14 @@ class _ProjectsSection extends ConsumerWidget {
                     children: [
                       Text(
                         project.name,
-                        style: ManeType.body(12.5, weight: FontWeight.w700, color: context.mc.text),
+                        style: SundialType.body(12.5, weight: FontWeight.w700, color: context.mc.text),
                       ),
                       if (project.description.isNotEmpty)
                         Text(
                           project.description,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: ManeType.body(10.5, color: context.mc.textTertiary),
+                          style: SundialType.body(10.5, color: context.mc.textTertiary),
                         ),
                     ],
                   ),
@@ -394,7 +394,7 @@ class _HabitsSection extends ConsumerWidget {
         .where((habit) => habit.contextId == contextId)
         .toList();
     if (habits.isEmpty) {
-      return Text(context.l10n.noTasksHint, style: ManeType.body(12, color: context.mc.textTertiary));
+      return Text(context.l10n.noTasksHint, style: SundialType.body(12, color: context.mc.textTertiary));
     }
     return Column(
       children: [
@@ -462,13 +462,13 @@ class _LinkRow extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: ManeType.body(13.5, weight: FontWeight.w700, color: c.text),
+                    style: SundialType.body(13.5, weight: FontWeight.w700, color: c.text),
                   ),
                   Text(
                     subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: ManeType.body(11, color: c.textSecondary),
+                    style: SundialType.body(11, color: c.textSecondary),
                   ),
                 ],
               ),
@@ -495,7 +495,7 @@ class _Pill extends StatelessWidget {
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(100),
       ),
-      child: Text(text, style: ManeType.label(10.5, color: color)),
+      child: Text(text, style: SundialType.label(10.5, color: color)),
     );
   }
 }

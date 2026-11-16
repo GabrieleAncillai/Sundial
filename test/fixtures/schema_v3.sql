@@ -1,4 +1,4 @@
--- Mane schema v3, captured before the v0.3 home/maintenance work.
+-- Sundial schema v3, captured before the v0.3 home/maintenance work.
 -- The migration test loads this file, inserts v3 rows, and opens AppDatabase
 -- so the v4 migration runs against real data.
 CREATE TABLE "space_records" ("id" TEXT NOT NULL, "name" TEXT NOT NULL, "color" INTEGER NOT NULL, "position" INTEGER NOT NULL DEFAULT 0, "created_at" INTEGER NOT NULL, "updated_at" INTEGER NOT NULL, "deleted_at" INTEGER NULL, PRIMARY KEY ("id"));

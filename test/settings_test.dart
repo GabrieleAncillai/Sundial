@@ -5,13 +5,13 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/models/app_settings.dart';
-import 'package:mane/models/date_range.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/state/providers.dart';
-import 'package:mane/state/settings_controller.dart';
-import 'package:mane/theme/app_theme.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/models/app_settings.dart';
+import 'package:sundial/models/date_range.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/state/providers.dart';
+import 'package:sundial/state/settings_controller.dart';
+import 'package:sundial/theme/app_theme.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 
@@ -60,8 +60,8 @@ void main() {
     });
 
     expect(settings.soundsEnabled, isTrue);
-    expect(settings.soundPack, ManeSoundPack.soft);
-    expect(settings.alarmSound, ManeAlarmSound.bright);
+    expect(settings.soundPack, SundialSoundPack.soft);
+    expect(settings.alarmSound, SundialAlarmSound.bright);
     expect(settings.timezoneOverride, 'America/New_York');
 
     final fallback = AppSettings.fromMap({
@@ -69,8 +69,8 @@ void main() {
       SettingsKeys.alarmSound: 'loud',
       SettingsKeys.timezoneOverride: 'Mars/Olympus',
     });
-    expect(fallback.soundPack, ManeSoundPack.aero);
-    expect(fallback.alarmSound, ManeAlarmSound.chime);
+    expect(fallback.soundPack, SundialSoundPack.aero);
+    expect(fallback.alarmSound, SundialAlarmSound.chime);
     expect(fallback.timezoneOverride, isEmpty);
   });
 
@@ -88,23 +88,23 @@ void main() {
 
   test('OLED forces a readable dark palette', () {
     const settings = AppSettings(
-      themeVariant: ManeThemeVariant.light,
-      backgroundStyle: ManeBackgroundStyle.oled,
+      themeVariant: SundialThemeVariant.light,
+      backgroundStyle: SundialBackgroundStyle.oled,
     );
     expect(settings.resolvedThemeMode, ThemeMode.dark);
-    expect(ManeTheme.forSettings(settings, Brightness.dark).brightness, Brightness.dark);
+    expect(SundialTheme.forSettings(settings, Brightness.dark).brightness, Brightness.dark);
   });
 
   test('OLED overrides the Aero light palette', () {
-    const aero = AppSettings(themeVariant: ManeThemeVariant.aero);
-    expect(ManeTheme.forSettings(aero, Brightness.dark).brightness, Brightness.light);
+    const aero = AppSettings(themeVariant: SundialThemeVariant.aero);
+    expect(SundialTheme.forSettings(aero, Brightness.dark).brightness, Brightness.light);
 
     const aeroOled = AppSettings(
-      themeVariant: ManeThemeVariant.aero,
-      backgroundStyle: ManeBackgroundStyle.oled,
+      themeVariant: SundialThemeVariant.aero,
+      backgroundStyle: SundialBackgroundStyle.oled,
     );
     expect(aeroOled.resolvedThemeMode, ThemeMode.dark);
-    expect(ManeTheme.forSettings(aeroOled, Brightness.dark).brightness, Brightness.dark);
+    expect(SundialTheme.forSettings(aeroOled, Brightness.dark).brightness, Brightness.dark);
   });
 
   test('work and quiet windows use the device timezone', () {
@@ -158,8 +158,8 @@ void main() {
     await controller.setHideWorkSpace(true);
     await controller.setDefaultReminderOffsets([30, 1440, 30]);
     await controller.setSoundsEnabled(true);
-    await controller.setSoundPack(ManeSoundPack.soft);
-    await controller.setAlarmSound(ManeAlarmSound.bright);
+    await controller.setSoundPack(SundialSoundPack.soft);
+    await controller.setAlarmSound(SundialAlarmSound.bright);
     await controller.setTimezoneOverride('Europe/Madrid');
 
     final stored = await database.readSettings();

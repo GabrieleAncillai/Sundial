@@ -4,15 +4,15 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/core/i18n/l10n.dart';
-import 'package:mane/features/shifts/pages/shift_pattern_editor_page.dart';
-import 'package:mane/models/shift_checklist.dart';
-import 'package:mane/models/app_settings.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/state/providers.dart';
-import 'package:mane/state/settings_controller.dart';
-import 'package:mane/theme/app_theme.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/core/i18n/l10n.dart';
+import 'package:sundial/features/shifts/pages/shift_pattern_editor_page.dart';
+import 'package:sundial/models/shift_checklist.dart';
+import 'package:sundial/models/app_settings.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/state/providers.dart';
+import 'package:sundial/state/settings_controller.dart';
+import 'package:sundial/theme/app_theme.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 
 void main() {
@@ -51,7 +51,7 @@ void main() {
           initialSettingsProvider.overrideWithValue(const AppSettings()),
         ],
         child: MaterialApp(
-          theme: ManeTheme.light,
+          theme: SundialTheme.light,
           locale: const Locale('en'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -99,7 +99,7 @@ void main() {
           initialSettingsProvider.overrideWithValue(const AppSettings()),
         ],
         child: MaterialApp(
-          theme: ManeTheme.light,
+          theme: SundialTheme.light,
           locale: const Locale('en'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -149,7 +149,7 @@ void main() {
           initialSettingsProvider.overrideWithValue(const AppSettings()),
         ],
         child: MaterialApp(
-          theme: ManeTheme.light,
+          theme: SundialTheme.light,
           locale: const Locale('en'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -187,7 +187,7 @@ void main() {
           initialSettingsProvider.overrideWithValue(const AppSettings()),
         ],
         child: MaterialApp(
-          theme: ManeTheme.light,
+          theme: SundialTheme.light,
           locale: const Locale('en'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,

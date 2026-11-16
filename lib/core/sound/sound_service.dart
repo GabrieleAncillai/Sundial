@@ -35,7 +35,7 @@ class SoundController {
 
   final Ref _ref;
 
-  static const MethodChannel _androidChannel = MethodChannel('mane/sound');
+  static const MethodChannel _androidChannel = MethodChannel('sundial/sound');
   static const String _assetRoot = 'assets/sounds';
 
   final Map<String, String> _cachedPaths = <String, String>{};
@@ -61,7 +61,7 @@ class SoundController {
   }
 
   /// Plays the selected alarm sample regardless of the interaction-sound switch.
-  void previewAlarm(ManeAlarmSound sound) {
+  void previewAlarm(SundialAlarmSound sound) {
     unawaited(
       _dispatch(
         '$_assetRoot/alarm_${sound.name}.wav',
@@ -162,7 +162,7 @@ class SoundController {
   Future<String?> _materialize(String asset) async {
     try {
       final directory = await getTemporaryDirectory();
-      final soundsDirectory = Directory(p.join(directory.path, 'mane_sounds'));
+      final soundsDirectory = Directory(p.join(directory.path, 'sundial_sounds'));
       if (!await soundsDirectory.exists()) {
         await soundsDirectory.create(recursive: true);
       }

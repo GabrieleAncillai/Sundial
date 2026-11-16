@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
@@ -49,7 +49,7 @@ class MonthGrid extends StatelessWidget {
                 child: Center(
                   child: Text(
                     shortWeekday(context, weekday).toUpperCase(),
-                    style: ManeType.label(9.5, color: c.textTertiary),
+                    style: SundialType.label(9.5, color: c.textTertiary),
                   ),
                 ),
               ),
@@ -138,7 +138,7 @@ class _DayCell extends StatelessWidget {
             children: [
               Text(
                 '${date.day}',
-                style: ManeType.body(13.5, weight: FontWeight.w600, color: textColor),
+                style: SundialType.body(13.5, weight: FontWeight.w600, color: textColor),
               ),
               const SizedBox(height: 3),
               SizedBox(

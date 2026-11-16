@@ -95,7 +95,7 @@ abstract class AppLocalizations {
   /// No description provided for @appName.
   ///
   /// In en, this message translates to:
-  /// **'Mane'**
+  /// **'Sundial'**
   String get appName;
 
   /// No description provided for @today.
@@ -869,13 +869,13 @@ abstract class AppLocalizations {
   /// No description provided for @backupInvalid.
   ///
   /// In en, this message translates to:
-  /// **'This file is not a valid Mane backup.'**
+  /// **'This file is not a valid Sundial backup.'**
   String get backupInvalid;
 
   /// No description provided for @backupFuture.
   ///
   /// In en, this message translates to:
-  /// **'This backup comes from a newer version of Mane.'**
+  /// **'This backup comes from a newer version of Sundial.'**
   String get backupFuture;
 
   /// No description provided for @importConfirmTitle.
@@ -974,23 +974,17 @@ abstract class AppLocalizations {
   /// **'{count} selected'**
   String selectedCount(int count);
 
-  /// No description provided for @basedOnGymMane.
+  /// No description provided for @basedOnSundial.
   ///
   /// In en, this message translates to:
-  /// **'Based on GymMane by InlitX'**
-  String get basedOnGymMane;
+  /// **'Based on Sundial by Gabriele Ancillai'**
+  String get basedOnSundial;
 
-  /// No description provided for @basedOnStreak.
+  /// No description provided for @inspiredBy.
   ///
   /// In en, this message translates to:
-  /// **'Based on Streak by InlitX'**
-  String get basedOnStreak;
-
-  /// No description provided for @basedOnMane.
-  ///
-  /// In en, this message translates to:
-  /// **'Based on Mane by the Mane contributors'**
-  String get basedOnMane;
+  /// **'Inspired by GymMane and Streak by InlitX'**
+  String get inspiredBy;
 
   /// No description provided for @version.
   ///
@@ -1007,7 +1001,7 @@ abstract class AppLocalizations {
   /// No description provided for @licenseBody.
   ///
   /// In en, this message translates to:
-  /// **'Mane is free software under GPL-3.0-only. It comes with no warranty. See LICENSE and ADDITIONAL_TERMS.md in the repository.'**
+  /// **'Sundial is free software under GPL-3.0-only. It comes with no warranty. See LICENSE and ADDITIONAL_TERMS.md in the repository.'**
   String get licenseBody;
 
   /// No description provided for @credits.
@@ -1019,7 +1013,7 @@ abstract class AppLocalizations {
   /// No description provided for @creditsBody.
   ///
   /// In en, this message translates to:
-  /// **'Built with reference to GymMane and Streak by InlitX. Based on Mane by the Mane contributors.'**
+  /// **'An independent project by Gabriele Ancillai.'**
   String get creditsBody;
 
   /// No description provided for @tagsManager.
@@ -1763,7 +1757,7 @@ abstract class AppLocalizations {
   /// No description provided for @noDiscoveredDevices.
   ///
   /// In en, this message translates to:
-  /// **'No other Mane devices found yet.'**
+  /// **'No other Sundial devices found yet.'**
   String get noDiscoveredDevices;
 
   /// No description provided for @address.
@@ -3062,6 +3056,12 @@ abstract class AppLocalizations {
   /// **'Clear date'**
   String get clearDate;
 
+  /// No description provided for @clearText.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear text'**
+  String get clearText;
+
   /// No description provided for @gadgetName.
   ///
   /// In en, this message translates to:
@@ -3809,13 +3809,13 @@ abstract class AppLocalizations {
   /// No description provided for @scanningDevices.
   ///
   /// In en, this message translates to:
-  /// **'Looking for Mane devices on this network…'**
+  /// **'Looking for Sundial devices on this network…'**
   String get scanningDevices;
 
   /// No description provided for @noNearbyDevices.
   ///
   /// In en, this message translates to:
-  /// **'No nearby Mane devices found. Make sure the other device has online functionalities enabled.'**
+  /// **'No nearby Sundial devices found. Make sure the other device has online functionalities enabled.'**
   String get noNearbyDevices;
 
   /// No description provided for @pairWithDevice.
@@ -3845,7 +3845,7 @@ abstract class AppLocalizations {
   /// No description provided for @syncExplainer.
   ///
   /// In en, this message translates to:
-  /// **'Mane finds your other devices on the local network. Pairing stores a shared key once, so changing networks or IP addresses does not break the link. Sync stays read-only and never replaces your local plan.'**
+  /// **'Sundial finds your other devices on the local network. Pairing stores a shared key once, so changing networks or IP addresses does not break the link. Sync stays read-only and never replaces your local plan.'**
   String get syncExplainer;
 
   /// No description provided for @pairSuccess.

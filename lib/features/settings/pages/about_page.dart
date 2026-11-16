@@ -41,15 +41,15 @@ class AboutPage extends StatelessWidget {
                 child: Icon(Icons.event_note, color: c.onAccent, size: 36),
               ),
               const SizedBox(height: 12),
-              Text(l10n.appName, style: ManeType.headline(22, color: c.text)),
-              Text(l10n.version(appVersion), style: ManeType.body(12, color: c.textSecondary)),
+              Text(l10n.appName, style: SundialType.headline(22, color: c.text)),
+              Text(l10n.version(appVersion), style: SundialType.body(12, color: c.textSecondary)),
             ],
           ),
         ),
         const SizedBox(height: 28),
         SectionLabel(l10n.license),
         SoftCard(
-          child: Text(l10n.licenseBody, style: ManeType.body(13.5, color: c.textSecondary)),
+          child: Text(l10n.licenseBody, style: SundialType.body(13.5, color: c.textSecondary)),
         ),
         const SizedBox(height: 20),
         SectionLabel(l10n.credits),
@@ -57,13 +57,11 @@ class AboutPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.creditsBody, style: ManeType.body(13.5, color: c.textSecondary)),
+              Text(l10n.creditsBody, style: SundialType.body(13.5, color: c.textSecondary)),
               const SizedBox(height: 14),
-              _CreditLine(text: l10n.basedOnMane),
+              _CreditLine(text: l10n.basedOnSundial),
               const SizedBox(height: 4),
-              _CreditLine(text: l10n.basedOnGymMane),
-              const SizedBox(height: 4),
-              _CreditLine(text: l10n.basedOnStreak),
+              _CreditLine(text: l10n.inspiredBy),
             ],
           ),
         ),
@@ -72,7 +70,7 @@ class AboutPage extends StatelessWidget {
 
     if (embedded) return content;
 
-    return ManePage(title: l10n.about, child: content);
+    return SundialPage(title: l10n.about, child: content);
   }
 }
 
@@ -97,7 +95,7 @@ class _CreditLine extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(text, style: ManeType.body(12.5, color: c.text)),
+          child: Text(text, style: SundialType.body(12.5, color: c.text)),
         ),
       ],
     );

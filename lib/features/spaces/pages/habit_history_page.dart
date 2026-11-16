@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
@@ -31,7 +31,7 @@ class HabitHistoryPage extends ConsumerWidget {
     final streak = habit.streak(completions, today, weekStart: weekStart);
     final doneEver = completions.where((date) => !date.isAfter(today)).length;
 
-    return ManePage(
+    return SundialPage(
       title: habit.name,
       child: ListView(
         padding: const EdgeInsets.only(bottom: 24),
@@ -58,7 +58,7 @@ class HabitHistoryPage extends ConsumerWidget {
           const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(l10n.habitHistoryHint, style: ManeType.body(11.5, color: c.textTertiary)),
+            child: Text(l10n.habitHistoryHint, style: SundialType.body(11.5, color: c.textTertiary)),
           ),
           const SizedBox(height: 14),
           for (var offset = _weeks - 1; offset >= 0; offset--)
@@ -100,7 +100,7 @@ class _WeekRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 64,
-            child: Text(label, style: ManeType.label(10.5, color: c.textTertiary)),
+            child: Text(label, style: SundialType.label(10.5, color: c.textTertiary)),
           ),
           for (var index = 0; index < 7; index++)
             Expanded(
@@ -174,10 +174,10 @@ class _Stat extends StatelessWidget {
           value,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: ManeType.title(15, color: c.text),
+          style: SundialType.title(15, color: c.text),
         ),
         const SizedBox(height: 2),
-        Text(label, style: ManeType.label(10.5, color: c.textTertiary)),
+        Text(label, style: SundialType.label(10.5, color: c.textTertiary)),
       ],
     );
   }

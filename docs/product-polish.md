@@ -168,7 +168,7 @@ clock-in task; clearing the start makes it a deadline; clearing both makes it
 an anytime task. A timing dropdown is no longer the primary control.
 - Repeat follows Streak's sheet: never, daily, weekly weekday chips, monthly
 day-of-month or nth weekday, yearly, every N, ending never / on a date / after
-N occurrences. Mane's **repeat after completion** interval stays as an
+N occurrences. Sundial's **repeat after completion** interval stays as an
 alternative mode in the same sheet.
 - The space picker drives context and project pickers that only show the
 selected space.

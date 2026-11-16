@@ -9,9 +9,9 @@ the product-polish claims as proof.
 | Gate | Result |
 |---|---|
 | `flutter analyze --no-fatal-infos` | Pass, no issues |
-| `dart format --line-length 110 --output=none --set-exit-if-changed lib test packages/mane_core` | Pass |
+| `dart format --line-length 110 --output=none --set-exit-if-changed lib test packages/sundial_core` | Pass |
 | `flutter test` | Pass, 215 tests |
-| `(cd packages/mane_core && dart test)` | Pass, 92 tests |
+| `(cd packages/sundial_core && dart test)` | Pass, 92 tests |
 | `flutter build linux --debug` | Pass |
 | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk flutter build apk --debug` | Pass |
 
@@ -44,7 +44,7 @@ the product-polish claims as proof.
 | Requirement | Status | Evidence |
 |---|---|---|
 | Jobs are DB rows with name, icon, colour, optional image | Met (existing) | contexts schema/editor |
-| Searchable icon gallery with job defaults | Met (existing) | `ManeIcons`, `space_controls.dart` |
+| Searchable icon gallery with job defaults | Met (existing) | `SundialIcons`, `space_controls.dart` |
 | Work overview works with 1–2 and 5–10+ jobs | Met (existing) | responsive wrap in `space_overview_page.dart` |
 | Job screen: shifts, per-day checklists, projects, tasks | Met | `context_detail_page.dart` |
 | Checklist items reorderable | Met (existing) | shift editor |
@@ -123,7 +123,7 @@ the product-polish claims as proof.
 | Week start | Met (existing) | settings |
 | Performance mode reduces blur/motion | Met (existing) | background and sheet motion |
 | Reminder defaults, work/quiet hours, sleep buffers | Met (existing) | settings + reminder planner |
-| Desktop time fields | Met | shared `ManeTimeField` opens a typed 15-minute-snap dialog on wide layouts and the platform sheet on phones; used by editor, shifts, reminders and hours |
+| Desktop time fields | Met | shared `SundialTimeField` opens a typed 15-minute-snap dialog on wide layouts and the platform sheet on phones; used by editor, shifts, reminders and hours |
 | Export/import backup | Met | backup service |
 | Automatic local backups with rotation | Met (existing) | auto backup service |
 | Import/export calendar | Met (existing) | ICS |
@@ -137,11 +137,11 @@ the product-polish claims as proof.
 | Devices & Sync discovery-first, no IP entry as primary flow | Met (existing) | mDNS/peer discovery |
 | Pairing survives IP/network changes | Met (existing) | paired device data + discovery |
 | LAN binds private interfaces only | Met | private IPv4 bind + remote-address guard; loopback fallback |
-| HTTP info endpoint does not leak identity | Met | `/mane/v1/info` returns app/version/protocol/fingerprint only (`lan_test.dart`) |
+| HTTP info endpoint does not leak identity | Met | `/sundial/v1/info` returns app/version/protocol/fingerprint only (`lan_test.dart`) |
 | Discovery does not leak username or device ID | Met | mDNS advertises the certificate fingerprint and the user-chosen device name, never the username or device ID; peers match on the fingerprint after an address change (`peer_discovery.dart`, `sync_service_test.dart`) |
 | MCP enable/writes/port, rebind, busy-port error, token rotation | Met | `McpServer.start` stops/rebinds on identity or port change, exposes `lastError` on a busy port and the switch reverts; `mcp_test.dart` |
 | MCP tools expose the full model | Met (read) | reads cover spaces/contexts/projects, habits and time sessions; writes cover plan, shopping, habits and clock sessions. Context/project creation is not a write tool (`mcp_test.dart`) |
-| About GPL-3.0-only and InlitX attribution | Met (existing) | About page |
+| About GPL-3.0-only and InlitX inspiration credit | Met (existing) | About page |
 
 ## Entry editor and task lifecycle
 

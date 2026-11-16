@@ -7,8 +7,8 @@ import 'pressable.dart';
 
 /// A pushed page with the reference header: round back button, strong title,
 /// optional subtitle and glass actions. It replaces stock AppBar scaffolds.
-class ManePage extends StatelessWidget {
-  const ManePage({
+class SundialPage extends StatelessWidget {
+  const SundialPage({
     super.key,
     required this.title,
     required this.child,
@@ -44,7 +44,7 @@ class ManePage extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
-                child: ManePageHeader(
+                child: SundialPageHeader(
                   title: title,
                   subtitle: subtitle,
                   actions: actions,
@@ -78,8 +78,14 @@ class ManePage extends StatelessWidget {
   }
 }
 
-class ManePageHeader extends StatelessWidget {
-  const ManePageHeader({super.key, required this.title, this.subtitle, this.actions = const [], this.onBack});
+class SundialPageHeader extends StatelessWidget {
+  const SundialPageHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.actions = const [],
+    this.onBack,
+  });
 
   final String title;
   final String? subtitle;
@@ -116,7 +122,7 @@ class ManePageHeader extends StatelessWidget {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: ManeType.headline(21, color: c.text),
+                style: SundialType.headline(21, color: c.text),
               ),
               if (subtitle != null) ...[
                 const SizedBox(height: 1),
@@ -124,7 +130,7 @@ class ManePageHeader extends StatelessWidget {
                   subtitle!,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: ManeType.body(12, color: c.textSecondary),
+                  style: SundialType.body(12, color: c.textSecondary),
                 ),
               ],
             ],
@@ -137,8 +143,8 @@ class ManePageHeader extends StatelessWidget {
 }
 
 /// A round filled action used for "add" and primary page actions.
-class ManeAddButton extends StatelessWidget {
-  const ManeAddButton({super.key, required this.onTap, required this.tooltip, this.icon = Icons.add});
+class SundialAddButton extends StatelessWidget {
+  const SundialAddButton({super.key, required this.onTap, required this.tooltip, this.icon = Icons.add});
 
   final VoidCallback onTap;
   final String tooltip;

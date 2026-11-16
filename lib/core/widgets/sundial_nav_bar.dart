@@ -5,15 +5,15 @@ import '../../theme/app_typography.dart';
 import '../settings_scope.dart';
 import 'pressable.dart';
 
-typedef ManeNavItem = ({IconData icon, IconData selectedIcon, String label});
+typedef SundialNavItem = ({IconData icon, IconData selectedIcon, String label});
 
 /// The floating bottom navigation from the reference shell. A soft lens slides
 /// between three destinations; labels stay visible for accessibility. Aero
 /// turns the bar into a glass slab with a gloss and a cyan glow.
-class ManeNavBar extends StatelessWidget {
-  const ManeNavBar({super.key, required this.items, required this.index, required this.onSelected});
+class SundialNavBar extends StatelessWidget {
+  const SundialNavBar({super.key, required this.items, required this.index, required this.onSelected});
 
-  final List<ManeNavItem> items;
+  final List<SundialNavItem> items;
   final int index;
   final ValueChanged<int> onSelected;
 
@@ -130,7 +130,7 @@ class ManeNavBar extends StatelessWidget {
 class _NavItem extends StatelessWidget {
   const _NavItem({required this.item, required this.selected, required this.onTap});
 
-  final ManeNavItem item;
+  final SundialNavItem item;
   final bool selected;
   final VoidCallback onTap;
 
@@ -154,7 +154,7 @@ class _NavItem extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textScaler: TextScaler.noScaling,
-              style: ManeType.label(
+              style: SundialType.label(
                 10.5,
                 color: tint,
               ).copyWith(fontWeight: selected ? FontWeight.w800 : FontWeight.w700),

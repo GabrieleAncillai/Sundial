@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/core/i18n/l10n.dart';
-import 'package:mane/core/timezone/timezone_picker.dart';
+import 'package:sundial/core/i18n/l10n.dart';
+import 'package:sundial/core/timezone/timezone_picker.dart';
 
 void main() {
   Widget host({required ValueChanged<BuildContext> onOpen}) => MaterialApp(

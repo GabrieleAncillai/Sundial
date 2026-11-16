@@ -1,4 +1,4 @@
-/// Mane's domain model.
+/// Sundial's domain model.
 ///
 /// This package is pure Dart on purpose: the Android/desktop UI, a future
 /// LAN server and the MCP adapter should all share the same rules.

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -68,11 +68,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return ManePage(
+    return SundialPage(
       title: l10n.search,
       child: Column(
         children: [
-          ManeSearchField(
+          SundialSearchField(
             controller: _controller,
             focusNode: _focus,
             autofocus: true,
@@ -223,13 +223,13 @@ class _HomeTile extends StatelessWidget {
                             item.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: ManeType.body(14, weight: FontWeight.w700, color: c.text),
+                            style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                           ),
                           Text(
                             details.join(' · '),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: ManeType.body(11.5, color: c.textSecondary),
+                            style: SundialType.body(11.5, color: c.textSecondary),
                           ),
                         ],
                       ),
@@ -244,7 +244,7 @@ class _HomeTile extends StatelessWidget {
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(color: c.dangerSoft, borderRadius: BorderRadius.circular(8)),
-              child: Text(context.l10n.lowStock, style: ManeType.label(10, color: c.danger)),
+              child: Text(context.l10n.lowStock, style: SundialType.label(10, color: c.danger)),
             ),
         ],
       ),

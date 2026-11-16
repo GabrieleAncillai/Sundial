@@ -4,8 +4,8 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../settings_scope.dart';
 
-class ManeSegment<T> {
-  const ManeSegment({required this.value, required this.label, this.icon});
+class SundialSegment<T> {
+  const SundialSegment({required this.value, required this.label, this.icon});
 
   final T value;
   final String label;
@@ -15,8 +15,8 @@ class ManeSegment<T> {
 /// The reference pill segmented control. It keeps the selected state readable
 /// without the heavy Material segment border. Aero gives the thumb a glossy
 /// white-to-blue finish and the track a translucent glass tint.
-class ManeSegmented<T> extends StatelessWidget {
-  const ManeSegmented({
+class SundialSegmented<T> extends StatelessWidget {
+  const SundialSegmented({
     super.key,
     required this.segments,
     required this.selected,
@@ -24,7 +24,7 @@ class ManeSegmented<T> extends StatelessWidget {
     this.compact = false,
   });
 
-  final List<ManeSegment<T>> segments;
+  final List<SundialSegment<T>> segments;
   final T selected;
   final ValueChanged<T> onChanged;
   final bool compact;
@@ -98,7 +98,7 @@ class ManeSegmented<T> extends StatelessWidget {
                     ],
                     Text(
                       segment.label,
-                      style: ManeType.label(
+                      style: SundialType.label(
                         compact ? 11.5 : 12.5,
                         color: segment.value == selected ? c.text : c.textSecondary,
                       ),

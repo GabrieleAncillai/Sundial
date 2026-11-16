@@ -2,12 +2,12 @@ import 'dart:ffi';
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/export/csv_interchange.dart';
-import 'package:mane/models/home_item.dart';
-import 'package:mane/models/shopping_item.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/services/planner_repository.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/features/export/csv_interchange.dart';
+import 'package:sundial/models/home_item.dart';
+import 'package:sundial/models/shopping_item.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/services/planner_repository.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 
 void main() {

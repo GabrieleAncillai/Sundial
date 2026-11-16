@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
@@ -42,7 +42,7 @@ class CalendarDayDetail extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text(title, style: ManeType.title(15, color: c.text)),
+              child: Text(title, style: SundialType.title(15, color: c.text)),
             ),
             GlassIconButton(icon: Icons.add, tooltip: context.l10n.addOnThisDay, size: 34, onTap: onAdd),
           ],

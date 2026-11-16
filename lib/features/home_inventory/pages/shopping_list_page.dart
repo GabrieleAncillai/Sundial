@@ -36,10 +36,10 @@ class ShoppingListPage extends ConsumerWidget {
     final done = bought.length;
     final groups = _groupItems(available, homeById, l10n.shoppingOther);
 
-    return ManePage(
+    return SundialPage(
       title: l10n.shoppingList,
       subtitle: items.isEmpty ? null : l10n.shoppingProgress(done, items.length),
-      floatingAction: ManeAddButton(tooltip: l10n.addShoppingItem, onTap: () => _addItem(context, ref)),
+      floatingAction: SundialAddButton(tooltip: l10n.addShoppingItem, onTap: () => _addItem(context, ref)),
       child: ListView(
         padding: const EdgeInsets.only(bottom: 88),
         children: [
@@ -59,17 +59,17 @@ class ShoppingListPage extends ConsumerWidget {
                     children: [
                       Icon(Icons.warning_amber_outlined, size: 18, color: c.danger),
                       const SizedBox(width: 8),
-                      Text(l10n.lowStock, style: ManeType.label(13, color: c.danger)),
+                      Text(l10n.lowStock, style: SundialType.label(13, color: c.danger)),
                     ],
                   ),
                   const SizedBox(height: 5),
                   Text(
                     l10n.lowStockCount(lowStock.length),
-                    style: ManeType.body(11.5, color: c.textSecondary),
+                    style: SundialType.body(11.5, color: c.textSecondary),
                   ),
                   Text(
                     lowStock.map((item) => item.name).join(', '),
-                    style: ManeType.body(11.5, color: c.textSecondary),
+                    style: SundialType.body(11.5, color: c.textSecondary),
                   ),
                   Align(
                     alignment: Alignment.centerRight,
@@ -100,7 +100,7 @@ class ShoppingListPage extends ConsumerWidget {
                 if (group.label.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.fromLTRB(10, 2, 10, 6),
-                    child: Text(group.label, style: ManeType.label(12, color: c.textSecondary)),
+                    child: Text(group.label, style: SundialType.label(12, color: c.textSecondary)),
                   ),
                 ],
                 SoftCard(
@@ -166,7 +166,7 @@ class ShoppingListPage extends ConsumerWidget {
             ],
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Text(l10n.shoppingListSubtitle, style: ManeType.body(12, color: c.textTertiary)),
+              child: Text(l10n.shoppingListSubtitle, style: SundialType.body(12, color: c.textTertiary)),
             ),
           ],
         ],
@@ -289,7 +289,7 @@ class _ShoppingRow extends StatelessWidget {
                       item.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: ManeType.body(
+                      style: SundialType.body(
                         14,
                         weight: FontWeight.w700,
                         color: item.checked ? c.textTertiary : c.text,
@@ -301,7 +301,7 @@ class _ShoppingRow extends StatelessWidget {
                         details,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: ManeType.body(11.5, color: c.textSecondary),
+                        style: SundialType.body(11.5, color: c.textSecondary),
                       ),
                     ],
                   ],

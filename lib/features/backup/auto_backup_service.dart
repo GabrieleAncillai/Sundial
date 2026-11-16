@@ -12,7 +12,7 @@ class AutoBackupService {
     : _directoryOverride = directory,
       _clock = clock ?? DateTime.now;
 
-  static const prefix = 'mane-auto-';
+  static const prefix = 'sundial-auto-';
   static const extension = '.json';
 
   final BackupService _backupService;
@@ -53,7 +53,7 @@ class AutoBackupService {
     return true;
   }
 
-  /// The day encoded in `mane-auto-YYYYMMDD-HHMMSS.json`. File mtimes change
+  /// The day encoded in `sundial-auto-YYYYMMDD-HHMMSS.json`. File mtimes change
   /// when a copy is restored or synced, while the name is the actual write day.
   static DateTime? _backupDay(File file) {
     final name = p.basenameWithoutExtension(file.path);

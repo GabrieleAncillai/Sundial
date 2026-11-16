@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
-import '../../../core/icons/mane_icons.dart';
+import '../../../core/icons/sundial_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
@@ -45,10 +45,10 @@ class MaintenancePage extends ConsumerWidget {
         if ((task.entry.date ?? today).isAfter(today)) task,
     ];
 
-    return ManePage(
+    return SundialPage(
       title: l10n.maintenance,
       subtitle: l10n.maintenanceSubtitle,
-      floatingAction: ManeAddButton(tooltip: l10n.addGadget, onTap: () => _addGadget(context, ref, today)),
+      floatingAction: SundialAddButton(tooltip: l10n.addGadget, onTap: () => _addGadget(context, ref, today)),
       child: tasks.isEmpty
           ? AppEmptyState(
               icon: Icons.build_circle_outlined,
@@ -97,7 +97,7 @@ class MaintenancePage extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(l10n.maintenanceSubtitle, style: ManeType.body(12, color: c.textTertiary)),
+                  child: Text(l10n.maintenanceSubtitle, style: SundialType.body(12, color: c.textTertiary)),
                 ),
               ],
             ),
@@ -147,7 +147,7 @@ class _MaintenanceRow extends ConsumerWidget {
               child: Icon(
                 entry.icon.isEmpty
                     ? (overdue ? Icons.warning_amber_outlined : Icons.build_outlined)
-                    : ManeIcons.resolve(entry.icon, fallback: Icons.build_outlined),
+                    : SundialIcons.resolve(entry.icon, fallback: Icons.build_outlined),
                 size: 19,
                 color: overdue ? c.danger : c.home,
               ),
@@ -163,7 +163,7 @@ class _MaintenanceRow extends ConsumerWidget {
                       entry.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: ManeType.body(14, weight: FontWeight.w700, color: c.text),
+                      style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                     ),
                     const SizedBox(height: 1),
                     Text(
@@ -172,7 +172,7 @@ class _MaintenanceRow extends ConsumerWidget {
                           : '$dateLabel · ${l10n.gadgetLastServicedOn(formatShortDate(context, lastServiced.toDateTime()))}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: ManeType.body(11.5, color: overdue ? c.danger : c.textSecondary),
+                      style: SundialType.body(11.5, color: overdue ? c.danger : c.textSecondary),
                     ),
                   ],
                 ),

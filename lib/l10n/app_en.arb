@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appName": "Mane",
+  "appName": "Sundial",
   "today": "Today",
   "week": "Week",
   "calendar": "Calendar",
@@ -336,8 +336,8 @@
       }
     }
   },
-  "backupInvalid": "This file is not a valid Mane backup.",
-  "backupFuture": "This backup comes from a newer version of Mane.",
+  "backupInvalid": "This file is not a valid Sundial backup.",
+  "backupFuture": "This backup comes from a newer version of Sundial.",
   "importConfirmTitle": "Replace your data?",
   "importConfirmBody": "The backup replaces every entry, shift, tag and setting on this device.",
   "syncAndAgent": "Sync and local agent",
@@ -361,9 +361,8 @@
       }
     }
   },
-  "basedOnGymMane": "Based on GymMane by InlitX",
-  "basedOnStreak": "Based on Streak by InlitX",
-  "basedOnMane": "Based on Mane by the Mane contributors",
+  "basedOnSundial": "Based on Sundial by Gabriele Ancillai",
+  "inspiredBy": "Inspired by GymMane and Streak by InlitX",
   "version": "Version {version}",
   "@version": {
     "placeholders": {
@@ -373,9 +372,9 @@
     }
   },
   "license": "License",
-  "licenseBody": "Mane is free software under GPL-3.0-only. It comes with no warranty. See LICENSE and ADDITIONAL_TERMS.md in the repository.",
+  "licenseBody": "Sundial is free software under GPL-3.0-only. It comes with no warranty. See LICENSE and ADDITIONAL_TERMS.md in the repository.",
   "credits": "Credits",
-  "creditsBody": "Built with reference to GymMane and Streak by InlitX. Based on Mane by the Mane contributors.",
+  "creditsBody": "An independent project by Gabriele Ancillai.",
   "tagsManager": "Tags",
   "homeInventory": "Home inventory",
   "homeInventorySubtitle": "Quantities, locations and reorder levels.",
@@ -581,7 +580,7 @@
     }
   },
   "discoveredOnNetwork": "Found on this network",
-  "noDiscoveredDevices": "No other Mane devices found yet.",
+  "noDiscoveredDevices": "No other Sundial devices found yet.",
   "address": "Address",
   "port": "Port",
   "code": "Code",
@@ -1012,6 +1011,7 @@
     }
   },
   "clearDate": "Clear date",
+  "clearText": "Clear text",
   "gadgetName": "Gadget name",
   "maintenanceIntervalDays": "Days between services",
   "nextDue": "Next due {date}",
@@ -1216,8 +1216,8 @@
   "dataDeleteFailed": "Could not delete local data. Nothing was removed.",
   "dataDeleteIncomplete": "The plan was deleted, but some media or automatic backups could not be removed. Check storage permissions and delete them from the app's data folder.",
   "nearbyDevices": "Nearby devices",
-  "scanningDevices": "Looking for Mane devices on this network…",
-  "noNearbyDevices": "No nearby Mane devices found. Make sure the other device has online functionalities enabled.",
+  "scanningDevices": "Looking for Sundial devices on this network…",
+  "noNearbyDevices": "No nearby Sundial devices found. Make sure the other device has online functionalities enabled.",
   "pairWithDevice": "Pair with {name}",
   "@pairWithDevice": {
     "placeholders": {
@@ -1236,7 +1236,7 @@
       }
     }
   },
-  "syncExplainer": "Mane finds your other devices on the local network. Pairing stores a shared key once, so changing networks or IP addresses does not break the link. Sync stays read-only and never replaces your local plan.",
+  "syncExplainer": "Sundial finds your other devices on the local network. Pairing stores a shared key once, so changing networks or IP addresses does not break the link. Sync stays read-only and never replaces your local plan.",
   "pairSuccess": "Device paired.",
   "pairFailed": "Could not pair: {error}",
   "@pairFailed": {

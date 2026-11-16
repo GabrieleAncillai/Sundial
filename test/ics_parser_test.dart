@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/import/ics_parser.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/features/import/ics_parser.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 void main() {
   late IcsParseResult result;

@@ -1,4 +1,4 @@
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../services/planner_repository.dart';
 
@@ -25,7 +25,7 @@ class IcsExportService {
     final lines = <String>[
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//Mane//Planner//EN',
+      'PRODID:-//Sundial//Planner//EN',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
     ];
@@ -110,7 +110,7 @@ class IcsExportService {
         : '${shift.pattern.name} · ${shift.slot.label}';
     return [
       'BEGIN:VEVENT',
-      'UID:mane-shift-${shift.pattern.id}-${shift.date.iso}-${shift.slot.key}@local',
+      'UID:sundial-shift-${shift.pattern.id}-${shift.date.iso}-${shift.slot.key}@local',
       'DTSTAMP:$stamp',
       'SUMMARY:${_escape(label)}',
       'DTSTART;TZID=$zone:${_timedValue(start)}',
@@ -172,7 +172,7 @@ class IcsExportService {
     return parts.join(';');
   }
 
-  String _uid(String id) => 'mane-entry-$id@local';
+  String _uid(String id) => 'sundial-entry-$id@local';
 
   static String _weekday(int weekday) => const ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'][weekday - 1];
 

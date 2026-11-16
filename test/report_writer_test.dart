@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/stats/report_data.dart' show ReportData, ReportDetail, ReportRow;
-import 'package:mane/features/stats/report_writer.dart' show ReportWriter;
+import 'package:sundial/features/stats/report_data.dart' show ReportData, ReportDetail, ReportRow;
+import 'package:sundial/features/stats/report_writer.dart' show ReportWriter;
 
 void main() {
   late ReportData data;

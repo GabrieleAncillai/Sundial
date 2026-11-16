@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
 import '../models/app_settings.dart';
@@ -24,41 +24,41 @@ class SettingsController extends Notifier<AppSettings> {
 
   Future<void> setThemeMode(ThemeMode value) async {
     final variant = switch (value) {
-      ThemeMode.light => ManeThemeVariant.light,
-      ThemeMode.dark => ManeThemeVariant.dark,
-      ThemeMode.system => ManeThemeVariant.system,
+      ThemeMode.light => SundialThemeVariant.light,
+      ThemeMode.dark => SundialThemeVariant.dark,
+      ThemeMode.system => SundialThemeVariant.system,
     };
     state = state.copyWith(themeMode: value, themeVariant: variant);
     await _repository.writeSetting(SettingsKeys.themeMode, value.name);
     await _repository.writeSetting(SettingsKeys.themeVariant, variant.name);
   }
 
-  Future<void> setThemeVariant(ManeThemeVariant value) async {
+  Future<void> setThemeVariant(SundialThemeVariant value) async {
     final mode = switch (value) {
-      ManeThemeVariant.light => ThemeMode.light,
-      ManeThemeVariant.dark => ThemeMode.dark,
-      ManeThemeVariant.system => ThemeMode.system,
-      ManeThemeVariant.aero => ThemeMode.light,
+      SundialThemeVariant.light => ThemeMode.light,
+      SundialThemeVariant.dark => ThemeMode.dark,
+      SundialThemeVariant.system => ThemeMode.system,
+      SundialThemeVariant.aero => ThemeMode.light,
     };
     state = state.copyWith(
       themeVariant: value,
       themeMode: mode,
-      soundPack: value == ManeThemeVariant.aero ? ManeSoundPack.aero : state.soundPack,
+      soundPack: value == SundialThemeVariant.aero ? SundialSoundPack.aero : state.soundPack,
     );
     await _repository.writeSetting(SettingsKeys.themeVariant, value.name);
-    if (value == ManeThemeVariant.aero) {
-      await _repository.writeSetting(SettingsKeys.soundPack, ManeSoundPack.aero.name);
+    if (value == SundialThemeVariant.aero) {
+      await _repository.writeSetting(SettingsKeys.soundPack, SundialSoundPack.aero.name);
     } else {
       await _repository.writeSetting(SettingsKeys.themeMode, mode.name);
     }
   }
 
-  Future<void> setAccentScheme(ManeAccentScheme value) async {
+  Future<void> setAccentScheme(SundialAccentScheme value) async {
     state = state.copyWith(accentScheme: value);
     await _repository.writeSetting(SettingsKeys.colorScheme, value.name);
   }
 
-  Future<void> setBackgroundStyle(ManeBackgroundStyle value) async {
+  Future<void> setBackgroundStyle(SundialBackgroundStyle value) async {
     state = state.copyWith(backgroundStyle: value);
     await _repository.writeSetting(SettingsKeys.backgroundStyle, value.name);
   }
@@ -74,12 +74,12 @@ class SettingsController extends Notifier<AppSettings> {
     await _repository.writeSetting(SettingsKeys.textScale, '$scale');
   }
 
-  Future<void> setNavSide(ManeNavSide value) async {
+  Future<void> setNavSide(SundialNavSide value) async {
     state = state.copyWith(navSide: value);
     await _repository.writeSetting(SettingsKeys.navSide, value.name);
   }
 
-  Future<void> setDateFormat(ManeDateFormat value) async {
+  Future<void> setDateFormat(SundialDateFormat value) async {
     state = state.copyWith(dateFormat: value);
     await _repository.writeSetting(SettingsKeys.dateFormat, value.name);
   }
@@ -105,12 +105,12 @@ class SettingsController extends Notifier<AppSettings> {
     await _repository.writeSetting(SettingsKeys.soundsEnabled, '$value');
   }
 
-  Future<void> setSoundPack(ManeSoundPack value) async {
+  Future<void> setSoundPack(SundialSoundPack value) async {
     state = state.copyWith(soundPack: value);
     await _repository.writeSetting(SettingsKeys.soundPack, value.name);
   }
 
-  Future<void> setAlarmSound(ManeAlarmSound value) async {
+  Future<void> setAlarmSound(SundialAlarmSound value) async {
     state = state.copyWith(alarmSound: value);
     await _repository.writeSetting(SettingsKeys.alarmSound, value.name);
   }

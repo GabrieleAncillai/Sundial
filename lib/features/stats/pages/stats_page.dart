@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
@@ -104,7 +104,7 @@ class _StatsPageState extends ConsumerState<StatsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SectionLabel(l10n.stats, color: c.accent),
-                    Text(l10n.overview, style: ManeType.headline(26, color: c.text)),
+                    Text(l10n.overview, style: SundialType.headline(26, color: c.text)),
                   ],
                 ),
               ),
@@ -114,12 +114,12 @@ class _StatsPageState extends ConsumerState<StatsPage> {
             ],
           ),
           const SizedBox(height: 12),
-          ManeSegmented<_StatsRange>(
+          SundialSegmented<_StatsRange>(
             segments: [
-              ManeSegment(value: _StatsRange.week, label: l10n.rangeWeek),
-              ManeSegment(value: _StatsRange.month, label: l10n.rangeMonth),
-              ManeSegment(value: _StatsRange.quarter, label: l10n.rangeQuarter),
-              ManeSegment(value: _StatsRange.year, label: l10n.rangeYear),
+              SundialSegment(value: _StatsRange.week, label: l10n.rangeWeek),
+              SundialSegment(value: _StatsRange.month, label: l10n.rangeMonth),
+              SundialSegment(value: _StatsRange.quarter, label: l10n.rangeQuarter),
+              SundialSegment(value: _StatsRange.year, label: l10n.rangeYear),
             ],
             selected: _range,
             onChanged: (value) => setState(() => _range = value),
@@ -129,7 +129,7 @@ class _StatsPageState extends ConsumerState<StatsPage> {
           Text(
             '${formatFullDate(context, start.toDateTime())} – '
             '${formatFullDate(context, end.toDateTime())}',
-            style: ManeType.body(11.5, color: c.textTertiary),
+            style: SundialType.body(11.5, color: c.textTertiary),
           ),
           const SizedBox(height: 14),
           LayoutBuilder(
@@ -192,13 +192,13 @@ class _StatsPageState extends ConsumerState<StatsPage> {
                     children: [
                       Text(
                         l10n.shiftHours,
-                        style: ManeType.body(13.5, weight: FontWeight.w700, color: c.text),
+                        style: SundialType.body(13.5, weight: FontWeight.w700, color: c.text),
                       ),
-                      Text(l10n.shiftHoursHint, style: ManeType.body(10.5, color: c.textSecondary)),
+                      Text(l10n.shiftHoursHint, style: SundialType.body(10.5, color: c.textSecondary)),
                     ],
                   ),
                 ),
-                Text(_duration(shiftTime), style: ManeType.title(15, color: c.text)),
+                Text(_duration(shiftTime), style: SundialType.title(15, color: c.text)),
               ],
             ),
           ),
@@ -257,7 +257,7 @@ class _StatsPageState extends ConsumerState<StatsPage> {
                       totalTracked: tracked,
                     ),
                   if (!timeEntries.any((time) => allEntries[time.entryId]?.projectId != null))
-                    Text(l10n.noTrackedTime, style: ManeType.body(12, color: c.textTertiary)),
+                    Text(l10n.noTrackedTime, style: SundialType.body(12, color: c.textTertiary)),
                 ],
               ),
             ),
@@ -285,7 +285,7 @@ class _StatsPageState extends ConsumerState<StatsPage> {
           ],
           const SizedBox(height: 16),
           if (tracked == Duration.zero)
-            Text(l10n.noTrackedTime, style: ManeType.body(10.5, color: c.textTertiary)),
+            Text(l10n.noTrackedTime, style: SundialType.body(10.5, color: c.textTertiary)),
         ],
       ),
     );
@@ -446,10 +446,10 @@ class _StatsPageState extends ConsumerState<StatsPage> {
       details: details,
       languageCode: locale,
       datePattern: switch (ref.read(settingsProvider).dateFormat) {
-        ManeDateFormat.dmy => 'dd/MM/yyyy',
-        ManeDateFormat.mdy => 'MM/dd/yyyy',
-        ManeDateFormat.ymd => 'yyyy/MM/dd',
-        ManeDateFormat.system => 'dd MMM yyyy',
+        SundialDateFormat.dmy => 'dd/MM/yyyy',
+        SundialDateFormat.mdy => 'MM/dd/yyyy',
+        SundialDateFormat.ymd => 'yyyy/MM/dd',
+        SundialDateFormat.system => 'dd MMM yyyy',
       },
     );
     try {
@@ -491,7 +491,7 @@ class _StatsPageState extends ConsumerState<StatsPage> {
 
   String _fileName(String kind) {
     final now = DateTime.now();
-    return 'mane-$kind-${now.year}${now.month.toString().padLeft(2, '0')}'
+    return 'sundial-$kind-${now.year}${now.month.toString().padLeft(2, '0')}'
         '${now.day.toString().padLeft(2, '0')}.pdf';
   }
 }
@@ -541,9 +541,9 @@ class _StatCard extends StatelessWidget {
         children: [
           Icon(icon, size: 19, color: accent),
           const SizedBox(height: 9),
-          Text(value, style: ManeType.headline(23, color: c.text)),
+          Text(value, style: SundialType.headline(23, color: c.text)),
           const SizedBox(height: 1),
-          Text(label, maxLines: 2, style: ManeType.body(11, color: c.textSecondary)),
+          Text(label, maxLines: 2, style: SundialType.body(11, color: c.textSecondary)),
         ],
       ),
     );
@@ -580,7 +580,7 @@ class _BarChart extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     if (index == 0 || index == values.length - 1)
-                      Text('${index + 1}', style: ManeType.label(8, color: c.textTertiary)),
+                      Text('${index + 1}', style: SundialType.label(8, color: c.textTertiary)),
                   ],
                 ),
               ),
@@ -628,12 +628,12 @@ class _BreakdownRow extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: ManeType.body(12.5, weight: FontWeight.w700, color: c.text),
+                  style: SundialType.body(12.5, weight: FontWeight.w700, color: c.text),
                 ),
               ),
               Text(
                 '${_duration(tracked)} · ${context.l10n.completed} $completed',
-                style: ManeType.label(10, color: c.textTertiary),
+                style: SundialType.label(10, color: c.textTertiary),
               ),
             ],
           ),
@@ -690,7 +690,7 @@ class _HabitRow extends StatelessWidget {
               habit.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: ManeType.body(12.5, color: c.text),
+              style: SundialType.body(12.5, color: c.text),
             ),
           ),
           SizedBox(
@@ -706,7 +706,7 @@ class _HabitRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text('${(ratio * 100).round()}%', style: ManeType.label(10, color: c.textTertiary)),
+          Text('${(ratio * 100).round()}%', style: SundialType.label(10, color: c.textTertiary)),
         ],
       ),
     );

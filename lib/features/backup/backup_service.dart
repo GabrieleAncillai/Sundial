@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -34,7 +34,7 @@ class BackupVersionException implements Exception {
 class BackupService {
   BackupService(this._database, {Directory? mediaDirectory}) : _mediaDirectory = mediaDirectory;
 
-  static const appTag = 'mane';
+  static const appTag = 'sundial';
   static const currentSchemaVersion = 12;
 
   /// The oldest payload this build still upgrades. v1 and v2 are excluded on
@@ -416,7 +416,7 @@ class BackupService {
     if (decoded is! Map) throw const BackupFormatException('Root is not an object');
     final payload = Map<String, Object?>.from(decoded);
 
-    if (payload['app'] != appTag) throw const BackupFormatException('Not a Mane backup');
+    if (payload['app'] != appTag) throw const BackupFormatException('Not a Sundial backup');
     final version = payload['schemaVersion'];
     if (version is! int) throw const BackupFormatException('Missing schema version');
     if (version > currentSchemaVersion) throw BackupVersionException(version);

@@ -37,7 +37,7 @@ Future<String?> savePdfFile(Uint8List bytes, {required String dialogTitle, requi
 Future<String?> saveIcsFile(String content, {required String dialogTitle}) async {
   final now = DateTime.now().toUtc();
   final name =
-      'mane-calendar-${now.year.toString().padLeft(4, '0')}'
+      'sundial-calendar-${now.year.toString().padLeft(4, '0')}'
       '${now.month.toString().padLeft(2, '0')}'
       '${now.day.toString().padLeft(2, '0')}.ics';
   try {

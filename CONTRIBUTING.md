@@ -1,4 +1,4 @@
-# Contributing to Mane
+# Contributing to Sundial
 
 ## Before you start
 
@@ -13,7 +13,7 @@ If you are a coding agent or starting from a blank session, read
 
 ## Reference-first rule
 
-GymMane and Streak by InlitX are the primary references for Mane. They already
+GymMane and Streak by InlitX are the primary references for Sundial. They already
 solve most of the problems this project has. Before building a widget, screen,
 service, notification flow, backup path, settings page, animation or build step,
 open the equivalent in both projects and reuse or adapt it.
@@ -30,7 +30,7 @@ If code is copied or closely adapted, the license stays GPL-3.0-only and the
 attribution goes in `CREDITS.md` and the About screen.
 
 The visual layer is part of the rule, not a later polish item. Until a separate
-Mane visual identity is defined, the target is GymMane's shell/settings/type and
+Sundial visual identity is defined, the target is GymMane's shell/settings/type and
 Streak's calendar/sheets/motion. The active milestones and acceptance criteria
 are in [docs/completion-plan.md](docs/completion-plan.md); the open gaps are in
 [docs/compliance-audit.md](docs/compliance-audit.md).
@@ -38,7 +38,7 @@ are in [docs/completion-plan.md](docs/completion-plan.md); the open gaps are in
 ## Two rules that never bend
 
 1. **No accounts, no logins, no remote user data.** Ever.
-2. **No network in the core.** Mane works in flight mode. LAN sync and the MCP
+2. **No network in the core.** Sundial works in flight mode. LAN sync and the MCP
    endpoint are opt-in, local, and never required for the planner to work.
 
 Anything that keeps working on a phone with no connection is fair game.
@@ -63,21 +63,21 @@ is the second.
 ```
 lib/
 ├── app/          the MaterialApp and the shell
-├── models/       plain data classes that are not in mane_core
+├── models/       plain data classes that are not in sundial_core
 ├── screens/      one file per screen
 ├── services/     database, repository, platform side effects
 ├── state/        providers and app state
 ├── theme/        colours and text styles
 └── widgets/      shared UI pieces
 packages/
-└── mane_core/    pure Dart domain model, recurrence and shift rules
+└── sundial_core/    pure Dart domain model, recurrence and shift rules
 ```
 
 This is the current starting layout. As a feature grows, move it under
 `lib/features/<feature>/` with `data/`, `state/`, `pages/` and `widgets/`, as
 Streak does. Do not create a new flat screen if it belongs to a feature.
 
-`packages/mane_core` has no Flutter imports on purpose. The UI, a future LAN
+`packages/sundial_core` has no Flutter imports on purpose. The UI, a future LAN
 server and the MCP adapter call the same rules instead of reimplementing them.
 
 `PlannerRepository` is the single read/write seam. Screens and the future
@@ -103,8 +103,8 @@ The project follows the conventions used by InlitX projects (Streak and GymMane)
 - **One screen per file.** Prefer small widgets and pure functions.
 - **Comments explain why, not what.** Most code should need none.
 - **No literal business rules in the UI.** Recurrence, shift and time rules live
-  in `mane_core`.
-- Use `ManeColors` from `lib/theme/app_colors.dart`; do not scatter raw colors.
+  in `sundial_core`.
+- Use `SundialColors` from `lib/theme/app_colors.dart`; do not scatter raw colors.
   In screens, prefer `context.mc` over generated Material color roles.
 - Visual changes need a reference component or a documented deviation, plus a
   screenshot or golden test.
@@ -120,7 +120,7 @@ Add a test with your change. The suite is plain `flutter_test` and fast:
 
 ```bash
 flutter test                        # app and database
-(cd packages/mane_core && dart test) # domain rules
+(cd packages/sundial_core && dart test) # domain rules
 ```
 
 Domain tests do not need Flutter. Keep them that way. Schema changes need a

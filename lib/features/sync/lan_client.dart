@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../models/local_identity.dart';
 import '../../models/paired_device.dart';
@@ -40,14 +40,14 @@ class LanClient {
     final captured = <String>[];
     final client = _client(allowAny: true, captured: captured);
     try {
-      final response = await _get(client, host, port, '/mane/v1/info').timeout(_timeout);
+      final response = await _get(client, host, port, '/sundial/v1/info').timeout(_timeout);
       if (response.statusCode != HttpStatus.ok) {
         throw LanClientException('The device did not answer (${response.statusCode})');
       }
       final body = await utf8.decoder.bind(response).join();
       final json = jsonDecode(body);
-      if (json is! Map<String, dynamic> || json['app'] != 'mane') {
-        throw const LanClientException('That address is not a Mane device');
+      if (json is! Map<String, dynamic> || json['app'] != 'sundial') {
+        throw const LanClientException('That address is not a Sundial device');
       }
       if (captured.isEmpty) throw const LanClientException('No certificate was presented');
       final info = RemoteInfo(
@@ -101,7 +101,7 @@ class LanClient {
     final client = _client(allowAny: true, captured: captures);
     try {
       final request = await client
-          .postUrl(Uri(scheme: 'https', host: host, port: port, path: '/mane/v1/pair'))
+          .postUrl(Uri(scheme: 'https', host: host, port: port, path: '/sundial/v1/pair'))
           .timeout(_timeout);
       request.headers.contentType = ContentType.json;
       request.write(
@@ -194,7 +194,7 @@ class LanClient {
       if (end != null) 'end': end.iso,
       'timeZone': ?timeZone,
     };
-    final path = Uri(path: '/mane/v1/query', queryParameters: query).toString();
+    final path = Uri(path: '/sundial/v1/query', queryParameters: query).toString();
     final timestamp = _clock().toUtc().millisecondsSinceEpoch ~/ 1000;
     final nonce = PairingCrypto.randomBase64(18);
     final signature = await PairingCrypto.signRequest(
@@ -214,15 +214,15 @@ class LanClient {
               scheme: 'https',
               host: device.host,
               port: device.port,
-              path: '/mane/v1/query',
+              path: '/sundial/v1/query',
               queryParameters: query,
             ),
           )
           .timeout(_timeout);
-      request.headers.set('x-mane-device', localDeviceId);
-      request.headers.set('x-mane-timestamp', '$timestamp');
-      request.headers.set('x-mane-nonce', nonce);
-      request.headers.set('x-mane-signature', signature);
+      request.headers.set('x-sundial-device', localDeviceId);
+      request.headers.set('x-sundial-timestamp', '$timestamp');
+      request.headers.set('x-sundial-nonce', nonce);
+      request.headers.set('x-sundial-signature', signature);
       final response = await request.close().timeout(_timeout);
       final body = await utf8.decoder.bind(response).join();
       if (response.statusCode == HttpStatus.unauthorized) {

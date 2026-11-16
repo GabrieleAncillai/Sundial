@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/core/i18n/l10n.dart';
-import 'package:mane/core/widgets/app_sheet.dart';
-import 'package:mane/core/widgets/mane_select_field.dart';
-import 'package:mane/theme/app_theme.dart';
+import 'package:sundial/core/i18n/l10n.dart';
+import 'package:sundial/core/widgets/app_sheet.dart';
+import 'package:sundial/core/widgets/sundial_select_field.dart';
+import 'package:sundial/theme/app_theme.dart';
 
 void main() {
   Widget host(Future<void> Function(BuildContext context) onOpen) => MaterialApp(
-    theme: ManeTheme.light,
+    theme: SundialTheme.light,
     locale: const Locale('en'),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
@@ -114,22 +114,22 @@ void main() {
     int? picked;
     await tester.pumpWidget(
       host((context) async {
-        picked = await showManeSelectSheet<int>(
+        picked = await showSundialSelectSheet<int>(
           context: context,
           title: 'Space',
           searchHint: 'Search spaces',
           selected: 1,
           options: const [
-            ManeSelectOption(value: 1, label: 'Personal'),
-            ManeSelectOption(value: 2, label: 'Work'),
-            ManeSelectOption(value: 3, label: 'Home'),
+            SundialSelectOption(value: 1, label: 'Personal'),
+            SundialSelectOption(value: 2, label: 'Work'),
+            SundialSelectOption(value: 3, label: 'Home'),
           ],
         );
       }),
     );
     await openSheet(tester);
 
-    expect(find.byKey(const ValueKey('mane-select-sheet')), findsOneWidget);
+    expect(find.byKey(const ValueKey('sundial-select-sheet')), findsOneWidget);
     expect(find.text('Personal'), findsOneWidget);
     expect(find.text('Work'), findsOneWidget);
     expect(find.text('Home'), findsOneWidget);
@@ -146,6 +146,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(picked, 2);
-    expect(find.byKey(const ValueKey('mane-select-sheet')), findsNothing);
+    expect(find.byKey(const ValueKey('sundial-select-sheet')), findsNothing);
   });
 }

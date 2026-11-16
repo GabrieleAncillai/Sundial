@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/models/app_settings.dart';
-import 'package:mane/services/notification_service.dart';
-import 'package:mane/services/reminder_planner.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/models/app_settings.dart';
+import 'package:sundial/services/notification_service.dart';
+import 'package:sundial/services/reminder_planner.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -52,12 +52,12 @@ void main() {
   });
 
   test('each alarm sound maps to its own Android channel and raw resource', () {
-    for (final sound in ManeAlarmSound.values) {
+    for (final sound in SundialAlarmSound.values) {
       final android = NotificationService.detailsFor(sound).android;
       expect(android, isNotNull);
       expect(android!.channelId, NotificationService.channelIdFor(sound));
       expect(android.sound, isA<RawResourceAndroidNotificationSound>());
-      expect(android.sound!.sound, 'mane_alarm_${sound.name}');
+      expect(android.sound!.sound, 'sundial_alarm_${sound.name}');
     }
   });
 

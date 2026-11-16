@@ -3,14 +3,14 @@ import 'dart:io';
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/models/home_item.dart';
-import 'package:mane/models/local_identity.dart';
-import 'package:mane/models/paired_device.dart';
-import 'package:mane/models/remote_snapshot.dart';
-import 'package:mane/models/reminder.dart';
-import 'package:mane/models/shopping_item.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/models/home_item.dart';
+import 'package:sundial/models/local_identity.dart';
+import 'package:sundial/models/paired_device.dart';
+import 'package:sundial/models/remote_snapshot.dart';
+import 'package:sundial/models/reminder.dart';
+import 'package:sundial/models/shopping_item.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqlite3/open.dart';
 import 'package:sqlite3/sqlite3.dart';
@@ -22,8 +22,8 @@ void main() {
   });
 
   test('migrates real v1 data to the current schema without losing anything', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -143,8 +143,8 @@ void main() {
   });
 
   test('migrates real v2 data and keeps tags usable', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v2');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v2');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -205,8 +205,8 @@ void main() {
   });
 
   test('migrates real v3 data and exposes the v0.3 tables', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v3');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v3');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -259,8 +259,8 @@ void main() {
   });
 
   test('migrates real v4 data and creates the pairing tables', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v4');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v4');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -413,8 +413,8 @@ void main() {
   });
 
   test('migrates real v5 checklist rows to per-slot keys', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v5');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v5');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -483,8 +483,8 @@ void main() {
   });
 
   test('migrates real v6 rows to shopping order and purchase history', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v6');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v6');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -540,8 +540,8 @@ void main() {
   });
 
   test('migrates real v7 rows to custom reminder times and remote snapshots', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v7');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v7');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -615,8 +615,8 @@ void main() {
   });
 
   test('migrates real v8 rows to contexts, projects, habits and tracked tasks', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v8');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v8');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -690,8 +690,8 @@ void main() {
   });
 
   test('repairs a database written by the draft v9 build', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v9-draft');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v9-draft');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -853,8 +853,8 @@ void main() {
   });
 
   test('a v10 database gains habit weekdays and keeps writing', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-v10');
-    final path = p.join(directory.path, 'mane.sqlite');
+    final directory = await Directory.systemTemp.createTemp('sundial-v10');
+    final path = p.join(directory.path, 'sundial.sqlite');
     addTearDown(() => directory.delete(recursive: true));
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
@@ -911,8 +911,8 @@ void main() {
   });
 
   test('repairs the draft leftovers a v1.2 build reported as v10', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-broken-v10');
-    final path = p.join(directory.path, 'mane.sqlite');
+    final directory = await Directory.systemTemp.createTemp('sundial-broken-v10');
+    final path = p.join(directory.path, 'sundial.sqlite');
     addTearDown(() => directory.delete(recursive: true));
     final now = DateTime.utc(2026, 11, 9, 10);
 

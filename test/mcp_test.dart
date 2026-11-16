@@ -4,13 +4,13 @@ import 'dart:io';
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/mcp/mcp_server.dart';
-import 'package:mane/models/home_item.dart';
-import 'package:mane/models/local_identity.dart';
-import 'package:mane/models/shopping_item.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/services/planner_repository.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/features/mcp/mcp_server.dart';
+import 'package:sundial/models/home_item.dart';
+import 'package:sundial/models/local_identity.dart';
+import 'package:sundial/models/shopping_item.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/services/planner_repository.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 
 void main() {
@@ -113,7 +113,7 @@ void main() {
     expect(status, HttpStatus.ok);
     final result = Map<String, dynamic>.from(body['result'] as Map);
     expect(result['protocolVersion'], McpServer.protocolVersion);
-    expect((result['serverInfo'] as Map)['name'], 'mane');
+    expect((result['serverInfo'] as Map)['name'], 'sundial');
 
     final (_, listed) = await post({'jsonrpc': '2.0', 'id': 2, 'method': 'tools/list'});
     final tools = ((listed['result'] as Map)['tools'] as List).cast<Map>();

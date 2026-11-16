@@ -38,7 +38,7 @@ abstract class PeerDiscovery {
 /// Linux. Discovery is best effort: manual host and port pairing stays
 /// available when the platform daemon is missing.
 class BonsoirPeerDiscovery implements PeerDiscovery {
-  static const serviceType = '_mane._tcp';
+  static const serviceType = '_sundial._tcp';
 
   final _peers = StreamController<DiscoveredPeer>.broadcast();
   BonsoirBroadcast? _broadcast;

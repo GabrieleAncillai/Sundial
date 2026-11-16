@@ -91,7 +91,7 @@ class Entry {
   /// Optional project inside the space/context.
   final String? projectId;
 
-  /// Optional icon name from `ManeIcons`. Used by home gadgets; empty for most
+  /// Optional icon name from `SundialIcons`. Used by home gadgets; empty for most
   /// entries.
   final String icon;
 

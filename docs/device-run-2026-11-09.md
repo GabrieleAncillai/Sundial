@@ -1,4 +1,10 @@
-# Mane device run — 2026-11-09
+# Sundial device run — 2026-11-09
+
+> Historical note: this run was recorded while the project was codenamed Mane.
+> The application id in the table and the raw notification/alarm logs under
+> `screenshots/device-run-2026-11-09/` reflect the build tested at the time.
+> The current application id is `io.github.sundial` and current resource names
+> use `sundial_*`.
 
 Real-device verification of the v1.0 checklist. This run found and fixed two
 defects in the app-lock and notification paths, then found and fixed a CSV import
@@ -27,12 +33,12 @@ and was reinstalled before the final launch check.
 |---|---|---|
 | 1. Install and first launch | PASS | Offline start, Personal/Work/Home, no sample rows, About shows 0.9.0, GPL-3.0-only and InlitX. |
 | 2. Notifications | PASS (Android 13/12 paths N/A) | Delivery, grouping, tap closed/open, edit time, custom time, quiet-hours and work-hours suppression, snooze and complete all observed. Android 13 notification permission and Android 12 exact-alarm access do not exist on API 29. |
-| 3. Reboot | FAIL — OEM limitation | The app's alarms survived in `scheduled_notifications.xml` but the app process did not start after reboot and no reminder fired. Opening Mane rebuilt exactly the two upcoming alarms with no duplicates. |
+| 3. Reboot | FAIL — OEM limitation | The app's alarms survived in `scheduled_notifications.xml` but the app process did not start after reboot and no reminder fired. Opening Sundial rebuilt exactly the two upcoming alarms with no duplicates. |
 | 4. Battery optimization | BLOCKED | The app is whitelisted and in the active bucket, but the boot receiver still did not run. The exact EMUI App launch path and a restricted-bucket 30-minute test still need the user. |
 | 5. Timezone | PASS | Madrid 10:00 became New York 4:00; the all-day birthday stayed on the same date; returning restored 10:00. The reminder epoch was unchanged and work/quiet windows used the new zone. |
 | 6. LAN pairing and query | PASS (manual host/port) | mDNS is unavailable on this phone, so the documented host/port fallback was used. Pairing, read-only snapshot, offline persistence, airplane mode and unpair all behaved as specified. |
 | 7. MCP | PASS | No-token 401; `initialize` returned a session; 17 tools; SSE one message; `DELETE /mcp` invalidated the session; read tools and all gated write tools exercised; linked shopping check increased inventory quantity. |
-| 8. Widget | BLOCKED | Requires the user to long-press the home screen, add the Mane widget, tap it and check the resume refresh. |
+| 8. Widget | BLOCKED | Requires the user to long-press the home screen, add the Sundial widget, tap it and check the resume refresh. |
 | 9. Backup | PASS for JSON; CSV fixed | Schema 8 export/import restored the plan and excluded identity, pairing, app-lock and MCP secrets. Automatic backup created a daily copy. GymMane timed and all-day imports were read-only. CSV export worked; the first re-import exposed the duplication bug, which was fixed and re-tested (0 imported, 7 duplicates, 7 entries remained). |
 | 10. App lock | PASS after fix | Enable, background, lockout, cold start, disable and backup-import leaving the lock off all verified. |
 
@@ -56,7 +62,7 @@ dismissal of the editor sheet was control-tested and is not a duplicate stack.
 ### Notification actions did nothing and snooze was wiped
 
 `AndroidNotificationAction` defaulted to `showsUserInterface: false`, so the
-buttons sent a broadcast to a receiver Mane does not declare. Both actions now
+buttons sent a broadcast to a receiver Sundial does not declare. Both actions now
 use `showsUserInterface: true`; the plugin's foreground path delivers the action
 to `onAction` and cancels the notification.
 
@@ -98,7 +104,7 @@ Evidence: `85-csv-settings.png`, `86-csv-import-sheet.png`,
 Steps: schedule reminders 21:15 and 21:20; confirm they are queued; confirm the
 boot receiver is declared; whitelist the app from battery optimization; enable
 EMUI auto-launch; reboot. After boot the app process was absent, no alarm for
-Mane existed and no notification fired. Opening Mane rebuilt exactly the two
+Sundial existed and no notification fired. Opening Sundial rebuilt exactly the two
 upcoming alarms, with no duplicates.
 
 Expected: the plugin's boot receiver restores the queued alarms and the reminder
@@ -145,7 +151,7 @@ database, writes enabled.
 dart format --line-length 110 --output=none --set-exit-if-changed  # 144 files, 0 changed
 flutter analyze --no-fatal-infos                                   # no issues
 flutter test                                                       # 135 passed
-(cd packages/mane_core && dart test)                               # 85 passed
+(cd packages/sundial_core && dart test)                               # 85 passed
 flutter build linux --debug                                        # ok
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk flutter build apk --debug  # ok
 ```

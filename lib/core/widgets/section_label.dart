@@ -23,7 +23,7 @@ class SectionLabel extends StatelessWidget {
               text.toUpperCase(),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: ManeType.kicker(color: color ?? c.textTertiary),
+              style: SundialType.kicker(color: color ?? c.textTertiary),
             ),
           ),
           if (trailing != null) ...[const SizedBox(width: 12), trailing!],

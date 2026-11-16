@@ -4,13 +4,13 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/core/i18n/l10n.dart';
-import 'package:mane/features/sync/identity_service.dart';
-import 'package:mane/features/sync/pages/devices_page.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/services/planner_repository.dart';
-import 'package:mane/state/providers.dart';
-import 'package:mane/theme/app_theme.dart';
+import 'package:sundial/core/i18n/l10n.dart';
+import 'package:sundial/features/sync/identity_service.dart';
+import 'package:sundial/features/sync/pages/devices_page.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/services/planner_repository.dart';
+import 'package:sundial/state/providers.dart';
+import 'package:sundial/theme/app_theme.dart';
 import 'package:sqlite3/open.dart';
 
 void main() {
@@ -32,7 +32,7 @@ void main() {
           ),
         ],
         child: MaterialApp(
-          theme: ManeTheme.light,
+          theme: SundialTheme.light,
           locale: const Locale('en'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,

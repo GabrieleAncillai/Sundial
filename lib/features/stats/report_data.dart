@@ -52,7 +52,7 @@ class ReportData {
     required this.openTasks,
     required this.rows,
     required this.details,
-    this.profileLabel = 'Mane',
+    this.profileLabel = 'Sundial',
     this.languageCode = 'en',
     this.datePattern = 'yyyy-MM-dd',
   });

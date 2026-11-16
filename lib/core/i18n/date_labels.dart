@@ -26,11 +26,11 @@ String shortWeekdayList(BuildContext context, Iterable<int> weekdays) =>
 /// Formats a full date according to the user's date-format preference.
 String formatFullDate(BuildContext context, DateTime date) {
   final locale = Localizations.localeOf(context).toLanguageTag();
-  return switch (AppSettingsScope.maybeOf(context)?.dateFormat ?? ManeDateFormat.system) {
-    ManeDateFormat.dmy => DateFormat('dd/MM/yyyy', locale).format(date),
-    ManeDateFormat.mdy => DateFormat('MM/dd/yyyy', locale).format(date),
-    ManeDateFormat.ymd => DateFormat('yyyy/MM/dd', locale).format(date),
-    ManeDateFormat.system => DateFormat.yMMMMd(locale).format(date),
+  return switch (AppSettingsScope.maybeOf(context)?.dateFormat ?? SundialDateFormat.system) {
+    SundialDateFormat.dmy => DateFormat('dd/MM/yyyy', locale).format(date),
+    SundialDateFormat.mdy => DateFormat('MM/dd/yyyy', locale).format(date),
+    SundialDateFormat.ymd => DateFormat('yyyy/MM/dd', locale).format(date),
+    SundialDateFormat.system => DateFormat.yMMMMd(locale).format(date),
   };
 }
 
@@ -38,19 +38,19 @@ String formatFullDate(BuildContext context, DateTime date) {
 /// date-format preference.
 String formatShortDate(BuildContext context, DateTime date) {
   final locale = Localizations.localeOf(context).toLanguageTag();
-  return switch (AppSettingsScope.maybeOf(context)?.dateFormat ?? ManeDateFormat.system) {
-    ManeDateFormat.dmy => DateFormat('dd/MM', locale).format(date),
-    ManeDateFormat.mdy => DateFormat('MM/dd', locale).format(date),
-    ManeDateFormat.ymd => DateFormat('yyyy/MM/dd', locale).format(date),
-    ManeDateFormat.system => DateFormat.MMMd(locale).format(date),
+  return switch (AppSettingsScope.maybeOf(context)?.dateFormat ?? SundialDateFormat.system) {
+    SundialDateFormat.dmy => DateFormat('dd/MM', locale).format(date),
+    SundialDateFormat.mdy => DateFormat('MM/dd', locale).format(date),
+    SundialDateFormat.ymd => DateFormat('yyyy/MM/dd', locale).format(date),
+    SundialDateFormat.system => DateFormat.MMMd(locale).format(date),
   };
 }
 
 /// Formats a month and year according to the date-format preference.
 String formatMonthYear(BuildContext context, DateTime date) {
   final locale = Localizations.localeOf(context).toLanguageTag();
-  return switch (AppSettingsScope.maybeOf(context)?.dateFormat ?? ManeDateFormat.system) {
-    ManeDateFormat.ymd => DateFormat('yyyy/MM', locale).format(date),
+  return switch (AppSettingsScope.maybeOf(context)?.dateFormat ?? SundialDateFormat.system) {
+    SundialDateFormat.ymd => DateFormat('yyyy/MM', locale).format(date),
     _ => DateFormat.yMMMM(locale).format(date),
   };
 }

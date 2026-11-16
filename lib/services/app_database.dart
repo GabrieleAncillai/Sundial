@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -2503,7 +2503,7 @@ const _defaultCategories = <Tag>[
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final directory = await getApplicationSupportDirectory();
-    final file = File(p.join(directory.path, 'mane.sqlite'));
+    final file = File(p.join(directory.path, 'sundial.sqlite'));
     return NativeDatabase.createInBackground(file);
   });
 }

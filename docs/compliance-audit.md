@@ -44,7 +44,7 @@ product/visual and feature work is the active program.
 | Android + Linux both build | Pass at v0.9 | Debug APK and Linux debug pass locally; release workflow builds both | Add Linux build to the normal CI |
 | No new dependency without reason | Pass | Existing stack only; no analytics/ads/Firebase/Supabase | Keep |
 | Do not weaken tests or security | Pass | 135 app + 85 core tests; pairing/TLS/replay, app-lock hashing and above-route coverage, MCP auth/session and snapshot tests | Keep |
-| Reference-first for components, styles, motion | Pass (v0.6) | Nunito, expanded `ManeColors`, `ManeType`, component themes, `lib/core/widgets` kit, floating shell and screen sweep; `test/visual_kit_test.dart` and `docs/screenshots/` | Keep |
+| Reference-first for components, styles, motion | Pass (v0.6) | Nunito, expanded `SundialColors`, `SundialType`, component themes, `lib/core/widgets` kit, floating shell and screen sweep; `test/visual_kit_test.dart` and `docs/screenshots/` | Keep |
 | Reference map describes shipped state | Pass (v0.6) | `docs/reference-map.md` now names the shipped kit and the visual deviation | Keep |
 | Every schema change has migration + real-row test | Pass | v1→v8 migration tests, including real v5, v6 and v7 fixtures | Keep |
 | Timezone behavior has DST/travel tests | Pass | Core time tests and widget/reminder tests | Keep for new features |
@@ -110,14 +110,14 @@ build.
 ### P1 — The visual layer did not follow the references (fixed v0.6)
 
 **Evidence:** `lib/theme/app_theme.dart` only wrapped `ColorScheme.fromSeed` and
-set four roles. `ManeColors` was referenced only by the theme file. The shell used
+set four roles. `SundialColors` was referenced only by the theme file. The shell used
 stock `AppBar`, `NavigationBar` and `FloatingActionButton`. There was no shared
 UI kit, font asset or animation code.
 
 **Impact:** the app looked like a default Material prototype, the opposite of the
 reference-first rule and the documented visual direction.
 
-**Remediation (done):** Nunito plus `ManeType`; expanded tokens and component
+**Remediation (done):** Nunito plus `SundialType`; expanded tokens and component
 themes; `lib/core/widgets` kit; floating shell and background; screen sweep;
 widget tests and `docs/screenshots/`. The deviation is recorded in
 `docs/full-docs.md` and `docs/reference-map.md`.

@@ -1,4 +1,4 @@
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import 'home_item.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../core/i18n/reminder_label.dart';
@@ -68,12 +68,12 @@ class SettingsDetailPage extends ConsumerWidget {
                 SettingsChoiceRow(
                   icon: Icons.brightness_6_outlined,
                   title: l10n.theme,
-                  choice: ManeSegmented<ManeThemeVariant>(
+                  choice: SundialSegmented<SundialThemeVariant>(
                     segments: [
-                      ManeSegment(value: ManeThemeVariant.system, label: l10n.themeSystem),
-                      ManeSegment(value: ManeThemeVariant.light, label: l10n.themeLight),
-                      ManeSegment(value: ManeThemeVariant.dark, label: l10n.themeDark),
-                      ManeSegment(value: ManeThemeVariant.aero, label: l10n.themeAero),
+                      SundialSegment(value: SundialThemeVariant.system, label: l10n.themeSystem),
+                      SundialSegment(value: SundialThemeVariant.light, label: l10n.themeLight),
+                      SundialSegment(value: SundialThemeVariant.dark, label: l10n.themeDark),
+                      SundialSegment(value: SundialThemeVariant.aero, label: l10n.themeAero),
                     ],
                     selected: settings.themeVariant,
                     onChanged: controller.setThemeVariant,
@@ -86,7 +86,7 @@ class SettingsDetailPage extends ConsumerWidget {
                   value: _backgroundLabel(l10n, settings.backgroundStyle),
                   onTap: () => _pickBackground(context, controller, settings.backgroundStyle),
                 ),
-                if (settings.backgroundStyle == ManeBackgroundStyle.custom)
+                if (settings.backgroundStyle == SundialBackgroundStyle.custom)
                   SettingsNavRow(
                     icon: Icons.colorize_outlined,
                     title: l10n.customBackgroundColor,
@@ -118,11 +118,11 @@ class SettingsDetailPage extends ConsumerWidget {
                 SettingsChoiceRow(
                   icon: Icons.translate,
                   title: l10n.language,
-                  choice: ManeSegmented<String>(
+                  choice: SundialSegmented<String>(
                     segments: [
-                      ManeSegment(value: 'system', label: l10n.languageSystem),
-                      ManeSegment(value: 'en', label: l10n.languageEnglish),
-                      ManeSegment(value: 'es', label: l10n.languageSpanish),
+                      SundialSegment(value: 'system', label: l10n.languageSystem),
+                      SundialSegment(value: 'en', label: l10n.languageEnglish),
+                      SundialSegment(value: 'es', label: l10n.languageSpanish),
                     ],
                     selected: settings.locale?.languageCode ?? 'system',
                     onChanged: (value) => controller.setLocale(value == 'system' ? null : Locale(value)),
@@ -147,11 +147,11 @@ class SettingsDetailPage extends ConsumerWidget {
                 SettingsChoiceRow(
                   icon: Icons.calendar_view_week_outlined,
                   title: l10n.weekStartsOn,
-                  choice: ManeSegmented<int>(
+                  choice: SundialSegmented<int>(
                     segments: [
-                      ManeSegment(value: DateTime.monday, label: l10n.weekStartMonday),
-                      ManeSegment(value: DateTime.saturday, label: l10n.weekStartSaturday),
-                      ManeSegment(value: DateTime.sunday, label: l10n.weekStartSunday),
+                      SundialSegment(value: DateTime.monday, label: l10n.weekStartMonday),
+                      SundialSegment(value: DateTime.saturday, label: l10n.weekStartSaturday),
+                      SundialSegment(value: DateTime.sunday, label: l10n.weekStartSunday),
                     ],
                     selected: settings.weekStart,
                     onChanged: controller.setWeekStart,
@@ -161,7 +161,7 @@ class SettingsDetailPage extends ConsumerWidget {
                 SettingsNavRow(
                   icon: Icons.view_sidebar_outlined,
                   title: l10n.navigationSide,
-                  value: settings.navSide == ManeNavSide.left ? l10n.navLeft : l10n.navRight,
+                  value: settings.navSide == SundialNavSide.left ? l10n.navLeft : l10n.navRight,
                   onTap: () => _pickNavSide(context, controller, settings.navSide),
                 ),
                 SettingsSwitchRow(
@@ -193,10 +193,10 @@ class SettingsDetailPage extends ConsumerWidget {
                 SettingsChoiceRow(
                   icon: Icons.graphic_eq,
                   title: l10n.soundPackLabel,
-                  choice: ManeSegmented<ManeSoundPack>(
+                  choice: SundialSegmented<SundialSoundPack>(
                     segments: [
-                      ManeSegment(value: ManeSoundPack.soft, label: l10n.soundPackSoft),
-                      ManeSegment(value: ManeSoundPack.aero, label: l10n.soundPackAero),
+                      SundialSegment(value: SundialSoundPack.soft, label: l10n.soundPackSoft),
+                      SundialSegment(value: SundialSoundPack.aero, label: l10n.soundPackAero),
                     ],
                     selected: settings.soundPack,
                     onChanged: (value) {
@@ -219,11 +219,11 @@ class SettingsDetailPage extends ConsumerWidget {
                   icon: Icons.alarm_outlined,
                   title: l10n.alarmSounds,
                   subtitle: l10n.alarmSoundsSubtitle,
-                  choice: ManeSegmented<ManeAlarmSound>(
+                  choice: SundialSegmented<SundialAlarmSound>(
                     segments: [
-                      ManeSegment(value: ManeAlarmSound.soft, label: l10n.alarmSoundSoft),
-                      ManeSegment(value: ManeAlarmSound.chime, label: l10n.alarmSoundChime),
-                      ManeSegment(value: ManeAlarmSound.bright, label: l10n.alarmSoundBright),
+                      SundialSegment(value: SundialAlarmSound.soft, label: l10n.alarmSoundSoft),
+                      SundialSegment(value: SundialAlarmSound.chime, label: l10n.alarmSoundChime),
+                      SundialSegment(value: SundialAlarmSound.bright, label: l10n.alarmSoundBright),
                     ],
                     selected: settings.alarmSound,
                     onChanged: (value) {
@@ -482,7 +482,7 @@ class SettingsDetailPage extends ConsumerWidget {
 
     if (embedded) return content;
 
-    return ManePage(
+    return SundialPage(
       title: switch (section) {
         SettingsDetailSection.appearance => l10n.appearanceSection,
         SettingsDetailSection.preferences => l10n.preferencesSection,
@@ -852,19 +852,19 @@ class SettingsDetailPage extends ConsumerWidget {
   Future<void> _pickBackground(
     BuildContext context,
     SettingsController controller,
-    ManeBackgroundStyle selected,
+    SundialBackgroundStyle selected,
   ) async {
     final l10n = context.l10n;
-    final picked = await _choose<ManeBackgroundStyle>(
+    final picked = await _choose<SundialBackgroundStyle>(
       context,
       title: l10n.background,
       selected: selected,
       options: [
-        (ManeBackgroundStyle.dots, l10n.backgroundDots),
-        (ManeBackgroundStyle.grid, l10n.backgroundGrid),
-        (ManeBackgroundStyle.oled, l10n.backgroundOled),
-        (ManeBackgroundStyle.plain, l10n.backgroundPlain),
-        (ManeBackgroundStyle.custom, l10n.backgroundCustom),
+        (SundialBackgroundStyle.dots, l10n.backgroundDots),
+        (SundialBackgroundStyle.grid, l10n.backgroundGrid),
+        (SundialBackgroundStyle.oled, l10n.backgroundOled),
+        (SundialBackgroundStyle.plain, l10n.backgroundPlain),
+        (SundialBackgroundStyle.custom, l10n.backgroundCustom),
       ],
     );
     if (picked != null) await controller.setBackgroundStyle(picked);
@@ -889,30 +889,34 @@ class SettingsDetailPage extends ConsumerWidget {
   Future<void> _pickDateFormat(
     BuildContext context,
     SettingsController controller,
-    ManeDateFormat selected,
+    SundialDateFormat selected,
   ) async {
     final l10n = context.l10n;
-    final picked = await _choose<ManeDateFormat>(
+    final picked = await _choose<SundialDateFormat>(
       context,
       title: l10n.dateFormatLabel,
       selected: selected,
       options: [
-        (ManeDateFormat.system, l10n.dateFormatSystem),
-        (ManeDateFormat.dmy, l10n.dateFormatDmy),
-        (ManeDateFormat.mdy, l10n.dateFormatMdy),
-        (ManeDateFormat.ymd, l10n.dateFormatYmd),
+        (SundialDateFormat.system, l10n.dateFormatSystem),
+        (SundialDateFormat.dmy, l10n.dateFormatDmy),
+        (SundialDateFormat.mdy, l10n.dateFormatMdy),
+        (SundialDateFormat.ymd, l10n.dateFormatYmd),
       ],
     );
     if (picked != null) await controller.setDateFormat(picked);
   }
 
-  Future<void> _pickNavSide(BuildContext context, SettingsController controller, ManeNavSide selected) async {
+  Future<void> _pickNavSide(
+    BuildContext context,
+    SettingsController controller,
+    SundialNavSide selected,
+  ) async {
     final l10n = context.l10n;
-    final picked = await _choose<ManeNavSide>(
+    final picked = await _choose<SundialNavSide>(
       context,
       title: l10n.navigationSide,
       selected: selected,
-      options: [(ManeNavSide.left, l10n.navLeft), (ManeNavSide.right, l10n.navRight)],
+      options: [(SundialNavSide.left, l10n.navLeft), (SundialNavSide.right, l10n.navRight)],
     );
     if (picked != null) await controller.setNavSide(picked);
   }
@@ -939,12 +943,12 @@ class SettingsDetailPage extends ConsumerWidget {
     );
   }
 
-  String _backgroundLabel(AppLocalizations l10n, ManeBackgroundStyle style) => switch (style) {
-    ManeBackgroundStyle.dots => l10n.backgroundDots,
-    ManeBackgroundStyle.grid => l10n.backgroundGrid,
-    ManeBackgroundStyle.oled => l10n.backgroundOled,
-    ManeBackgroundStyle.plain => l10n.backgroundPlain,
-    ManeBackgroundStyle.custom => l10n.backgroundCustom,
+  String _backgroundLabel(AppLocalizations l10n, SundialBackgroundStyle style) => switch (style) {
+    SundialBackgroundStyle.dots => l10n.backgroundDots,
+    SundialBackgroundStyle.grid => l10n.backgroundGrid,
+    SundialBackgroundStyle.oled => l10n.backgroundOled,
+    SundialBackgroundStyle.plain => l10n.backgroundPlain,
+    SundialBackgroundStyle.custom => l10n.backgroundCustom,
   };
 
   String _textScaleLabel(AppLocalizations l10n, double scale) {
@@ -954,11 +958,11 @@ class SettingsDetailPage extends ConsumerWidget {
     return l10n.textExtraLarge;
   }
 
-  String _dateFormatLabel(AppLocalizations l10n, ManeDateFormat format) => switch (format) {
-    ManeDateFormat.system => l10n.dateFormatSystem,
-    ManeDateFormat.dmy => l10n.dateFormatDmy,
-    ManeDateFormat.mdy => l10n.dateFormatMdy,
-    ManeDateFormat.ymd => l10n.dateFormatYmd,
+  String _dateFormatLabel(AppLocalizations l10n, SundialDateFormat format) => switch (format) {
+    SundialDateFormat.system => l10n.dateFormatSystem,
+    SundialDateFormat.dmy => l10n.dateFormatDmy,
+    SundialDateFormat.mdy => l10n.dateFormatMdy,
+    SundialDateFormat.ymd => l10n.dateFormatYmd,
   };
 
   Future<void> _deleteAllData(BuildContext context, WidgetRef ref) async {
@@ -1061,7 +1065,7 @@ class SettingsDetailPage extends ConsumerWidget {
 
   static String _csvFileName(String kind) {
     final now = DateTime.now();
-    return 'mane-$kind-${now.year.toString().padLeft(4, '0')}'
+    return 'sundial-$kind-${now.year.toString().padLeft(4, '0')}'
         '${now.month.toString().padLeft(2, '0')}'
         '${now.day.toString().padLeft(2, '0')}.csv';
   }
@@ -1273,12 +1277,12 @@ class _KeepBackupsSheet extends ConsumerWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 8, bottom: 20),
-          child: ManeSegmented<int>(
+          child: SundialSegmented<int>(
             segments: const [
-              ManeSegment(value: 3, label: '3'),
-              ManeSegment(value: 5, label: '5'),
-              ManeSegment(value: 10, label: '10'),
-              ManeSegment(value: 20, label: '20'),
+              SundialSegment(value: 3, label: '3'),
+              SundialSegment(value: 5, label: '5'),
+              SundialSegment(value: 10, label: '10'),
+              SundialSegment(value: 20, label: '20'),
             ],
             selected: initial,
             onChanged: (value) async {
@@ -1320,7 +1324,7 @@ class _HoursSheetState extends State<_HoursSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: ManeTimeField(
+              child: SundialTimeField(
                 label: l10n.startTime,
                 valueLabel: formatMinuteLabel(context, _start),
                 initialMinute: _start,
@@ -1330,7 +1334,7 @@ class _HoursSheetState extends State<_HoursSheet> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: ManeTimeField(
+              child: SundialTimeField(
                 label: l10n.endTime,
                 valueLabel: formatMinuteLabel(context, _end),
                 initialMinute: _end,
