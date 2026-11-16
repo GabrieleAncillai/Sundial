@@ -32,6 +32,7 @@ class _WeekScreenState extends ConsumerState<WeekScreen> {
     final start = today.startOfWeek(settings.weekStart).addDays(7 * _offsetWeeks);
     final range = (start: start, end: start.addDays(6));
     final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
+    final contexts = ref.watch(contextsProvider(null)).value ?? const <PlannerContext>[];
     final entriesState = ref.watch(entriesProvider(range));
     final shiftsState = ref.watch(shiftsProvider(range));
     final allEntries = entriesState.value ?? const <EntryOccurrence>[];
@@ -75,6 +76,7 @@ class _WeekScreenState extends ConsumerState<WeekScreen> {
             entries: entriesByDate[start.addDays(index)] ?? const [],
             shifts: shiftsByDate[start.addDays(index)] ?? const [],
             spaces: spaces,
+            contexts: contexts,
           ),
           const SizedBox(height: 10),
         ],
@@ -147,6 +149,7 @@ class _DaySection extends StatelessWidget {
     required this.entries,
     required this.shifts,
     required this.spaces,
+    required this.contexts,
   });
 
   final LocalDate date;
@@ -154,6 +157,7 @@ class _DaySection extends StatelessWidget {
   final List<EntryOccurrence> entries;
   final List<ShiftOccurrence> shifts;
   final List<Space> spaces;
+  final List<PlannerContext> contexts;
 
   @override
   Widget build(BuildContext context) {
@@ -196,7 +200,9 @@ class _DaySection extends StatelessWidget {
                     : Wrap(
                         spacing: 6,
                         runSpacing: 4,
-                        children: shifts.map((item) => ShiftChip(occurrence: item)).toList(),
+                        children: shifts
+                            .map((item) => ShiftChip(occurrence: item, contexts: contexts))
+                            .toList(),
                       ),
               ),
               GlassIconButton(

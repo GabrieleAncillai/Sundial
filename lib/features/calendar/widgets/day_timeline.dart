@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -9,6 +11,9 @@ import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
+import '../../shifts/shift_lane_layout.dart';
+import '../../shifts/shift_lane_painter.dart';
+import '../../shifts/shift_palette.dart';
 import '../../shifts/widgets/shift_checklist_view.dart';
 
 /// A 24-hour day view. Shifts are drawn as background blocks; entries sit in
@@ -20,6 +25,7 @@ class DayTimeline extends ConsumerStatefulWidget {
     required this.entries,
     required this.shifts,
     required this.spaces,
+    required this.contexts,
     required this.onAdd,
   });
 
@@ -27,6 +33,7 @@ class DayTimeline extends ConsumerStatefulWidget {
   final List<EntryOccurrence> entries;
   final List<ShiftOccurrence> shifts;
   final List<Space> spaces;
+  final List<PlannerContext> contexts;
   final VoidCallback onAdd;
 
   static const hourHeight = 54.0;
@@ -160,60 +167,107 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
                     child: Container(
                       height: timelineHeight,
                       color: c.surfaceAlt.withValues(alpha: 0.45),
-                      child: Stack(
-                        children: [
-                          for (var hour = 0; hour <= 24; hour++)
-                            Positioned(
-                              left: 0,
-                              right: 0,
-                              top: hour * DayTimeline.hourHeight,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    width: 52,
-                                    child: Transform.translate(
-                                      offset: Offset(0, hour == 0 ? 2 : -6),
-                                      child: Text(
-                                        hour == 24 ? '' : TimeOfDay(hour: hour, minute: 0).format(context),
-                                        textAlign: TextAlign.right,
-                                        style: ManeType.label(9.5, color: c.textTertiary),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final shiftRenders = _shiftRenders(
+                            shifts,
+                            dayStart,
+                            dayEnd,
+                            constraints.maxWidth,
+                            context,
+                          );
+                          return Stack(
+                            children: [
+                              for (var hour = 0; hour <= 24; hour++)
+                                Positioned(
+                                  left: 0,
+                                  right: 0,
+                                  top: hour * DayTimeline.hourHeight,
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(
+                                        width: 52,
+                                        child: Transform.translate(
+                                          offset: Offset(0, hour == 0 ? 2 : -6),
+                                          child: Text(
+                                            hour == 24
+                                                ? ''
+                                                : TimeOfDay(hour: hour, minute: 0).format(context),
+                                            textAlign: TextAlign.right,
+                                            style: ManeType.label(9.5, color: c.textTertiary),
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Container(
+                                          margin: const EdgeInsets.only(top: 6),
+                                          height: 1,
+                                          color: hour == 24 ? Colors.transparent : c.border,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              if (shiftRenders.isNotEmpty)
+                                Positioned.fill(
+                                  child: IgnorePointer(
+                                    child: CustomPaint(
+                                      painter: ShiftLanePainter(
+                                        blocks: [
+                                          for (final render in shiftRenders)
+                                            ShiftLanePaintBlock(
+                                              rects: render.rects,
+                                              fillColor: render.fillColor,
+                                              stripeColor: render.stripeColor,
+                                              overlaps: render.overlaps,
+                                            ),
+                                        ],
+                                        warningColor: c.danger.withValues(alpha: 0.65),
+                                        cornerRadius: 10,
+                                        stripeWidth: 3,
                                       ),
                                     ),
                                   ),
-                                  Expanded(
-                                    child: Container(
-                                      margin: const EdgeInsets.only(top: 6),
-                                      height: 1,
-                                      color: hour == 24 ? Colors.transparent : c.border,
+                                ),
+                              for (final render in shiftRenders)
+                                if (render.rects.isNotEmpty)
+                                  Positioned(
+                                    left: render.rects.first.left + 7,
+                                    top: render.rects.first.top + 5,
+                                    width: math.max(0.0, render.rects.first.width - 10),
+                                    child: IgnorePointer(
+                                      child: Text(
+                                        render.shift.pattern.name,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: ManeType.body(11, weight: FontWeight.w700, color: c.text),
+                                      ),
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          for (final shift in shifts)
-                            _shiftBlock(context, shift, dayStart, dayEnd, c, timelineHeight),
-                          for (final entry in timedEntries)
-                            _entryBlock(context, entry, dayStart, dayEnd, c, timelineHeight),
-                          for (final entry in deadlineEntries)
-                            _deadlineBlock(context, entry, dayStart, dayEnd, timeZone, c, timelineHeight),
-                          if (now.isAfter(dayStart) && now.isBefore(dayEnd))
-                            Positioned(
-                              left: 52,
-                              right: 8,
-                              top: nowOffset.clamp(0, timelineHeight - 1),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: BoxDecoration(color: c.danger, shape: BoxShape.circle),
+                              for (final entry in timedEntries)
+                                _entryBlock(context, entry, dayStart, dayEnd, c, timelineHeight),
+                              for (final entry in deadlineEntries)
+                                _deadlineBlock(context, entry, dayStart, dayEnd, timeZone, c, timelineHeight),
+                              if (now.isAfter(dayStart) && now.isBefore(dayEnd))
+                                Positioned(
+                                  left: 52,
+                                  right: 8,
+                                  top: nowOffset.clamp(0, timelineHeight - 1),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(color: c.danger, shape: BoxShape.circle),
+                                      ),
+                                      Expanded(child: Container(height: 1.4, color: c.danger)),
+                                    ],
                                   ),
-                                  Expanded(child: Container(height: 1.4, color: c.danger)),
-                                ],
-                              ),
-                            ),
-                        ],
+                                ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -291,40 +345,48 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
     );
   }
 
-  Widget _shiftBlock(
-    BuildContext context,
-    ShiftOccurrence shift,
+  List<_ShiftRender> _shiftRenders(
+    List<ShiftOccurrence> shifts,
     DateTime dayStart,
     DateTime dayEnd,
-    ManeColors c,
-    double height,
+    double width,
+    BuildContext context,
   ) {
-    final start = shift.startAt.isBefore(dayStart) ? dayStart : shift.startAt;
-    final end = shift.endAt.isAfter(dayEnd) ? dayEnd : shift.endAt;
-    if (!end.isAfter(start)) return const SizedBox.shrink();
-    final top = start.difference(dayStart).inMinutes / 60 * DayTimeline.hourHeight;
-    final blockHeight = (end.difference(start).inMinutes / 60 * DayTimeline.hourHeight).clamp(18.0, height);
-    final color = c.forSpace(shift.pattern.spaceId);
-    return Positioned(
-      left: 56,
-      right: 8,
-      top: top,
-      child: Container(
-        height: blockHeight,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: c.softForSpace(shift.pattern.spaceId),
-          borderRadius: BorderRadius.circular(10),
-          border: Border(left: BorderSide(color: color, width: 3)),
+    const leftGutter = 56.0;
+    const rightGutter = 8.0;
+    final available = math.max(0.0, width - leftGutter - rightGutter);
+    final bounds = <({ShiftOccurrence shift, int start, int end})>[];
+    for (final shift in shifts) {
+      final start = shift.startAt.isBefore(dayStart) ? dayStart : shift.startAt;
+      final end = shift.endAt.isAfter(dayEnd) ? dayEnd : shift.endAt;
+      if (!end.isAfter(start)) continue;
+      bounds.add((
+        shift: shift,
+        start: start.difference(dayStart).inMinutes,
+        end: end.difference(dayStart).inMinutes,
+      ));
+    }
+    final layouts = layoutShiftLanes([
+      for (final item in bounds) ShiftLaneInterval(startMinute: item.start, endMinute: item.end),
+    ]);
+    return [
+      for (var index = 0; index < bounds.length; index++)
+        _ShiftRender(
+          shift: bounds[index].shift,
+          rects: [
+            for (final segment in layouts[index].segments)
+              Rect.fromLTWH(
+                leftGutter + shiftLaneLeft(available, segment.lane, segment.laneCount),
+                segment.startMinute / 60 * DayTimeline.hourHeight,
+                shiftLaneWidth(available, segment.laneCount),
+                (segment.endMinute - segment.startMinute) / 60 * DayTimeline.hourHeight,
+              ),
+          ],
+          fillColor: shiftSoftColor(context, bounds[index].shift.pattern, widget.contexts),
+          stripeColor: shiftColor(context, bounds[index].shift.pattern, widget.contexts),
+          overlaps: layouts[index].overlaps,
         ),
-        child: Text(
-          shift.pattern.name,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: ManeType.body(11, weight: FontWeight.w700, color: color),
-        ),
-      ),
-    );
+    ];
   }
 
   Widget _entryBlock(
@@ -368,4 +430,20 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
       ),
     );
   }
+}
+
+class _ShiftRender {
+  const _ShiftRender({
+    required this.shift,
+    required this.rects,
+    required this.fillColor,
+    required this.stripeColor,
+    required this.overlaps,
+  });
+
+  final ShiftOccurrence shift;
+  final List<Rect> rects;
+  final Color fillColor;
+  final Color stripeColor;
+  final bool overlaps;
 }

@@ -5,6 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:mane_core/mane_core.dart';
 
 import '../../../core/i18n/l10n.dart';
+import '../../shifts/shift_lane_layout.dart';
+import '../../shifts/shift_lane_painter.dart';
+import '../../shifts/shift_palette.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
 
@@ -15,6 +18,7 @@ class WeekTimeGrid extends StatefulWidget {
     required this.entries,
     required this.shifts,
     required this.spaces,
+    required this.contexts,
     required this.timeZone,
     required this.now,
     required this.onOpen,
@@ -27,6 +31,7 @@ class WeekTimeGrid extends StatefulWidget {
   final List<EntryOccurrence> entries;
   final List<ShiftOccurrence> shifts;
   final List<Space> spaces;
+  final List<PlannerContext> contexts;
   final String timeZone;
   final DateTime now;
   final ValueChanged<EntryOccurrence> onOpen;
@@ -214,6 +219,7 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
                                       entries: entriesByDay[day]!,
                                       shifts: shiftsByDay[day]!,
                                       spaces: widget.spaces,
+                                      contexts: widget.contexts,
                                       timeZone: widget.timeZone,
                                       now: widget.now,
                                       hoverMinute: _hoverDay == day ? _hoverMinute : null,
@@ -322,6 +328,7 @@ class _DayColumn extends StatelessWidget {
     required this.entries,
     required this.shifts,
     required this.spaces,
+    required this.contexts,
     required this.timeZone,
     required this.now,
     required this.hoverMinute,
@@ -343,6 +350,7 @@ class _DayColumn extends StatelessWidget {
   final List<EntryOccurrence> entries;
   final List<ShiftOccurrence> shifts;
   final List<Space> spaces;
+  final List<PlannerContext> contexts;
   final String timeZone;
   final DateTime now;
   final int? hoverMinute;
@@ -390,46 +398,86 @@ class _DayColumn extends StatelessWidget {
                   ? c.accentSoft.withValues(alpha: 0.18)
                   : Colors.transparent,
             ),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                for (final shift in shifts) _ShiftBlock(shift: shift, timeZone: timeZone),
-                for (final entry in entries.where((item) => item.startAt != null))
-                  _EntryBlock(
-                    occurrence: entry,
-                    timeZone: timeZone,
-                    spaces: spaces,
-                    onOpen: () => onOpen(entry),
-                    onResize: (delta) => onResize(entry, delta),
-                  ),
-                if (creating && createStart != null && createEnd != null)
-                  Positioned(
-                    left: 3,
-                    right: 3,
-                    top: math.min(createStart!, createEnd!) / 60 * _WeekTimeGridState.hourHeight,
-                    height: math.max(
-                      16,
-                      (math.max(createStart!, createEnd!) - math.min(createStart!, createEnd!)) /
-                          60 *
-                          _WeekTimeGridState.hourHeight,
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: c.accent.withValues(alpha: 0.28),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: c.accent),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final shiftRenders = _shiftRenders(constraints.maxWidth, context);
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    if (shiftRenders.isNotEmpty)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: CustomPaint(
+                            painter: ShiftLanePainter(
+                              blocks: [
+                                for (final render in shiftRenders)
+                                  ShiftLanePaintBlock(
+                                    rects: render.rects,
+                                    fillColor: render.fillColor,
+                                    stripeColor: render.stripeColor,
+                                    overlaps: render.overlaps,
+                                  ),
+                              ],
+                              warningColor: c.danger.withValues(alpha: 0.65),
+                              cornerRadius: 0,
+                              stripeWidth: 2,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                if (hoverMinute != null)
-                  Positioned(
-                    left: 2,
-                    right: 2,
-                    top: (_WeekTimeGridState._snap(hoverMinute!) / 60) * _WeekTimeGridState.hourHeight,
-                    height: 2,
-                    child: Container(color: c.accent),
-                  ),
-              ],
+                    for (final render in shiftRenders)
+                      if (render.rects.isNotEmpty)
+                        Positioned(
+                          left: render.rects.first.left + 4,
+                          top: render.rects.first.top + 2,
+                          width: math.max(0.0, render.rects.first.width - 8),
+                          child: IgnorePointer(
+                            child: Text(
+                              render.shift.pattern.name,
+                              maxLines: render.rects.length > 1 ? 2 : 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: ManeType.label(8.5, color: c.text),
+                            ),
+                          ),
+                        ),
+                    for (final entry in entries.where((item) => item.startAt != null))
+                      _EntryBlock(
+                        occurrence: entry,
+                        timeZone: timeZone,
+                        spaces: spaces,
+                        onOpen: () => onOpen(entry),
+                        onResize: (delta) => onResize(entry, delta),
+                      ),
+                    if (creating && createStart != null && createEnd != null)
+                      Positioned(
+                        left: 3,
+                        right: 3,
+                        top: math.min(createStart!, createEnd!) / 60 * _WeekTimeGridState.hourHeight,
+                        height: math.max(
+                          16,
+                          (math.max(createStart!, createEnd!) - math.min(createStart!, createEnd!)) /
+                              60 *
+                              _WeekTimeGridState.hourHeight,
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: c.accent.withValues(alpha: 0.28),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: c.accent),
+                          ),
+                        ),
+                      ),
+                    if (hoverMinute != null)
+                      Positioned(
+                        left: 2,
+                        right: 2,
+                        top: (_WeekTimeGridState._snap(hoverMinute!) / 60) * _WeekTimeGridState.hourHeight,
+                        height: 2,
+                        child: Container(color: c.accent),
+                      ),
+                  ],
+                );
+              },
             ),
           ),
         );
@@ -439,6 +487,40 @@ class _DayColumn extends StatelessWidget {
 
   static int _minuteAt(Offset local) =>
       (local.dy / _WeekTimeGridState.hourHeight * 60).clamp(0, 24 * 60).round();
+
+  List<_ShiftRender> _shiftRenders(double columnWidth, BuildContext context) {
+    final bounds = <({ShiftOccurrence shift, int start, int end})>[];
+    for (final shift in shifts) {
+      final start = localDateAt(shift.startAt, timeZone).isBefore(shift.displayDate)
+          ? 0
+          : localMinuteAt(shift.startAt, timeZone);
+      final end = localDateAt(shift.endAt, timeZone).isAfter(shift.displayDate)
+          ? 24 * 60
+          : localMinuteAt(shift.endAt, timeZone);
+      if (end > start) bounds.add((shift: shift, start: start, end: end));
+    }
+    final layouts = layoutShiftLanes([
+      for (final item in bounds) ShiftLaneInterval(startMinute: item.start, endMinute: item.end),
+    ]);
+    return [
+      for (var index = 0; index < bounds.length; index++)
+        _ShiftRender(
+          shift: bounds[index].shift,
+          rects: [
+            for (final segment in layouts[index].segments)
+              Rect.fromLTWH(
+                shiftLaneLeft(columnWidth, segment.lane, segment.laneCount),
+                segment.startMinute / 60 * _WeekTimeGridState.hourHeight,
+                shiftLaneWidth(columnWidth, segment.laneCount),
+                (segment.endMinute - segment.startMinute) / 60 * _WeekTimeGridState.hourHeight,
+              ),
+          ],
+          fillColor: shiftSoftColor(context, bounds[index].shift.pattern, contexts),
+          stripeColor: shiftColor(context, bounds[index].shift.pattern, contexts).withValues(alpha: 0.7),
+          overlaps: layouts[index].overlaps,
+        ),
+    ];
+  }
 }
 
 class _EntryBlock extends StatelessWidget {
@@ -606,44 +688,20 @@ class _ResizeHandleState extends State<_ResizeHandle> {
   }
 }
 
-class _ShiftBlock extends StatelessWidget {
-  const _ShiftBlock({required this.shift, required this.timeZone});
+class _ShiftRender {
+  const _ShiftRender({
+    required this.shift,
+    required this.rects,
+    required this.fillColor,
+    required this.stripeColor,
+    required this.overlaps,
+  });
 
   final ShiftOccurrence shift;
-  final String timeZone;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.mc;
-    final start = localDateAt(shift.startAt, timeZone).isBefore(shift.displayDate)
-        ? 0
-        : localMinuteAt(shift.startAt, timeZone);
-    final end = localDateAt(shift.endAt, timeZone).isAfter(shift.displayDate)
-        ? 24 * 60
-        : localMinuteAt(shift.endAt, timeZone);
-    if (end <= start) return const SizedBox.shrink();
-    return Positioned(
-      left: 0,
-      right: 0,
-      top: start / 60 * _WeekTimeGridState.hourHeight,
-      height: math.max(14, (end - start) / 60 * _WeekTimeGridState.hourHeight),
-      child: IgnorePointer(
-        child: Container(
-          decoration: BoxDecoration(
-            color: c.work.withValues(alpha: 0.10),
-            border: Border(left: BorderSide(color: c.work.withValues(alpha: 0.5), width: 2)),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          child: Text(
-            shift.pattern.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: ManeType.label(8.5, color: c.work),
-          ),
-        ),
-      ),
-    );
-  }
+  final List<Rect> rects;
+  final Color fillColor;
+  final Color stripeColor;
+  final bool overlaps;
 }
 
 class _AllDayChip extends StatelessWidget {

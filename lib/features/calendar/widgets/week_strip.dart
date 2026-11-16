@@ -14,7 +14,7 @@ class WeekStrip extends StatelessWidget {
     required this.today,
     required this.weekStart,
     required this.markers,
-    required this.shiftDays,
+    required this.shiftColors,
     required this.onSelected,
   });
 
@@ -22,7 +22,9 @@ class WeekStrip extends StatelessWidget {
   final LocalDate today;
   final int weekStart;
   final Map<int, Set<int>> markers;
-  final Set<int> shiftDays;
+
+  /// Date key to the job colors of the shifts on that day.
+  final Map<int, Set<int>> shiftColors;
   final ValueChanged<LocalDate> onSelected;
 
   @override
@@ -38,7 +40,7 @@ class WeekStrip extends StatelessWidget {
               selected: selected,
               today: today,
               markerColors: markers[start.addDays(index).key] ?? const <int>{},
-              hasShift: shiftDays.contains(start.addDays(index).key),
+              shiftColors: shiftColors[start.addDays(index).key] ?? const <int>{},
               onTap: () => onSelected(start.addDays(index)),
             ),
           ),
@@ -53,7 +55,7 @@ class _WeekDay extends StatelessWidget {
     required this.selected,
     required this.today,
     required this.markerColors,
-    required this.hasShift,
+    required this.shiftColors,
     required this.onTap,
   });
 
@@ -61,7 +63,7 @@ class _WeekDay extends StatelessWidget {
   final LocalDate selected;
   final LocalDate today;
   final Set<int> markerColors;
-  final bool hasShift;
+  final Set<int> shiftColors;
   final VoidCallback onTap;
 
   @override
@@ -70,7 +72,7 @@ class _WeekDay extends StatelessWidget {
     final isSelected = date == selected;
     final isToday = date == today;
     final ink = isSelected ? c.onAccent : c.text;
-    final count = markerColors.length + (hasShift ? 1 : 0);
+    final count = markerColors.length + shiftColors.length;
     final height = 78 * MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.45);
 
     return Semantics(
@@ -117,13 +119,13 @@ class _WeekDay extends StatelessWidget {
                       margin: const EdgeInsets.symmetric(horizontal: 1),
                       decoration: BoxDecoration(color: Color(color), shape: BoxShape.circle),
                     ),
-                  if (hasShift)
+                  for (final color in shiftColors.take(2))
                     Container(
-                      width: 11,
+                      width: 9,
                       height: 2,
                       margin: const EdgeInsets.only(left: 3),
                       decoration: BoxDecoration(
-                        color: isSelected ? ink.withValues(alpha: 0.7) : c.work,
+                        color: isSelected ? ink.withValues(alpha: 0.7) : Color(color),
                         borderRadius: BorderRadius.circular(1),
                       ),
                     ),

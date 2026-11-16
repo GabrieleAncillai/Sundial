@@ -17,7 +17,7 @@ class MonthGrid extends StatelessWidget {
     required this.today,
     required this.weekStart,
     required this.markers,
-    required this.shiftDays,
+    required this.shiftColors,
     required this.onSelected,
   });
 
@@ -29,7 +29,9 @@ class MonthGrid extends StatelessWidget {
 
   /// Date key to the space colors present on that day.
   final Map<int, Set<int>> markers;
-  final Set<int> shiftDays;
+
+  /// Date key to the job colors of the shifts on that day.
+  final Map<int, Set<int>> shiftColors;
   final ValueChanged<LocalDate> onSelected;
 
   @override
@@ -65,7 +67,7 @@ class MonthGrid extends StatelessWidget {
                     selected: selected,
                     today: today,
                     markerColors: markers[first.addDays(row * 7 + column).key] ?? const <int>{},
-                    hasShift: shiftDays.contains(first.addDays(row * 7 + column).key),
+                    shiftColors: shiftColors[first.addDays(row * 7 + column).key] ?? const <int>{},
                     semanticsDate: formatFullDate(context, first.addDays(row * 7 + column).toDateTime()),
                     onTap: () => onSelected(first.addDays(row * 7 + column)),
                   ),
@@ -84,7 +86,7 @@ class _DayCell extends StatelessWidget {
     required this.selected,
     required this.today,
     required this.markerColors,
-    required this.hasShift,
+    required this.shiftColors,
     required this.semanticsDate,
     required this.onTap,
   });
@@ -94,7 +96,7 @@ class _DayCell extends StatelessWidget {
   final LocalDate selected;
   final LocalDate today;
   final Set<int> markerColors;
-  final bool hasShift;
+  final Set<int> shiftColors;
   final String semanticsDate;
   final VoidCallback onTap;
 
@@ -110,7 +112,7 @@ class _DayCell extends StatelessWidget {
         : inMonth
         ? c.text
         : c.textTertiary.withValues(alpha: 0.55);
-    final count = markerColors.length + (hasShift ? 1 : 0);
+    final count = markerColors.length + shiftColors.length;
     final height = 48 * MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.45);
 
     return Semantics(
@@ -156,16 +158,24 @@ class _DayCell extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                height: 2,
-                child: hasShift && inMonth
-                    ? Container(
-                        width: 14,
-                        decoration: BoxDecoration(
-                          color: isSelected ? selectedInk.withValues(alpha: 0.7) : c.work,
-                          borderRadius: BorderRadius.circular(1),
-                        ),
-                      )
-                    : null,
+                height: 3,
+                child: shiftColors.isEmpty || !inMonth
+                    ? null
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          for (final color in shiftColors.take(3))
+                            Container(
+                              width: 9,
+                              height: 2,
+                              margin: const EdgeInsets.symmetric(horizontal: 1),
+                              decoration: BoxDecoration(
+                                color: isSelected ? selectedInk.withValues(alpha: 0.7) : Color(color),
+                                borderRadius: BorderRadius.circular(1),
+                              ),
+                            ),
+                        ],
+                      ),
               ),
             ],
           ),

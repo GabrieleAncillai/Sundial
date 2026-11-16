@@ -160,6 +160,50 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
   });
 
+  testWidgets('overlapping shifts stay side by side in the day timeline', (tester) async {
+    tester.view.physicalSize = const Size(700, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await database.saveShiftPattern(
+      ShiftPattern(
+        id: 'banco',
+        spaceId: 'work',
+        name: 'Banco',
+        timeZone: 'Europe/Madrid',
+        cycleDays: 7,
+        anchorDate: LocalDate.parse('2026-11-09'),
+        slots: const [ShiftSlot(dayIndex: 0, startMinute: 9 * 60, endMinute: 13 * 60)],
+      ),
+    );
+    await database.saveShiftPattern(
+      ShiftPattern(
+        id: 'pizza',
+        spaceId: 'work',
+        name: 'Pizza',
+        timeZone: 'Europe/Madrid',
+        cycleDays: 7,
+        anchorDate: LocalDate.parse('2026-11-09'),
+        slots: const [ShiftSlot(dayIndex: 0, startMinute: 12 * 60, endMinute: 16 * 60)],
+      ),
+    );
+
+    await tester.pumpWidget(host());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Day'));
+    await tester.pumpAndSettle();
+
+    final bankRect = tester.getRect(find.text('Banco'));
+    final pizzaRect = tester.getRect(find.text('Pizza'));
+
+    expect(bankRect.overlaps(pizzaRect), isFalse);
+    expect(bankRect.width, greaterThan(20));
+    expect(pizzaRect.width, greaterThan(20));
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
   testWidgets('a Sunday week start rotates the month grid', (tester) async {
     tester.view.physicalSize = const Size(500, 1200);
     tester.view.devicePixelRatio = 1;

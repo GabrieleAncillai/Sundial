@@ -16,6 +16,7 @@ import '../../calendar/widgets/day_detail.dart';
 import '../../calendar/widgets/day_timeline.dart';
 import '../../calendar/widgets/month_grid.dart';
 import '../../calendar/widgets/week_strip.dart';
+import '../../shifts/shift_palette.dart';
 import '../widgets/week_time_grid.dart';
 
 enum _MobileMode { list, timeline }
@@ -49,6 +50,7 @@ class _PlanPageState extends ConsumerState<PlanPage> {
     final now = ref.watch(nowProvider);
     final today = localDateAt(now, timeZone);
     final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
+    final contexts = ref.watch(contextsProvider(null)).value ?? const <PlannerContext>[];
     final weekStart = settings.weekStart;
     final selectedWeek = _selected.startOfWeek(weekStart);
     final rangeStart = _expanded ? _visibleMonth.startOfWeek(weekStart) : selectedWeek;
@@ -71,7 +73,12 @@ class _PlanPageState extends ConsumerState<PlanPage> {
     for (final entry in visibleEntries) {
       (markers[entry.displayDate.key] ??= <int>{}).add(colors[entry.entry.spaceId] ?? 0xFF888888);
     }
-    final shiftDays = {for (final shift in visibleShifts) shift.displayDate.key};
+    final shiftColors = <int, Set<int>>{};
+    for (final shift in visibleShifts) {
+      (shiftColors[shift.displayDate.key] ??= <int>{}).add(
+        shiftColor(context, shift.pattern, contexts).toARGB32(),
+      );
+    }
     final selectedEntries = visibleEntries.where((entry) => entry.displayDate == _selected).toList();
     final selectedShifts = visibleShifts.where((shift) => shift.displayDate == _selected).toList();
 
@@ -110,10 +117,11 @@ class _PlanPageState extends ConsumerState<PlanPage> {
                   ? _desktop(
                       context,
                       spaces: spaces,
+                      contexts: contexts,
                       entries: visibleEntries,
                       shifts: visibleShifts,
                       markers: markers,
-                      shiftDays: shiftDays,
+                      shiftColors: shiftColors,
                       today: today,
                       weekStart: weekStart,
                       timeZone: timeZone,
@@ -122,10 +130,11 @@ class _PlanPageState extends ConsumerState<PlanPage> {
                   : _mobile(
                       context,
                       spaces: spaces,
+                      contexts: contexts,
                       selectedEntries: selectedEntries,
                       selectedShifts: selectedShifts,
                       markers: markers,
-                      shiftDays: shiftDays,
+                      shiftColors: shiftColors,
                       today: today,
                       weekStart: weekStart,
                     ),
@@ -139,10 +148,11 @@ class _PlanPageState extends ConsumerState<PlanPage> {
   Widget _mobile(
     BuildContext context, {
     required List<Space> spaces,
+    required List<PlannerContext> contexts,
     required List<EntryOccurrence> selectedEntries,
     required List<ShiftOccurrence> selectedShifts,
     required Map<int, Set<int>> markers,
-    required Set<int> shiftDays,
+    required Map<int, Set<int>> shiftColors,
     required LocalDate today,
     required int weekStart,
   }) {
@@ -165,7 +175,7 @@ class _PlanPageState extends ConsumerState<PlanPage> {
                     today: today,
                     weekStart: weekStart,
                     markers: markers,
-                    shiftDays: shiftDays,
+                    shiftColors: shiftColors,
                     onSelected: _select,
                   )
                 : WeekStrip(
@@ -173,7 +183,7 @@ class _PlanPageState extends ConsumerState<PlanPage> {
                     today: today,
                     weekStart: weekStart,
                     markers: markers,
-                    shiftDays: shiftDays,
+                    shiftColors: shiftColors,
                     onSelected: _select,
                   ),
           ),
@@ -213,6 +223,7 @@ class _PlanPageState extends ConsumerState<PlanPage> {
                     entries: selectedEntries,
                     shifts: selectedShifts,
                     spaces: spaces,
+                    contexts: contexts,
                     onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
                   ),
                 )
@@ -224,6 +235,7 @@ class _PlanPageState extends ConsumerState<PlanPage> {
                     entries: selectedEntries,
                     shifts: selectedShifts,
                     spaces: spaces,
+                    contexts: contexts,
                     onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
                   ),
                 ),
@@ -235,10 +247,11 @@ class _PlanPageState extends ConsumerState<PlanPage> {
   Widget _desktop(
     BuildContext context, {
     required List<Space> spaces,
+    required List<PlannerContext> contexts,
     required List<EntryOccurrence> entries,
     required List<ShiftOccurrence> shifts,
     required Map<int, Set<int>> markers,
-    required Set<int> shiftDays,
+    required Map<int, Set<int>> shiftColors,
     required LocalDate today,
     required int weekStart,
     required String timeZone,
@@ -271,7 +284,7 @@ class _PlanPageState extends ConsumerState<PlanPage> {
                                 today: today,
                                 weekStart: weekStart,
                                 markers: markers,
-                                shiftDays: shiftDays,
+                                shiftColors: shiftColors,
                                 onSelected: _select,
                               )
                             : WeekStrip(
@@ -279,7 +292,7 @@ class _PlanPageState extends ConsumerState<PlanPage> {
                                 today: today,
                                 weekStart: weekStart,
                                 markers: markers,
-                                shiftDays: shiftDays,
+                                shiftColors: shiftColors,
                                 onSelected: _select,
                               ),
                       ),
@@ -297,6 +310,7 @@ class _PlanPageState extends ConsumerState<PlanPage> {
               entries: entries,
               shifts: shifts,
               spaces: spaces,
+              contexts: contexts,
               timeZone: timeZone,
               now: now,
               onOpen: (occurrence) => showEntryEditor(

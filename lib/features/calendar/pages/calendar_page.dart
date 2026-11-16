@@ -11,6 +11,7 @@ import '../../../state/providers.dart';
 import '../../../state/settings_controller.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
+import '../../shifts/shift_palette.dart';
 import '../widgets/day_detail.dart';
 import '../widgets/day_timeline.dart';
 import '../widgets/month_grid.dart';
@@ -42,6 +43,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
+    final contexts = ref.watch(contextsProvider(null)).value ?? const <PlannerContext>[];
     final timeZone = ref.watch(deviceTimeZoneProvider);
     final now = ref.watch(nowProvider);
     final today = localDateAt(now, timeZone);
@@ -77,7 +79,12 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     for (final entry in visibleEntries) {
       (markers[entry.displayDate.key] ??= <int>{}).add(colors[entry.entry.spaceId] ?? 0xFF888888);
     }
-    final shiftDays = {for (final shift in visibleShifts) shift.displayDate.key};
+    final shiftColors = <int, Set<int>>{};
+    for (final shift in visibleShifts) {
+      (shiftColors[shift.displayDate.key] ??= <int>{}).add(
+        shiftColor(context, shift.pattern, contexts).toARGB32(),
+      );
+    }
 
     final selectedEntries = visibleEntries.where((entry) => entry.displayDate == _selected).toList();
     final selectedShifts = visibleShifts.where((shift) => shift.displayDate == _selected).toList();
@@ -107,6 +114,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               entries: selectedEntries,
               shifts: selectedShifts,
               spaces: spaces,
+              contexts: contexts,
               onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
             ),
           )
@@ -120,7 +128,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                     today: today,
                     weekStart: weekStart,
                     markers: markers,
-                    shiftDays: shiftDays,
+                    shiftColors: shiftColors,
                     onSelected: _select,
                   )
                 : WeekStrip(
@@ -128,7 +136,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                     today: today,
                     weekStart: weekStart,
                     markers: markers,
-                    shiftDays: shiftDays,
+                    shiftColors: shiftColors,
                     onSelected: _select,
                   ),
           ),
@@ -140,6 +148,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               entries: selectedEntries,
               shifts: selectedShifts,
               spaces: spaces,
+              contexts: contexts,
               onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
             ),
           ),

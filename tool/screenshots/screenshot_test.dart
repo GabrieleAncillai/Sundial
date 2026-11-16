@@ -26,6 +26,7 @@ import 'package:sqlite3/open.dart';
 
 const _phone = (size: Size(1290, 2796), dpr: 3.0);
 const _desktop = (size: Size(2560, 1600), dpr: 2.0);
+const _desktopTall = (size: Size(2560, 2200), dpr: 2.0);
 final _today = LocalDate.parse('2026-11-09');
 final _now = DateTime.utc(2026, 11, 9, 10, 30);
 
@@ -82,6 +83,31 @@ void main() {
       'v1.0-plan-desktop.png',
       database,
       view: _desktop,
+      act: (tester) async {
+        await tester.tap(find.text('Plan'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render desktop Plan with overlapping shifts', (tester) async {
+    await database.saveShiftPattern(
+      ShiftPattern(
+        id: 'studio-shift',
+        spaceId: 'work',
+        contextId: 'studio',
+        name: 'Studio',
+        timeZone: 'Europe/Madrid',
+        cycleDays: 7,
+        anchorDate: _today,
+        slots: const [ShiftSlot(dayIndex: 0, startMinute: 16 * 60, endMinute: 18 * 60)],
+      ),
+    );
+    await _renderShell(
+      tester,
+      'v1.0-plan-overlap-desktop.png',
+      database,
+      view: _desktopTall,
       act: (tester) async {
         await tester.tap(find.text('Plan'));
         await tester.pumpAndSettle();

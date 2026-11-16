@@ -37,6 +37,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     final range = (start: today, end: today);
     final settings = ref.watch(settingsProvider);
     final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
+    final contexts = ref.watch(contextsProvider(null)).value ?? const <PlannerContext>[];
     final entriesState = ref.watch(entriesProvider(range));
     final shiftsState = ref.watch(shiftsProvider(range));
     final openState = ref.watch(openEntriesProvider(today));
@@ -99,7 +100,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
             const SizedBox(height: 14),
             SectionLabel(l10n.shiftsSection),
             for (final item in shifts) ...[
-              ShiftTile(occurrence: item),
+              ShiftTile(occurrence: item, contexts: contexts),
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 2, 0, 10),
                 child: ShiftChecklistSection(
@@ -143,6 +144,7 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
                       extras: extras,
                       shifts: shifts,
                       spaces: spaces,
+                      contexts: contexts,
                     ),
             ),
           if (occurrences.isEmpty && extras.isEmpty && shifts.isEmpty) ...[
@@ -316,6 +318,7 @@ class _TodayTimeline extends StatelessWidget {
     required this.extras,
     required this.shifts,
     required this.spaces,
+    required this.contexts,
   });
 
   final LocalDate date;
@@ -323,6 +326,7 @@ class _TodayTimeline extends StatelessWidget {
   final List<Entry> extras;
   final List<ShiftOccurrence> shifts;
   final List<Space> spaces;
+  final List<PlannerContext> contexts;
 
   @override
   Widget build(BuildContext context) {
@@ -347,6 +351,7 @@ class _TodayTimeline extends StatelessWidget {
             entries: occurrences,
             shifts: shifts,
             spaces: spaces,
+            contexts: contexts,
             onAdd: () => showEntryEditor(context, initialDate: date, spaces: spaces),
           ),
         ),

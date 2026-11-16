@@ -5,6 +5,7 @@ import 'package:mane_core/mane_core.dart';
 import '../core/i18n/l10n.dart';
 import '../core/i18n/recurrence_label.dart';
 import '../core/widgets/ui_kit.dart';
+import '../features/shifts/shift_palette.dart';
 import '../screens/entry_editor.dart';
 import '../state/providers.dart';
 import '../theme/app_colors.dart';
@@ -162,14 +163,16 @@ class EntryTile extends ConsumerWidget {
 }
 
 class ShiftTile extends ConsumerWidget {
-  const ShiftTile({super.key, required this.occurrence});
+  const ShiftTile({super.key, required this.occurrence, this.contexts = const <PlannerContext>[]});
 
   final ShiftOccurrence occurrence;
+  final List<PlannerContext> contexts;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = context.mc;
-    final color = c.forSpace(occurrence.pattern.spaceId);
+    final color = shiftColor(context, occurrence.pattern, contexts);
+    final fill = shiftSoftColor(context, occurrence.pattern, contexts);
     final viewerTimeZone = ref.watch(deviceTimeZoneProvider);
     final slot = occurrence.slot;
     final title = slot.label.isEmpty ? occurrence.pattern.name : '${occurrence.pattern.name} · ${slot.label}';
@@ -180,7 +183,7 @@ class ShiftTile extends ConsumerWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: c.softForSpace(occurrence.pattern.spaceId),
+          color: fill,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color.withValues(alpha: 0.18)),
         ),
@@ -225,29 +228,29 @@ class ShiftTile extends ConsumerWidget {
 }
 
 class ShiftChip extends ConsumerWidget {
-  const ShiftChip({super.key, required this.occurrence});
+  const ShiftChip({super.key, required this.occurrence, this.contexts = const <PlannerContext>[]});
 
   final ShiftOccurrence occurrence;
+  final List<PlannerContext> contexts;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final c = context.mc;
     final viewerTimeZone = ref.watch(deviceTimeZoneProvider);
     final label = occurrence.slot.label.isEmpty
         ? occurrence.pattern.name
         : '${occurrence.slot.label} · ${occurrence.pattern.name}';
-    final color = c.forSpace(occurrence.pattern.spaceId);
+    final color = shiftColor(context, occurrence.pattern, contexts);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: c.softForSpace(occurrence.pattern.spaceId),
+        color: shiftSoftColor(context, occurrence.pattern, contexts),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color.withValues(alpha: 0.16)),
       ),
       child: Text(
         '$label · ${formatShiftTime(context, occurrence, viewerTimeZone)}',
-        style: ManeType.label(10.5, color: c.textSecondary),
+        style: ManeType.label(10.5, color: context.mc.textSecondary),
       ),
     );
   }

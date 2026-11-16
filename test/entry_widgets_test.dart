@@ -107,6 +107,30 @@ void main() {
     expect(find.text('This event comes from an imported calendar and is read-only.'), findsOneWidget);
   });
 
+  testWidgets('a shift wears its job colour', (tester) async {
+    final pattern = ShiftPattern(
+      id: 'pizzeria',
+      spaceId: 'work',
+      contextId: 'job-pizzeria',
+      name: 'Pizzeria',
+      timeZone: 'Europe/Madrid',
+      cycleDays: 7,
+      anchorDate: monday,
+      slots: const [ShiftSlot(dayIndex: 0, startMinute: 15 * 60, endMinute: 23 * 60)],
+    );
+    final occurrence = pattern.occurrencesBetween(monday, monday, viewerTimeZone: 'Europe/Madrid').single;
+    const contexts = <PlannerContext>[
+      PlannerContext(id: 'job-pizzeria', spaceId: 'work', name: 'Pizzeria', colorValue: 0xFFC25B3F),
+    ];
+
+    await tester.pumpWidget(host(ShiftTile(occurrence: occurrence, contexts: contexts)));
+
+    final tile = tester.widget<Container>(
+      find.descendant(of: find.byType(ShiftTile), matching: find.byType(Container)).first,
+    );
+    expect((tile.decoration! as BoxDecoration).color, const Color(0xFFC25B3F).withValues(alpha: 0.16));
+  });
+
   testWidgets('a shift renders in the viewer timezone', (tester) async {
     final pattern = ShiftPattern(
       id: 'night',

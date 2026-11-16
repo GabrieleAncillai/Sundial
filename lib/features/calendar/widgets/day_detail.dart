@@ -17,6 +17,7 @@ class CalendarDayDetail extends StatelessWidget {
     required this.entries,
     required this.shifts,
     required this.spaces,
+    required this.contexts,
     required this.onAdd,
   });
 
@@ -24,6 +25,7 @@ class CalendarDayDetail extends StatelessWidget {
   final List<EntryOccurrence> entries;
   final List<ShiftOccurrence> shifts;
   final List<Space> spaces;
+  final List<PlannerContext> contexts;
   final VoidCallback onAdd;
 
   @override
@@ -47,7 +49,7 @@ class CalendarDayDetail extends StatelessWidget {
         ),
         if (shifts.isNotEmpty) ...[
           const SizedBox(height: 10),
-          for (final shift in shifts) ShiftTile(occurrence: shift),
+          for (final shift in shifts) ShiftTile(occurrence: shift, contexts: contexts),
           for (final shift in shifts)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
