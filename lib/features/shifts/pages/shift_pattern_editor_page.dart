@@ -40,8 +40,10 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
   List<_ChecklistDraft> _checklist = <_ChecklistDraft>[];
   bool _checklistLoading = false;
   late String _deviceTimeZone;
+  late String _baseline;
   int _nextDraftId = 0;
   bool _saving = false;
+  bool _leaving = false;
 
   @override
   void initState() {
@@ -69,6 +71,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     ];
     _exceptions = [...?pattern?.exceptions];
     if (pattern != null) _loadChecklist(pattern.id);
+    _baseline = _fingerprint();
   }
 
   Future<void> _loadChecklist(String patternId) async {
@@ -86,6 +89,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
             ),
         ];
         _checklistLoading = false;
+        _baseline = _fingerprint();
       });
     } catch (error) {
       if (!mounted) return;
@@ -127,6 +131,72 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     return text.isEmpty ? null : int.tryParse(text);
   }
 
+  /// Everything the page can change, in a stable order. Comparing this with
+  /// the value captured on load avoids false prompts when a field is reverted.
+  String _fingerprint() {
+    final slots = [..._slots]
+      ..sort((a, b) {
+        final byDay = a.dayIndex.compareTo(b.dayIndex);
+        if (byDay != 0) return byDay;
+        final byStart = a.startMinute.compareTo(b.startMinute);
+        if (byStart != 0) return byStart;
+        return a.endMinute.compareTo(b.endMinute);
+      });
+    final exceptions = [..._exceptions]
+      ..sort((a, b) {
+        final byDate = a.date.compareTo(b.date);
+        if (byDate != 0) return byDate;
+        return a.type.index.compareTo(b.type.index);
+      });
+    final tags = _tagIds.toList()..sort();
+    return [
+      _nameController.text,
+      _contextId ?? '',
+      _timeZoneController.text,
+      _commuteController.text.trim(),
+      _windDownController.text.trim(),
+      '$_cycleDays',
+      _anchorDate.key,
+      for (final slot in slots) '${slot.dayIndex}|${slot.label}|${slot.startMinute}|${slot.endMinute}',
+      for (final exception in exceptions)
+        '${exception.date.key}|${exception.type.name}|${exception.startMinute}|'
+            '${exception.endMinute}|${exception.note}',
+      tags.join(','),
+      for (final item in _checklist) '${item.id}|${item.label}|${item.dayIndex}',
+    ].join('\u0000');
+  }
+
+  bool get _dirty => _fingerprint() != _baseline;
+
+  Future<void> _confirmLeave() async {
+    if (_leaving) return;
+    if (!_dirty) {
+      _leave();
+      return;
+    }
+    final l10n = context.l10n;
+    final discard = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.discardChangesQuestion),
+        content: Text(l10n.discardChangesBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(l10n.keepEditing)),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.discardChanges),
+          ),
+        ],
+      ),
+    );
+    if (discard == true && mounted) _leave();
+  }
+
+  void _leave() {
+    _leaving = true;
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -144,254 +214,272 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     final preview = _preview();
     final conflicts = preview?.findConflicts() ?? const <ShiftConflict>[];
 
-    return ManePage(
-      title: widget.pattern == null ? l10n.newShiftPattern : l10n.editShiftPattern,
-      actions: [
-        if (widget.pattern != null)
-          GlassIconButton(icon: Icons.delete_outline, tooltip: l10n.delete, onTap: _saving ? null : _delete),
-      ],
-      child: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: 20),
-          children: [
-            TextFormField(
-              controller: _nameController,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(labelText: l10n.patternName, border: const OutlineInputBorder()),
-              validator: (value) => value == null || value.trim().isEmpty ? l10n.patternNameRequired : null,
+    return PopScope<Object?>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) _confirmLeave();
+      },
+      child: ManePage(
+        title: widget.pattern == null ? l10n.newShiftPattern : l10n.editShiftPattern,
+        actions: [
+          if (widget.pattern != null)
+            GlassIconButton(
+              icon: Icons.delete_outline,
+              tooltip: l10n.delete,
+              onTap: _saving ? null : _delete,
             ),
-            if (contexts.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              ManeSelectField(
-                label: l10n.context,
-                valueLabel:
-                    contexts.where((item) => item.id == _contextId).firstOrNull?.name ?? l10n.noContext,
-                leading: const Icon(Icons.work_outline),
-                onTap: () async {
-                  final picked = await showManeSelectSheet<String>(
-                    context: context,
-                    title: l10n.context,
-                    selected: _contextId ?? '',
-                    options: [
-                      ManeSelectOption(value: '', label: l10n.noContext),
-                      for (final item in contexts)
-                        ManeSelectOption(
-                          value: item.id,
-                          label: item.name,
-                          leading: Container(
-                            width: 9,
-                            height: 9,
-                            decoration: BoxDecoration(color: Color(item.colorValue), shape: BoxShape.circle),
-                          ),
-                        ),
-                    ],
-                  );
-                  if (picked != null && mounted) {
-                    setState(() => _contextId = picked.isEmpty ? null : picked);
-                  }
-                },
+        ],
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: 20),
+            children: [
+              TextFormField(
+                controller: _nameController,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(labelText: l10n.patternName, border: const OutlineInputBorder()),
+                validator: (value) => value == null || value.trim().isEmpty ? l10n.patternNameRequired : null,
               ),
-            ],
-            if (availableTags.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              SectionLabel(l10n.shiftTags),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  for (final tag in availableTags)
-                    FilterChip(
-                      label: Text(tag.name),
-                      selected: _tagIds.contains(tag.id),
-                      avatar: CircleAvatar(backgroundColor: Color(tag.colorValue), radius: 5),
-                      onSelected: (selected) => setState(() {
-                        if (selected) {
-                          _tagIds.add(tag.id);
-                        } else {
-                          _tagIds.remove(tag.id);
-                        }
-                      }),
-                    ),
-                ],
-              ),
-            ],
-            const SizedBox(height: 12),
-            ManeSelectField(
-              label: l10n.timeZone,
-              valueLabel: _timeZoneController.text,
-              leading: const Icon(Icons.public),
-              onTap: () => _pickTimeZone(context),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _commuteController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: l10n.commuteOverride,
-                      helperText: l10n.inheritSleepBuffers,
-                    ),
-                    validator: (value) {
-                      final text = value?.trim() ?? '';
-                      if (text.isEmpty) return null;
-                      final minutes = int.tryParse(text);
-                      return minutes == null || minutes < 0 || minutes > 1440 ? l10n.invalidTimeZone : null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _windDownController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: l10n.windDownOverride,
-                      helperText: l10n.inheritSleepBuffers,
-                    ),
-                    validator: (value) {
-                      final text = value?.trim() ?? '';
-                      if (text.isEmpty) return null;
-                      final minutes = int.tryParse(text);
-                      return minutes == null || minutes < 0 || minutes > 1440 ? l10n.invalidTimeZone : null;
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(child: Text(l10n.cycleLength, style: theme.textTheme.bodyLarge)),
-                IconButton(
-                  onPressed: _cycleDays > 1 ? () => _setCycleDays(_cycleDays - 1) : null,
-                  icon: const Icon(Icons.remove_circle_outline),
-                ),
-                Text(l10n.cycleLengthValue(_cycleDays), style: theme.textTheme.titleMedium),
-                IconButton(
-                  onPressed: _cycleDays < 28 ? () => _setCycleDays(_cycleDays + 1) : null,
-                  icon: const Icon(Icons.add_circle_outline),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            InkWell(
-              onTap: _pickAnchorDate,
-              borderRadius: BorderRadius.circular(4),
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: l10n.anchorDate,
-                  prefixIcon: const Icon(Icons.event_outlined, size: 20),
-                ),
-                child: Text(formatFullDate(context, _anchorDate.toDateTime())),
-              ),
-            ),
-            const SizedBox(height: 20),
-            for (var index = 0; index < _cycleDays; index++) _buildDay(index, locale),
-            const SizedBox(height: 8),
-            _SectionHeader(title: l10n.exceptions, actionLabel: l10n.addException, onAction: _addException),
-            if (_exceptions.isEmpty)
-              Text(
-                l10n.noExceptions,
-                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              )
-            else
-              for (final exception in _exceptions) _buildException(exception, locale),
-            const SizedBox(height: 20),
-            _SectionHeader(
-              title: l10n.shiftChecklist,
-              actionLabel: l10n.addChecklistItem,
-              onAction: _addChecklistItem,
-            ),
-            if (_checklistLoading)
-              const LinearProgressIndicator()
-            else if (_checklist.isEmpty)
-              Text(
-                l10n.noChecklistItems,
-                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              )
-            else
-              for (var index = 0; index < _checklist.length; index++)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Column(
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              key: ValueKey('checklist-${_checklist[index].id}'),
-                              initialValue: _checklist[index].label,
-                              textCapitalization: TextCapitalization.sentences,
-                              decoration: InputDecoration(labelText: l10n.checklistItemLabel),
-                              onChanged: (value) =>
-                                  _checklist[index] = _checklist[index].copyWith(label: value),
+              if (contexts.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                ManeSelectField(
+                  label: l10n.context,
+                  valueLabel:
+                      contexts.where((item) => item.id == _contextId).firstOrNull?.name ?? l10n.noContext,
+                  leading: const Icon(Icons.work_outline),
+                  onTap: () async {
+                    final picked = await showManeSelectSheet<String>(
+                      context: context,
+                      title: l10n.context,
+                      selected: _contextId ?? '',
+                      options: [
+                        ManeSelectOption(value: '', label: l10n.noContext),
+                        for (final item in contexts)
+                          ManeSelectOption(
+                            value: item.id,
+                            label: item.name,
+                            leading: Container(
+                              width: 9,
+                              height: 9,
+                              decoration: BoxDecoration(
+                                color: Color(item.colorValue),
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
-                          IconButton(
-                            onPressed: index == 0 ? null : () => _moveChecklistItem(index, -1),
-                            icon: const Icon(Icons.keyboard_arrow_up),
-                            tooltip: l10n.moveUp,
-                          ),
-                          IconButton(
-                            onPressed: index == _checklist.length - 1
-                                ? null
-                                : () => _moveChecklistItem(index, 1),
-                            icon: const Icon(Icons.keyboard_arrow_down),
-                            tooltip: l10n.moveDown,
-                          ),
-                          IconButton(
-                            onPressed: () => _removeChecklistItem(index),
-                            icon: const Icon(Icons.remove_circle_outline),
-                            tooltip: l10n.delete,
-                          ),
-                        ],
-                      ),
-                      DropdownButtonFormField<int?>(
-                        initialValue: _checklist[index].dayIndex,
-                        decoration: InputDecoration(labelText: l10n.shiftChecklists),
-                        items: [
-                          DropdownMenuItem<int?>(value: null, child: Text(l10n.allDays)),
-                          for (var day = 0; day < _cycleDays; day++)
-                            DropdownMenuItem<int?>(value: day, child: Text(l10n.checklistForDay(day + 1))),
-                        ],
-                        onChanged: (value) => _checklist[index] = _checklist[index].copyWith(dayIndex: value),
-                      ),
-                    ],
-                  ),
+                      ],
+                    );
+                    if (picked != null && mounted) {
+                      setState(() => _contextId = picked.isEmpty ? null : picked);
+                    }
+                  },
                 ),
-            const SizedBox(height: 20),
-            _SectionHeader(title: l10n.preview),
-            if (preview != null && conflicts.isNotEmpty)
-              Text(
-                l10n.conflictsFound,
-                style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
-              )
-            else if (preview != null)
-              Text(
-                l10n.noConflicts,
-                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ],
+              if (availableTags.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                SectionLabel(l10n.shiftTags),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final tag in availableTags)
+                      FilterChip(
+                        label: Text(tag.name),
+                        selected: _tagIds.contains(tag.id),
+                        avatar: CircleAvatar(backgroundColor: Color(tag.colorValue), radius: 5),
+                        onSelected: (selected) => setState(() {
+                          if (selected) {
+                            _tagIds.add(tag.id);
+                          } else {
+                            _tagIds.remove(tag.id);
+                          }
+                        }),
+                      ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 12),
+              ManeSelectField(
+                label: l10n.timeZone,
+                valueLabel: _timeZoneController.text,
+                leading: const Icon(Icons.public),
+                onTap: () => _pickTimeZone(context),
               ),
-            if (preview != null && conflicts.isEmpty)
-              _Preview(
-                pattern: preview,
-                deviceTimeZone: _deviceTimeZone,
-                today: localDateAt(ref.watch(nowProvider), _deviceTimeZone),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _commuteController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: l10n.commuteOverride,
+                        helperText: l10n.inheritSleepBuffers,
+                      ),
+                      validator: (value) {
+                        final text = value?.trim() ?? '';
+                        if (text.isEmpty) return null;
+                        final minutes = int.tryParse(text);
+                        return minutes == null || minutes < 0 || minutes > 1440 ? l10n.invalidTimeZone : null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _windDownController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: l10n.windDownOverride,
+                        helperText: l10n.inheritSleepBuffers,
+                      ),
+                      validator: (value) {
+                        final text = value?.trim() ?? '';
+                        if (text.isEmpty) return null;
+                        final minutes = int.tryParse(text);
+                        return minutes == null || minutes < 0 || minutes > 1440 ? l10n.invalidTimeZone : null;
+                      },
+                    ),
+                  ),
+                ],
               ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _saving ? null : _save,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: _saving
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : Text(l10n.savePattern),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(child: Text(l10n.cycleLength, style: theme.textTheme.bodyLarge)),
+                  IconButton(
+                    onPressed: _cycleDays > 1 ? () => _setCycleDays(_cycleDays - 1) : null,
+                    icon: const Icon(Icons.remove_circle_outline),
+                  ),
+                  Text(l10n.cycleLengthValue(_cycleDays), style: theme.textTheme.titleMedium),
+                  IconButton(
+                    onPressed: _cycleDays < 28 ? () => _setCycleDays(_cycleDays + 1) : null,
+                    icon: const Icon(Icons.add_circle_outline),
+                  ),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              InkWell(
+                onTap: _pickAnchorDate,
+                borderRadius: BorderRadius.circular(4),
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: l10n.anchorDate,
+                    prefixIcon: const Icon(Icons.event_outlined, size: 20),
+                  ),
+                  child: Text(formatFullDate(context, _anchorDate.toDateTime())),
+                ),
+              ),
+              const SizedBox(height: 20),
+              for (var index = 0; index < _cycleDays; index++) _buildDay(index, locale),
+              const SizedBox(height: 8),
+              _SectionHeader(title: l10n.exceptions, actionLabel: l10n.addException, onAction: _addException),
+              if (_exceptions.isEmpty)
+                Text(
+                  l10n.noExceptions,
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                )
+              else
+                for (final exception in _exceptions) _buildException(exception, locale),
+              const SizedBox(height: 20),
+              _SectionHeader(
+                title: l10n.shiftChecklist,
+                actionLabel: l10n.addChecklistItem,
+                onAction: _addChecklistItem,
+              ),
+              if (_checklistLoading)
+                const LinearProgressIndicator()
+              else if (_checklist.isEmpty)
+                Text(
+                  l10n.noChecklistItems,
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                )
+              else
+                for (var index = 0; index < _checklist.length; index++)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Column(
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                key: ValueKey('checklist-${_checklist[index].id}'),
+                                initialValue: _checklist[index].label,
+                                textCapitalization: TextCapitalization.sentences,
+                                decoration: InputDecoration(labelText: l10n.checklistItemLabel),
+                                onChanged: (value) =>
+                                    _checklist[index] = _checklist[index].copyWith(label: value),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: index == 0 ? null : () => _moveChecklistItem(index, -1),
+                              icon: const Icon(Icons.keyboard_arrow_up),
+                              tooltip: l10n.moveUp,
+                            ),
+                            IconButton(
+                              onPressed: index == _checklist.length - 1
+                                  ? null
+                                  : () => _moveChecklistItem(index, 1),
+                              icon: const Icon(Icons.keyboard_arrow_down),
+                              tooltip: l10n.moveDown,
+                            ),
+                            IconButton(
+                              onPressed: () => _removeChecklistItem(index),
+                              icon: const Icon(Icons.remove_circle_outline),
+                              tooltip: l10n.delete,
+                            ),
+                          ],
+                        ),
+                        DropdownButtonFormField<int?>(
+                          initialValue: _checklist[index].dayIndex,
+                          decoration: InputDecoration(labelText: l10n.shiftChecklists),
+                          items: [
+                            DropdownMenuItem<int?>(value: null, child: Text(l10n.allDays)),
+                            for (var day = 0; day < _cycleDays; day++)
+                              DropdownMenuItem<int?>(value: day, child: Text(l10n.checklistForDay(day + 1))),
+                          ],
+                          onChanged: (value) =>
+                              _checklist[index] = _checklist[index].copyWith(dayIndex: value),
+                        ),
+                      ],
+                    ),
+                  ),
+              const SizedBox(height: 20),
+              _SectionHeader(title: l10n.preview),
+              if (preview != null && conflicts.isNotEmpty)
+                Text(
+                  l10n.conflictsFound,
+                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
+                )
+              else if (preview != null)
+                Text(
+                  l10n.noConflicts,
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              if (preview != null && conflicts.isEmpty)
+                _Preview(
+                  pattern: preview,
+                  deviceTimeZone: _deviceTimeZone,
+                  today: localDateAt(ref.watch(nowProvider), _deviceTimeZone),
+                ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: _saving ? null : _save,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: _saving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.savePattern),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -697,7 +785,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       return;
     }
     if (!mounted) return;
-    Navigator.of(context).pop();
+    _leave();
   }
 
   Future<void> _delete() async {
@@ -722,7 +810,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     );
     if (confirmed != true || !mounted) return;
     await ref.read(repositoryProvider).deleteShiftPattern(pattern.id);
-    if (mounted) Navigator.of(context).pop();
+    if (mounted) _leave();
   }
 }
 

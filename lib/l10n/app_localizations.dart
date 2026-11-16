@@ -1514,6 +1514,30 @@ abstract class AppLocalizations {
   /// **'Its shifts will disappear from the calendar.'**
   String get deletePatternBody;
 
+  /// No description provided for @discardChangesQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard your changes?'**
+  String get discardChangesQuestion;
+
+  /// No description provided for @discardChangesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This shift pattern has unsaved changes. Leaving now will not save them.'**
+  String get discardChangesBody;
+
+  /// No description provided for @keepEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get keepEditing;
+
+  /// No description provided for @discardChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get discardChanges;
+
   /// No description provided for @invalidTimeZone.
   ///
   /// In en, this message translates to:

@@ -800,6 +800,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get deletePatternBody => 'Sus turnos desaparecerán del calendario.';
 
   @override
+  String get discardChangesQuestion => '¿Descartar los cambios?';
+
+  @override
+  String get discardChangesBody =>
+      'Este patrón de turnos tiene cambios sin guardar. Si sales ahora, no se guardarán.';
+
+  @override
+  String get keepEditing => 'Seguir editando';
+
+  @override
+  String get discardChanges => 'Descartar';
+
+  @override
   String get invalidTimeZone => 'Usa una zona IANA como Europe/Madrid.';
 
   @override

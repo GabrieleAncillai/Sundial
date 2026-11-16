@@ -795,6 +795,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deletePatternBody => 'Its shifts will disappear from the calendar.';
 
   @override
+  String get discardChangesQuestion => 'Discard your changes?';
+
+  @override
+  String get discardChangesBody => 'This shift pattern has unsaved changes. Leaving now will not save them.';
+
+  @override
+  String get keepEditing => 'Keep editing';
+
+  @override
+  String get discardChanges => 'Discard';
+
+  @override
   String get invalidTimeZone => 'Use an IANA time zone such as Europe/Madrid.';
 
   @override
