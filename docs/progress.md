@@ -44,6 +44,17 @@ report save dialogs on both platforms, and a real-device audio check for the
 SoundPool bridge, `aplay` fallback and per-sound notification channels. The old app-lock feature and its tests
 are deleted; legacy settings rows are ignored and still excluded from backups.
 
+## 2026-11-16 appearance palettes and picker
+
+- Space and tag palettes now offer 30+ colours while the original defaults keep
+  their order. The context avatar opens the icon picker directly, so the editor
+  no longer needs a separate icon row.
+- The paper dot pattern is denser and stronger so the background reads on both
+  light and dark surfaces.
+- `space_editor_test.dart` covers the palette size and the avatar picker.
+- Validation: analyze clean, 247 app tests, 95 core tests, Linux debug and
+  Android debug APK pass.
+
 ## 2026-11-15 overlapping shifts blend
 
 - The desktop week grid and the day timeline no longer split colliding shifts
