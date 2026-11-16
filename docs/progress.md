@@ -44,6 +44,31 @@ report save dialogs on both platforms, and a real-device audio check for the
 SoundPool bridge, `aplay` fallback and per-sound notification channels. The old app-lock feature and its tests
 are deleted; legacy settings rows are ignored and still excluded from backups.
 
+## 2026-11-15 overlapping shifts blend
+
+- The desktop week grid and the day timeline no longer split colliding shifts
+  into side-by-side lanes. Each shift keeps the full column width, and a shift
+  that starts later paints its translucent fill over the one beneath it. The
+  shared minutes read as a deeper blended tint with no vertical seam, no step
+  and no danger outline.
+- Labels that would land on the same pixels stack downward instead of being
+  clipped into narrow lanes, so two shifts starting together both stay
+  readable.
+- `shift_block_layout.dart` orders the blocks for painting and places the
+  labels; `shift_block_painter.dart` draws the blend. Unit tests cover the
+  ordering, dropped spans and label stacking, and the week-grid and day-timeline
+  widget tests assert full-width blocks.
+- Entries with a start time and no end render as open-ended blocks in the day
+  timeline and week grid instead of zero-height events.
+- Week-grid drag and resize previews are pointer-device aware: mouse drags move
+  immediately, touch and pen hold first, and trackpad pans scroll without
+  creating or moving an entry.
+- Cross-pattern overlaps stay allowed and intentional; the editor still blocks
+  overlaps inside one pattern.
+- Validation: analyze clean, 245 app tests, 95 core tests, Linux debug and
+  Android debug APK pass. Updated screenshot:
+  `docs/screenshots/v1.0-plan-overlap-desktop.png`.
+
 ## 2026-11-13 compliance v2
 
 `feat/compliance-v2` was built from the preserved v1.2 snapshot. The first
@@ -171,20 +196,20 @@ The v1.0 device/accessibility/release items from the earlier program remain in
 - Settings shell and row kit: Streak
   `features/settings/pages/settings_page.dart`,
   `features/settings/widgets/settings_rows.dart`, `features/settings/pages/about_page.dart`.
-- Localization: both projects use the same `l10n.yaml`; Mane follows Streak's
+- Localization: both projects use the same `l10n.yaml`; Sundial follows Streak's
   `context.l10n` extension and explicit `en`/`es` supported locales.
 - Calendar: Streak `timeline_week_strip.dart`, `activity_calendar.dart`,
-  `express_month.dart`. Mane keeps the month maths and selection model, but
+  `express_month.dart`. Sundial keeps the month maths and selection model, but
   replaces habit cells with per-space markers and shift bars, and taps navigate
   to a day detail instead of toggling completion.
 - Home inventory, shopping, ICS import, interval maintenance, sleep window and
   shift checklists have no equivalent in GymMane or Streak. They are
-  planner-specific, implemented in `mane_core` and the `home_inventory`,
+  planner-specific, implemented in `sundial_core` and the `home_inventory`,
   `import`, `shifts` and `sleep` feature folders. The settings rows, theme and
   localization still follow the reference patterns.
 - LAN pairing, query and MCP have no equivalent. Streak's `auto_sync.dart` and
   `folder_sync.dart` exchange backup files through a shared folder; they do not
-  discover peers, pin TLS certificates or expose tools. Mane implements the
+  discover peers, pin TLS certificates or expose tools. Sundial implements the
   v0.4 transport in `lib/features/sync` and `lib/features/mcp` with standard
   PBKDF2, HMAC, AES-GCM and TLS pinning.
 
@@ -209,7 +234,7 @@ The v1.0 device/accessibility/release items from the earlier program remain in
   (`entryId:offsetMinutes`). The notification queue is rebuilt on start,
   resume, timezone change, and after entry/reminder edits. The horizon is 90
   days with a 500-notification cap.
-- Backup is a versioned JSON document (`app: mane`, `schemaVersion: 5`) with
+- Backup is a versioned JSON document (`app: sundial`, `schemaVersion: 5`) with
   every user table, timestamps, IANA zones, recurrence JSON and soft deletes.
   Import validates the envelope before the transaction and rolls back on any bad
   row. `identity_records` and `paired_device_records` are deliberately excluded.
@@ -235,7 +260,7 @@ The v1.0 device/accessibility/release items from the earlier program remain in
 - MCP is loopback-only (`127.0.0.1:8765/mcp`), off by default, and requires the
   device bearer token. `initialize`, `ping`, `tools/list` and `tools/call` are
   implemented. Write tools appear only when `mcpWritesEnabled` is on.
-- Snapshots from paired devices are display-only and stay in memory. Mane never
+- Snapshots from paired devices are display-only and stay in memory. Sundial never
   merges a remote plan into the local one.
 - Search reads only non-deleted entries and home items. It matches titles,
   notes, tag names, and home name/category/location/notes; results are grouped
@@ -343,14 +368,14 @@ The v1.0 device/accessibility/release items from the earlier program remain in
   match the code.
 - Bundled Nunito (the GymMane face) with a display/headline/title/body/label
   scale in `lib/theme/app_typography.dart`.
-- Rewrote `ManeColors` as the single palette (space, state, glass, nav and
-  shadow tokens) and rebuilt `ManeTheme` with app bar, card, sheet, dialog,
+- Rewrote `SundialColors` as the single palette (space, state, glass, nav and
+  shadow tokens) and rebuilt `SundialTheme` with app bar, card, sheet, dialog,
   snack bar, navigation bar, button, input, chip, switch, date and time picker
   themes. Screens read `context.mc`, not generated Material roles.
 - Added the shared UI kit under `lib/core/widgets`: `SoftCard`, `AppSheet`,
   `SectionLabel`, `Pressable`, `GlassIconButton`, `GlassPill`, `TinySwitch`,
-  `GlassSurface`, `AppEmptyState`, `ManeNotice`, `FadeThrough`, `ManePage`,
-  `ManeAddButton`, `ManeNavBar`, `ManeSegmented`, `ManeSearchField` and the
+  `GlassSurface`, `AppEmptyState`, `SundialNotice`, `FadeThrough`, `SundialPage`,
+  `SundialAddButton`, `SundialNavBar`, `SundialSegmented`, `SundialSearchField` and the
   dotted `AppBackground`.
 - Replaced the stock shell with a transparent scaffold, paper background, custom
   header, floating nav and companion add button. Ctrl+1..3 and the tag filter
@@ -481,7 +506,7 @@ The v1.0 device/accessibility/release items from the earlier program remain in
   session `DELETE` and linked inventory, JSON backup/import, and app lock.
 - Blocked or failed: the widget needs the user's launcher; OEM battery needs the
   EMUI path; reboot fails because EMUI does not deliver `BOOT_COMPLETED` even
-  with the app whitelisted and auto-launch enabled. Opening Mane rebuilt the
+  with the app whitelisted and auto-launch enabled. Opening Sundial rebuilt the
   queue without duplicates.
 - Tests: 135 app/database/widget tests and 85 core tests.
 - Validation: format check clean (144 files), analyze clean, both suites pass,
@@ -561,7 +586,7 @@ The v1.0 device/accessibility/release items from the earlier program remain in
 
 ## Next three steps
 
-1. Add the Mane widget on the phone and finish the OEM battery path, then record
+1. Add the Sundial widget on the phone and finish the OEM battery path, then record
    both in `docs/device-run-2026-11-09.md`.
 2. Run the accessibility/contrast pass and fix what is fixable.
 3. Tag v1.0 only when every scenario in `docs/completion-plan.md` passes and a
@@ -584,7 +609,7 @@ The v1.0 device/accessibility/release items from the earlier program remain in
   pinning, replay rejection, MCP tools/sessions/SSE, sync orchestration and
   snapshot persistence, search, widget data, notification actions, l10n
   enforcement and widget flows).
-- `(cd packages/mane_core && dart test)` — 85 passed (recurrence including
+- `(cd packages/sundial_core && dart test)` — 85 passed (recurrence including
   constant-time ordinals, expansion, shifts, timezones, local windows, sleep).
 - `flutter build linux --debug` — ok, including the Bonsoir plugin.
 - `flutter build linux --release` — ok.

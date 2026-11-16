@@ -1,15 +1,37 @@
+import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
-import '../../shifts/shift_lane_layout.dart';
-import '../../shifts/shift_lane_painter.dart';
+import '../../calendar/widgets/open_end_entry_block.dart';
+import '../../shifts/shift_block_layout.dart';
+import '../../shifts/shift_block_painter.dart';
 import '../../shifts/shift_palette.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
+
+/// A mouse press-drag creates an event immediately. Touch and pen hold first so
+/// a scroll gesture never starts a creation. Trackpads are deliberately absent:
+/// two-finger pan arrives as a pan/zoom gesture and used to be mistaken for a
+/// drag, which created events while scrolling.
+const _pointerDragDevices = <PointerDeviceKind>{PointerDeviceKind.mouse};
+
+const _holdDragDevices = <PointerDeviceKind>{
+  PointerDeviceKind.touch,
+  PointerDeviceKind.stylus,
+  PointerDeviceKind.invertedStylus,
+};
+
+const _resizeDevices = <PointerDeviceKind>{
+  PointerDeviceKind.touch,
+  PointerDeviceKind.mouse,
+  PointerDeviceKind.stylus,
+  PointerDeviceKind.invertedStylus,
+};
 
 class WeekTimeGrid extends StatefulWidget {
   const WeekTimeGrid({
@@ -48,12 +70,13 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
   static const _gutter = 46.0;
 
   final _scroll = ScrollController();
+  final _columnKeys = List<GlobalKey>.generate(7, (_) => GlobalKey());
 
   int? _createDay;
   int? _createStart;
   int? _createEnd;
-  int? _hoverDay;
-  int? _hoverMinute;
+  _EntryDrag? _entryDrag;
+  Timer? _dragSettleTimer;
 
   @override
   void initState() {
@@ -65,7 +88,33 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
   }
 
   @override
+  void didUpdateWidget(covariant WeekTimeGrid oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Keep the moved block where the user dropped it until the repository
+    // pushes the new span, then let the real occurrence take over.
+    final drag = _entryDrag;
+    if (drag == null) return;
+    final targetDate = widget.weekStart.addDays(drag.dayIndex);
+    // A recurring override keeps the series anchor date; a one-off entry moves
+    // its own date. Matching the wrong one would clear the preview too early or
+    // too late.
+    final expectedDate = drag.occurrence.entry.recurrence != null ? drag.occurrence.date : targetDate;
+    final landed = widget.entries.any(
+      (item) =>
+          item.entry.id == drag.occurrence.entry.id &&
+          item.date == expectedDate &&
+          item.displayDate == targetDate &&
+          item.startAt != null &&
+          localMinuteAt(item.startAt!, widget.timeZone) == drag.startMinute,
+    );
+    if (!landed) return;
+    _dragSettleTimer?.cancel();
+    _entryDrag = null;
+  }
+
+  @override
   void dispose() {
+    _dragSettleTimer?.cancel();
     _scroll.dispose();
     super.dispose();
   }
@@ -107,7 +156,7 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
                     children: [
                       Text(
                         _weekdayLabel(context, widget.weekStart.addDays(index)),
-                        style: ManeType.label(
+                        style: SundialType.label(
                           10,
                           color: widget.weekStart.addDays(index) == today ? c.accent : c.textTertiary,
                         ),
@@ -123,7 +172,7 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
                         ),
                         child: Text(
                           '${widget.weekStart.addDays(index).day}',
-                          style: ManeType.body(
+                          style: SundialType.body(
                             12.5,
                             weight: FontWeight.w700,
                             color: widget.weekStart.addDays(index) == today ? c.onAccent : c.text,
@@ -157,7 +206,7 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
                           if (allDayByDay[index]!.length > 3)
                             Text(
                               '+${allDayByDay[index]!.length - 3}',
-                              style: ManeType.label(8, color: c.textTertiary),
+                              style: SundialType.label(8, color: c.textTertiary),
                             ),
                         ],
                       ),
@@ -192,7 +241,7 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
                                   DateFormat.Hm(
                                     Localizations.localeOf(context).toLanguageTag(),
                                   ).format(DateTime(2020, 1, 1, hour)),
-                                  style: ManeType.label(9, color: c.textTertiary),
+                                  style: SundialType.label(9, color: c.textTertiary),
                                 ),
                               ),
                           ],
@@ -214,6 +263,7 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
                                 for (var day = 0; day < 7; day++)
                                   Expanded(
                                     child: _DayColumn(
+                                      key: _columnKeys[day],
                                       day: day,
                                       date: widget.weekStart.addDays(day),
                                       entries: entriesByDay[day]!,
@@ -222,37 +272,28 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
                                       contexts: widget.contexts,
                                       timeZone: widget.timeZone,
                                       now: widget.now,
-                                      hoverMinute: _hoverDay == day ? _hoverMinute : null,
+                                      drag: _entryDrag,
                                       creating: _createDay == day,
                                       createStart: _createDay == day ? _createStart : null,
                                       createEnd: _createDay == day ? _createEnd : null,
                                       onOpen: widget.onOpen,
-                                      onHover: (minute) => setState(() {
-                                        _hoverDay = day;
-                                        _hoverMinute = minute;
-                                      }),
-                                      onHoverEnd: () => setState(() => _hoverDay = null),
-                                      onDrop: (occurrence, minute) {
-                                        if (occurrence.startAt == null) return;
-                                        final duration = (occurrence.endAt ?? occurrence.startAt!)
-                                            .difference(occurrence.startAt!)
-                                            .inMinutes;
-                                        final start = _snap(minute);
-                                        widget.onMove(
-                                          occurrence,
-                                          widget.weekStart.addDays(day),
-                                          start,
-                                          start + math.max(15, duration),
-                                        );
-                                        setState(() => _hoverDay = null);
-                                      },
+                                      onEntryDragStart: _beginEntryDrag,
+                                      onEntryDragUpdate: _updateEntryDrag,
+                                      onEntryDragEnd: _endEntryDrag,
+                                      onEntryDragCancel: _cancelEntryDrag,
                                       onPanStart: (minute) => setState(() {
+                                        _entryDrag = null;
                                         _createDay = day;
                                         _createStart = _snap(minute);
                                         _createEnd = _snap(minute + 15);
                                       }),
                                       onPanUpdate: (minute) => setState(() {
                                         _createEnd = _snap(minute);
+                                      }),
+                                      onPanCancel: () => setState(() {
+                                        _createDay = null;
+                                        _createStart = null;
+                                        _createEnd = null;
                                       }),
                                       onPanEnd: () {
                                         final start = _createStart;
@@ -268,11 +309,7 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
                                         if (high - low < 15) return;
                                         widget.onCreate(widget.weekStart.addDays(day), low, high);
                                       },
-                                      onResize: (occurrence, deltaMinutes) {
-                                        final end = _endMinute(occurrence);
-                                        if (end == null) return;
-                                        widget.onResize(occurrence, _snap(end + deltaMinutes));
-                                      },
+                                      onResize: widget.onResize,
                                     ),
                                   ),
                               ],
@@ -298,7 +335,7 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
           ),
         ),
         const SizedBox(height: 6),
-        Text(l10n.desktopWeekHint, style: ManeType.body(10.5, color: c.textTertiary)),
+        Text(l10n.desktopWeekHint, style: SundialType.body(10.5, color: c.textTertiary)),
       ],
     );
   }
@@ -311,10 +348,99 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
 
   static int _snap(int minute) => ((minute.clamp(0, 24 * 60 - 15)) / 15).round() * 15;
 
-  int? _endMinute(EntryOccurrence occurrence) {
-    final end = occurrence.endAt;
-    if (end == null || occurrence.displayDate != localDateAt(end, widget.timeZone)) return null;
-    return localMinuteAt(end, widget.timeZone);
+  void _beginEntryDrag(EntryOccurrence occurrence, Offset globalPosition, int blockStartMinute) {
+    final startAt = occurrence.startAt;
+    if (startAt == null) return;
+    final target = _targetAt(globalPosition);
+    if (target == null) return;
+    final endAt = occurrence.endAt;
+    final duration = endAt == null ? 15 : math.max(15, endAt.difference(startAt).inMinutes);
+    final int grab = math.min<int>(
+      math.max(target.minute - blockStartMinute, 0),
+      math.max(0, math.min<int>(duration, 24 * 60) - 15),
+    );
+    final int maxStart = math.max(0, 24 * 60 - math.min<int>(duration, 24 * 60));
+    setState(() {
+      _createDay = null;
+      _createStart = null;
+      _createEnd = null;
+      _entryDrag = _EntryDrag(
+        occurrence: occurrence,
+        dayIndex: target.day,
+        startMinute: _snap(math.min(target.minute - grab, maxStart)),
+        durationMinutes: duration,
+        grabMinutes: grab,
+      );
+    });
+  }
+
+  void _updateEntryDrag(Offset globalPosition) {
+    final drag = _entryDrag;
+    if (drag == null) return;
+    final target = _targetAt(globalPosition);
+    if (target == null) return;
+    final int maxStart = math.max(0, 24 * 60 - math.min<int>(drag.durationMinutes, 24 * 60));
+    final start = _snap(math.min<int>(math.max(target.minute - drag.grabMinutes, 0), maxStart));
+    if (target.day == drag.dayIndex && start == drag.startMinute) return;
+    setState(() => _entryDrag = drag.copyWith(dayIndex: target.day, startMinute: start));
+  }
+
+  void _endEntryDrag() {
+    final drag = _entryDrag;
+    if (drag == null) return;
+    final startAt = drag.occurrence.startAt;
+    if (startAt == null) {
+      setState(() => _entryDrag = null);
+      return;
+    }
+    final date = widget.weekStart.addDays(drag.dayIndex);
+    final originalStart = localMinuteAt(startAt, widget.timeZone);
+    if (date == drag.occurrence.displayDate && drag.startMinute == originalStart) {
+      setState(() => _entryDrag = null);
+      return;
+    }
+    widget.onMove(drag.occurrence, date, drag.startMinute, drag.startMinute + drag.durationMinutes);
+    _dragSettleTimer?.cancel();
+    _dragSettleTimer = Timer(const Duration(seconds: 2), () {
+      if (!mounted || _entryDrag != drag) return;
+      setState(() => _entryDrag = null);
+    });
+  }
+
+  void _cancelEntryDrag() {
+    if (_entryDrag == null) return;
+    _dragSettleTimer?.cancel();
+    setState(() => _entryDrag = null);
+  }
+
+  /// Resolves the day column and minute under a global pointer position. When
+  /// the pointer leaves the grid horizontally the nearest column is used, so a
+  /// drag across days keeps a sensible target.
+  ({int day, int minute})? _targetAt(Offset globalPosition) {
+    RenderBox? nearest;
+    var nearestDay = 0;
+    for (var index = 0; index < _columnKeys.length; index++) {
+      final box = _columnKeys[index].currentContext?.findRenderObject() as RenderBox?;
+      if (box == null || !box.hasSize) continue;
+      if (nearest == null) {
+        nearest = box;
+        nearestDay = index;
+      }
+      final origin = box.localToGlobal(Offset.zero);
+      final right = origin.dx + box.size.width;
+      if (globalPosition.dx >= origin.dx && globalPosition.dx <= right) {
+        nearest = box;
+        nearestDay = index;
+        break;
+      }
+      if (globalPosition.dx < origin.dx) break;
+      nearest = box;
+      nearestDay = index;
+    }
+    if (nearest == null || !nearest.hasSize) return null;
+    final origin = nearest.localToGlobal(Offset.zero);
+    final minute = ((globalPosition.dy - origin.dy) / hourHeight * 60).clamp(0, 24 * 60 - 1).toInt();
+    return (day: nearestDay, minute: minute);
   }
 
   static String _weekdayLabel(BuildContext context, LocalDate date) =>
@@ -323,6 +449,7 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
 
 class _DayColumn extends StatelessWidget {
   const _DayColumn({
+    super.key,
     required this.day,
     required this.date,
     required this.entries,
@@ -331,17 +458,19 @@ class _DayColumn extends StatelessWidget {
     required this.contexts,
     required this.timeZone,
     required this.now,
-    required this.hoverMinute,
+    required this.drag,
     required this.creating,
     required this.createStart,
     required this.createEnd,
     required this.onOpen,
-    required this.onHover,
-    required this.onHoverEnd,
-    required this.onDrop,
+    required this.onEntryDragStart,
+    required this.onEntryDragUpdate,
+    required this.onEntryDragEnd,
+    required this.onEntryDragCancel,
     required this.onPanStart,
     required this.onPanUpdate,
     required this.onPanEnd,
+    required this.onPanCancel,
     required this.onResize,
   });
 
@@ -353,137 +482,174 @@ class _DayColumn extends StatelessWidget {
   final List<PlannerContext> contexts;
   final String timeZone;
   final DateTime now;
-  final int? hoverMinute;
+  final _EntryDrag? drag;
   final bool creating;
   final int? createStart;
   final int? createEnd;
   final ValueChanged<EntryOccurrence> onOpen;
-  final ValueChanged<int> onHover;
-  final VoidCallback onHoverEnd;
-  final void Function(EntryOccurrence occurrence, int minute) onDrop;
+  final void Function(EntryOccurrence occurrence, Offset globalPosition, int blockStartMinute)
+  onEntryDragStart;
+  final ValueChanged<Offset> onEntryDragUpdate;
+  final VoidCallback onEntryDragEnd;
+  final VoidCallback onEntryDragCancel;
   final ValueChanged<int> onPanStart;
   final ValueChanged<int> onPanUpdate;
   final VoidCallback onPanEnd;
-  final void Function(EntryOccurrence occurrence, int deltaMinutes) onResize;
+  final VoidCallback onPanCancel;
+  final void Function(EntryOccurrence occurrence, int endMinute) onResize;
 
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
-    return DragTarget<EntryOccurrence>(
-      onMove: (details) {
-        final box = context.findRenderObject() as RenderBox?;
-        if (box == null) return;
-        final local = box.globalToLocal(details.offset);
-        onHover((local.dy / _WeekTimeGridState.hourHeight * 60).round());
-      },
-      onLeave: (_) => onHoverEnd(),
-      onAcceptWithDetails: (details) {
-        final box = context.findRenderObject() as RenderBox?;
-        if (box == null) return;
-        final local = box.globalToLocal(details.offset);
-        onDrop(details.data, (local.dy / _WeekTimeGridState.hourHeight * 60).round());
-      },
-      builder: (context, candidates, rejects) {
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onPanStart: (details) => onPanStart(_minuteAt(details.localPosition)),
-          onPanUpdate: (details) => onPanUpdate(_minuteAt(details.localPosition)),
-          onPanEnd: (_) => onPanEnd(),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(left: BorderSide(color: c.border.withValues(alpha: 0.6))),
-              color: candidates.isNotEmpty
-                  ? c.accentSoft.withValues(alpha: 0.35)
-                  : date == localDateAt(now, timeZone)
-                  ? c.accentSoft.withValues(alpha: 0.18)
-                  : Colors.transparent,
-            ),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final shiftRenders = _shiftRenders(constraints.maxWidth, context);
-                return Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    if (shiftRenders.isNotEmpty)
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: CustomPaint(
-                            painter: ShiftLanePainter(
-                              blocks: [
-                                for (final render in shiftRenders)
-                                  ShiftLanePaintBlock(
-                                    rects: render.rects,
-                                    fillColor: render.fillColor,
-                                    stripeColor: render.stripeColor,
-                                    overlaps: render.overlaps,
-                                  ),
-                              ],
-                              warningColor: c.danger.withValues(alpha: 0.65),
-                              cornerRadius: 0,
-                              stripeWidth: 2,
+    final activeDrag = drag;
+    final dropTarget = activeDrag != null && activeDrag.dayIndex == day;
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(left: BorderSide(color: c.border.withValues(alpha: 0.6))),
+        color: dropTarget
+            ? c.accentSoft.withValues(alpha: 0.35)
+            : date == localDateAt(now, timeZone)
+            ? c.accentSoft.withValues(alpha: 0.18)
+            : Colors.transparent,
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final shiftRenders = _shiftRenders(constraints.maxWidth, context);
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(child: _creationArea()),
+              if (shiftRenders.isNotEmpty)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: CustomPaint(
+                      painter: ShiftBlockPainter(
+                        blocks: [
+                          for (final render in shiftRenders)
+                            ShiftBlockPaint(
+                              rect: render.rect,
+                              fillColor: render.fillColor,
+                              stripeColor: render.stripeColor,
                             ),
-                          ),
-                        ),
+                        ],
+                        cornerRadius: 0,
+                        stripeWidth: 2,
                       ),
-                    for (final render in shiftRenders)
-                      if (render.rects.isNotEmpty)
-                        Positioned(
-                          left: render.rects.first.left + 4,
-                          top: render.rects.first.top + 2,
-                          width: math.max(0.0, render.rects.first.width - 8),
-                          child: IgnorePointer(
-                            child: Text(
-                              render.shift.pattern.name,
-                              maxLines: render.rects.length > 1 ? 2 : 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: ManeType.label(8.5, color: c.text),
-                            ),
-                          ),
-                        ),
-                    for (final entry in entries.where((item) => item.startAt != null))
-                      _EntryBlock(
-                        occurrence: entry,
-                        timeZone: timeZone,
-                        spaces: spaces,
-                        onOpen: () => onOpen(entry),
-                        onResize: (delta) => onResize(entry, delta),
-                      ),
-                    if (creating && createStart != null && createEnd != null)
-                      Positioned(
-                        left: 3,
-                        right: 3,
-                        top: math.min(createStart!, createEnd!) / 60 * _WeekTimeGridState.hourHeight,
-                        height: math.max(
-                          16,
-                          (math.max(createStart!, createEnd!) - math.min(createStart!, createEnd!)) /
-                              60 *
-                              _WeekTimeGridState.hourHeight,
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: c.accent.withValues(alpha: 0.28),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: c.accent),
-                          ),
-                        ),
-                      ),
-                    if (hoverMinute != null)
-                      Positioned(
-                        left: 2,
-                        right: 2,
-                        top: (_WeekTimeGridState._snap(hoverMinute!) / 60) * _WeekTimeGridState.hourHeight,
-                        height: 2,
-                        child: Container(color: c.accent),
-                      ),
-                  ],
-                );
-              },
-            ),
-          ),
-        );
-      },
+                    ),
+                  ),
+                ),
+              for (final render in shiftRenders)
+                Positioned(
+                  left: render.rect.left + 4,
+                  top: render.labelTop,
+                  width: math.max(0.0, render.rect.width - 8),
+                  child: IgnorePointer(
+                    child: Text(
+                      render.shift.pattern.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: SundialType.label(8.5, color: c.text),
+                    ),
+                  ),
+                ),
+              for (final entry in entries.where((item) => item.startAt != null))
+                _EntryBlock(
+                  occurrence: entry,
+                  timeZone: timeZone,
+                  spaces: spaces,
+                  dragging: _isDragging(entry),
+                  onOpen: () => onOpen(entry),
+                  onDragStart: (globalPosition, startMinute) =>
+                      onEntryDragStart(entry, globalPosition, startMinute),
+                  onDragUpdate: onEntryDragUpdate,
+                  onDragEnd: onEntryDragEnd,
+                  onDragCancel: onEntryDragCancel,
+                  onResize: (end) => onResize(entry, end),
+                ),
+              if (creating && createStart != null && createEnd != null)
+                Positioned(
+                  left: 3,
+                  right: 3,
+                  top: math.min(createStart!, createEnd!) / 60 * _WeekTimeGridState.hourHeight,
+                  height: math.max(
+                    16,
+                    (math.max(createStart!, createEnd!) - math.min(createStart!, createEnd!)) /
+                        60 *
+                        _WeekTimeGridState.hourHeight,
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: c.accent.withValues(alpha: 0.28),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: c.accent),
+                    ),
+                  ),
+                ),
+              if (dropTarget) _dragPreview(context, activeDrag),
+            ],
+          );
+        },
+      ),
     );
   }
+
+  bool _isDragging(EntryOccurrence entry) {
+    final active = drag;
+    return active != null &&
+        active.occurrence.entry.id == entry.entry.id &&
+        active.occurrence.date == entry.date;
+  }
+
+  /// The empty-area gesture layer sits behind entries, so a press on an event
+  /// never bubbles into event creation. Mouse drags start immediately; touch
+  /// and pen hold first, which keeps scroll gestures out of the creator.
+  Widget _creationArea() {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      supportedDevices: _holdDragDevices,
+      dragStartBehavior: DragStartBehavior.down,
+      onLongPressStart: (details) => onPanStart(_minuteAt(details.localPosition)),
+      onLongPressMoveUpdate: (details) => onPanUpdate(_minuteAt(details.localPosition)),
+      onLongPressEnd: (_) => onPanEnd(),
+      onLongPressCancel: onPanCancel,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        supportedDevices: _pointerDragDevices,
+        dragStartBehavior: DragStartBehavior.down,
+        onPanStart: (details) => onPanStart(_minuteAt(details.localPosition)),
+        onPanUpdate: (details) => onPanUpdate(_minuteAt(details.localPosition)),
+        onPanEnd: (_) => onPanEnd(),
+        onPanCancel: onPanCancel,
+        child: const SizedBox.expand(),
+      ),
+    );
+  }
+
+  Widget _dragPreview(BuildContext context, _EntryDrag drag) {
+    final openEnded = drag.occurrence.endAt == null;
+    final available = math.max(0, 24 * 60 - drag.startMinute);
+    final int? end = openEnded ? null : drag.startMinute + math.min<int>(drag.durationMinutes, available);
+    final height = end == null
+        ? OpenEndEntryBlock.defaultHeight
+        : math.max(18.0, (end - drag.startMinute) / 60 * _WeekTimeGridState.hourHeight);
+    return Positioned(
+      left: 3,
+      right: 3,
+      top: drag.startMinute / 60 * _WeekTimeGridState.hourHeight,
+      height: height,
+      child: IgnorePointer(
+        child: _EntryCard(
+          occurrence: drag.occurrence,
+          start: drag.startMinute,
+          end: end,
+          color: _spaceColorFor(context, drag.occurrence, spaces),
+          shadow: true,
+        ),
+      ),
+    );
+  }
+
+  static const _labelLineHeight = 14.0;
 
   static int _minuteAt(Offset local) =>
       (local.dy / _WeekTimeGridState.hourHeight * 60).clamp(0, 24 * 60).round();
@@ -499,97 +665,254 @@ class _DayColumn extends StatelessWidget {
           : localMinuteAt(shift.endAt, timeZone);
       if (end > start) bounds.add((shift: shift, start: start, end: end));
     }
-    final layouts = layoutShiftLanes([
-      for (final item in bounds) ShiftLaneInterval(startMinute: item.start, endMinute: item.end),
+    final blocks = orderShiftBlocks([
+      for (final item in bounds) ShiftBlockSpan(startMinute: item.start, endMinute: item.end),
     ]);
-    return [
-      for (var index = 0; index < bounds.length; index++)
+    final labelOffsets = shiftLabelOffsets(
+      blocks,
+      labelMinuteHeight: (_labelLineHeight / _WeekTimeGridState.hourHeight * 60).ceil(),
+    );
+    final renders = <_ShiftRender>[];
+    for (var position = 0; position < blocks.length; position++) {
+      final block = blocks[position];
+      final item = bounds[block.index];
+      final top = block.startMinute / 60 * _WeekTimeGridState.hourHeight;
+      renders.add(
         _ShiftRender(
-          shift: bounds[index].shift,
-          rects: [
-            for (final segment in layouts[index].segments)
-              Rect.fromLTWH(
-                shiftLaneLeft(columnWidth, segment.lane, segment.laneCount),
-                segment.startMinute / 60 * _WeekTimeGridState.hourHeight,
-                shiftLaneWidth(columnWidth, segment.laneCount),
-                (segment.endMinute - segment.startMinute) / 60 * _WeekTimeGridState.hourHeight,
-              ),
-          ],
-          fillColor: shiftSoftColor(context, bounds[index].shift.pattern, contexts),
-          stripeColor: shiftColor(context, bounds[index].shift.pattern, contexts).withValues(alpha: 0.7),
-          overlaps: layouts[index].overlaps,
+          shift: item.shift,
+          rect: Rect.fromLTWH(
+            0,
+            top,
+            columnWidth,
+            (block.endMinute - block.startMinute) / 60 * _WeekTimeGridState.hourHeight,
+          ),
+          labelTop: top + 2 + labelOffsets[position] / 60 * _WeekTimeGridState.hourHeight,
+          fillColor: shiftSoftColor(context, item.shift.pattern, contexts),
+          stripeColor: shiftColor(context, item.shift.pattern, contexts).withValues(alpha: 0.7),
         ),
-    ];
+      );
+    }
+    return renders;
   }
 }
 
-class _EntryBlock extends StatelessWidget {
+class _EntryBlock extends StatefulWidget {
   const _EntryBlock({
     required this.occurrence,
     required this.timeZone,
     required this.spaces,
+    required this.dragging,
     required this.onOpen,
+    required this.onDragStart,
+    required this.onDragUpdate,
+    required this.onDragEnd,
+    required this.onDragCancel,
     required this.onResize,
   });
 
   final EntryOccurrence occurrence;
   final String timeZone;
   final List<Space> spaces;
+  final bool dragging;
   final VoidCallback onOpen;
+  final void Function(Offset globalPosition, int blockStartMinute) onDragStart;
+  final ValueChanged<Offset> onDragUpdate;
+  final VoidCallback onDragEnd;
+  final VoidCallback onDragCancel;
   final ValueChanged<int> onResize;
+
+  @override
+  State<_EntryBlock> createState() => _EntryBlockState();
+}
+
+class _EntryBlockState extends State<_EntryBlock> {
+  int? _previewEnd;
+  int? _committedEnd;
+  Timer? _settleTimer;
+
+  @override
+  void didUpdateWidget(covariant _EntryBlock oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_committedEnd == null || widget.occurrence.endAt == oldWidget.occurrence.endAt) return;
+    _settleTimer?.cancel();
+    _previewEnd = null;
+    _committedEnd = null;
+  }
+
+  @override
+  void dispose() {
+    _settleTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final start = _startMinute();
+    if (start == null) return const SizedBox.shrink();
     final end = _endMinute();
-    if (start == null || end == null || end <= start) return const SizedBox.shrink();
+    if (end != null && end <= start) return const SizedBox.shrink();
+
+    final displayEnd = end == null ? null : (_previewEnd ?? end);
     final color = _spaceColor(context);
-    final block = _block(context, start, end, color);
-    if (occurrence.entry.readOnly) {
-      return Positioned(
-        left: 3,
-        right: 3,
-        top: start / 60 * _WeekTimeGridState.hourHeight,
-        height: math.max(18, (end - start) / 60 * _WeekTimeGridState.hourHeight),
-        child: GestureDetector(onTap: onOpen, child: block),
-      );
-    }
-    return Positioned(
-      left: 3,
-      right: 3,
-      top: start / 60 * _WeekTimeGridState.hourHeight,
-      height: math.max(18, (end - start) / 60 * _WeekTimeGridState.hourHeight),
-      child: Draggable<EntryOccurrence>(
-        data: occurrence,
-        dragAnchorStrategy: pointerDragAnchorStrategy,
-        feedback: Material(
-          color: Colors.transparent,
-          child: Opacity(
-            opacity: 0.85,
-            child: SizedBox(width: 130, child: _block(context, start, end, color, shadow: true)),
-          ),
-        ),
-        childWhenDragging: Opacity(opacity: 0.3, child: block),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: GestureDetector(onTap: onOpen, child: block),
-            ),
+    final height = displayEnd == null
+        ? OpenEndEntryBlock.defaultHeight
+        : math.max(18.0, (displayEnd - start) / 60 * _WeekTimeGridState.hourHeight);
+    final card = _EntryCard(
+      occurrence: widget.occurrence,
+      start: start,
+      end: displayEnd,
+      color: color,
+      shadow: widget.dragging,
+    );
+
+    Widget content;
+    if (widget.occurrence.entry.readOnly) {
+      content = GestureDetector(behavior: HitTestBehavior.opaque, onTap: widget.onOpen, child: card);
+    } else {
+      content = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(child: _dragGesture(start, card)),
+          // A block without an end has no bottom edge to resize; finishing the
+          // task is what sets its end time.
+          if (end != null)
             Positioned(
               left: 8,
               right: 8,
               bottom: 0,
               height: 9,
-              child: _ResizeHandle(color: color, onResize: onResize),
+              child: _ResizeHandle(
+                color: color,
+                onDelta: _previewResize,
+                onEnd: _commitResize,
+                onCancel: _cancelResize,
+              ),
             ),
-          ],
-        ),
+        ],
+      );
+    }
+
+    return Positioned(
+      left: 3,
+      right: 3,
+      top: start / 60 * _WeekTimeGridState.hourHeight,
+      height: height,
+      // Keep the gesture subtree mounted for the whole drag: swapping it out
+      // when the drag starts would dispose the recognizer mid-gesture.
+      child: Opacity(opacity: widget.dragging ? 0.22 : 1, child: content),
+    );
+  }
+
+  Widget _dragGesture(int start, Widget card) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      supportedDevices: _pointerDragDevices,
+      dragStartBehavior: DragStartBehavior.down,
+      onTap: widget.onOpen,
+      onPanStart: (details) => widget.onDragStart(details.globalPosition, start),
+      onPanUpdate: (details) => widget.onDragUpdate(details.globalPosition),
+      onPanEnd: (_) => widget.onDragEnd(),
+      onPanCancel: widget.onDragCancel,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        supportedDevices: _holdDragDevices,
+        dragStartBehavior: DragStartBehavior.down,
+        onTap: widget.onOpen,
+        onLongPressStart: (details) => widget.onDragStart(details.globalPosition, start),
+        onLongPressMoveUpdate: (details) => widget.onDragUpdate(details.globalPosition),
+        onLongPressEnd: (_) => widget.onDragEnd(),
+        onLongPressCancel: widget.onDragCancel,
+        child: card,
       ),
     );
   }
 
-  Widget _block(BuildContext context, int start, int end, Color color, {bool shadow = false}) {
+  void _previewResize(int deltaMinutes) {
+    final start = _startMinute();
+    final end = _endMinute();
+    if (start == null || end == null) return;
+    final next = _WeekTimeGridState._snap(end + deltaMinutes);
+    final bounded = math.max(start + 15, next);
+    if (bounded == _previewEnd) return;
+    setState(() => _previewEnd = bounded);
+  }
+
+  void _commitResize() {
+    final end = _previewEnd;
+    if (end == null) return;
+    if (end == _endMinute()) {
+      setState(() => _previewEnd = null);
+      return;
+    }
+    // Hold the resized height while the write is in flight. The next
+    // occurrence with a different end clears it; the timer is the fallback for
+    // a failed write.
+    setState(() => _committedEnd = end);
+    widget.onResize(end);
+    _settleTimer?.cancel();
+    _settleTimer = Timer(const Duration(seconds: 2), () {
+      if (!mounted || _committedEnd != end) return;
+      setState(() {
+        _previewEnd = null;
+        _committedEnd = null;
+      });
+    });
+  }
+
+  void _cancelResize() {
+    if (_previewEnd == null) return;
+    _settleTimer?.cancel();
+    setState(() {
+      _previewEnd = null;
+      _committedEnd = null;
+    });
+  }
+
+  int? _startMinute() {
+    final displayDate = widget.occurrence.displayDate;
+    if (widget.occurrence.startAt == null) return null;
+    if (localDateAt(widget.occurrence.startAt!, widget.timeZone).isBefore(displayDate)) return 0;
+    return localMinuteAt(widget.occurrence.startAt!, widget.timeZone);
+  }
+
+  int? _endMinute() {
+    final endAt = widget.occurrence.endAt;
+    if (endAt == null) return null;
+    if (localDateAt(endAt, widget.timeZone).isAfter(widget.occurrence.displayDate)) return 24 * 60;
+    return localMinuteAt(endAt, widget.timeZone);
+  }
+
+  Color _spaceColor(BuildContext context) => _spaceColorFor(context, widget.occurrence, widget.spaces);
+}
+
+class _EntryCard extends StatelessWidget {
+  const _EntryCard({
+    required this.occurrence,
+    required this.start,
+    required this.end,
+    required this.color,
+    this.shadow = false,
+  });
+
+  final EntryOccurrence occurrence;
+  final int start;
+  final int? end;
+  final Color color;
+  final bool shadow;
+
+  @override
+  Widget build(BuildContext context) {
     final c = context.mc;
+    final endMinute = end;
+    if (endMinute == null) {
+      return OpenEndEntryBlock(
+        title: occurrence.entry.title,
+        color: color,
+        timeLabel: '${_formatMinute(context, start)} –',
+        dense: true,
+        shadow: shadow,
+      );
+    }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
@@ -605,53 +928,46 @@ class _EntryBlock extends StatelessWidget {
         children: [
           Text(
             occurrence.entry.title,
-            maxLines: end - start >= 60 ? 2 : 1,
+            maxLines: endMinute - start >= 60 ? 2 : 1,
             overflow: TextOverflow.ellipsis,
-            style: ManeType.body(10.5, weight: FontWeight.w700, color: c.text),
+            style: SundialType.body(10.5, weight: FontWeight.w700, color: c.text),
           ),
-          if (end - start >= 45)
+          if (endMinute - start >= 45)
             Text(
-              '${_time(context, start)} – ${_time(context, end)}',
+              '${_formatMinute(context, start)} – ${_formatMinute(context, endMinute)}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: ManeType.label(9, color: c.textTertiary),
+              style: SundialType.label(9, color: c.textTertiary),
             ),
         ],
       ),
     );
   }
 
-  int? _startMinute() {
-    final displayDate = occurrence.displayDate;
-    if (occurrence.startAt == null) return null;
-    if (localDateAt(occurrence.startAt!, timeZone).isBefore(displayDate)) return 0;
-    return localMinuteAt(occurrence.startAt!, timeZone);
-  }
-
-  int? _endMinute() {
-    final endAt = occurrence.endAt;
-    if (endAt == null) return null;
-    if (localDateAt(endAt, timeZone).isAfter(occurrence.displayDate)) return 24 * 60;
-    return localMinuteAt(endAt, timeZone);
-  }
-
-  String _time(BuildContext context, int minute) => DateFormat.Hm(
+  static String _formatMinute(BuildContext context, int minute) => DateFormat.Hm(
     Localizations.localeOf(context).toLanguageTag(),
   ).format(DateTime(2020, 1, 1, minute ~/ 60 % 24, minute % 60));
+}
 
-  Color _spaceColor(BuildContext context) {
-    for (final space in spaces) {
-      if (space.id == occurrence.entry.spaceId) return Color(space.colorValue);
-    }
-    return context.mc.accent;
+Color _spaceColorFor(BuildContext context, EntryOccurrence occurrence, List<Space> spaces) {
+  for (final space in spaces) {
+    if (space.id == occurrence.entry.spaceId) return Color(space.colorValue);
   }
+  return context.mc.accent;
 }
 
 class _ResizeHandle extends StatefulWidget {
-  const _ResizeHandle({required this.color, required this.onResize});
+  const _ResizeHandle({
+    required this.color,
+    required this.onDelta,
+    required this.onEnd,
+    required this.onCancel,
+  });
 
   final Color color;
-  final ValueChanged<int> onResize;
+  final ValueChanged<int> onDelta;
+  final VoidCallback onEnd;
+  final VoidCallback onCancel;
 
   @override
   State<_ResizeHandle> createState() => _ResizeHandleState();
@@ -666,12 +982,23 @@ class _ResizeHandleState extends State<_ResizeHandle> {
       cursor: SystemMouseCursors.resizeUpDown,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onVerticalDragStart: (_) => _delta = 0,
-        onVerticalDragUpdate: (details) => _delta += details.delta.dy,
-        onVerticalDragEnd: (_) {
-          final minutes = (_delta / _WeekTimeGridState.hourHeight * 60).round();
-          if (minutes.abs() >= 5) widget.onResize(minutes);
+        supportedDevices: _resizeDevices,
+        dragStartBehavior: DragStartBehavior.down,
+        onVerticalDragStart: (_) {
           _delta = 0;
+          widget.onDelta(0);
+        },
+        onVerticalDragUpdate: (details) {
+          _delta += details.delta.dy;
+          widget.onDelta((_delta / _WeekTimeGridState.hourHeight * 60).round());
+        },
+        onVerticalDragEnd: (_) {
+          _delta = 0;
+          widget.onEnd();
+        },
+        onVerticalDragCancel: () {
+          _delta = 0;
+          widget.onCancel();
         },
         child: Center(
           child: Container(
@@ -688,20 +1015,44 @@ class _ResizeHandleState extends State<_ResizeHandle> {
   }
 }
 
+class _EntryDrag {
+  const _EntryDrag({
+    required this.occurrence,
+    required this.dayIndex,
+    required this.startMinute,
+    required this.durationMinutes,
+    required this.grabMinutes,
+  });
+
+  final EntryOccurrence occurrence;
+  final int dayIndex;
+  final int startMinute;
+  final int durationMinutes;
+  final int grabMinutes;
+
+  _EntryDrag copyWith({int? dayIndex, int? startMinute}) => _EntryDrag(
+    occurrence: occurrence,
+    dayIndex: dayIndex ?? this.dayIndex,
+    startMinute: startMinute ?? this.startMinute,
+    durationMinutes: durationMinutes,
+    grabMinutes: grabMinutes,
+  );
+}
+
 class _ShiftRender {
   const _ShiftRender({
     required this.shift,
-    required this.rects,
+    required this.rect,
+    required this.labelTop,
     required this.fillColor,
     required this.stripeColor,
-    required this.overlaps,
   });
 
   final ShiftOccurrence shift;
-  final List<Rect> rects;
+  final Rect rect;
+  final double labelTop;
   final Color fillColor;
   final Color stripeColor;
-  final bool overlaps;
 }
 
 class _AllDayChip extends StatelessWidget {
@@ -726,7 +1077,7 @@ class _AllDayChip extends StatelessWidget {
           occurrence.entry.title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: ManeType.label(8, color: color),
+          style: SundialType.label(8, color: color),
         ),
       ),
     );

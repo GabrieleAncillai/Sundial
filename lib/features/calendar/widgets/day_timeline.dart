@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
@@ -11,8 +11,9 @@ import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
-import '../../shifts/shift_lane_layout.dart';
-import '../../shifts/shift_lane_painter.dart';
+import '../../calendar/widgets/open_end_entry_block.dart';
+import '../../shifts/shift_block_layout.dart';
+import '../../shifts/shift_block_painter.dart';
 import '../../shifts/shift_palette.dart';
 import '../../shifts/widgets/shift_checklist_view.dart';
 
@@ -43,6 +44,8 @@ class DayTimeline extends ConsumerStatefulWidget {
 }
 
 class _DayTimelineState extends ConsumerState<DayTimeline> {
+  static const _labelLineHeight = 14.0;
+
   final _scroll = ScrollController();
 
   @override
@@ -118,7 +121,7 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
             Expanded(
               child: Text(
                 formatFullDate(context, day.toDateTime()),
-                style: ManeType.title(15, color: c.text),
+                style: SundialType.title(15, color: c.text),
               ),
             ),
             GlassIconButton(icon: Icons.add, tooltip: l10n.addOnThisDay, size: 34, onTap: widget.onAdd),
@@ -140,7 +143,7 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
                   ),
                   child: Text(
                     entry.entry.title,
-                    style: ManeType.body(11.5, weight: FontWeight.w700, color: c.text),
+                    style: SundialType.body(11.5, weight: FontWeight.w700, color: c.text),
                   ),
                 ),
             ],
@@ -195,7 +198,7 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
                                                 ? ''
                                                 : TimeOfDay(hour: hour, minute: 0).format(context),
                                             textAlign: TextAlign.right,
-                                            style: ManeType.label(9.5, color: c.textTertiary),
+                                            style: SundialType.label(9.5, color: c.textTertiary),
                                           ),
                                         ),
                                       ),
@@ -213,17 +216,15 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
                                 Positioned.fill(
                                   child: IgnorePointer(
                                     child: CustomPaint(
-                                      painter: ShiftLanePainter(
+                                      painter: ShiftBlockPainter(
                                         blocks: [
                                           for (final render in shiftRenders)
-                                            ShiftLanePaintBlock(
-                                              rects: render.rects,
+                                            ShiftBlockPaint(
+                                              rect: render.rect,
                                               fillColor: render.fillColor,
                                               stripeColor: render.stripeColor,
-                                              overlaps: render.overlaps,
                                             ),
                                         ],
-                                        warningColor: c.danger.withValues(alpha: 0.65),
                                         cornerRadius: 10,
                                         stripeWidth: 3,
                                       ),
@@ -231,22 +232,21 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
                                   ),
                                 ),
                               for (final render in shiftRenders)
-                                if (render.rects.isNotEmpty)
-                                  Positioned(
-                                    left: render.rects.first.left + 7,
-                                    top: render.rects.first.top + 5,
-                                    width: math.max(0.0, render.rects.first.width - 10),
-                                    child: IgnorePointer(
-                                      child: Text(
-                                        render.shift.pattern.name,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: ManeType.body(11, weight: FontWeight.w700, color: c.text),
-                                      ),
+                                Positioned(
+                                  left: render.rect.left + 7,
+                                  top: render.labelTop,
+                                  width: math.max(0.0, render.rect.width - 10),
+                                  child: IgnorePointer(
+                                    child: Text(
+                                      render.shift.pattern.name,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: SundialType.body(11, weight: FontWeight.w700, color: c.text),
                                     ),
                                   ),
+                                ),
                               for (final entry in timedEntries)
-                                _entryBlock(context, entry, dayStart, dayEnd, c, timelineHeight),
+                                _entryBlock(context, entry, dayStart, dayEnd, timeZone, c, timelineHeight),
                               for (final entry in deadlineEntries)
                                 _deadlineBlock(context, entry, dayStart, dayEnd, timeZone, c, timelineHeight),
                               if (now.isAfter(dayStart) && now.isBefore(dayEnd))
@@ -306,7 +306,7 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
     DateTime dayStart,
     DateTime dayEnd,
     String timeZone,
-    ManeColors c,
+    SundialColors c,
     double height,
   ) {
     final due = entry.endAt!;
@@ -335,10 +335,10 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
                 entry.entry.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: ManeType.label(10.5, color: c.warning),
+                style: SundialType.label(10.5, color: c.warning),
               ),
             ),
-            Text(time, style: ManeType.label(9.5, color: c.warning)),
+            Text(time, style: SundialType.label(9.5, color: c.warning)),
           ],
         ),
       ),
@@ -366,27 +366,34 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
         end: end.difference(dayStart).inMinutes,
       ));
     }
-    final layouts = layoutShiftLanes([
-      for (final item in bounds) ShiftLaneInterval(startMinute: item.start, endMinute: item.end),
+    final blocks = orderShiftBlocks([
+      for (final item in bounds) ShiftBlockSpan(startMinute: item.start, endMinute: item.end),
     ]);
-    return [
-      for (var index = 0; index < bounds.length; index++)
+    final labelOffsets = shiftLabelOffsets(
+      blocks,
+      labelMinuteHeight: (_labelLineHeight / DayTimeline.hourHeight * 60).ceil(),
+    );
+    final renders = <_ShiftRender>[];
+    for (var position = 0; position < blocks.length; position++) {
+      final block = blocks[position];
+      final item = bounds[block.index];
+      final top = block.startMinute / 60 * DayTimeline.hourHeight;
+      renders.add(
         _ShiftRender(
-          shift: bounds[index].shift,
-          rects: [
-            for (final segment in layouts[index].segments)
-              Rect.fromLTWH(
-                leftGutter + shiftLaneLeft(available, segment.lane, segment.laneCount),
-                segment.startMinute / 60 * DayTimeline.hourHeight,
-                shiftLaneWidth(available, segment.laneCount),
-                (segment.endMinute - segment.startMinute) / 60 * DayTimeline.hourHeight,
-              ),
-          ],
-          fillColor: shiftSoftColor(context, bounds[index].shift.pattern, widget.contexts),
-          stripeColor: shiftColor(context, bounds[index].shift.pattern, widget.contexts),
-          overlaps: layouts[index].overlaps,
+          shift: item.shift,
+          rect: Rect.fromLTWH(
+            leftGutter,
+            top,
+            available,
+            (block.endMinute - block.startMinute) / 60 * DayTimeline.hourHeight,
+          ),
+          labelTop: top + 5 + labelOffsets[position] / 60 * DayTimeline.hourHeight,
+          fillColor: shiftSoftColor(context, item.shift.pattern, widget.contexts),
+          stripeColor: shiftColor(context, item.shift.pattern, widget.contexts),
         ),
-    ];
+      );
+    }
+    return renders;
   }
 
   Widget _entryBlock(
@@ -394,20 +401,35 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
     EntryOccurrence entry,
     DateTime dayStart,
     DateTime dayEnd,
-    ManeColors c,
+    String timeZone,
+    SundialColors c,
     double height,
   ) {
     final start = entry.startAt!;
+    final openEnded = entry.endAt == null;
     final end = entry.endAt ?? start;
     final clippedStart = start.isBefore(dayStart) ? dayStart : start;
     final clippedEnd = end.isAfter(dayEnd) ? dayEnd : end;
-    if (!clippedEnd.isAfter(clippedStart)) return const SizedBox.shrink();
+    if (!openEnded && !clippedEnd.isAfter(clippedStart)) return const SizedBox.shrink();
     final top = clippedStart.difference(dayStart).inMinutes / 60 * DayTimeline.hourHeight;
+    final color = c.forSpace(entry.entry.spaceId);
+    if (openEnded) {
+      return Positioned(
+        left: 72,
+        right: 20,
+        top: top,
+        child: OpenEndEntryBlock(
+          title: entry.entry.title,
+          color: color,
+          timeLabel: '${_time(context, clippedStart, timeZone)} –',
+          outlined: true,
+        ),
+      );
+    }
     final blockHeight = (clippedEnd.difference(clippedStart).inMinutes / 60 * DayTimeline.hourHeight).clamp(
       22.0,
       height,
     );
-    final color = c.forSpace(entry.entry.spaceId);
     return Positioned(
       left: 72,
       right: 20,
@@ -425,25 +447,29 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
           entry.entry.title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: ManeType.body(11.5, weight: FontWeight.w700, color: c.text),
+          style: SundialType.body(11.5, weight: FontWeight.w700, color: c.text),
         ),
       ),
     );
   }
+
+  String _time(BuildContext context, DateTime instant, String timeZone) => DateFormat.Hm(
+    Localizations.localeOf(context).toLanguageTag(),
+  ).format(localDateTimeAt(instant, timeZone));
 }
 
 class _ShiftRender {
   const _ShiftRender({
     required this.shift,
-    required this.rects,
+    required this.rect,
+    required this.labelTop,
     required this.fillColor,
     required this.stripeColor,
-    required this.overlaps,
   });
 
   final ShiftOccurrence shift;
-  final List<Rect> rects;
+  final Rect rect;
+  final double labelTop;
   final Color fillColor;
   final Color stripeColor;
-  final bool overlaps;
 }

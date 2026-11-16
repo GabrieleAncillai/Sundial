@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/core/i18n/l10n.dart';
-import 'package:mane/theme/app_theme.dart';
-import 'package:mane/widgets/entry_widgets.dart';
-import 'package:mane/state/providers.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/core/i18n/l10n.dart';
+import 'package:sundial/theme/app_theme.dart';
+import 'package:sundial/widgets/entry_widgets.dart';
+import 'package:sundial/state/providers.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 void main() {
   setUpAll(initializeTimeZones);
@@ -17,7 +17,7 @@ void main() {
   Widget host(Widget child, {String timeZone = 'Europe/Madrid'}) => ProviderScope(
     overrides: [deviceTimeZoneProvider.overrideWith(() => DeviceTimeZoneController(initial: timeZone))],
     child: MaterialApp(
-      theme: ManeTheme.light,
+      theme: SundialTheme.light,
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -72,6 +72,30 @@ void main() {
     );
 
     expect(find.textContaining('All day'), findsOneWidget);
+  });
+
+  testWidgets('an entry without an end shows its start and an open dash', (tester) async {
+    final entry = Entry(
+      id: 'clock',
+      spaceId: 'work',
+      title: 'Open task',
+      date: monday,
+      startMinute: 9 * 60,
+      timeZone: 'Europe/Madrid',
+      createdAt: createdAt,
+      updatedAt: createdAt,
+    );
+    final occurrence = EntryOccurrence(
+      date: monday,
+      displayDate: monday,
+      entry: entry,
+      startAt: entry.startAt,
+    );
+
+    await tester.pumpWidget(host(EntryTile(occurrence: occurrence, spaces: spaces)));
+
+    expect(find.textContaining('9:00'), findsOneWidget);
+    expect(find.textContaining('All day'), findsNothing);
   });
 
   testWidgets('an imported entry is read-only and explains why', (tester) async {

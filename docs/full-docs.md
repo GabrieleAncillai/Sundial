@@ -1,4 +1,4 @@
-# Mane: full docs
+# Sundial: full docs
 
 Status: v0.9, MCP, LAN reliability and notification controls. Last updated
 2026-11-09. The active completion program is in
@@ -10,7 +10,7 @@ The file-by-file map of the reference projects is in
 [reference-map.md](reference-map.md). Nothing in this document is more important
 than the app being useful.
 
-## 1. What Mane is
+## 1. What Sundial is
 
 A personal planner for the week and month as they actually happen. One app,
 three spaces: Personal, Work and Home.
@@ -28,8 +28,8 @@ is the same evening*.
 
 ## 2. One app, three spaces
 
-An earlier version of this plan had HomeMane and WorkMane as two apps, and then
-one app with Home and Work spaces. The current decision is one app with three
+An earlier version of this plan had separate Home and Work apps, and then one
+app with Home and Work spaces. The current decision is one app with three
 spaces:
 
 - **Personal:** taxes, phone and utility bills, renewals, personal todos,
@@ -101,12 +101,14 @@ completion for recurring things. The shift-pattern engine and editor are built
 and tested, including cycles, multiple slots per day, overnight slots and date
 exceptions. A pattern can carry a checklist, and each shift date stores its own
 completions. Read-only ICS import is shipped with a documented RRULE subset.
-Overlapping shifts split into side-by-side lanes only for the time they share;
-the rest of each shift stays full width. The desktop week grid and the day
-timeline draw the result as one continuous stepped block, with a warning
-outline around the union. The editor still blocks overlaps inside one pattern;
-overlaps between two patterns stay allowed because they can be intentional, but
-they no longer hide each other.
+Overlapping shifts stay full-width blocks: the later shift paints its
+translucent fill over the earlier one, so the shared minutes read as a blended
+tint instead of a split column, and labels that would collide stack one line
+apart. An entry with a start time and no end renders as a fixed-height block
+with a dashed bottom edge, so it reads as continuing rather than having a short
+duration. The editor still blocks overlaps inside one pattern; overlaps between
+two patterns stay allowed because they can be intentional, but they no longer
+hide each other.
 
 **Shift example.** A 14-day cycle or per-date exceptions must express:
 
@@ -226,7 +228,7 @@ This supersedes the earlier wall-clock model and is implemented in v0.1.5.
   changes, the displayed local time and possibly the displayed date shift. That
   is intended.
 - Recurrence expands in the stored IANA timezone, then converts each occurrence
-  to an absolute instant. `packages/mane_core` owns that rule; the database only
+  to an absolute instant. `packages/sundial_core` owns that rule; the database only
   supplies rows and completions.
 - Shift patterns store a workplace timezone and local slot times, then expand
   to instants the same way. Exceptions are applied before expansion.
@@ -290,14 +292,14 @@ gate, not a defense against someone holding the unlocked device.
 Each app owns its data. The planner owns time. A companion app owns its own
 domain.
 
-Sync is a query: Mane asks a paired device for the data it needs over the LAN
+Sync is a query: Sundial asks a paired device for the data it needs over the LAN
 and shows a read-only snapshot. It never merges rows, resolves conflicts or
 writes into the remote database. The schema stays sync-ready (UUIDs,
 `updatedAt`, soft deletes), but replication and CRDTs are not part of v0.4.
 
 Shipped transport and discovery:
 
-- mDNS/DNS-SD advertisement and browsing through Bonsoir (`_mane._tcp`), with a
+- mDNS/DNS-SD advertisement and browsing through Bonsoir (`_sundial._tcp`), with a
   manual host and port fallback when the platform daemon is unavailable.
 - HTTPS with the device's pinned self-signed certificate. The server binds to
   the LAN and uses an ephemeral port; only paired devices with a valid HMAC
@@ -340,13 +342,13 @@ MCP listener is not part of v0.9.
 ### 5.6 Companion apps
 
 When another app already owns a domain, the integration is read-only and
-local. Mane ships a small JSON export import for that case: the user picks a
+local. Sundial ships a small JSON export import for that case: the user picks a
 file, chooses a space, and the rows become read-only entries with
 `source = 'companion'`. The format is documented in
 [companion import](#companion-export-format) below and tested with fixtures.
 There is no network listener, no permission request and no background service.
 
-Mane works without the companion app; manual entry and ICS import remain
+Sundial works without the companion app; manual entry and ICS import remain
 available. A ContentProvider client is not shipped because no specific
 companion app and authority were named; the export path is the v0.4 answer.
 
@@ -435,7 +437,7 @@ Recurrence rules support daily with an interval, weekly by ISO weekday with an
 interval, monthly on a day (clamped to the month length), and yearly (February 29
 falls on February 28 in normal years). `until` is inclusive. `count` counts the
 anchor as the first occurrence. Expand in the stored timezone, then convert to
-instants. The pure functions live in `packages/mane_core`; the database calls
+instants. The pure functions live in `packages/sundial_core`; the database calls
 them instead of reimplementing them.
 
 This is not a full RFC 5545 implementation. It is the subset the app can explain
@@ -475,7 +477,7 @@ Flutter 3.38 and Dart 3.10, one codebase for Android and Linux desktop. Drift
 over SQLite for storage, Riverpod for state, Material 3 for the UI.
 
 GymMane and Streak by InlitX are the primary references for this project. They
-already solve most of the problems Mane has, and they are the default answer for
+already solve most of the problems Sundial has, and they are the default answer for
 every blocker. Before writing a new widget, screen, service, notification,
 backup path, settings page, animation or build step, open the equivalent in
 both repos and reuse or adapt it. The mapping is in
@@ -497,7 +499,7 @@ are a good fit for their domains, but the planner needs date-range queries,
 a join between entries and per-occurrence completions, and a transactional
 backup import. Drift gives those directly, and the generated schema is what
 makes the v1 to v2 migration test possible. Riverpod's provider overrides keep
-`now`, the device timezone and the database injectable in tests. Mane will not
+`now`, the device timezone and the database injectable in tests. Sundial will not
 run a second state-management system; feature state stays in Riverpod
 providers, and the repository seam stays the only read/write path. The feature
 folder split from Streak is still the target layout; files move there when a
@@ -511,13 +513,13 @@ lib/
 ├── core/         shared widgets, extensions, i18n and routing
 ├── features/     calendar, entries, shifts, tags, home_inventory, settings,
 │                 backup, sync, mcp
-├── models/       plain data classes that are not in mane_core
+├── models/       plain data classes that are not in sundial_core
 ├── services/     database, repository, platform side effects
 ├── state/        shared app state
-├── theme/        ManeColors, light/dark ThemeData
+├── theme/        SundialColors, light/dark ThemeData
 └── l10n/         ARB files and generated strings
 packages/
-└── mane_core/    pure Dart domain model, recurrence and shift rules
+└── sundial_core/    pure Dart domain model, recurrence and shift rules
 ```
 
 The current flat `lib/screens` and `lib/widgets` layout is a starting point.
@@ -529,7 +531,7 @@ ARB setup in GymMane and Streak: `l10n.yaml`, `lib/l10n/app_en.arb`,
 `lib/l10n/app_es.arb` and a generated `AppLocalizations`. Do not leave
 user-facing literals in widgets once the ARB layer exists.
 
-Mane is GPL-3.0-only, the same as GymMane and Streak. Keep the license, the
+Sundial is GPL-3.0-only, the same as GymMane and Streak. Keep the license, the
 additional attribution terms and the About screen credit. If code is copied or
 closely adapted, add the upstream attribution to `CREDITS.md` and the About
 screen.
@@ -577,7 +579,7 @@ exceptions expands correctly; all tests and both builds pass.
 **Deviation from the references:** GymMane and Streak both use wall-clock
 `DateTime` values for schedules and reminders. Neither has timezone-aware
 recurrence, flexible shift cycles, multiple slots per day or shift exceptions.
-Mane implements those rules in `mane_core` (`src/time.dart`, `src/entry.dart`,
+Sundial implements those rules in `sundial_core` (`src/time.dart`, `src/entry.dart`,
 `src/entry_expander.dart`, `src/shift_pattern.dart`) because the planner is the
 product's core domain. The references remain the source for the app shell,
 theme, settings, notifications and release work.
@@ -622,7 +624,7 @@ theme, settings, notifications and release work.
 - [x] Default reminder lead times.
 - [x] Data/backup location and export entry point.
 - [x] Sync and MCP switches, both off by default.
-- [x] About screen with GPL-3.0 and upstream attribution.
+- [x] About screen with GPL-3.0 and upstream inspiration credit.
 
 **Backup**
 
@@ -692,7 +694,7 @@ does not update an event that changed in the source file.
 
 **Deviation from the references:** neither GymMane nor Streak has home
 inventory, ICS import, interval maintenance, a sleep window or shift checklists.
-These are planner-specific domains and are implemented in `mane_core`
+These are planner-specific domains and are implemented in `sundial_core`
 (`src/sleep.dart`), the repository and the `home_inventory`, `import` and
 `shifts` feature folders. The app shell, settings rows and localization still
 follow the reference patterns.
@@ -730,7 +732,7 @@ authority were specified.
 
 **Deviation from the references:** neither GymMane nor Streak has LAN pairing,
 mDNS query, MCP or a companion export import. Their only sync is a shared-folder
-backup exchange. Mane implements the v0.4 transport in `lib/features/sync` and
+backup exchange. Sundial implements the v0.4 transport in `lib/features/sync` and
 `lib/features/mcp` using standard TLS pinning, HMAC and PBKDF2 rather than a
 new cryptographic protocol. The settings shell and page structure still follow
 the reference projects.
@@ -752,7 +754,7 @@ the reference projects.
   GitHub release and documented keystore secrets.
 
 **Shipped in v0.5:** global search in `features/search`; an Android widget with
-`home_widget`, a Kotlin `ManeTodayWidgetProvider` and a static layout; error
+`home_widget`, a Kotlin `SundialTodayWidgetProvider` and a static layout; error
 banners on the calendar and week; localized semantics for calendar days and
 shifts; `Ctrl+F` and `Ctrl+1..3` shortcuts; ARB parity plus a literal-scanner
 test; an O(1) recurrence ordinal; `.github/workflows/release.yml` and
@@ -765,25 +767,25 @@ Everything shipped in v0.5 is tested and documented, but v1.0 has a wider scope.
 ### v0.6 Visual foundation and truth pass (done)
 
 - [x] Bundle the reference font family and a real type scale.
-- [x] Apply `ManeColors` through `context.mc` and add component themes.
+- [x] Apply `SundialColors` through `context.mc` and add component themes.
 - [x] Port the shared UI kit and the reference-style shell.
 - [x] Sweep every shipped screen to use the kit.
 - [x] Add shell/component smoke or golden tests.
 - [x] Correct the reference map and screenshots.
 
-**Shipped in v0.6:** Nunito and the `ManeType` scale; a hand-authored palette
+**Shipped in v0.6:** Nunito and the `SundialType` scale; a hand-authored palette
 with space, state, glass, nav and shadow tokens; component themes for app bar,
 cards, sheets, dialogs, snack bars, navigation, buttons, inputs, chips, switches,
 date and time pickers; the `lib/core/widgets` kit (`SoftCard`, `AppSheet`,
 `SectionLabel`, `Pressable`, `TinySwitch`, `GlassSurface`, `AppEmptyState`,
-`ManeNotice`, `FadeThrough`, `ManePage`, `ManeNavBar`, `ManeSegmented`,
-`ManeSearchField`); the dotted paper background; the floating shell; the screen
+`SundialNotice`, `FadeThrough`, `SundialPage`, `SundialNavBar`, `SundialSegmented`,
+`SundialSearchField`); the dotted paper background; the floating shell; the screen
 sweep; `test/visual_kit_test.dart`; and `docs/screenshots/`.
 
-**Deviation from the references:** Mane keeps GymMane's Nunito, warm palette,
+**Deviation from the references:** Sundial keeps GymMane's Nunito, warm palette,
 round cards and settings rows, and Streak's floating nav, sheet motion and type
 hierarchy. It does not copy GymMane's photo/dot background picker or Streak's
-three selectable nav designs; those are product options Mane does not ship. The
+three selectable nav designs; those are product options Sundial does not ship. The
 result is the adapted reference language, not a new visual identity.
 
 ### v0.7 Calendar, recurrence and shift completeness (done)
@@ -830,7 +832,7 @@ shopping and inventory with quoting, dedupe and explicit reports. Shopping is
 grouped by the linked item's category/location with clear-bought and manual
 reorder; inventory has ±1 adjustment, the existing low-stock card and a
 purchase-history sheet; maintenance has a due/upcoming page with one-tap
-completion. `features/app_lock` adapts Streak's PIN pad to the Mane kit and
+completion. `features/app_lock` adapts Streak's PIN pad to the Sundial kit and
 reuses the PBKDF2 PIN primitive, with a 30-second resume grace and a 30-second
 lockout after five misses.
 
@@ -849,11 +851,11 @@ therefore opt-in. CSV import deduplicates by title/date/start for entries and
 by name for shopping/inventory; it does not merge changed rows.
 
 **Deviation from the references:** Streak's lock includes biometrics and a
-recovery code; Mane ships only the local PIN, because the planner must stay
+recovery code; Sundial ships only the local PIN, because the planner must stay
 account-free and portable. GymMane has no import consumer for another app's
 weekly plan, so the read-only adapter is planner-specific. The backup rotation
 follows GymMane's `auto_backup.dart`, but writes a plain JSON document because
-Mane's backup is already canonical and readable.
+Sundial's backup is already canonical and readable.
 
 ### v0.9 MCP, LAN sync and notification reliability (done)
 
@@ -906,12 +908,12 @@ an external change can still fire until the next launch/resume rebuild.
 **Deviation from the references:** neither GymMane nor Streak implements MCP or
 LAN query, so the tool and session surface is planner-specific and documented
 in the MCP page and this file. Streak's notification actions informed the
-snooze/complete shape, but Mane keeps the action handler in the app so the same
+snooze/complete shape, but Sundial keeps the action handler in the app so the same
 repository rules apply as the UI.
 
 ### v1.0 finish line
 
-Mane is v1.0 when v0.1.5 through v0.9 are complete, every generalized scenario in
+Sundial is v1.0 when v0.1.5 through v0.9 are complete, every generalized scenario in
 [completion-plan.md](completion-plan.md) passes, the visual layer follows the
 references or documents a deviation, the real-device checklist passes, and
 `flutter analyze`, both test suites, the format check and both platform builds
@@ -924,12 +926,12 @@ host/port fallback, MCP, JSON backup and the entry CSV round-trip after fixing
 duplication, and app lock after fixing a pushed-route bypass. It also fixed
 notification actions and snooze survival. The widget and OEM battery checks
 still need the user. Reboot rescheduling fails on EMUI because `BOOT_COMPLETED`
-does not reach the plugin receiver; opening Mane rebuilds the queue without
+does not reach the plugin receiver; opening Sundial rebuilds the queue without
 duplicates. See [device-run-2026-11-09.md](device-run-2026-11-09.md).
 
 ## 10. Contributing
 
-Mane is open source under GPL-3.0-only. Pull requests are welcome. Read
+Sundial is open source under GPL-3.0-only. Pull requests are welcome. Read
 [CONTRIBUTING.md](../CONTRIBUTING.md) before starting. If you are a coding agent,
 start from [AGENTS.md](../AGENTS.md), the self-contained project brief. Before
 building anything, check [reference-map.md](reference-map.md) for the equivalent
@@ -1026,7 +1028,7 @@ status. The important architecture additions are:
   the same task can be resumed on a later day; `finishTracked` is the explicit
   end-time path.
 - `showAppSheet` is a bottom sheet below 900 logical pixels and a blurred
-  floating dialog above it. The shared `ManeSelectField`/`showManeSelectSheet`
+  floating dialog above it. The shared `SundialSelectField`/`showSundialSelectSheet`
   replace stock dropdowns in the entry, shift, project and category forms.
 - Rendered evidence lives in [screenshots/](screenshots/):
   `v1.0-today-list-light.png`, `v1.0-today-timeline-light.png`,
@@ -1080,6 +1082,11 @@ paths the audit found unsafe. The row-by-row status is in
   Weekly habit streaks count the current qualifying week and consecutive
   previous weeks; habits carry a weekday schedule and a 12-week history.
   Editing a recurring occurrence writes an override instead of the series.
+- **Plan week-grid interactions.** Dragging an entry moves a full-size,
+  15-minute-snapped preview across days while the source stays as a faint
+  placeholder; the moved block is held until the repository update lands.
+  Touch and pen hold before dragging, trackpad pans scroll without creating a
+  slot, and the bottom edge resizes with live height and time feedback.
 - **Backup and recovery details.** Delete-all removes purchase rows before their
   shopping lines (the foreign-key order), imports validate enum names,
   timezones and recurrence JSON before writing, and a restore only removes media
