@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/l10n.dart';
-import '../../../core/icons/mane_icons.dart';
+import '../../../core/icons/sundial_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
@@ -71,7 +71,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
                 validator: (value) => value == null || value.trim().isEmpty ? l10n.tagNameRequired : null,
               ),
               const SizedBox(height: 12),
-              ManeSelectField(
+              SundialSelectField(
                 label: l10n.tagSpace,
                 valueLabel: _spaceId == null
                     ? l10n.tagSpaceAny
@@ -79,14 +79,14 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
                           l10n.tagSpaceAny,
                 leading: const Icon(Icons.space_dashboard_outlined),
                 onTap: () async {
-                  final picked = await showManeSelectSheet<String>(
+                  final picked = await showSundialSelectSheet<String>(
                     context: context,
                     title: l10n.tagSpace,
                     selected: _spaceId ?? '',
                     options: [
-                      ManeSelectOption(value: '', label: l10n.tagSpaceAny),
+                      SundialSelectOption(value: '', label: l10n.tagSpaceAny),
                       for (final space in widget.spaces)
-                        ManeSelectOption(
+                        SundialSelectOption(
                           value: space.id,
                           label: space.name,
                           leading: Container(
@@ -112,13 +112,13 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
                       color: tagColor(_color).withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(ManeIcons.resolve(_icon), size: 20, color: tagColor(_color)),
+                    child: Icon(SundialIcons.resolve(_icon), size: 20, color: tagColor(_color)),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       l10n.icon,
-                      style: ManeType.body(13, weight: FontWeight.w700, color: c.text),
+                      style: SundialType.body(13, weight: FontWeight.w700, color: c.text),
                     ),
                   ),
                   TextButton.icon(
@@ -126,7 +126,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
                       final picked = await showIconPicker(
                         context,
                         selected: _icon,
-                        recommended: ManeIcons.personalRecommended,
+                        recommended: SundialIcons.personalRecommended,
                       );
                       if (picked != null && mounted) setState(() => _icon = picked);
                     },
@@ -136,7 +136,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
                 ],
               ),
               const SizedBox(height: 12),
-              Text(l10n.tagColor, style: ManeType.label(12.5, color: c.textSecondary)),
+              Text(l10n.tagColor, style: SundialType.label(12.5, color: c.textSecondary)),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 10,
@@ -153,9 +153,20 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
                         decoration: BoxDecoration(
                           color: tagColor(color),
                           shape: BoxShape.circle,
-                          border: color == _color ? Border.all(color: c.text, width: 2.5) : null,
+                          border: Border.all(
+                            color: color == _color ? c.text : c.border,
+                            width: color == _color ? 2.5 : 1,
+                          ),
                         ),
-                        child: color == _color ? Icon(Icons.check, size: 18, color: c.onAccent) : null,
+                        child: color == _color
+                            ? Icon(
+                                Icons.check,
+                                size: 18,
+                                color: tagColor(color).computeLuminance() > 0.38
+                                    ? Colors.black87
+                                    : Colors.white,
+                              )
+                            : null,
                       ),
                     ),
                 ],

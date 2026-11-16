@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/l10n.dart';
@@ -98,13 +98,21 @@ class _ContextEditorSheetState extends ConsumerState<_ContextEditorSheet> {
         const SizedBox(height: 16),
         Row(
           children: [
-            ContextAvatar(icon: _icon, colorValue: _color, imagePath: _imagePath, size: 58, radius: 18),
+            ContextAvatarButton(
+              icon: _icon,
+              colorValue: _color,
+              imagePath: _imagePath,
+              size: 58,
+              radius: 18,
+              tooltip: l10n.chooseIcon,
+              onTap: _chooseIcon,
+            ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l10n.image, style: ManeType.label(12, color: c.textSecondary)),
+                  Text(l10n.image, style: SundialType.label(12, color: c.textSecondary)),
                   const SizedBox(height: 4),
                   Wrap(
                     spacing: 8,
@@ -134,15 +142,8 @@ class _ContextEditorSheetState extends ConsumerState<_ContextEditorSheet> {
           runSpacing: 10,
           children: [
             _OptionTile(
-              icon: Icons.category_outlined,
-              label: l10n.chooseIcon,
-              value: ManeIconsLabel.resolve(_icon),
-              onTap: _chooseIcon,
-            ),
-            _OptionTile(
               icon: Icons.palette_outlined,
               label: l10n.color,
-              value: '',
               color: Color(_color),
               onTap: _chooseColor,
             ),
@@ -267,17 +268,10 @@ class _ContextEditorSheetState extends ConsumerState<_ContextEditorSheet> {
 }
 
 class _OptionTile extends StatelessWidget {
-  const _OptionTile({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.onTap,
-    this.color,
-  });
+  const _OptionTile({required this.icon, required this.label, required this.onTap, this.color});
 
   final IconData icon;
   final String label;
-  final String value;
   final Color? color;
   final VoidCallback onTap;
 
@@ -306,18 +300,12 @@ class _OptionTile extends StatelessWidget {
               Icon(icon, size: 18, color: c.accent),
             const SizedBox(width: 8),
             Text(
-              value.isEmpty ? label : '$label · $value',
-              style: ManeType.body(12.5, weight: FontWeight.w700, color: c.text),
+              label,
+              style: SundialType.body(12.5, weight: FontWeight.w700, color: c.text),
             ),
           ],
         ),
       ),
     );
   }
-}
-
-/// Small helper so the editor shows the icon key rather than importing the
-/// catalog just for a label.
-abstract final class ManeIconsLabel {
-  static String resolve(String key) => key.replaceAll('_', ' ');
 }

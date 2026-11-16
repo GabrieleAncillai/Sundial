@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/l10n.dart';
@@ -107,19 +107,19 @@ class _ProjectEditorSheetState extends ConsumerState<_ProjectEditorSheet> {
         ),
         if (widget.contexts.isNotEmpty) ...[
           const SizedBox(height: 12),
-          ManeSelectField(
+          SundialSelectField(
             label: l10n.context,
             valueLabel:
                 widget.contexts.where((item) => item.id == _contextId).firstOrNull?.name ?? l10n.noContext,
             leading: const Icon(Icons.work_outline),
             onTap: () async {
-              final picked = await showManeSelectSheet<String>(
+              final picked = await showSundialSelectSheet<String>(
                 context: context,
                 title: l10n.context,
                 selected: _contextId ?? '',
                 options: [
-                  ManeSelectOption(value: '', label: l10n.noContext),
-                  for (final item in widget.contexts) ManeSelectOption(value: item.id, label: item.name),
+                  SundialSelectOption(value: '', label: l10n.noContext),
+                  for (final item in widget.contexts) SundialSelectOption(value: item.id, label: item.name),
                 ],
               );
               if (picked != null && mounted) {
@@ -131,7 +131,15 @@ class _ProjectEditorSheetState extends ConsumerState<_ProjectEditorSheet> {
         const SizedBox(height: 16),
         Row(
           children: [
-            ContextAvatar(icon: _icon, colorValue: _color, imagePath: _imagePath, size: 54, radius: 16),
+            ContextAvatarButton(
+              icon: _icon,
+              colorValue: _color,
+              imagePath: _imagePath,
+              size: 54,
+              radius: 16,
+              tooltip: l10n.chooseIcon,
+              onTap: _chooseIcon,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Wrap(
@@ -155,27 +163,11 @@ class _ProjectEditorSheetState extends ConsumerState<_ProjectEditorSheet> {
           ],
         ),
         const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _ProjectOption(
-                icon: Icons.category_outlined,
-                label: l10n.icon,
-                value: _icon.replaceAll('_', ' '),
-                onTap: _chooseIcon,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _ProjectOption(
-                icon: Icons.palette_outlined,
-                label: l10n.color,
-                value: '',
-                color: Color(_color),
-                onTap: _chooseColor,
-              ),
-            ),
-          ],
+        _ProjectOption(
+          icon: Icons.palette_outlined,
+          label: l10n.color,
+          color: Color(_color),
+          onTap: _chooseColor,
         ),
         const SizedBox(height: 22),
         FilledButton(
@@ -298,17 +290,10 @@ class _ProjectEditorSheetState extends ConsumerState<_ProjectEditorSheet> {
 }
 
 class _ProjectOption extends StatelessWidget {
-  const _ProjectOption({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.onTap,
-    this.color,
-  });
+  const _ProjectOption({required this.icon, required this.label, required this.onTap, this.color});
 
   final IconData icon;
   final String label;
-  final String value;
   final Color? color;
   final VoidCallback onTap;
 
@@ -337,10 +322,10 @@ class _ProjectOption extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                value.isEmpty ? label : value,
+                label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: ManeType.body(12.5, weight: FontWeight.w700, color: c.text),
+                style: SundialType.body(12.5, weight: FontWeight.w700, color: c.text),
               ),
             ),
           ],

@@ -21,7 +21,7 @@ class AppBackground extends StatelessWidget {
 
   final Widget? child;
   final bool showDots;
-  final ManeBackgroundStyle? style;
+  final SundialBackgroundStyle? style;
   final Color? customColor;
   final bool? aero;
   final bool? performanceMode;
@@ -30,19 +30,19 @@ class AppBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.mc;
     final preferences = AppSettingsScope.maybeOf(context);
-    final resolvedStyle = style ?? preferences?.backgroundStyle ?? ManeBackgroundStyle.dots;
+    final resolvedStyle = style ?? preferences?.backgroundStyle ?? SundialBackgroundStyle.dots;
     final resolvedAero = aero ?? preferences?.isAero ?? false;
     final reducedMotion = performanceMode ?? preferences?.performanceMode ?? false;
     final dark = Theme.of(context).brightness == Brightness.dark;
     final base = switch (resolvedStyle) {
-      ManeBackgroundStyle.oled => Colors.black,
-      ManeBackgroundStyle.custom =>
+      SundialBackgroundStyle.oled => Colors.black,
+      SundialBackgroundStyle.custom =>
         customColor ?? Color(preferences?.backgroundCustomColor ?? c.pageBg.toARGB32()),
       _ => resolvedAero ? const Color(0xFFE7F7FF) : c.pageBg,
     };
     final pattern = switch (resolvedStyle) {
-      ManeBackgroundStyle.dots => showDots ? _Pattern.dots : _Pattern.none,
-      ManeBackgroundStyle.grid => _Pattern.grid,
+      SundialBackgroundStyle.dots => showDots ? _Pattern.dots : _Pattern.none,
+      SundialBackgroundStyle.grid => _Pattern.grid,
       _ => _Pattern.none,
     };
 
@@ -99,10 +99,10 @@ class AppBackground extends StatelessWidget {
                 painter: _PatternPainter(
                   pattern: pattern,
                   color: resolvedAero
-                      ? Colors.white.withValues(alpha: 0.55)
+                      ? Colors.white.withValues(alpha: 0.65)
                       : dark
-                      ? Colors.white.withValues(alpha: 0.035)
-                      : Colors.black.withValues(alpha: 0.035),
+                      ? Colors.white.withValues(alpha: 0.09)
+                      : Colors.black.withValues(alpha: 0.075),
                 ),
               ),
             ),
@@ -166,8 +166,8 @@ class _PatternPainter extends CustomPainter {
 
   final _Pattern pattern;
   final Color color;
-  static const _gap = 28.0;
-  static const _radius = 1.0;
+  static const _gap = 24.0;
+  static const _radius = 1.5;
 
   @override
   void paint(Canvas canvas, Size size) {

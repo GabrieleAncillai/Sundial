@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/l10n.dart';
@@ -76,7 +76,7 @@ class _HabitEditorSheetState extends ConsumerState<_HabitEditorSheet> {
           decoration: InputDecoration(labelText: l10n.habitName),
         ),
         const SizedBox(height: 14),
-        Text(l10n.targetPerWeek, style: ManeType.label(12, color: c.textSecondary)),
+        Text(l10n.targetPerWeek, style: SundialType.label(12, color: c.textSecondary)),
         const SizedBox(height: 6),
         Wrap(
           spacing: 8,
@@ -91,7 +91,7 @@ class _HabitEditorSheetState extends ConsumerState<_HabitEditorSheet> {
           ],
         ),
         const SizedBox(height: 16),
-        Text(l10n.habitActiveDays, style: ManeType.label(12, color: c.textSecondary)),
+        Text(l10n.habitActiveDays, style: SundialType.label(12, color: c.textSecondary)),
         const SizedBox(height: 6),
         Wrap(
           spacing: 6,
@@ -114,13 +114,15 @@ class _HabitEditorSheetState extends ConsumerState<_HabitEditorSheet> {
         const SizedBox(height: 16),
         Row(
           children: [
-            ContextAvatar(icon: _icon, colorValue: _color, size: 46, radius: 14),
-            const SizedBox(width: 12),
-            TextButton.icon(
-              onPressed: _chooseIcon,
-              icon: const Icon(Icons.category_outlined, size: 18),
-              label: Text(l10n.chooseIcon),
+            ContextAvatarButton(
+              icon: _icon,
+              colorValue: _color,
+              size: 46,
+              radius: 14,
+              tooltip: l10n.chooseIcon,
+              onTap: _chooseIcon,
             ),
+            const SizedBox(width: 12),
             TextButton.icon(
               onPressed: _chooseColor,
               icon: const Icon(Icons.palette_outlined, size: 18),
@@ -245,11 +247,11 @@ class HabitCard extends ConsumerWidget {
                   children: [
                     Text(
                       habit.name,
-                      style: ManeType.body(14.5, weight: FontWeight.w700, color: c.text),
+                      style: SundialType.body(14.5, weight: FontWeight.w700, color: c.text),
                     ),
                     Text(
                       habit.isDaily ? l10n.streakDays(streak) : l10n.streakWeeks(streak),
-                      style: ManeType.label(10.5, color: c.textTertiary),
+                      style: SundialType.label(10.5, color: c.textTertiary),
                     ),
                   ],
                 ),
@@ -301,7 +303,7 @@ class HabitCard extends ConsumerWidget {
                   ),
                 ),
               const SizedBox(width: 8),
-              Text('$progress/${habit.cleanTarget}', style: ManeType.label(11, color: c.textSecondary)),
+              Text('$progress/${habit.cleanTarget}', style: SundialType.label(11, color: c.textSecondary)),
             ],
           ),
         ],
@@ -335,7 +337,7 @@ class _DayTick extends StatelessWidget {
       children: [
         Text(
           DateFormat.E(locale).format(date.toDateTime()).substring(0, 1),
-          style: ManeType.label(9, color: scheduled ? (today ? color : c.textTertiary) : c.textTertiary),
+          style: SundialType.label(9, color: scheduled ? (today ? color : c.textTertiary) : c.textTertiary),
         ),
         const SizedBox(height: 4),
         Pressable(
