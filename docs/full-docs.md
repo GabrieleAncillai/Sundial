@@ -86,6 +86,8 @@ needs to separate them without creating a new app.
 - A Work space with one entry per commitment.
 - Tags for jobs or projects, so the week can be filtered by context.
 - Shifts as background blocks. A shift is not a task and is not checked off.
+  It takes the colour of its job context, falling back to the Work colour when
+  the pattern has no context.
 - A shift pattern that can express any schedule the user can put in a calendar:
   fixed weekly, rotating N-day cycles, arbitrary cycle lengths, per-day start
   and end times, multiple slots per day, overnight shifts, and date exceptions.
@@ -99,6 +101,12 @@ completion for recurring things. The shift-pattern engine and editor are built
 and tested, including cycles, multiple slots per day, overnight slots and date
 exceptions. A pattern can carry a checklist, and each shift date stores its own
 completions. Read-only ICS import is shipped with a documented RRULE subset.
+Overlapping shifts split into side-by-side lanes only for the time they share;
+the rest of each shift stays full width. The desktop week grid and the day
+timeline draw the result as one continuous stepped block, with a warning
+outline around the union. The editor still blocks overlaps inside one pattern;
+overlaps between two patterns stay allowed because they can be intentional, but
+they no longer hide each other.
 
 **Shift example.** A 14-day cycle or per-date exceptions must express:
 
@@ -989,7 +997,10 @@ status. The important architecture additions are:
   rail on wide windows. The Plan page becomes a collapsible month/week calendar
   with a mobile list/timeline switch and a desktop week grid.
 - Settings are split into Appearance, Preferences, Data and backup, Online
-  functionalities and About, with a search field and no app-lock surface.
+  functionalities and About, with a search field and no app-lock surface. On
+  desktop the same sections become a master-detail split: the menu and search
+  stay in a left card while the selected panel renders beside it. Phones keep
+  the list-to-subpage flow.
 - Reports use a pure `ReportData` shape and a PDF/CSV writer, so the stats UI
   and the export path do not depend on Drift.
 - The app lock is removed: its feature folder and tests are deleted, no settings
@@ -1022,7 +1033,8 @@ status. The important architecture additions are:
   `v1.0-work-desktop.png`, `v1.0-plan-desktop.png`,
   `v1.0-stats-desktop.png`, `v1.0-personal-mobile.png`,
   `v1.0-settings-mobile.png`, `v1.0-appearance-mobile.png`,
-  `v1.2-today-aero.png` and `v1.2-preferences-mobile.png`.
+  `v1.2-today-aero.png`, `v1.2-preferences-mobile.png` and
+  `v1.3-settings-desktop.png`.
 
 ### Compliance v2 (2026-11-13)
 

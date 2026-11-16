@@ -115,6 +115,50 @@ separate due marker for deadlines.
 The v1.0 device/accessibility/release items from the earlier program remain in
 `docs/completion-plan.md`.
 
+## 2026-11-14 shift editor and job colours
+
+- Shift surfaces (Today list, Today/Plan timelines, the desktop week grid and
+  the month/week markers) now use the job context colour of each shift pattern
+  instead of the generic Work blue. Patterns without a context keep the Work
+  colour.
+- The desktop time dialog focuses its text field on open and selects the
+  prefilled value, so typing replaces the time immediately.
+- Leaving the shift editor with unsaved edits asks before discarding them. The
+  prompt is skipped when nothing changed, and saving or deleting still closes
+  the page without a second confirmation.
+- Validation: analyze clean, 219 app tests, 95 core tests, Linux debug and
+  Android debug APK pass. Updated screenshots: `v1.0-today-list-light.png`,
+  `v1.0-today-timeline-light.png` and `v1.0-plan-desktop.png`.
+
+## 2026-11-14 overlapping shift lanes
+
+- The desktop week grid and the day timeline now split overlapping shifts into
+  side-by-side lanes only for the shared slice. The rest of each shift stays
+  full width, so a partially overlapping block steps back to full width when
+  the collision ends.
+- Direct collisions get a single danger outline around the union of their
+  slices, so neither shift can disappear.
+- The slicing helper lives in `shift_lane_layout.dart` and the stepped painter
+  in `shift_lane_painter.dart`, with unit tests and widget coverage for both
+  layouts.
+- Cross-pattern overlaps stay allowed (they can be temporary or intentional),
+  but the calendar now shows the collision rather than silently stacking it.
+- Validation: analyze clean, 231 app tests, 95 core tests. Screenshot:
+  `docs/screenshots/v1.0-plan-overlap-desktop.png`.
+
+## 2026-11-14 desktop settings master-detail
+
+- On windows at the 900 px shell breakpoint and wider, Settings now keeps the
+  section menu and search in a left card and renders the selected panel on the
+  right. Phones keep the existing list-to-subpage flow unchanged.
+- The desktop menu covers Appearance, Preferences, Data and backup, Online
+  functionalities and About. Settings search still indexes individual rows and
+  opens the matching section with the row highlighted.
+- Appearance, Preferences, Data and About reuse the existing page bodies through
+  an embedded mode, so there is one implementation of every setting.
+- Validation: analyze clean, 230 app tests, 95 core tests. Screenshot:
+  `docs/screenshots/v1.3-settings-desktop.png`.
+
 ## Reference notes
 
 - Timezone resolution: Streak `lib/services/notification_service.dart`.

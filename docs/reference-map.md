@@ -87,7 +87,9 @@ git clone https://github.com/InlitX/streak.git ../Streak
   folder cards, category icons and habit controls adapt Streak's patterns.
 - **Responsive shell and week grid.** GymMane and Streak are phone-first. Mane's
   side rail follows Streak's `responsive.dart` idea, and the desktop week grid
-  is a planner-specific widget with move/resize/create gestures.
+  is a planner-specific widget with move/resize/create gestures. Overlapping
+  shifts split into side-by-side lanes only while they share time, then return
+  to full width, so a collision stays visible without wasting the column.
 - **Stats and report export.** Streak has habit statistics; neither reference
   has a Clockify-style tracked-time report. The dashboard uses Mane data and the
   PDF/CSV writer lives in `lib/features/stats/report_writer.dart`.
