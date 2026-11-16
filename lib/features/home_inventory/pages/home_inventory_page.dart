@@ -27,10 +27,10 @@ class HomeInventoryPage extends ConsumerWidget {
         : allItems.where((item) => item.contextId == contextId).toList();
     final lowStock = items.where((item) => item.isLowStock).toList();
 
-    return ManePage(
+    return SundialPage(
       title: l10n.homeInventory,
       subtitle: l10n.homeInventorySubtitle,
-      floatingAction: ManeAddButton(tooltip: l10n.addHomeItem, onTap: () => _addItem(context, ref)),
+      floatingAction: SundialAddButton(tooltip: l10n.addHomeItem, onTap: () => _addItem(context, ref)),
       child: items.isEmpty
           ? AppEmptyState(
               icon: Icons.inventory_2_outlined,
@@ -62,7 +62,7 @@ class HomeInventoryPage extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(l10n.homeInventorySubtitle, style: ManeType.body(12, color: c.textTertiary)),
+                  child: Text(l10n.homeInventorySubtitle, style: SundialType.body(12, color: c.textTertiary)),
                 ),
               ],
             ),
@@ -107,13 +107,16 @@ class _LowStockCard extends StatelessWidget {
             children: [
               Icon(Icons.inventory_2_outlined, size: 18, color: c.danger),
               const SizedBox(width: 8),
-              Text(l10n.lowStock, style: ManeType.label(13, color: c.danger)),
+              Text(l10n.lowStock, style: SundialType.label(13, color: c.danger)),
             ],
           ),
           const SizedBox(height: 5),
-          Text(l10n.lowStockCount(items.length), style: ManeType.body(11.5, color: c.textSecondary)),
+          Text(l10n.lowStockCount(items.length), style: SundialType.body(11.5, color: c.textSecondary)),
           const SizedBox(height: 2),
-          Text(items.map((item) => item.name).join(', '), style: ManeType.body(11.5, color: c.textSecondary)),
+          Text(
+            items.map((item) => item.name).join(', '),
+            style: SundialType.body(11.5, color: c.textSecondary),
+          ),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton.icon(
@@ -177,14 +180,14 @@ class _HomeItemTile extends ConsumerWidget {
                             item.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: ManeType.body(14, weight: FontWeight.w700, color: c.text),
+                            style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                           ),
                           const SizedBox(height: 1),
                           Text(
                             details,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: ManeType.body(11.5, color: c.textSecondary),
+                            style: SundialType.body(11.5, color: c.textSecondary),
                           ),
                         ],
                       ),
@@ -300,7 +303,7 @@ class _PurchaseHistorySheet extends ConsumerWidget {
             if (purchases.isEmpty) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Text(l10n.purchaseHistoryEmpty, style: ManeType.body(13, color: c.textSecondary)),
+                child: Text(l10n.purchaseHistoryEmpty, style: SundialType.body(13, color: c.textSecondary)),
               );
             }
             return Column(
@@ -315,12 +318,12 @@ class _PurchaseHistorySheet extends ConsumerWidget {
                         Expanded(
                           child: Text(
                             '${_number(purchases[index].quantity)}${item.unit.isEmpty ? '' : ' ${item.unit}'}',
-                            style: ManeType.body(13, weight: FontWeight.w700, color: c.text),
+                            style: SundialType.body(13, weight: FontWeight.w700, color: c.text),
                           ),
                         ),
                         Text(
                           _dateLabel(purchases[index].purchasedAt),
-                          style: ManeType.body(11.5, color: c.textSecondary),
+                          style: SundialType.body(11.5, color: c.textSecondary),
                         ),
                       ],
                     ),

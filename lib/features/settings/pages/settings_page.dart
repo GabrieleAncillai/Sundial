@@ -58,12 +58,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         : entries.where((entry) => entry.matches(query)).toList();
     final pairedCount = ref.watch(pairedDevicesProvider).value?.length ?? 0;
 
-    return ManePage(
+    return SundialPage(
       title: l10n.settings,
       child: ListView(
         padding: const EdgeInsets.only(bottom: 20),
         children: [
-          ManeSearchField(
+          SundialSearchField(
             controller: _search,
             hint: l10n.settingsSearch,
             onChanged: (value) => setState(() => _query = value),
@@ -195,9 +195,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(_desktopSection.title(l10n), style: ManeType.headline(27, color: context.mc.text)),
+          Text(_desktopSection.title(l10n), style: SundialType.headline(27, color: context.mc.text)),
           const SizedBox(height: 3),
-          Text(_desktopSection.subtitle(l10n), style: ManeType.body(13, color: context.mc.textSecondary)),
+          Text(_desktopSection.subtitle(l10n), style: SundialType.body(13, color: context.mc.textSecondary)),
         ],
       ),
     );
@@ -578,13 +578,13 @@ class _SettingsSidebar extends StatelessWidget {
                     l10n.settings,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: ManeType.headline(21, color: c.text),
+                    style: SundialType.headline(21, color: c.text),
                   ),
                 ),
               ],
             ),
           ),
-          ManeSearchField(controller: searchController, hint: searchHint, onChanged: onSearchChanged),
+          SundialSearchField(controller: searchController, hint: searchHint, onChanged: onSearchChanged),
           const SizedBox(height: 14),
           Expanded(
             child: ListView(
@@ -595,7 +595,10 @@ class _SettingsSidebar extends StatelessWidget {
                   if (matches.isEmpty)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
-                      child: Text(l10n.noSettingsFound, style: ManeType.body(12.5, color: c.textSecondary)),
+                      child: Text(
+                        l10n.noSettingsFound,
+                        style: SundialType.body(12.5, color: c.textSecondary),
+                      ),
                     )
                   else
                     for (final link in matches)
@@ -733,7 +736,7 @@ class _SidebarRow extends StatelessWidget {
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: ManeType.body(
+                      style: SundialType.body(
                         13.5,
                         weight: selected ? FontWeight.w800 : FontWeight.w600,
                         color: selected ? c.accent : c.text,
@@ -745,7 +748,7 @@ class _SidebarRow extends StatelessWidget {
                         subtitle!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: ManeType.body(10.5, color: c.textTertiary),
+                        style: SundialType.body(10.5, color: c.textTertiary),
                       ),
                     ],
                   ],
@@ -753,7 +756,7 @@ class _SidebarRow extends StatelessWidget {
               ),
               if (value != null) ...[
                 const SizedBox(width: 8),
-                Text(value!, style: ManeType.label(10.5, color: c.textTertiary)),
+                Text(value!, style: SundialType.label(10.5, color: c.textTertiary)),
               ],
             ],
           ),

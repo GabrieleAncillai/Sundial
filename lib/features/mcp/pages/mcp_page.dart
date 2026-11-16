@@ -22,7 +22,7 @@ class McpPage extends ConsumerWidget {
     final controller = ref.read(settingsProvider.notifier);
     final identity = ref.watch(identityProvider).value;
 
-    return ManePage(
+    return SundialPage(
       title: l10n.mcpEndpoint,
       subtitle: l10n.mcpEndpointSubtitle,
       child: ListView(
@@ -100,12 +100,12 @@ class McpPage extends ConsumerWidget {
                     children: [
                       SelectableText(
                         'http://127.0.0.1:${settings.mcpPort}${McpServer.path}',
-                        style: ManeType.body(13, weight: FontWeight.w700, color: context.mc.text),
+                        style: SundialType.body(13, weight: FontWeight.w700, color: context.mc.text),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         settings.mcpEnabled ? l10n.mcpRunning(settings.mcpPort) : l10n.mcpStopped,
-                        style: ManeType.body(
+                        style: SundialType.body(
                           11.5,
                           color: settings.mcpEnabled ? context.mc.success : context.mc.textSecondary,
                         ),
@@ -113,13 +113,13 @@ class McpPage extends ConsumerWidget {
                       const SizedBox(height: 12),
                       SelectableText(
                         identity.mcpToken,
-                        style: ManeType.body(
+                        style: SundialType.body(
                           11.5,
                           color: context.mc.textSecondary,
                         ).copyWith(fontFamily: 'monospace'),
                       ),
                       const SizedBox(height: 6),
-                      Text(l10n.mcpTokenHint, style: ManeType.body(11.5, color: context.mc.textSecondary)),
+                      Text(l10n.mcpTokenHint, style: SundialType.body(11.5, color: context.mc.textSecondary)),
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
@@ -148,7 +148,10 @@ class McpPage extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Text(l10n.mcpLoopbackHint, style: ManeType.body(11.5, color: context.mc.textSecondary)),
+                      Text(
+                        l10n.mcpLoopbackHint,
+                        style: SundialType.body(11.5, color: context.mc.textSecondary),
+                      ),
                     ],
                   ),
                 ),
@@ -167,7 +170,7 @@ class McpPage extends ConsumerWidget {
                         'plan.search  plan.get  work.shifts  tags.list\n'
                         'spaces.list  habits.list  time.sessions\n'
                         'home.shopping  home.inventory  sleep.window',
-                        style: ManeType.body(
+                        style: SundialType.body(
                           11.5,
                           color: context.mc.textSecondary,
                         ).copyWith(fontFamily: 'monospace', height: 1.5),
@@ -179,14 +182,14 @@ class McpPage extends ConsumerWidget {
                           'plan.uncomplete  plan.delete\n'
                           'home.shopping_add  home.shopping_check\n'
                           'habits.check  time.start  time.stop',
-                          style: ManeType.body(
+                          style: SundialType.body(
                             11.5,
                             color: context.mc.textSecondary,
                           ).copyWith(fontFamily: 'monospace', height: 1.5),
                         ),
                       ],
                       const SizedBox(height: 8),
-                      Text(l10n.mcpToolsHint, style: ManeType.body(11.5, color: context.mc.textSecondary)),
+                      Text(l10n.mcpToolsHint, style: SundialType.body(11.5, color: context.mc.textSecondary)),
                     ],
                   ),
                 ),

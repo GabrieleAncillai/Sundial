@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
@@ -104,8 +104,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           }),
         ),
         const SizedBox(height: 14),
-        if (entriesState.hasError) ManeNotice(text: context.l10n.couldNotLoadDay('${entriesState.error}')),
-        if (shiftsState.hasError) ManeNotice(text: context.l10n.couldNotLoadShifts('${shiftsState.error}')),
+        if (entriesState.hasError) SundialNotice(text: context.l10n.couldNotLoadDay('${entriesState.error}')),
+        if (shiftsState.hasError)
+          SundialNotice(text: context.l10n.couldNotLoadShifts('${shiftsState.error}')),
         if (_mode == _CalendarMode.day)
           SoftCard(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
@@ -237,7 +238,7 @@ class _CalendarHeader extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text(title, style: ManeType.headline(23, color: c.text)),
+              child: Text(title, style: SundialType.headline(23, color: c.text)),
             ),
             GlassIconButton(
               icon: Icons.chevron_left,
@@ -262,11 +263,11 @@ class _CalendarHeader extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 10),
-        ManeSegmented<_CalendarMode>(
+        SundialSegmented<_CalendarMode>(
           segments: [
-            ManeSegment(value: _CalendarMode.month, label: context.l10n.monthView),
-            ManeSegment(value: _CalendarMode.week, label: context.l10n.weekView),
-            ManeSegment(value: _CalendarMode.day, label: context.l10n.dayView),
+            SundialSegment(value: _CalendarMode.month, label: context.l10n.monthView),
+            SundialSegment(value: _CalendarMode.week, label: context.l10n.weekView),
+            SundialSegment(value: _CalendarMode.day, label: context.l10n.dayView),
           ],
           selected: mode,
           onChanged: onModeChanged,

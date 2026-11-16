@@ -145,7 +145,7 @@ class SettingsNavRow extends StatelessWidget implements SettingsTitledRow {
                 children: [
                   Text(
                     title,
-                    style: ManeType.body(14, weight: FontWeight.w700, color: c.text),
+                    style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 1),
@@ -153,7 +153,7 @@ class SettingsNavRow extends StatelessWidget implements SettingsTitledRow {
                       subtitle!,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: ManeType.body(11.5, color: c.textSecondary),
+                      style: SundialType.body(11.5, color: c.textSecondary),
                     ),
                   ],
                 ],
@@ -161,7 +161,7 @@ class SettingsNavRow extends StatelessWidget implements SettingsTitledRow {
             ),
             if (value != null) ...[
               const SizedBox(width: 8),
-              Text(value!, style: ManeType.label(11.5, color: c.textTertiary)),
+              Text(value!, style: SundialType.label(11.5, color: c.textTertiary)),
             ],
             if (onTap != null) ...[
               const SizedBox(width: 4),
@@ -208,11 +208,11 @@ class SettingsSwitchRow extends StatelessWidget implements SettingsTitledRow {
                 children: [
                   Text(
                     title,
-                    style: ManeType.body(14, weight: FontWeight.w700, color: c.text),
+                    style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 1),
-                    Text(subtitle!, style: ManeType.body(11.5, color: c.textSecondary)),
+                    Text(subtitle!, style: SundialType.body(11.5, color: c.textSecondary)),
                   ],
                 ],
               ),
@@ -259,9 +259,10 @@ class SettingsChoiceRow extends StatelessWidget implements SettingsTitledRow {
                   children: [
                     Text(
                       title,
-                      style: ManeType.body(14, weight: FontWeight.w700, color: c.text),
+                      style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                     ),
-                    if (subtitle != null) Text(subtitle!, style: ManeType.body(11.5, color: c.textSecondary)),
+                    if (subtitle != null)
+                      Text(subtitle!, style: SundialType.body(11.5, color: c.textSecondary)),
                   ],
                 ),
               ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/date_labels.dart';
 import '../core/i18n/l10n.dart';
@@ -67,8 +67,9 @@ class _WeekScreenState extends ConsumerState<WeekScreen> {
           onToday: () => setState(() => _offsetWeeks = 0),
         ),
         const SizedBox(height: 16),
-        if (entriesState.hasError) ManeNotice(text: context.l10n.couldNotLoadDay('${entriesState.error}')),
-        if (shiftsState.hasError) ManeNotice(text: context.l10n.couldNotLoadShifts('${shiftsState.error}')),
+        if (entriesState.hasError) SundialNotice(text: context.l10n.couldNotLoadDay('${entriesState.error}')),
+        if (shiftsState.hasError)
+          SundialNotice(text: context.l10n.couldNotLoadShifts('${shiftsState.error}')),
         for (var index = 0; index < 7; index++) ...[
           _DaySection(
             date: start.addDays(index),
@@ -112,7 +113,7 @@ class _WeekHeader extends StatelessWidget {
               child: Text(
                 '${formatShortDate(context, start.toDateTime())} – '
                 '${formatShortDate(context, end.toDateTime())}',
-                style: ManeType.headline(23, color: c.text),
+                style: SundialType.headline(23, color: c.text),
               ),
             ),
             GlassIconButton(
@@ -187,9 +188,9 @@ class _DaySection extends StatelessWidget {
                   children: [
                     Text(
                       DateFormat.E(locale).format(date.toDateTime()).toUpperCase(),
-                      style: ManeType.label(9.5, color: isToday ? c.onAccent : c.textTertiary),
+                      style: SundialType.label(9.5, color: isToday ? c.onAccent : c.textTertiary),
                     ),
-                    Text('${date.day}', style: ManeType.title(16, color: isToday ? c.onAccent : c.text)),
+                    Text('${date.day}', style: SundialType.title(16, color: isToday ? c.onAccent : c.text)),
                   ],
                 ),
               ),
@@ -216,7 +217,7 @@ class _DaySection extends StatelessWidget {
           if (empty)
             Padding(
               padding: const EdgeInsets.fromLTRB(54, 8, 8, 2),
-              child: Text(context.l10n.nothingPlanned, style: ManeType.body(12, color: c.textTertiary)),
+              child: Text(context.l10n.nothingPlanned, style: SundialType.body(12, color: c.textTertiary)),
             )
           else if (entries.isNotEmpty)
             Padding(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
@@ -98,12 +98,15 @@ class _WeekDay extends StatelessWidget {
             children: [
               Text(
                 shortWeekday(context, date.weekday).toUpperCase(),
-                style: ManeType.label(9.5, color: isSelected ? ink.withValues(alpha: 0.8) : c.textTertiary),
+                style: SundialType.label(
+                  9.5,
+                  color: isSelected ? ink.withValues(alpha: 0.8) : c.textTertiary,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 '${date.day}',
-                style: ManeType.title(
+                style: SundialType.title(
                   15.5,
                   color: ink,
                 ).copyWith(fontWeight: isSelected || isToday ? FontWeight.w800 : FontWeight.w700),
