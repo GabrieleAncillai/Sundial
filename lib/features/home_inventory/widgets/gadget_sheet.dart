@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
-import '../../../core/icons/mane_icons.dart';
+import '../../../core/icons/sundial_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
@@ -109,27 +109,17 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
         const SizedBox(height: 8),
         Text(
           l10n.gadgetNextDue(formatFullDate(context, _nextDue.toDateTime())),
-          style: ManeType.body(11.5, color: c.textSecondary),
+          style: SundialType.body(11.5, color: c.textSecondary),
         ),
         const SizedBox(height: 14),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                _lastServiced == null
-                    ? l10n.gadgetNeverServiced
-                    : l10n.gadgetLastServicedOn(formatFullDate(context, _lastServiced!.toDateTime())),
-                style: ManeType.body(12.5, color: c.textSecondary),
-              ),
-            ),
-            TextButton(onPressed: _pickLastServiced, child: Text(l10n.gadgetLastServiced)),
-            if (_lastServiced != null)
-              IconButton(
-                onPressed: () => setState(() => _lastServiced = null),
-                icon: const Icon(Icons.close, size: 18),
-                tooltip: l10n.clearDate,
-              ),
-          ],
+        SundialDateField(
+          label: l10n.gadgetLastServiced,
+          valueLabel: _lastServiced == null
+              ? l10n.gadgetNeverServiced
+              : formatFullDate(context, _lastServiced!.toDateTime()),
+          onTap: _pickLastServiced,
+          onClear: _lastServiced == null ? null : () => setState(() => _lastServiced = null),
+          clearTooltip: l10n.clearDate,
         ),
         const SizedBox(height: 8),
         TextField(
@@ -160,7 +150,7 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
     final picked = await showIconPicker(
       context,
       selected: _icon,
-      recommended: [...ManeIcons.homeRecommended, 'build', 'kitchen', 'devices', 'cleaning'],
+      recommended: [...SundialIcons.homeRecommended, 'build', 'kitchen', 'devices', 'cleaning'],
     );
     if (picked != null && mounted) setState(() => _icon = picked);
   }

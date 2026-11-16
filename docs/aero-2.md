@@ -95,7 +95,10 @@ for sheets and the rail. Avoid giant blobs.
 
 - Pearl field, 1 px `glassEdge`, 14 px radius.
 - Focus: aqua rim and a soft outer glow, no colour inversion.
-- Shared `ManeSelectField` and future `ManeTimeField` use the same recipe.
+- Shared `SundialSelectField` and future `SundialTimeField` use the same recipe.
+- Clear actions live in the field's trailing slot, never beside it. Select,
+  date and text fields keep their width and animate the action in from the
+  trailing edge; the action never changes the surrounding layout.
 
 ### Calendar block
 

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/core/i18n/l10n.dart';
-import 'package:mane/core/time/time_field.dart';
-import 'package:mane/theme/app_theme.dart';
+import 'package:sundial/core/i18n/l10n.dart';
+import 'package:sundial/core/time/time_field.dart';
+import 'package:sundial/core/widgets/sundial_select_field.dart';
+import 'package:sundial/theme/app_theme.dart';
 
 void main() {
   group('parseTimeInput', () {
@@ -39,6 +40,101 @@ void main() {
     });
   });
 
+  testWidgets('the clear action sits inside the field and does not open the picker', (tester) async {
+    var cleared = 0;
+    int? minute = 14 * 60;
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: SundialTheme.light,
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 340,
+              child: StatefulBuilder(
+                builder: (context, setState) => SundialTimeField(
+                  label: 'Starts',
+                  valueLabel: minute == null ? 'No time' : '2:00 PM',
+                  initialMinute: minute,
+                  clearTooltip: 'Clear start',
+                  onClear: () => setState(() {
+                    cleared++;
+                    minute = null;
+                  }),
+                  onChanged: (value) => setState(() => minute = value),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final fieldRect = tester.getRect(find.byType(SundialSelectField));
+    final clearRect = tester.getRect(find.byTooltip('Clear start'));
+    expect(fieldRect.contains(clearRect.topLeft), isTrue);
+    expect(fieldRect.contains(clearRect.bottomRight), isTrue);
+
+    await tester.tap(find.byTooltip('Clear start'));
+    await tester.pumpAndSettle();
+
+    expect(cleared, 1);
+    expect(find.text('No time'), findsOneWidget);
+    expect(find.byTooltip('Clear start'), findsNothing);
+    expect(tester.getRect(find.byType(SundialSelectField)), fieldRect);
+    expect(find.byType(TimePickerDialog), findsNothing);
+  });
+
+  testWidgets('the clear action expands from the trailing edge', (tester) async {
+    int? minute;
+    late StateSetter setOuter;
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: SundialTheme.light,
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 340,
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  setOuter = setState;
+                  return SundialTimeField(
+                    label: 'Starts',
+                    valueLabel: minute == null ? 'No time' : '2:00 PM',
+                    initialMinute: minute,
+                    clearTooltip: 'Clear start',
+                    onClear: () => setState(() => minute = null),
+                    onChanged: (value) => setState(() => minute = value),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Clear start'), findsNothing);
+    expect(tester.getSize(find.byType(AnimatedSize)).width, 0);
+
+    setOuter(() => minute = 14 * 60);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 90));
+    final mid = tester.getSize(find.byType(AnimatedSize)).width;
+    expect(mid, greaterThan(0));
+    expect(mid, lessThan(26));
+
+    await tester.pumpAndSettle();
+    expect(tester.getSize(find.byType(AnimatedSize)).width, 26);
+    expect(find.byTooltip('Clear start'), findsOneWidget);
+  });
+
   testWidgets('desktop picker focuses the input and selects the value', (tester) async {
     tester.view.physicalSize = const Size(1200, 900);
     tester.view.devicePixelRatio = 1;
@@ -48,11 +144,11 @@ void main() {
         locale: const Locale('en'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        theme: ManeTheme.light,
+        theme: SundialTheme.light,
         home: Scaffold(
           body: Builder(
             builder: (context) => TextButton(
-              onPressed: () => showManeTimePicker(context, initialMinute: 9 * 60, title: 'Starts'),
+              onPressed: () => showSundialTimePicker(context, initialMinute: 9 * 60, title: 'Starts'),
               child: const Text('open'),
             ),
           ),
@@ -79,12 +175,12 @@ void main() {
         locale: const Locale('en'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        theme: ManeTheme.light,
+        theme: SundialTheme.light,
         home: Scaffold(
           body: Builder(
             builder: (context) => TextButton(
               onPressed: () async {
-                result = await showManeTimePicker(context, initialMinute: 9 * 60, title: 'Starts');
+                result = await showSundialTimePicker(context, initialMinute: 9 * 60, title: 'Starts');
               },
               child: const Text('open'),
             ),
@@ -113,11 +209,11 @@ void main() {
         locale: const Locale('en'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        theme: ManeTheme.light,
+        theme: SundialTheme.light,
         home: Scaffold(
           body: Builder(
             builder: (context) => TextButton(
-              onPressed: () => showManeTimePicker(context, initialMinute: 9 * 60),
+              onPressed: () => showSundialTimePicker(context, initialMinute: 9 * 60),
               child: const Text('open'),
             ),
           ),

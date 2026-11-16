@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
 import '../core/sound/sound_service.dart';
@@ -245,7 +245,7 @@ class _AppShellState extends ConsumerState<AppShell>
                     onFilter: () => showTagFilterSheet(context),
                   );
                   return Row(
-                    children: settings.navSide == ManeNavSide.right
+                    children: settings.navSide == SundialNavSide.right
                         ? [Expanded(child: content), rail]
                         : [rail, Expanded(child: content)],
                   );
@@ -262,7 +262,7 @@ class _AppShellState extends ConsumerState<AppShell>
     BuildContext context,
     AppSettings settings,
     List<Space> spaces,
-    ManeColors c,
+    SundialColors c,
     bool desktop,
   ) {
     final l10n = context.l10n;
@@ -281,7 +281,7 @@ class _AppShellState extends ConsumerState<AppShell>
                   child: Icon(Icons.event_note, size: 21, color: c.onAccent),
                 ),
                 const SizedBox(width: 10),
-                Text(l10n.appName, style: ManeType.headline(21, color: c.text)),
+                Text(l10n.appName, style: SundialType.headline(21, color: c.text)),
               ],
               const Spacer(),
               if (!desktop) ...[
@@ -296,7 +296,7 @@ class _AppShellState extends ConsumerState<AppShell>
                       : Container(
                           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                           decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(8)),
-                          child: Text('$filterCount', style: ManeType.label(9, color: c.onAccent)),
+                          child: Text('$filterCount', style: SundialType.label(9, color: c.onAccent)),
                         ),
                 ),
                 const SizedBox(width: 8),
@@ -327,7 +327,7 @@ class _AppShellState extends ConsumerState<AppShell>
             child: Row(
               children: [
                 Expanded(
-                  child: ManeNavBar(
+                  child: SundialNavBar(
                     index: _index,
                     onSelected: _selectTab,
                     items: [
@@ -341,7 +341,7 @@ class _AppShellState extends ConsumerState<AppShell>
                   ),
                 ),
                 const SizedBox(width: 8),
-                ManeAddButton(
+                SundialAddButton(
                   tooltip: l10n.addEntry,
                   onTap: () => showEntryEditor(context, spaces: spaces),
                 ),
@@ -444,7 +444,7 @@ class _SideRail extends StatelessWidget {
                   child: Icon(Icons.event_note, size: 21, color: c.onAccent),
                 ),
                 const SizedBox(width: 10),
-                Text(l10n.appName, style: ManeType.headline(20, color: c.text)),
+                Text(l10n.appName, style: SundialType.headline(20, color: c.text)),
               ],
             ),
           ),
@@ -453,17 +453,12 @@ class _SideRail extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
+                  child: SundialSearchField(
                     controller: searchController,
                     focusNode: searchFocus,
-                    textInputAction: TextInputAction.search,
+                    hint: l10n.search,
+                    onChanged: (_) {},
                     onSubmitted: onSearchSubmitted,
-                    decoration: InputDecoration(
-                      hintText: l10n.searchHint,
-                      prefixIcon: const Icon(Icons.search, size: 18),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                    ),
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -558,7 +553,7 @@ class _RailItem extends StatelessWidget {
               const SizedBox(width: 11),
               Text(
                 label,
-                style: ManeType.body(
+                style: SundialType.body(
                   13,
                   weight: selected ? FontWeight.w800 : FontWeight.w600,
                   color: selected ? c.accent : c.textSecondary,

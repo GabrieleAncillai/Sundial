@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/date_labels.dart';
@@ -219,7 +219,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) _confirmLeave();
       },
-      child: ManePage(
+      child: SundialPage(
         title: widget.pattern == null ? l10n.newShiftPattern : l10n.editShiftPattern,
         actions: [
           if (widget.pattern != null)
@@ -242,20 +242,20 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
               ),
               if (contexts.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                ManeSelectField(
+                SundialSelectField(
                   label: l10n.context,
                   valueLabel:
                       contexts.where((item) => item.id == _contextId).firstOrNull?.name ?? l10n.noContext,
                   leading: const Icon(Icons.work_outline),
                   onTap: () async {
-                    final picked = await showManeSelectSheet<String>(
+                    final picked = await showSundialSelectSheet<String>(
                       context: context,
                       title: l10n.context,
                       selected: _contextId ?? '',
                       options: [
-                        ManeSelectOption(value: '', label: l10n.noContext),
+                        SundialSelectOption(value: '', label: l10n.noContext),
                         for (final item in contexts)
-                          ManeSelectOption(
+                          SundialSelectOption(
                             value: item.id,
                             label: item.name,
                             leading: Container(
@@ -299,7 +299,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
                 ),
               ],
               const SizedBox(height: 12),
-              ManeSelectField(
+              SundialSelectField(
                 label: l10n.timeZone,
                 valueLabel: _timeZoneController.text,
                 leading: const Icon(Icons.public),
@@ -359,16 +359,10 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
                 ],
               ),
               const SizedBox(height: 4),
-              InkWell(
+              SundialDateField(
+                label: l10n.anchorDate,
+                valueLabel: formatFullDate(context, _anchorDate.toDateTime()),
                 onTap: _pickAnchorDate,
-                borderRadius: BorderRadius.circular(4),
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    labelText: l10n.anchorDate,
-                    prefixIcon: const Icon(Icons.event_outlined, size: 20),
-                  ),
-                  child: Text(formatFullDate(context, _anchorDate.toDateTime())),
-                ),
               ),
               const SizedBox(height: 20),
               for (var index = 0; index < _cycleDays; index++) _buildDay(index, locale),
@@ -502,19 +496,19 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
               Expanded(
                 child: Text(
                   '${l10n.cycleDay(index + 1)} · ${DateFormat.E(locale).format(date.toDateTime())}',
-                  style: ManeType.title(13.5, color: context.mc.text),
+                  style: SundialType.title(13.5, color: context.mc.text),
                 ),
               ),
               Text(
                 formatShortDate(context, date.toDateTime()),
-                style: ManeType.body(11.5, color: context.mc.textSecondary),
+                style: SundialType.body(11.5, color: context.mc.textSecondary),
               ),
             ],
           ),
           if (daySlots.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Text(l10n.noSlots, style: ManeType.body(11.5, color: context.mc.textTertiary)),
+              child: Text(l10n.noSlots, style: SundialType.body(11.5, color: context.mc.textTertiary)),
             ),
           for (final slot in daySlots) _buildSlot(slot),
           TextButton.icon(
@@ -560,7 +554,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
           Row(
             children: [
               Expanded(
-                child: ManeTimeField(
+                child: SundialTimeField(
                   label: l10n.startTime,
                   valueLabel: _timeLabel(slot.startMinute),
                   initialMinute: slot.startMinute,
@@ -570,7 +564,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: ManeTimeField(
+                child: SundialTimeField(
                   label: l10n.endTime,
                   valueLabel: _timeLabel(slot.endMinute),
                   initialMinute: slot.endMinute,
@@ -613,10 +607,10 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
                 children: [
                   Text(
                     '${formatFullDate(context, exception.date.toDateTime())} · $type$times',
-                    style: ManeType.body(12.5, color: context.mc.text),
+                    style: SundialType.body(12.5, color: context.mc.text),
                   ),
                   if (exception.note.isNotEmpty)
-                    Text(exception.note, style: ManeType.body(11.5, color: context.mc.textSecondary)),
+                    Text(exception.note, style: SundialType.body(11.5, color: context.mc.textSecondary)),
                 ],
               ),
             ),
@@ -875,7 +869,7 @@ class _Preview extends StatelessWidget {
     final l10n = context.l10n;
     final occurrences = pattern.occurrencesBetween(today, today.addDays(27), viewerTimeZone: deviceTimeZone);
     if (occurrences.isEmpty) {
-      return Text(l10n.noSlots, style: ManeType.body(11.5, color: c.textSecondary));
+      return Text(l10n.noSlots, style: SundialType.body(11.5, color: c.textSecondary));
     }
 
     return Column(
@@ -889,7 +883,7 @@ class _Preview extends StatelessWidget {
                   width: 92,
                   child: Text(
                     formatShortDate(context, occurrence.displayDate.toDateTime()),
-                    style: ManeType.body(11.5, color: c.textSecondary),
+                    style: SundialType.body(11.5, color: c.textSecondary),
                   ),
                 ),
                 Expanded(
@@ -902,7 +896,7 @@ class _Preview extends StatelessWidget {
                 Text(
                   '${_formatTime(context, occurrence.startAt, deviceTimeZone)} – '
                   '${_formatTime(context, occurrence.endAt, deviceTimeZone)}',
-                  style: ManeType.body(11.5, color: c.textSecondary),
+                  style: SundialType.body(11.5, color: c.textSecondary),
                 ),
               ],
             ),
@@ -954,12 +948,10 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            InkWell(
+            SundialDateField(
+              label: l10n.exceptionDate,
+              valueLabel: formatFullDate(context, _date.toDateTime()),
               onTap: _pickDate,
-              child: InputDecorator(
-                decoration: InputDecoration(labelText: l10n.exceptionDate),
-                child: Text(formatFullDate(context, _date.toDateTime())),
-              ),
             ),
             const SizedBox(height: 10),
             DropdownButtonFormField<ShiftExceptionType>(
@@ -979,7 +971,7 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: ManeTimeField(
+                    child: SundialTimeField(
                       label: l10n.startTime,
                       valueLabel: _timeLabel(_startMinute),
                       initialMinute: _startMinute,
@@ -989,7 +981,7 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: ManeTimeField(
+                    child: SundialTimeField(
                       label: l10n.endTime,
                       valueLabel: _timeLabel(_endMinute),
                       initialMinute: _endMinute,

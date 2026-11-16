@@ -5,7 +5,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../i18n/l10n.dart';
 import '../widgets/app_sheet.dart';
-import '../widgets/mane_select_field.dart';
+import '../widgets/sundial_select_field.dart';
 
 /// Parses a typed wall-clock time into minutes from midnight.
 ///
@@ -86,7 +86,7 @@ String formatMinuteLabel(BuildContext context, int minute, {String? overnightSuf
 /// Phones keep the platform sheet. Wide layouts get a text-entry dialog with
 /// 15-minute snaps, exact minutes and keyboard submit, because the stock dial
 /// is a poor fit for a mouse and keyboard.
-Future<int?> showManeTimePicker(BuildContext context, {int? initialMinute, String? title}) {
+Future<int?> showSundialTimePicker(BuildContext context, {int? initialMinute, String? title}) {
   if (MediaQuery.sizeOf(context).width < appSheetCompactBreakpoint) {
     final initial = initialMinute ?? 9 * 60;
     return showTimePicker(
@@ -103,9 +103,9 @@ Future<int?> showManeTimePicker(BuildContext context, {int? initialMinute, Strin
 /// A labelled time row with an optional clear action.
 ///
 /// [valueLabel] is supplied by the caller so overnight values keep their own
-/// wording. Tapping anywhere on the row opens [showManeTimePicker].
-class ManeTimeField extends StatelessWidget {
-  const ManeTimeField({
+/// wording. Tapping anywhere on the row opens [showSundialTimePicker].
+class SundialTimeField extends StatelessWidget {
+  const SundialTimeField({
     super.key,
     required this.label,
     required this.valueLabel,
@@ -131,33 +131,20 @@ class ManeTimeField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Row(
-      children: [
-        Expanded(
-          child: ManeSelectField(
-            label: label,
-            valueLabel: valueLabel,
-            leading: Icon(icon, size: 19),
-            enabled: enabled,
-            onTap: enabled
-                ? () async {
-                    final picked = await showManeTimePicker(
-                      context,
-                      initialMinute: initialMinute,
-                      title: label,
-                    );
-                    if (picked != null) onChanged(picked);
-                  }
-                : null,
-          ),
-        ),
-        if (clearable && initialMinute != null)
-          IconButton(
-            onPressed: enabled ? onClear : null,
-            icon: const Icon(Icons.close, size: 18),
-            tooltip: clearTooltip ?? l10n.clearTime,
-          ),
-      ],
+    final canClear = enabled && clearable && initialMinute != null && onClear != null;
+    return SundialSelectField(
+      label: label,
+      valueLabel: valueLabel,
+      leading: Icon(icon, size: 19),
+      enabled: enabled,
+      clearTooltip: clearTooltip ?? l10n.clearTime,
+      onClear: canClear ? onClear : null,
+      onTap: enabled
+          ? () async {
+              final picked = await showSundialTimePicker(context, initialMinute: initialMinute, title: label);
+              if (picked != null) onChanged(picked);
+            }
+          : null,
     );
   }
 }
@@ -258,7 +245,7 @@ class _TimeEntryDialogState extends State<_TimeEntryDialog> {
                       label: Text(':${minute.toString().padLeft(2, '0')}'),
                       selected: (_parse() ?? -1) % 60 == minute,
                       onSelected: (_) => _snap(minute),
-                      labelStyle: ManeType.label(12, color: c.textSecondary),
+                      labelStyle: SundialType.label(12, color: c.textSecondary),
                       showCheckmark: false,
                     ),
                 ],

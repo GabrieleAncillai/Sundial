@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/i18n/date_labels.dart';
@@ -63,14 +63,14 @@ Future<void> _showReadOnlyEntry(BuildContext context, Entry entry) {
     context: context,
     builder: (sheetContext) => AppSheet(
       children: [
-        Text(entry.title, style: ManeType.headline(21, color: c.text)),
+        Text(entry.title, style: SundialType.headline(21, color: c.text)),
         const SizedBox(height: 6),
-        Text(l10n.importedEvent, style: ManeType.label(12, color: c.accent)),
+        Text(l10n.importedEvent, style: SundialType.label(12, color: c.accent)),
         const SizedBox(height: 12),
-        Text(l10n.readOnlyNotice, style: ManeType.body(14, color: c.textSecondary)),
+        Text(l10n.readOnlyNotice, style: SundialType.body(14, color: c.textSecondary)),
         if (entry.notes.isNotEmpty) ...[
           const SizedBox(height: 14),
-          Text(entry.notes, style: ManeType.body(14, color: c.text)),
+          Text(entry.notes, style: SundialType.body(14, color: c.text)),
         ],
         const SizedBox(height: 22),
         FilledButton(onPressed: () => Navigator.of(sheetContext).pop(), child: Text(l10n.close)),
@@ -284,14 +284,14 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
       final entry = widget.entry!;
       return AppSheet(
         children: [
-          Text(entry.title, style: ManeType.headline(21, color: c.text)),
+          Text(entry.title, style: SundialType.headline(21, color: c.text)),
           const SizedBox(height: 6),
-          Text(l10n.importedEvent, style: ManeType.label(12, color: c.accent)),
+          Text(l10n.importedEvent, style: SundialType.label(12, color: c.accent)),
           const SizedBox(height: 12),
-          Text(l10n.readOnlyNotice, style: ManeType.body(14, color: c.textSecondary)),
+          Text(l10n.readOnlyNotice, style: SundialType.body(14, color: c.textSecondary)),
           if (entry.notes.isNotEmpty) ...[
             const SizedBox(height: 14),
-            Text(entry.notes, style: ManeType.body(14, color: c.text)),
+            Text(entry.notes, style: SundialType.body(14, color: c.text)),
           ],
           const SizedBox(height: 22),
           FilledButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.close)),
@@ -318,7 +318,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: Text(title, style: ManeType.headline(20, color: c.text)),
+                    child: Text(title, style: SundialType.headline(20, color: c.text)),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -333,7 +333,11 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                 autofocus: true,
                 textCapitalization: TextCapitalization.sentences,
                 textInputAction: TextInputAction.next,
-                decoration: InputDecoration(labelText: l10n.titleQuestion),
+                decoration: InputDecoration(
+                  labelText: l10n.titleQuestion,
+                  suffixIcon: SundialTextClear(controller: _titleController, tooltip: l10n.clearText),
+                  suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+                ),
                 validator: (value) => value == null || value.trim().isEmpty ? l10n.titleRequired : null,
               ),
               const SizedBox(height: 10),
@@ -347,7 +351,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: ManeSelectField(
+                    child: SundialSelectField(
                       label: l10n.space,
                       valueLabel: _spaceName(_spaceId),
                       leading: Container(
@@ -360,7 +364,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ManeSelectField(
+                    child: SundialSelectField(
                       label: l10n.type,
                       valueLabel: entryKindLabel(context, _kind),
                       leading: const Icon(Icons.category_outlined),
@@ -371,7 +375,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
               ),
               if (contexts.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                ManeSelectField(
+                SundialSelectField(
                   label: l10n.context,
                   valueLabel: _contextName(contexts, _contextId) ?? l10n.noContext,
                   leading: _contextColor(contexts, _contextId) == null
@@ -389,7 +393,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
               ],
               if (projects.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                ManeSelectField(
+                SundialSelectField(
                   label: l10n.project,
                   valueLabel: _projectName(projects, _projectId) ?? l10n.noProject,
                   leading: const Icon(Icons.folder_outlined),
@@ -398,7 +402,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
               ],
               const SizedBox(height: 12),
               if (availableTags.isNotEmpty) ...[
-                Text(l10n.categories, style: ManeType.label(12.5, color: c.textSecondary)),
+                Text(l10n.categories, style: SundialType.label(12.5, color: c.textSecondary)),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 6,
@@ -421,7 +425,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                 ),
                 const SizedBox(height: 12),
               ],
-              Text(l10n.priority, style: ManeType.label(12.5, color: c.textSecondary)),
+              Text(l10n.priority, style: SundialType.label(12.5, color: c.textSecondary)),
               const SizedBox(height: 6),
               Wrap(
                 spacing: 6,
@@ -459,49 +463,39 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                       Expanded(
                         child: Text(
                           _timingHint(context, _timing),
-                          style: ManeType.body(11.5, color: c.textTertiary),
+                          style: SundialType.body(11.5, color: c.textTertiary),
                         ),
                       ),
                     ],
                   ),
                 ),
               const SizedBox(height: 10),
-              _PickerRow(
+              SundialDateField(
                 icon: Icons.event_outlined,
                 label: l10n.date,
-                value: formatFullDate(context, _date.toDateTime()),
+                valueLabel: formatFullDate(context, _date.toDateTime()),
                 onTap: _pickDate,
               ),
               if (_allDay || (_startMinute != null && _endMinute != null)) ...[
                 const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _PickerRow(
-                        icon: Icons.date_range_outlined,
-                        label: l10n.endDate,
-                        value: _endDate == null
-                            ? l10n.singleDay
-                            : formatFullDate(context, _endDate!.toDateTime()),
-                        onTap: _pickEndDate,
-                      ),
-                    ),
-                    if (_endDate != null)
-                      IconButton(
-                        onPressed: () => setState(() => _endDate = null),
-                        icon: const Icon(Icons.close, size: 18),
-                        tooltip: l10n.singleDay,
-                      ),
-                  ],
+                SundialDateField(
+                  icon: Icons.date_range_outlined,
+                  label: l10n.endDate,
+                  valueLabel: _endDate == null
+                      ? l10n.singleDay
+                      : formatFullDate(context, _endDate!.toDateTime()),
+                  onTap: _pickEndDate,
+                  onClear: _endDate == null ? null : () => setState(() => _endDate = null),
+                  clearTooltip: l10n.singleDay,
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(4, 4, 0, 0),
-                  child: Text(l10n.multiDayHint, style: ManeType.body(11, color: c.textTertiary)),
+                  child: Text(l10n.multiDayHint, style: SundialType.body(11, color: c.textTertiary)),
                 ),
               ],
               if (!_allDay) ...[
                 const SizedBox(height: 10),
-                ManeTimeField(
+                SundialTimeField(
                   label: l10n.starts,
                   icon: Icons.schedule,
                   valueLabel: _startMinute == null ? l10n.noTime : _timeLabel(_startMinute!),
@@ -511,7 +505,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                   onChanged: (minute) => setState(() => _applyStart(minute)),
                 ),
                 const SizedBox(height: 10),
-                ManeTimeField(
+                SundialTimeField(
                   label: _timing == EntryTiming.deadline ? l10n.deadline : l10n.ends,
                   icon: _timing == EntryTiming.deadline ? Icons.flag_outlined : Icons.schedule_outlined,
                   valueLabel: _endMinute == null ? l10n.noTime : _timeLabel(_endMinute!),
@@ -521,7 +515,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                   onChanged: (minute) => setState(() => _applyEnd(minute)),
                 ),
                 const SizedBox(height: 10),
-                ManeSelectField(
+                SundialSelectField(
                   label: l10n.timeZone,
                   valueLabel: _timeZone,
                   leading: const Icon(Icons.public),
@@ -531,12 +525,12 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                   padding: const EdgeInsets.fromLTRB(4, 6, 0, 0),
                   child: Text(
                     l10n.timesDefinedIn(_timeZone),
-                    style: ManeType.body(11.5, color: c.textSecondary),
+                    style: SundialType.body(11.5, color: c.textSecondary),
                   ),
                 ),
               ],
               const SizedBox(height: 12),
-              ManeSelectField(
+              SundialSelectField(
                 label: l10n.repeat,
                 valueLabel: _repeatSummary(context),
                 leading: const Icon(Icons.repeat),
@@ -573,7 +567,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: Text(l10n.reminders, style: ManeType.label(12.5, color: c.textSecondary)),
+                    child: Text(l10n.reminders, style: SundialType.label(12.5, color: c.textSecondary)),
                   ),
                   TextButton.icon(
                     onPressed: _saving ? null : _editReminders,
@@ -583,9 +577,9 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                 ],
               ),
               if (_remindersLoadFailed)
-                Text(l10n.remindersUnavailable, style: ManeType.body(11.5, color: c.danger))
+                Text(l10n.remindersUnavailable, style: SundialType.body(11.5, color: c.danger))
               else if (_reminderOffsets.isEmpty && _reminderTimes.isEmpty)
-                Text(l10n.remindersOff, style: ManeType.body(11.5, color: c.textTertiary))
+                Text(l10n.remindersOff, style: SundialType.body(11.5, color: c.textTertiary))
               else
                 Wrap(
                   spacing: 6,
@@ -960,13 +954,13 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
 
   Future<void> _pickSpace(BuildContext context) async {
     final l10n = context.l10n;
-    final picked = await showManeSelectSheet<String>(
+    final picked = await showSundialSelectSheet<String>(
       context: context,
       title: l10n.space,
       selected: _spaceId,
       options: [
         for (final space in _spaces)
-          ManeSelectOption(
+          SundialSelectOption(
             value: space.id,
             label: space.name,
             leading: Container(
@@ -992,13 +986,13 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
 
   Future<void> _pickKind(BuildContext context) async {
     final l10n = context.l10n;
-    final picked = await showManeSelectSheet<EntryKind>(
+    final picked = await showSundialSelectSheet<EntryKind>(
       context: context,
       title: l10n.type,
       selected: _kind,
       options: [
         for (final kind in EntryKind.values)
-          ManeSelectOption(value: kind, label: entryKindLabel(context, kind)),
+          SundialSelectOption(value: kind, label: entryKindLabel(context, kind)),
       ],
     );
     if (picked != null && mounted) setState(() => _kind = picked);
@@ -1006,14 +1000,14 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
 
   Future<void> _pickContext(BuildContext context, List<PlannerContext> contexts) async {
     final l10n = context.l10n;
-    final picked = await showManeSelectSheet<String>(
+    final picked = await showSundialSelectSheet<String>(
       context: context,
       title: l10n.context,
       selected: _contextId ?? '',
       options: [
-        ManeSelectOption(value: '', label: l10n.noContext),
+        SundialSelectOption(value: '', label: l10n.noContext),
         for (final item in contexts)
-          ManeSelectOption(
+          SundialSelectOption(
             value: item.id,
             label: item.name,
             leading: Container(
@@ -1033,14 +1027,14 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
 
   Future<void> _pickProject(BuildContext context, List<Project> projects) async {
     final l10n = context.l10n;
-    final picked = await showManeSelectSheet<String>(
+    final picked = await showSundialSelectSheet<String>(
       context: context,
       title: l10n.project,
       selected: _projectId ?? '',
       searchHint: l10n.search,
       options: [
-        ManeSelectOption(value: '', label: l10n.noProject),
-        for (final project in projects) ManeSelectOption(value: project.id, label: project.name),
+        SundialSelectOption(value: '', label: l10n.noProject),
+        for (final project in projects) SundialSelectOption(value: project.id, label: project.name),
       ],
     );
     if (picked == null || !mounted) return;
@@ -1067,25 +1061,4 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     EntryTiming.deadline => Icons.flag_outlined,
     EntryTiming.anytime => Icons.all_inclusive,
   };
-}
-
-class _PickerRow extends StatelessWidget {
-  const _PickerRow({required this.icon, required this.label, required this.value, required this.onTap});
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
-      child: InputDecorator(
-        decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon, size: 20)),
-        child: Text(value, maxLines: 1, overflow: TextOverflow.ellipsis),
-      ),
-    );
-  }
 }
