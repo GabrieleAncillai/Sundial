@@ -34,13 +34,17 @@ import 'about_page.dart';
 enum SettingsDetailSection { appearance, preferences, data, about }
 
 class SettingsDetailPage extends ConsumerWidget {
-  const SettingsDetailPage({super.key, required this.section, this.highlight});
+  const SettingsDetailPage({super.key, required this.section, this.highlight, this.embedded = false});
 
   final SettingsDetailSection section;
 
   /// Row title from settings search. The matching row is scrolled into view
   /// and flashed.
   final String? highlight;
+
+  /// Renders only the scrollable body so the desktop settings pane can place
+  /// it beside the main menu instead of pushing a second full page.
+  final bool embedded;
 
   static const _reminderOffsets = <int>[0, 5, 10, 30, 60, 120, 1440];
 
@@ -50,6 +54,434 @@ class SettingsDetailPage extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final controller = ref.read(settingsProvider.notifier);
 
+    final content = SingleChildScrollView(
+      key: ValueKey(section),
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (section == SettingsDetailSection.appearance)
+            SettingsSection(
+              highlight: highlight,
+              title: l10n.appearanceSection,
+              children: [
+                SettingsChoiceRow(
+                  icon: Icons.brightness_6_outlined,
+                  title: l10n.theme,
+                  choice: ManeSegmented<ManeThemeVariant>(
+                    segments: [
+                      ManeSegment(value: ManeThemeVariant.system, label: l10n.themeSystem),
+                      ManeSegment(value: ManeThemeVariant.light, label: l10n.themeLight),
+                      ManeSegment(value: ManeThemeVariant.dark, label: l10n.themeDark),
+                      ManeSegment(value: ManeThemeVariant.aero, label: l10n.themeAero),
+                    ],
+                    selected: settings.themeVariant,
+                    onChanged: controller.setThemeVariant,
+                    compact: true,
+                  ),
+                ),
+                SettingsNavRow(
+                  icon: Icons.texture_outlined,
+                  title: l10n.background,
+                  value: _backgroundLabel(l10n, settings.backgroundStyle),
+                  onTap: () => _pickBackground(context, controller, settings.backgroundStyle),
+                ),
+                if (settings.backgroundStyle == ManeBackgroundStyle.custom)
+                  SettingsNavRow(
+                    icon: Icons.colorize_outlined,
+                    title: l10n.customBackgroundColor,
+                    value:
+                        '#'
+                        '${(settings.backgroundCustomColor & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}',
+                    onTap: () async {
+                      final picked = await showColorPicker(
+                        context,
+                        selected: settings.backgroundCustomColor,
+                        title: l10n.customBackgroundColor,
+                      );
+                      if (picked != null) await controller.setBackgroundCustomColor(picked);
+                    },
+                  ),
+                SettingsNavRow(
+                  icon: Icons.format_size,
+                  title: l10n.textSize,
+                  value: _textScaleLabel(l10n, settings.textScale),
+                  onTap: () => _pickTextScale(context, controller, settings.textScale),
+                ),
+              ],
+            ),
+          if (section == SettingsDetailSection.preferences)
+            SettingsSection(
+              highlight: highlight,
+              title: l10n.preferencesSection,
+              children: [
+                SettingsChoiceRow(
+                  icon: Icons.translate,
+                  title: l10n.language,
+                  choice: ManeSegmented<String>(
+                    segments: [
+                      ManeSegment(value: 'system', label: l10n.languageSystem),
+                      ManeSegment(value: 'en', label: l10n.languageEnglish),
+                      ManeSegment(value: 'es', label: l10n.languageSpanish),
+                    ],
+                    selected: settings.locale?.languageCode ?? 'system',
+                    onChanged: (value) => controller.setLocale(value == 'system' ? null : Locale(value)),
+                    compact: true,
+                  ),
+                ),
+                SettingsNavRow(
+                  icon: Icons.public,
+                  title: l10n.timeZone,
+                  subtitle: l10n.timezoneSubtitle,
+                  value: settings.timezoneOverride.isEmpty
+                      ? ref.watch(deviceTimeZoneProvider)
+                      : settings.timezoneOverride,
+                  onTap: () => _pickTimeZone(context, ref, settings),
+                ),
+                SettingsNavRow(
+                  icon: Icons.event_outlined,
+                  title: l10n.dateFormatLabel,
+                  value: _dateFormatLabel(l10n, settings.dateFormat),
+                  onTap: () => _pickDateFormat(context, controller, settings.dateFormat),
+                ),
+                SettingsChoiceRow(
+                  icon: Icons.calendar_view_week_outlined,
+                  title: l10n.weekStartsOn,
+                  choice: ManeSegmented<int>(
+                    segments: [
+                      ManeSegment(value: DateTime.monday, label: l10n.weekStartMonday),
+                      ManeSegment(value: DateTime.saturday, label: l10n.weekStartSaturday),
+                      ManeSegment(value: DateTime.sunday, label: l10n.weekStartSunday),
+                    ],
+                    selected: settings.weekStart,
+                    onChanged: controller.setWeekStart,
+                    compact: true,
+                  ),
+                ),
+                SettingsNavRow(
+                  icon: Icons.view_sidebar_outlined,
+                  title: l10n.navigationSide,
+                  value: settings.navSide == ManeNavSide.left ? l10n.navLeft : l10n.navRight,
+                  onTap: () => _pickNavSide(context, controller, settings.navSide),
+                ),
+                SettingsSwitchRow(
+                  icon: Icons.speed_outlined,
+                  title: l10n.performanceMode,
+                  subtitle: l10n.performanceModeSubtitle,
+                  value: settings.performanceMode,
+                  onChanged: controller.setPerformanceMode,
+                ),
+              ],
+            ),
+          if (section == SettingsDetailSection.preferences)
+            SettingsSection(
+              highlight: highlight,
+              title: l10n.soundSection,
+              children: [
+                SettingsSwitchRow(
+                  icon: Icons.volume_up_outlined,
+                  title: l10n.interactionSounds,
+                  subtitle: l10n.interactionSoundsSubtitle,
+                  value: settings.soundsEnabled,
+                  onChanged: (value) async {
+                    await controller.setSoundsEnabled(value);
+                    if (value) {
+                      ref.read(soundControllerProvider).play(UiSound.toggleOn, force: true);
+                    }
+                  },
+                ),
+                SettingsChoiceRow(
+                  icon: Icons.graphic_eq,
+                  title: l10n.soundPackLabel,
+                  choice: ManeSegmented<ManeSoundPack>(
+                    segments: [
+                      ManeSegment(value: ManeSoundPack.soft, label: l10n.soundPackSoft),
+                      ManeSegment(value: ManeSoundPack.aero, label: l10n.soundPackAero),
+                    ],
+                    selected: settings.soundPack,
+                    onChanged: (value) {
+                      controller.setSoundPack(value);
+                      ref.read(soundControllerProvider).play(UiSound.tap, force: true);
+                    },
+                    compact: true,
+                  ),
+                ),
+                SettingsChoiceRow(
+                  icon: Icons.play_circle_outline,
+                  title: l10n.previewSound,
+                  choice: OutlinedButton.icon(
+                    onPressed: () => ref.read(soundControllerProvider).play(UiSound.tap, force: true),
+                    icon: const Icon(Icons.play_arrow, size: 18),
+                    label: Text(l10n.previewSound),
+                  ),
+                ),
+                SettingsChoiceRow(
+                  icon: Icons.alarm_outlined,
+                  title: l10n.alarmSounds,
+                  subtitle: l10n.alarmSoundsSubtitle,
+                  choice: ManeSegmented<ManeAlarmSound>(
+                    segments: [
+                      ManeSegment(value: ManeAlarmSound.soft, label: l10n.alarmSoundSoft),
+                      ManeSegment(value: ManeAlarmSound.chime, label: l10n.alarmSoundChime),
+                      ManeSegment(value: ManeAlarmSound.bright, label: l10n.alarmSoundBright),
+                    ],
+                    selected: settings.alarmSound,
+                    onChanged: (value) {
+                      controller.setAlarmSound(value);
+                      ref.read(soundControllerProvider).previewAlarm(value);
+                      ref.read(reminderCoordinatorProvider).reschedule();
+                    },
+                    compact: true,
+                  ),
+                ),
+              ],
+            ),
+          if (section == SettingsDetailSection.preferences)
+            SettingsSection(
+              highlight: highlight,
+              title: l10n.plannerSection,
+              children: [
+                SettingsSwitchRow(
+                  icon: Icons.work_outline,
+                  title: l10n.hideWorkSpace,
+                  subtitle: l10n.hideWorkSpaceSubtitle,
+                  value: settings.hideWorkSpace,
+                  onChanged: controller.setHideWorkSpace,
+                ),
+                SettingsSwitchRow(
+                  icon: Icons.schedule_outlined,
+                  title: l10n.workHours,
+                  subtitle: l10n.workHoursSubtitle,
+                  value: settings.workHoursEnabled,
+                  onChanged: (value) async {
+                    await controller.setWorkHoursEnabled(value);
+                    await ref.read(reminderCoordinatorProvider).reschedule();
+                  },
+                ),
+                if (settings.workHoursEnabled)
+                  SettingsNavRow(
+                    icon: Icons.timelapse_outlined,
+                    title: l10n.hoursWindow,
+                    value: _windowLabel(context, settings.workHoursStartMinute, settings.workHoursEndMinute),
+                    onTap: () => _showHours(
+                      context,
+                      ref,
+                      title: l10n.workHours,
+                      start: settings.workHoursStartMinute,
+                      end: settings.workHoursEndMinute,
+                      onSave: (start, end) async {
+                        await controller.setWorkHours(startMinute: start, endMinute: end);
+                        await ref.read(reminderCoordinatorProvider).reschedule();
+                      },
+                    ),
+                  ),
+                SettingsSwitchRow(
+                  icon: Icons.nightlight_outlined,
+                  title: l10n.quietHours,
+                  subtitle: l10n.quietHoursSubtitle,
+                  value: settings.quietHoursEnabled,
+                  onChanged: (value) async {
+                    await controller.setQuietHoursEnabled(value);
+                    await ref.read(reminderCoordinatorProvider).reschedule();
+                  },
+                ),
+                if (settings.quietHoursEnabled)
+                  SettingsNavRow(
+                    icon: Icons.do_not_disturb_on_outlined,
+                    title: l10n.hoursWindow,
+                    value: _windowLabel(
+                      context,
+                      settings.quietHoursStartMinute,
+                      settings.quietHoursEndMinute,
+                    ),
+                    onTap: () => _showHours(
+                      context,
+                      ref,
+                      title: l10n.quietHours,
+                      start: settings.quietHoursStartMinute,
+                      end: settings.quietHoursEndMinute,
+                      onSave: (start, end) async {
+                        await controller.setQuietHours(startMinute: start, endMinute: end);
+                        await ref.read(reminderCoordinatorProvider).reschedule();
+                      },
+                    ),
+                  ),
+                SettingsNavRow(
+                  icon: Icons.notifications_outlined,
+                  title: l10n.defaultReminders,
+                  subtitle: l10n.defaultRemindersSubtitle,
+                  value: settings.defaultReminderOffsets.isEmpty
+                      ? l10n.notSet
+                      : l10n.selectedCount(settings.defaultReminderOffsets.length),
+                  onTap: () => _showDefaultReminders(context, ref),
+                ),
+              ],
+            ),
+          if (section == SettingsDetailSection.preferences)
+            SettingsSection(
+              highlight: highlight,
+              title: l10n.sleepWindow,
+              children: [
+                SettingsSwitchRow(
+                  icon: Icons.bedtime_outlined,
+                  title: l10n.sleepWindow,
+                  subtitle: l10n.sleepWindowSubtitle,
+                  value: settings.sleepEnabled,
+                  onChanged: controller.setSleepEnabled,
+                ),
+                SettingsNavRow(
+                  icon: Icons.timer_outlined,
+                  title: l10n.sleepBuffers,
+                  subtitle: l10n.sleepBuffersSummary(
+                    settings.sleepCommuteMinutes,
+                    settings.sleepWindDownMinutes,
+                    settings.sleepWakeBufferMinutes,
+                  ),
+                  onTap: () => _showSleepBuffers(context, ref),
+                ),
+              ],
+            ),
+          if (section == SettingsDetailSection.preferences)
+            SettingsSection(
+              highlight: highlight,
+              title: l10n.librarySection,
+              children: [
+                SettingsNavRow(
+                  icon: Icons.sell_outlined,
+                  title: l10n.categories,
+                  subtitle: l10n.tagsManagerSubtitle,
+                  onTap: () =>
+                      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const TagsPage())),
+                ),
+                SettingsNavRow(
+                  icon: Icons.schedule,
+                  title: l10n.shiftPatterns,
+                  subtitle: l10n.shiftPatternsSubtitle,
+                  onTap: () => Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute<void>(builder: (_) => const ShiftPatternsPage())),
+                ),
+                SettingsNavRow(
+                  icon: Icons.inventory_2_outlined,
+                  title: l10n.homeInventory,
+                  subtitle: l10n.homeInventorySubtitle,
+                  onTap: () => Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute<void>(builder: (_) => const HomeInventoryPage())),
+                ),
+                SettingsNavRow(
+                  icon: Icons.shopping_cart_outlined,
+                  title: l10n.shoppingList,
+                  subtitle: l10n.shoppingListSubtitle,
+                  onTap: () => Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute<void>(builder: (_) => const ShoppingListPage())),
+                ),
+                SettingsNavRow(
+                  icon: Icons.build_outlined,
+                  title: l10n.maintenance,
+                  subtitle: l10n.maintenanceSubtitle,
+                  onTap: () => Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute<void>(builder: (_) => const MaintenancePage())),
+                ),
+              ],
+            ),
+          if (section == SettingsDetailSection.data)
+            SettingsSection(
+              highlight: highlight,
+              title: l10n.dataAndBackup,
+              children: [
+                SettingsSwitchRow(
+                  icon: Icons.backup_outlined,
+                  title: l10n.automaticBackups,
+                  subtitle: l10n.automaticBackupsSubtitle,
+                  value: settings.autoBackupEnabled,
+                  onChanged: controller.setAutoBackupEnabled,
+                ),
+                if (settings.autoBackupEnabled)
+                  SettingsNavRow(
+                    icon: Icons.history,
+                    title: l10n.keepBackups,
+                    value: '${settings.autoBackupKeep}',
+                    onTap: () => _showKeepBackups(context, ref),
+                  ),
+                SettingsNavRow(
+                  icon: Icons.upload_file_outlined,
+                  title: l10n.exportBackup,
+                  subtitle: l10n.exportBackupSubtitle,
+                  onTap: () => _exportBackup(context, ref),
+                ),
+                SettingsNavRow(
+                  icon: Icons.download_outlined,
+                  title: l10n.importBackup,
+                  subtitle: l10n.importBackupSubtitle,
+                  onTap: () => _importBackup(context, ref),
+                ),
+                SettingsNavRow(
+                  icon: Icons.event_available_outlined,
+                  title: l10n.importCalendar,
+                  subtitle: l10n.importCalendarSubtitle,
+                  onTap: () => _importCalendar(context, ref),
+                ),
+                SettingsNavRow(
+                  icon: Icons.devices_other_outlined,
+                  title: l10n.importCompanion,
+                  subtitle: l10n.importCompanionSubtitle,
+                  onTap: () => _importCompanion(context, ref),
+                ),
+                SettingsNavRow(
+                  icon: Icons.fitness_center,
+                  title: l10n.gymmaneImport,
+                  subtitle: l10n.gymmaneImportSubtitle,
+                  onTap: () => _importGymMane(context, ref),
+                ),
+                SettingsNavRow(
+                  icon: Icons.table_view_outlined,
+                  title: l10n.exportCsv,
+                  subtitle: l10n.exportCsvSubtitle,
+                  onTap: () => _exportCsv(context, ref),
+                ),
+                SettingsNavRow(
+                  icon: Icons.table_view,
+                  title: l10n.importCsv,
+                  subtitle: l10n.importCsvSubtitle,
+                  onTap: () => _importCsv(context, ref),
+                ),
+                SettingsNavRow(
+                  icon: Icons.ios_share_outlined,
+                  title: l10n.exportCalendar,
+                  subtitle: l10n.exportCalendarSubtitle,
+                  onTap: () => _exportCalendar(context, ref),
+                ),
+                SettingsNavRow(
+                  icon: Icons.delete_forever_outlined,
+                  title: l10n.deleteAllData,
+                  subtitle: l10n.deleteAllDataSubtitle,
+                  onTap: () => _deleteAllData(context, ref),
+                ),
+              ],
+            ),
+          if (section == SettingsDetailSection.about)
+            SettingsSection(
+              highlight: highlight,
+              title: l10n.about,
+              children: [
+                SettingsNavRow(
+                  icon: Icons.info_outline,
+                  title: l10n.about,
+                  subtitle: l10n.aboutSubtitle,
+                  onTap: () =>
+                      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AboutPage())),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+
+    if (embedded) return content;
+
     return ManePage(
       title: switch (section) {
         SettingsDetailSection.appearance => l10n.appearanceSection,
@@ -57,435 +489,7 @@ class SettingsDetailPage extends ConsumerWidget {
         SettingsDetailSection.data => l10n.dataSection,
         SettingsDetailSection.about => l10n.about,
       },
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (section == SettingsDetailSection.appearance)
-              SettingsSection(
-                highlight: highlight,
-                title: l10n.appearanceSection,
-                children: [
-                  SettingsChoiceRow(
-                    icon: Icons.brightness_6_outlined,
-                    title: l10n.theme,
-                    choice: ManeSegmented<ManeThemeVariant>(
-                      segments: [
-                        ManeSegment(value: ManeThemeVariant.system, label: l10n.themeSystem),
-                        ManeSegment(value: ManeThemeVariant.light, label: l10n.themeLight),
-                        ManeSegment(value: ManeThemeVariant.dark, label: l10n.themeDark),
-                        ManeSegment(value: ManeThemeVariant.aero, label: l10n.themeAero),
-                      ],
-                      selected: settings.themeVariant,
-                      onChanged: controller.setThemeVariant,
-                      compact: true,
-                    ),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.texture_outlined,
-                    title: l10n.background,
-                    value: _backgroundLabel(l10n, settings.backgroundStyle),
-                    onTap: () => _pickBackground(context, controller, settings.backgroundStyle),
-                  ),
-                  if (settings.backgroundStyle == ManeBackgroundStyle.custom)
-                    SettingsNavRow(
-                      icon: Icons.colorize_outlined,
-                      title: l10n.customBackgroundColor,
-                      value:
-                          '#'
-                          '${(settings.backgroundCustomColor & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}',
-                      onTap: () async {
-                        final picked = await showColorPicker(
-                          context,
-                          selected: settings.backgroundCustomColor,
-                          title: l10n.customBackgroundColor,
-                        );
-                        if (picked != null) await controller.setBackgroundCustomColor(picked);
-                      },
-                    ),
-                  SettingsNavRow(
-                    icon: Icons.format_size,
-                    title: l10n.textSize,
-                    value: _textScaleLabel(l10n, settings.textScale),
-                    onTap: () => _pickTextScale(context, controller, settings.textScale),
-                  ),
-                ],
-              ),
-            if (section == SettingsDetailSection.preferences)
-              SettingsSection(
-                highlight: highlight,
-                title: l10n.preferencesSection,
-                children: [
-                  SettingsChoiceRow(
-                    icon: Icons.translate,
-                    title: l10n.language,
-                    choice: ManeSegmented<String>(
-                      segments: [
-                        ManeSegment(value: 'system', label: l10n.languageSystem),
-                        ManeSegment(value: 'en', label: l10n.languageEnglish),
-                        ManeSegment(value: 'es', label: l10n.languageSpanish),
-                      ],
-                      selected: settings.locale?.languageCode ?? 'system',
-                      onChanged: (value) => controller.setLocale(value == 'system' ? null : Locale(value)),
-                      compact: true,
-                    ),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.public,
-                    title: l10n.timeZone,
-                    subtitle: l10n.timezoneSubtitle,
-                    value: settings.timezoneOverride.isEmpty
-                        ? ref.watch(deviceTimeZoneProvider)
-                        : settings.timezoneOverride,
-                    onTap: () => _pickTimeZone(context, ref, settings),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.event_outlined,
-                    title: l10n.dateFormatLabel,
-                    value: _dateFormatLabel(l10n, settings.dateFormat),
-                    onTap: () => _pickDateFormat(context, controller, settings.dateFormat),
-                  ),
-                  SettingsChoiceRow(
-                    icon: Icons.calendar_view_week_outlined,
-                    title: l10n.weekStartsOn,
-                    choice: ManeSegmented<int>(
-                      segments: [
-                        ManeSegment(value: DateTime.monday, label: l10n.weekStartMonday),
-                        ManeSegment(value: DateTime.saturday, label: l10n.weekStartSaturday),
-                        ManeSegment(value: DateTime.sunday, label: l10n.weekStartSunday),
-                      ],
-                      selected: settings.weekStart,
-                      onChanged: controller.setWeekStart,
-                      compact: true,
-                    ),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.view_sidebar_outlined,
-                    title: l10n.navigationSide,
-                    value: settings.navSide == ManeNavSide.left ? l10n.navLeft : l10n.navRight,
-                    onTap: () => _pickNavSide(context, controller, settings.navSide),
-                  ),
-                  SettingsSwitchRow(
-                    icon: Icons.speed_outlined,
-                    title: l10n.performanceMode,
-                    subtitle: l10n.performanceModeSubtitle,
-                    value: settings.performanceMode,
-                    onChanged: controller.setPerformanceMode,
-                  ),
-                ],
-              ),
-            if (section == SettingsDetailSection.preferences)
-              SettingsSection(
-                highlight: highlight,
-                title: l10n.soundSection,
-                children: [
-                  SettingsSwitchRow(
-                    icon: Icons.volume_up_outlined,
-                    title: l10n.interactionSounds,
-                    subtitle: l10n.interactionSoundsSubtitle,
-                    value: settings.soundsEnabled,
-                    onChanged: (value) async {
-                      await controller.setSoundsEnabled(value);
-                      if (value) {
-                        ref.read(soundControllerProvider).play(UiSound.toggleOn, force: true);
-                      }
-                    },
-                  ),
-                  SettingsChoiceRow(
-                    icon: Icons.graphic_eq,
-                    title: l10n.soundPackLabel,
-                    choice: ManeSegmented<ManeSoundPack>(
-                      segments: [
-                        ManeSegment(value: ManeSoundPack.soft, label: l10n.soundPackSoft),
-                        ManeSegment(value: ManeSoundPack.aero, label: l10n.soundPackAero),
-                      ],
-                      selected: settings.soundPack,
-                      onChanged: (value) {
-                        controller.setSoundPack(value);
-                        ref.read(soundControllerProvider).play(UiSound.tap, force: true);
-                      },
-                      compact: true,
-                    ),
-                  ),
-                  SettingsChoiceRow(
-                    icon: Icons.play_circle_outline,
-                    title: l10n.previewSound,
-                    choice: OutlinedButton.icon(
-                      onPressed: () => ref.read(soundControllerProvider).play(UiSound.tap, force: true),
-                      icon: const Icon(Icons.play_arrow, size: 18),
-                      label: Text(l10n.previewSound),
-                    ),
-                  ),
-                  SettingsChoiceRow(
-                    icon: Icons.alarm_outlined,
-                    title: l10n.alarmSounds,
-                    subtitle: l10n.alarmSoundsSubtitle,
-                    choice: ManeSegmented<ManeAlarmSound>(
-                      segments: [
-                        ManeSegment(value: ManeAlarmSound.soft, label: l10n.alarmSoundSoft),
-                        ManeSegment(value: ManeAlarmSound.chime, label: l10n.alarmSoundChime),
-                        ManeSegment(value: ManeAlarmSound.bright, label: l10n.alarmSoundBright),
-                      ],
-                      selected: settings.alarmSound,
-                      onChanged: (value) {
-                        controller.setAlarmSound(value);
-                        ref.read(soundControllerProvider).previewAlarm(value);
-                        ref.read(reminderCoordinatorProvider).reschedule();
-                      },
-                      compact: true,
-                    ),
-                  ),
-                ],
-              ),
-            if (section == SettingsDetailSection.preferences)
-              SettingsSection(
-                highlight: highlight,
-                title: l10n.plannerSection,
-                children: [
-                  SettingsSwitchRow(
-                    icon: Icons.work_outline,
-                    title: l10n.hideWorkSpace,
-                    subtitle: l10n.hideWorkSpaceSubtitle,
-                    value: settings.hideWorkSpace,
-                    onChanged: controller.setHideWorkSpace,
-                  ),
-                  SettingsSwitchRow(
-                    icon: Icons.schedule_outlined,
-                    title: l10n.workHours,
-                    subtitle: l10n.workHoursSubtitle,
-                    value: settings.workHoursEnabled,
-                    onChanged: (value) async {
-                      await controller.setWorkHoursEnabled(value);
-                      await ref.read(reminderCoordinatorProvider).reschedule();
-                    },
-                  ),
-                  if (settings.workHoursEnabled)
-                    SettingsNavRow(
-                      icon: Icons.timelapse_outlined,
-                      title: l10n.hoursWindow,
-                      value: _windowLabel(
-                        context,
-                        settings.workHoursStartMinute,
-                        settings.workHoursEndMinute,
-                      ),
-                      onTap: () => _showHours(
-                        context,
-                        ref,
-                        title: l10n.workHours,
-                        start: settings.workHoursStartMinute,
-                        end: settings.workHoursEndMinute,
-                        onSave: (start, end) async {
-                          await controller.setWorkHours(startMinute: start, endMinute: end);
-                          await ref.read(reminderCoordinatorProvider).reschedule();
-                        },
-                      ),
-                    ),
-                  SettingsSwitchRow(
-                    icon: Icons.nightlight_outlined,
-                    title: l10n.quietHours,
-                    subtitle: l10n.quietHoursSubtitle,
-                    value: settings.quietHoursEnabled,
-                    onChanged: (value) async {
-                      await controller.setQuietHoursEnabled(value);
-                      await ref.read(reminderCoordinatorProvider).reschedule();
-                    },
-                  ),
-                  if (settings.quietHoursEnabled)
-                    SettingsNavRow(
-                      icon: Icons.do_not_disturb_on_outlined,
-                      title: l10n.hoursWindow,
-                      value: _windowLabel(
-                        context,
-                        settings.quietHoursStartMinute,
-                        settings.quietHoursEndMinute,
-                      ),
-                      onTap: () => _showHours(
-                        context,
-                        ref,
-                        title: l10n.quietHours,
-                        start: settings.quietHoursStartMinute,
-                        end: settings.quietHoursEndMinute,
-                        onSave: (start, end) async {
-                          await controller.setQuietHours(startMinute: start, endMinute: end);
-                          await ref.read(reminderCoordinatorProvider).reschedule();
-                        },
-                      ),
-                    ),
-                  SettingsNavRow(
-                    icon: Icons.notifications_outlined,
-                    title: l10n.defaultReminders,
-                    subtitle: l10n.defaultRemindersSubtitle,
-                    value: settings.defaultReminderOffsets.isEmpty
-                        ? l10n.notSet
-                        : l10n.selectedCount(settings.defaultReminderOffsets.length),
-                    onTap: () => _showDefaultReminders(context, ref),
-                  ),
-                ],
-              ),
-            if (section == SettingsDetailSection.preferences)
-              SettingsSection(
-                highlight: highlight,
-                title: l10n.sleepWindow,
-                children: [
-                  SettingsSwitchRow(
-                    icon: Icons.bedtime_outlined,
-                    title: l10n.sleepWindow,
-                    subtitle: l10n.sleepWindowSubtitle,
-                    value: settings.sleepEnabled,
-                    onChanged: controller.setSleepEnabled,
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.timer_outlined,
-                    title: l10n.sleepBuffers,
-                    subtitle: l10n.sleepBuffersSummary(
-                      settings.sleepCommuteMinutes,
-                      settings.sleepWindDownMinutes,
-                      settings.sleepWakeBufferMinutes,
-                    ),
-                    onTap: () => _showSleepBuffers(context, ref),
-                  ),
-                ],
-              ),
-            if (section == SettingsDetailSection.preferences)
-              SettingsSection(
-                highlight: highlight,
-                title: l10n.librarySection,
-                children: [
-                  SettingsNavRow(
-                    icon: Icons.sell_outlined,
-                    title: l10n.categories,
-                    subtitle: l10n.tagsManagerSubtitle,
-                    onTap: () =>
-                        Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const TagsPage())),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.schedule,
-                    title: l10n.shiftPatterns,
-                    subtitle: l10n.shiftPatternsSubtitle,
-                    onTap: () => Navigator.of(
-                      context,
-                    ).push(MaterialPageRoute<void>(builder: (_) => const ShiftPatternsPage())),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.inventory_2_outlined,
-                    title: l10n.homeInventory,
-                    subtitle: l10n.homeInventorySubtitle,
-                    onTap: () => Navigator.of(
-                      context,
-                    ).push(MaterialPageRoute<void>(builder: (_) => const HomeInventoryPage())),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.shopping_cart_outlined,
-                    title: l10n.shoppingList,
-                    subtitle: l10n.shoppingListSubtitle,
-                    onTap: () => Navigator.of(
-                      context,
-                    ).push(MaterialPageRoute<void>(builder: (_) => const ShoppingListPage())),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.build_outlined,
-                    title: l10n.maintenance,
-                    subtitle: l10n.maintenanceSubtitle,
-                    onTap: () => Navigator.of(
-                      context,
-                    ).push(MaterialPageRoute<void>(builder: (_) => const MaintenancePage())),
-                  ),
-                ],
-              ),
-            if (section == SettingsDetailSection.data)
-              SettingsSection(
-                highlight: highlight,
-                title: l10n.dataAndBackup,
-                children: [
-                  SettingsSwitchRow(
-                    icon: Icons.backup_outlined,
-                    title: l10n.automaticBackups,
-                    subtitle: l10n.automaticBackupsSubtitle,
-                    value: settings.autoBackupEnabled,
-                    onChanged: controller.setAutoBackupEnabled,
-                  ),
-                  if (settings.autoBackupEnabled)
-                    SettingsNavRow(
-                      icon: Icons.history,
-                      title: l10n.keepBackups,
-                      value: '${settings.autoBackupKeep}',
-                      onTap: () => _showKeepBackups(context, ref),
-                    ),
-                  SettingsNavRow(
-                    icon: Icons.upload_file_outlined,
-                    title: l10n.exportBackup,
-                    subtitle: l10n.exportBackupSubtitle,
-                    onTap: () => _exportBackup(context, ref),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.download_outlined,
-                    title: l10n.importBackup,
-                    subtitle: l10n.importBackupSubtitle,
-                    onTap: () => _importBackup(context, ref),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.event_available_outlined,
-                    title: l10n.importCalendar,
-                    subtitle: l10n.importCalendarSubtitle,
-                    onTap: () => _importCalendar(context, ref),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.devices_other_outlined,
-                    title: l10n.importCompanion,
-                    subtitle: l10n.importCompanionSubtitle,
-                    onTap: () => _importCompanion(context, ref),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.fitness_center,
-                    title: l10n.gymmaneImport,
-                    subtitle: l10n.gymmaneImportSubtitle,
-                    onTap: () => _importGymMane(context, ref),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.table_view_outlined,
-                    title: l10n.exportCsv,
-                    subtitle: l10n.exportCsvSubtitle,
-                    onTap: () => _exportCsv(context, ref),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.table_view,
-                    title: l10n.importCsv,
-                    subtitle: l10n.importCsvSubtitle,
-                    onTap: () => _importCsv(context, ref),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.ios_share_outlined,
-                    title: l10n.exportCalendar,
-                    subtitle: l10n.exportCalendarSubtitle,
-                    onTap: () => _exportCalendar(context, ref),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.delete_forever_outlined,
-                    title: l10n.deleteAllData,
-                    subtitle: l10n.deleteAllDataSubtitle,
-                    onTap: () => _deleteAllData(context, ref),
-                  ),
-                ],
-              ),
-            if (section == SettingsDetailSection.about)
-              SettingsSection(
-                highlight: highlight,
-                title: l10n.about,
-                children: [
-                  SettingsNavRow(
-                    icon: Icons.info_outline,
-                    title: l10n.about,
-                    subtitle: l10n.aboutSubtitle,
-                    onTap: () => Navigator.of(
-                      context,
-                    ).push(MaterialPageRoute<void>(builder: (_) => const AboutPage())),
-                  ),
-                ],
-              ),
-          ],
-        ),
-      ),
+      child: content,
     );
   }
 

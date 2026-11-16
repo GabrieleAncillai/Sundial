@@ -3,14 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
+import '../../../models/app_settings.dart';
 import '../../../state/providers.dart';
 import '../../../state/settings_controller.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_typography.dart';
 import '../../mcp/pages/mcp_page.dart';
 import '../../sync/pages/devices_page.dart';
 import '../widgets/settings_rows.dart';
 import 'about_page.dart';
 import 'settings_detail_page.dart';
+
+/// Mirrors the shell breakpoint in `lib/app/app_shell.dart`.
+const _desktopBreakpoint = 900.0;
+const _sidebarWidth = 286.0;
+const _paneMaxWidth = 760.0;
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -22,6 +29,8 @@ class SettingsPage extends ConsumerStatefulWidget {
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   final _search = TextEditingController();
   String _query = '';
+  _DesktopSettingsSection _desktopSection = _DesktopSettingsSection.appearance;
+  String? _desktopHighlight;
 
   @override
   void dispose() {
@@ -31,9 +40,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < _desktopBreakpoint) return _mobile(context);
+        return _desktop(context);
+      },
+    );
+  }
+
+  Widget _mobile(BuildContext context) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
-    final controller = ref.read(settingsProvider.notifier);
     final entries = _entries(l10n);
     final query = _query.trim().toLowerCase();
     final matches = query.isEmpty
@@ -95,46 +112,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ],
             ),
-            SettingsSection(
-              title: l10n.onlineSection,
-              children: [
-                SettingsSwitchRow(
-                  icon: Icons.language,
-                  title: l10n.onlineEnable,
-                  subtitle: l10n.onlineEnableSubtitle,
-                  value: settings.onlineEnabled,
-                  onChanged: (value) async {
-                    await controller.setOnlineEnabled(value);
-                    await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
-                    if (value && context.mounted) {
-                      final identity = await ref.read(repositoryProvider).readIdentity();
-                      if (identity == null && context.mounted) {
-                        _notice(context, l10n.identityRequired);
-                      }
-                    }
-                  },
-                ),
-                if (settings.onlineEnabled) ...[
-                  SettingsNavRow(
-                    icon: Icons.devices_other,
-                    title: l10n.devicesAndSync,
-                    subtitle: l10n.devicesAndSyncSubtitle,
-                    value: '$pairedCount',
-                    onTap: () => Navigator.of(
-                      context,
-                    ).push(MaterialPageRoute<void>(builder: (_) => const DevicesPage())),
-                  ),
-                  SettingsNavRow(
-                    icon: Icons.terminal,
-                    title: l10n.mcpServer,
-                    subtitle: l10n.mcpEndpointSubtitle,
-                    value: settings.mcpEnabled ? l10n.on : l10n.off,
-                    onTap: () =>
-                        Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const McpPage())),
-                  ),
-                ],
-              ],
-            ),
+            _onlineSection(context, l10n, settings, pairedCount),
             SettingsSection(
               title: l10n.about,
               children: [
@@ -150,6 +128,150 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ],
         ],
       ),
+    );
+  }
+
+  Widget _desktop(BuildContext context) {
+    final l10n = context.l10n;
+    final settings = ref.watch(settingsProvider);
+    final entries = _entries(l10n);
+    final query = _query.trim().toLowerCase();
+    final matches = query.isEmpty
+        ? const <_SettingLink>[]
+        : entries.where((entry) => entry.matches(query)).toList();
+    final pairedCount = ref.watch(pairedDevicesProvider).value?.length ?? 0;
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: AppBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _SettingsSidebar(
+                  searchController: _search,
+                  searchHint: l10n.settingsSearch,
+                  onSearchChanged: (value) => setState(() => _query = value),
+                  searching: query.isNotEmpty,
+                  matches: matches,
+                  selected: _desktopSection,
+                  onlineEnabled: settings.onlineEnabled,
+                  onSelected: _selectDesktopSection,
+                  onOpenLink: _openDesktopLink,
+                  onBack: () => Navigator.of(context).maybePop(),
+                ),
+                const SizedBox(width: 22),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: _paneMaxWidth),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _paneHeader(context, l10n),
+                            Expanded(child: _paneBody(context, l10n, settings, pairedCount)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _paneHeader(BuildContext context, AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(6, 8, 6, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(_desktopSection.title(l10n), style: ManeType.headline(27, color: context.mc.text)),
+          const SizedBox(height: 3),
+          Text(_desktopSection.subtitle(l10n), style: ManeType.body(13, color: context.mc.textSecondary)),
+        ],
+      ),
+    );
+  }
+
+  Widget _paneBody(BuildContext context, AppLocalizations l10n, AppSettings settings, int pairedCount) {
+    switch (_desktopSection) {
+      case _DesktopSettingsSection.online:
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [_onlineSection(context, l10n, settings, pairedCount, highlight: _desktopHighlight)],
+          ),
+        );
+      case _DesktopSettingsSection.about:
+        return const AboutPage(embedded: true);
+      case _DesktopSettingsSection.appearance:
+      case _DesktopSettingsSection.preferences:
+      case _DesktopSettingsSection.data:
+        return SettingsDetailPage(
+          section: _desktopSection.detail!,
+          highlight: _desktopHighlight,
+          embedded: true,
+        );
+    }
+  }
+
+  Widget _onlineSection(
+    BuildContext context,
+    AppLocalizations l10n,
+    AppSettings settings,
+    int pairedCount, {
+    String? highlight,
+  }) {
+    final controller = ref.read(settingsProvider.notifier);
+    return SettingsSection(
+      highlight: highlight,
+      title: l10n.onlineSection,
+      children: [
+        SettingsSwitchRow(
+          icon: Icons.language,
+          title: l10n.onlineEnable,
+          subtitle: l10n.onlineEnableSubtitle,
+          value: settings.onlineEnabled,
+          onChanged: (value) async {
+            await controller.setOnlineEnabled(value);
+            await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
+            if (value && context.mounted) {
+              final identity = await ref.read(repositoryProvider).readIdentity();
+              if (identity == null && context.mounted) {
+                _notice(context, l10n.identityRequired);
+              }
+            }
+          },
+        ),
+        if (settings.onlineEnabled) ...[
+          SettingsNavRow(
+            icon: Icons.devices_other,
+            title: l10n.devicesAndSync,
+            subtitle: l10n.devicesAndSyncSubtitle,
+            value: '$pairedCount',
+            onTap: () =>
+                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const DevicesPage())),
+          ),
+          SettingsNavRow(
+            icon: Icons.terminal,
+            title: l10n.mcpServer,
+            subtitle: l10n.mcpEndpointSubtitle,
+            value: settings.mcpEnabled ? l10n.on : l10n.off,
+            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const McpPage())),
+          ),
+        ],
+      ],
     );
   }
 
@@ -338,6 +460,39 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     ),
   ];
 
+  void _selectDesktopSection(_DesktopSettingsSection section) {
+    if (section == _desktopSection) return;
+    setState(() {
+      _desktopSection = section;
+      _desktopHighlight = null;
+    });
+  }
+
+  void _openDesktopLink(_SettingLink link) {
+    switch (link.route) {
+      case _SettingRoute.devices:
+      case _SettingRoute.mcp:
+        if (!ref.read(settingsProvider).onlineEnabled) {
+          _notice(context, context.l10n.onlineEnableSubtitle);
+          return;
+        }
+        setState(() {
+          _desktopSection = _DesktopSettingsSection.online;
+          _desktopHighlight = link.title;
+        });
+      case _SettingRoute.about:
+        setState(() {
+          _desktopSection = _DesktopSettingsSection.about;
+          _desktopHighlight = null;
+        });
+      case _SettingRoute.detail:
+        setState(() {
+          _desktopSection = _DesktopSettingsSection.fromDetail(link.section!);
+          _desktopHighlight = link.title;
+        });
+    }
+  }
+
   void _open(BuildContext context, _SettingLink link) {
     switch (link.route) {
       case _SettingRoute.devices:
@@ -370,6 +525,281 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   void _notice(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
+}
+
+class _SettingsSidebar extends StatelessWidget {
+  const _SettingsSidebar({
+    required this.searchController,
+    required this.searchHint,
+    required this.onSearchChanged,
+    required this.searching,
+    required this.matches,
+    required this.selected,
+    required this.onlineEnabled,
+    required this.onSelected,
+    required this.onOpenLink,
+    required this.onBack,
+  });
+
+  final TextEditingController searchController;
+  final String searchHint;
+  final ValueChanged<String> onSearchChanged;
+  final bool searching;
+  final List<_SettingLink> matches;
+  final _DesktopSettingsSection selected;
+  final bool onlineEnabled;
+  final ValueChanged<_DesktopSettingsSection> onSelected;
+  final ValueChanged<_SettingLink> onOpenLink;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final c = context.mc;
+    return Container(
+      width: _sidebarWidth,
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+      decoration: BoxDecoration(
+        color: c.navBg,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: c.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 14),
+            child: Row(
+              children: [
+                _SidebarBackButton(onTap: onBack),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.settings,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: ManeType.headline(21, color: c.text),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ManeSearchField(controller: searchController, hint: searchHint, onChanged: onSearchChanged),
+          const SizedBox(height: 14),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 8),
+              children: [
+                if (searching) ...[
+                  SectionLabel(l10n.settingsSearch),
+                  if (matches.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+                      child: Text(l10n.noSettingsFound, style: ManeType.body(12.5, color: c.textSecondary)),
+                    )
+                  else
+                    for (final link in matches)
+                      _SidebarRow(
+                        icon: link.icon,
+                        title: link.title,
+                        subtitle: link.subtitle,
+                        onTap: () => onOpenLink(link),
+                      ),
+                ] else ...[
+                  _SidebarRow(
+                    icon: Icons.palette_outlined,
+                    title: l10n.appearanceSection,
+                    selected: selected == _DesktopSettingsSection.appearance,
+                    onTap: () => onSelected(_DesktopSettingsSection.appearance),
+                  ),
+                  _SidebarRow(
+                    icon: Icons.tune,
+                    title: l10n.preferencesSection,
+                    selected: selected == _DesktopSettingsSection.preferences,
+                    onTap: () => onSelected(_DesktopSettingsSection.preferences),
+                  ),
+                  _SidebarRow(
+                    icon: Icons.storage_outlined,
+                    title: l10n.dataSection,
+                    selected: selected == _DesktopSettingsSection.data,
+                    onTap: () => onSelected(_DesktopSettingsSection.data),
+                  ),
+                  const _SidebarDivider(),
+                  _SidebarRow(
+                    icon: Icons.language,
+                    title: l10n.onlineSection,
+                    value: onlineEnabled ? l10n.on : l10n.off,
+                    selected: selected == _DesktopSettingsSection.online,
+                    onTap: () => onSelected(_DesktopSettingsSection.online),
+                  ),
+                  const _SidebarDivider(),
+                  _SidebarRow(
+                    icon: Icons.info_outline,
+                    title: l10n.about,
+                    selected: selected == _DesktopSettingsSection.about,
+                    onTap: () => onSelected(_DesktopSettingsSection.about),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SidebarBackButton extends StatelessWidget {
+  const _SidebarBackButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.mc;
+    return Pressable(
+      onTap: onTap,
+      semanticButton: true,
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: c.surface,
+          border: Border.all(color: c.border),
+        ),
+        child: Icon(Icons.chevron_left, size: 21, color: c.text),
+      ),
+    );
+  }
+}
+
+class _SidebarDivider extends StatelessWidget {
+  const _SidebarDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      child: Divider(height: 1, color: context.mc.border),
+    );
+  }
+}
+
+class _SidebarRow extends StatelessWidget {
+  const _SidebarRow({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.value,
+    this.selected = false,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final String? value;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.mc;
+    final twoLines = subtitle != null;
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: Pressable(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          margin: const EdgeInsets.symmetric(vertical: 2),
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: twoLines ? 8 : 10),
+          decoration: BoxDecoration(
+            color: selected ? c.accentSoft : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: selected ? c.accent.withValues(alpha: 0.30) : Colors.transparent),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 18, color: selected ? c.accent : c.textSecondary),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: ManeType.body(
+                        13.5,
+                        weight: selected ? FontWeight.w800 : FontWeight.w600,
+                        color: selected ? c.accent : c.text,
+                      ),
+                    ),
+                    if (twoLines) ...[
+                      const SizedBox(height: 1),
+                      Text(
+                        subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: ManeType.body(10.5, color: c.textTertiary),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (value != null) ...[
+                const SizedBox(width: 8),
+                Text(value!, style: ManeType.label(10.5, color: c.textTertiary)),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+enum _DesktopSettingsSection {
+  appearance,
+  preferences,
+  data,
+  online,
+  about;
+
+  SettingsDetailSection? get detail => switch (this) {
+    _DesktopSettingsSection.appearance => SettingsDetailSection.appearance,
+    _DesktopSettingsSection.preferences => SettingsDetailSection.preferences,
+    _DesktopSettingsSection.data => SettingsDetailSection.data,
+    _DesktopSettingsSection.online => null,
+    _DesktopSettingsSection.about => null,
+  };
+
+  static _DesktopSettingsSection fromDetail(SettingsDetailSection section) => switch (section) {
+    SettingsDetailSection.appearance => _DesktopSettingsSection.appearance,
+    SettingsDetailSection.preferences => _DesktopSettingsSection.preferences,
+    SettingsDetailSection.data => _DesktopSettingsSection.data,
+    SettingsDetailSection.about => _DesktopSettingsSection.about,
+  };
+
+  String title(AppLocalizations l10n) => switch (this) {
+    _DesktopSettingsSection.appearance => l10n.appearanceSection,
+    _DesktopSettingsSection.preferences => l10n.preferencesSection,
+    _DesktopSettingsSection.data => l10n.dataSection,
+    _DesktopSettingsSection.online => l10n.onlineSection,
+    _DesktopSettingsSection.about => l10n.about,
+  };
+
+  String subtitle(AppLocalizations l10n) => switch (this) {
+    _DesktopSettingsSection.appearance => l10n.appearanceSubtitle,
+    _DesktopSettingsSection.preferences => l10n.preferencesSubtitle,
+    _DesktopSettingsSection.data => l10n.dataSubtitle,
+    _DesktopSettingsSection.online => l10n.onlineSubtitle,
+    _DesktopSettingsSection.about => l10n.aboutSubtitle,
+  };
 }
 
 enum _SettingRoute { devices, mcp, about, detail }

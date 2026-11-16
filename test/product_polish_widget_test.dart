@@ -1,4 +1,4 @@
-import 'dart:ffi';
+import 'dart:ffi' show DynamicLibrary;
 
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -164,6 +164,66 @@ void main() {
 
     expect(find.text('Appearance'), findsOneWidget);
     expect(find.text('Preferences'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('desktop settings keeps the menu beside the selected panel', (tester) async {
+    tester.view.physicalSize = const Size(1280, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(host(const SettingsPage()));
+    await tester.pumpAndSettle();
+
+    // The sidebar lists the top-level sections and Appearance is selected.
+    expect(find.text('Appearance'), findsWidgets);
+    expect(find.text('Preferences'), findsOneWidget);
+    expect(find.text('Data and backup'), findsOneWidget);
+    expect(find.text('Online functionalities'), findsOneWidget);
+    expect(find.text('About'), findsOneWidget);
+    expect(find.text('Theme'), findsOneWidget);
+
+    await tester.tap(find.text('Preferences'));
+    await tester.pumpAndSettle();
+    expect(find.text('Theme'), findsNothing);
+    expect(find.text('Language'), findsOneWidget);
+
+    await tester.tap(find.text('Data and backup'));
+    await tester.pumpAndSettle();
+    expect(find.text('Export a backup'), findsOneWidget);
+
+    await tester.tap(find.text('Online functionalities'));
+    await tester.pumpAndSettle();
+    expect(find.text('Enable online functionalities'), findsOneWidget);
+
+    await tester.tap(find.text('About'));
+    await tester.pumpAndSettle();
+    expect(find.text('LICENSE'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('desktop settings search opens the matching row in the pane', (tester) async {
+    tester.view.physicalSize = const Size(1280, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(host(const SettingsPage()));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).first, 'quiet hours');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Quiet hours'), findsOneWidget);
+    await tester.tap(find.text('Quiet hours'));
+    await tester.pumpAndSettle();
+
+    // The Preferences panel is selected and the matching row is visible.
+    expect(find.text('Language'), findsOneWidget);
+    expect(find.text('Quiet hours'), findsWidgets);
+
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(seconds: 1));
   });

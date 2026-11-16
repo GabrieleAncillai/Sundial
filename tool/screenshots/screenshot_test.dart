@@ -184,6 +184,19 @@ void main() {
     );
   });
 
+  testWidgets('render desktop Settings master-detail', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.3-settings-desktop.png',
+      database,
+      view: _desktop,
+      act: (tester) async {
+        await tester.tap(find.text('Settings'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
   testWidgets('render Aero Today', (tester) async {
     await _renderShell(
       tester,
