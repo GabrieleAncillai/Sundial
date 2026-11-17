@@ -1,6 +1,7 @@
 export 'app_background.dart';
 export 'app_empty_state.dart';
 export 'app_sheet.dart';
+export 'sundial_content_pane.dart';
 export 'sundial_date_field.dart';
 export 'sundial_field_clear.dart';
 export 'sundial_nav_bar.dart';

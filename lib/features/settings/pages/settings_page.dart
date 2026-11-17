@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/l10n.dart';
+import '../../../core/layout/sundial_layout.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../models/app_settings.dart';
 import '../../../state/providers.dart';
 import '../../../state/settings_controller.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../../mcp/pages/mcp_page.dart';
 import '../../sync/pages/devices_page.dart';
@@ -16,8 +18,6 @@ import 'settings_detail_page.dart';
 
 /// Mirrors the shell breakpoint in `lib/app/app_shell.dart`.
 const _desktopBreakpoint = 900.0;
-const _sidebarWidth = 286.0;
-const _paneMaxWidth = 760.0;
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -164,20 +164,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
                 const SizedBox(width: 22),
                 Expanded(
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: _paneMaxWidth),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _paneHeader(context, l10n),
-                            Expanded(child: _paneBody(context, l10n, settings, pairedCount)),
-                          ],
-                        ),
-                      ),
+                  child: SundialContentPane(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _paneHeader(context, l10n),
+                        Expanded(child: _paneBody(context, l10n, settings, pairedCount)),
+                      ],
                     ),
                   ),
                 ),
@@ -557,11 +550,11 @@ class _SettingsSidebar extends StatelessWidget {
     final l10n = context.l10n;
     final c = context.mc;
     return Container(
-      width: _sidebarWidth,
+      width: kSidebarWidth,
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
       decoration: BoxDecoration(
         color: c.navBg,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(SundialRadii.lg),
         border: Border.all(color: c.border),
       ),
       child: Column(
@@ -721,7 +714,7 @@ class _SidebarRow extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: twoLines ? 8 : 10),
           decoration: BoxDecoration(
             color: selected ? c.accentSoft : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(SundialRadii.sm),
             border: Border.all(color: selected ? c.accent.withValues(alpha: 0.30) : Colors.transparent),
           ),
           child: Row(

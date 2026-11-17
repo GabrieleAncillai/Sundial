@@ -7,6 +7,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
+import '../core/layout/sundial_layout.dart';
 import '../core/sound/sound_service.dart';
 import '../core/widgets/ui_kit.dart';
 import '../features/home_widget/home_widget_service.dart';
@@ -24,6 +25,7 @@ import '../services/reminder_planner.dart';
 import '../state/providers.dart';
 import '../state/settings_controller.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_radii.dart';
 import '../theme/app_typography.dart';
 
 class AppShell extends ConsumerStatefulWidget {
@@ -277,7 +279,10 @@ class _AppShellState extends ConsumerState<AppShell>
                 Container(
                   width: 38,
                   height: 38,
-                  decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(13)),
+                  decoration: BoxDecoration(
+                    color: c.accent,
+                    borderRadius: BorderRadius.circular(SundialRadii.sm),
+                  ),
                   child: Icon(Icons.event_note, size: 21, color: c.onAccent),
                 ),
                 const SizedBox(width: 10),
@@ -295,7 +300,10 @@ class _AppShellState extends ConsumerState<AppShell>
                       ? null
                       : Container(
                           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                          decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(8)),
+                          decoration: BoxDecoration(
+                            color: c.accent,
+                            borderRadius: BorderRadius.circular(SundialRadii.xs),
+                          ),
                           child: Text('$filterCount', style: SundialType.label(9, color: c.onAccent)),
                         ),
                 ),
@@ -311,12 +319,13 @@ class _AppShellState extends ConsumerState<AppShell>
             child: IndexedStack(
               index: _index,
               children: const [
-                TodayScreen(),
-                SpaceOverviewPage(spaceId: 'work'),
-                SpaceOverviewPage(spaceId: 'home'),
-                SpaceOverviewPage(spaceId: 'personal'),
+                SundialContentPane(child: TodayScreen()),
+                SundialContentPane(child: SpaceOverviewPage(spaceId: 'work')),
+                SundialContentPane(child: SpaceOverviewPage(spaceId: 'home')),
+                SundialContentPane(child: SpaceOverviewPage(spaceId: 'personal')),
+                // Plan is a canvas: the month and week grids use the full width.
                 PlanPage(),
-                StatsPage(),
+                SundialContentPane(child: StatsPage()),
               ],
             ),
           ),
@@ -423,11 +432,11 @@ class _SideRail extends StatelessWidget {
     final c = context.mc;
     final l10n = context.l10n;
     return Container(
-      width: 236,
+      width: kSidebarWidth,
       margin: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       decoration: BoxDecoration(
         color: c.navBg,
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(SundialRadii.xl),
         border: Border.all(color: c.border),
         boxShadow: [BoxShadow(color: c.shadow, blurRadius: 26, offset: const Offset(0, 12))],
       ),
@@ -440,7 +449,10 @@ class _SideRail extends StatelessWidget {
                 Container(
                   width: 38,
                   height: 38,
-                  decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(13)),
+                  decoration: BoxDecoration(
+                    color: c.accent,
+                    borderRadius: BorderRadius.circular(SundialRadii.sm),
+                  ),
                   child: Icon(Icons.event_note, size: 21, color: c.onAccent),
                 ),
                 const SizedBox(width: 10),
@@ -540,7 +552,7 @@ class _RailItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             color: selected ? c.accentSoft : Colors.transparent,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(SundialRadii.md),
             border: selected ? Border.all(color: c.accent.withValues(alpha: 0.2)) : null,
           ),
           child: Row(

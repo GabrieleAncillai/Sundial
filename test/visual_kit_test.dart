@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sundial/core/layout/sundial_layout.dart';
 import 'package:sundial/core/widgets/ui_kit.dart';
 import 'package:sundial/theme/app_colors.dart';
+import 'package:sundial/theme/app_radii.dart';
 import 'package:sundial/theme/app_theme.dart';
 
 void main() {
@@ -16,7 +18,14 @@ void main() {
     expect(theme.appBarTheme.backgroundColor, Colors.transparent);
     expect(theme.snackBarTheme.behavior, SnackBarBehavior.floating);
     expect(theme.filledButtonTheme.style?.shape?.resolve({}), isA<StadiumBorder>());
-    expect(theme.bottomSheetTheme.shape, isA<RoundedRectangleBorder>());
+    // Sheets and cards follow the icon's continuous-corner silhouette.
+    expect(theme.bottomSheetTheme.shape, isA<RoundedSuperellipseBorder>());
+    expect(theme.cardTheme.shape, isA<RoundedSuperellipseBorder>());
+    expect(theme.dialogTheme.shape, isA<RoundedSuperellipseBorder>());
+    expect(
+      (theme.cardTheme.shape! as RoundedSuperellipseBorder).borderRadius,
+      BorderRadius.circular(SundialRadii.lg),
+    );
     expect(theme.cardTheme.color, SundialColors.light.surface);
   });
 
@@ -59,6 +68,38 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Quiet hours'));
     await tester.pumpAndSettle();
     expect(toggled, isTrue);
+  });
+
+  testWidgets('page bodies centre in the reading column on wide windows', (tester) async {
+    tester.view.physicalSize = const Size(1600, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SundialTheme.light,
+        home: const Scaffold(
+          body: SundialContentPane(child: SizedBox.expand(key: Key('pane-body'))),
+        ),
+      ),
+    );
+
+    final box = tester.getRect(find.byKey(const Key('pane-body')));
+    expect(box.width, kContentMaxWidth);
+    expect(box.center.dx, 800);
+    expect(box.height, 900);
+
+    tester.view.physicalSize = const Size(500, 800);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SundialTheme.light,
+        home: const Scaffold(
+          body: SundialContentPane(child: SizedBox.expand(key: Key('pane-body'))),
+        ),
+      ),
+    );
+
+    expect(tester.getSize(find.byKey(const Key('pane-body'))).width, 500);
   });
 
   testWidgets('the floating nav reports the selected destination', (tester) async {

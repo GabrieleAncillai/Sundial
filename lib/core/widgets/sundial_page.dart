@@ -4,6 +4,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import 'app_background.dart';
 import 'pressable.dart';
+import 'sundial_content_pane.dart';
 
 /// A pushed page with the reference header: round back button, strong title,
 /// optional subtitle and glass actions. It replaces stock AppBar scaffolds.
@@ -40,37 +41,39 @@ class SundialPage extends StatelessWidget {
       body: AppBackground(
         child: SafeArea(
           bottom: bottomBar == null,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
-                child: SundialPageHeader(
-                  title: title,
-                  subtitle: subtitle,
-                  actions: actions,
-                  onBack: onBack ?? () => Navigator.of(context).maybePop(),
-                ),
-              ),
-              Expanded(
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Padding(padding: padding, child: child),
-                    ),
-                    if (floatingAction != null) Positioned(right: 20, bottom: 20, child: floatingAction!),
-                  ],
-                ),
-              ),
-              if (bottomBar != null)
-                Container(
-                  padding: EdgeInsets.fromLTRB(20, 10, 20, 12 + MediaQuery.paddingOf(context).bottom),
-                  decoration: BoxDecoration(
-                    color: c.surface,
-                    border: Border(top: BorderSide(color: c.border)),
+          child: SundialContentPane(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                  child: SundialPageHeader(
+                    title: title,
+                    subtitle: subtitle,
+                    actions: actions,
+                    onBack: onBack ?? () => Navigator.of(context).maybePop(),
                   ),
-                  child: bottomBar,
                 ),
-            ],
+                Expanded(
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Padding(padding: padding, child: child),
+                      ),
+                      if (floatingAction != null) Positioned(right: 20, bottom: 20, child: floatingAction!),
+                    ],
+                  ),
+                ),
+                if (bottomBar != null)
+                  Container(
+                    padding: EdgeInsets.fromLTRB(20, 10, 20, 12 + MediaQuery.paddingOf(context).bottom),
+                    decoration: BoxDecoration(
+                      color: c.surface,
+                      border: Border(top: BorderSide(color: c.border)),
+                    ),
+                    child: bottomBar,
+                  ),
+              ],
+            ),
           ),
         ),
       ),
