@@ -90,6 +90,8 @@ git clone https://github.com/InlitX/streak.git ../Streak
   is a planner-specific widget with move/resize/create gestures. Overlapping
   shifts keep the full column and blend their translucent fills where they
   share time, so a collision stays visible without a seam or a stepped outline.
+  The full-surface Plan month and its fold into the week/day timeline are also
+  planner-specific; Streak's month grid is a compact activity picker.
 - **Stats and report export.** Streak has habit statistics; neither reference
   has a Clockify-style tracked-time report. The dashboard uses Sundial data and the
   PDF/CSV writer lives in `lib/features/stats/report_writer.dart`.

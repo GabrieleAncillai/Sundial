@@ -52,9 +52,9 @@ Reboot rescheduling is blocked by EMUI and documented as an OEM limitation.
 
 ## Working now
 
-- Today and Plan tabs, with the Today list/timeline switch, a collapsible
-  month/week calendar, per-space markers, shift bars, a 24-hour timeline, day
-  detail, previous/next navigation, jump-to-today and a desktop week grid.
+- Today and Plan tabs, with the Today list/timeline switch, a full-surface
+  month calendar, per-space event and shift chips, a 24-hour timeline,
+  previous/next navigation, jump-to-today and a desktop week grid.
 - A responsive shell. Phones keep the floating bottom navigation; wide windows
   use a side rail that can sit on the left or right.
 - Today's friendly list/timeline switch with progress, priority chips,
@@ -62,8 +62,9 @@ Reboot rescheduling is blocked by EMUI and documented as an OEM limitation.
 - Space overviews for Work (jobs), Home (homes) and Personal (people/groups),
   each with projects and dedicated detail screens. Work adds shifts, Home adds
   inventory, shopping and gadgets, Personal adds habits.
-- A plan page with a collapsible month/week calendar, mobile list/timeline and a
-  desktop week grid with drag-to-move, resize and drag-to-create.
+- A plan page that opens on a full-surface month calendar and folds into the
+  desktop week grid or the phone week strip plus selected-day timeline, with
+  drag-to-move, resize and drag-to-create on the grid.
 - A stats dashboard and Clockify-style summary/detailed PDF reports plus CSV.
 - Sectioned settings with search, Aero/light/dark/system themes, accent schemes,
   dots/grid/OLED/plain/custom backgrounds, text size, date format, navigation

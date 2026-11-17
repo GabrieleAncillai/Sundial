@@ -13,8 +13,9 @@ in place and green:
 - Work/Home/Personal space overviews with jobs, homes, people, projects and
   habits. Context detail screens expose shifts, per-day checklists, inventory,
   gadgets, projects and habits.
-- Plan page with a collapsible month, mobile list/timeline and a desktop week
-  grid with drag-to-move, resize and drag-to-create.
+- Plan page with a full-surface month calendar that folds into the desktop
+  week grid or the phone selected-day timeline; the week grid keeps
+  drag-to-move, resize and drag-to-create.
 - Stats dashboard with PDF summary/detailed reports and CSV export.
 - Sectioned settings with search, Aero/light/dark/system themes, background
   styles, text size, date format, navigation side and a performance mode. App
@@ -44,6 +45,46 @@ report save dialogs on both platforms, and a real-device audio check for the
 SoundPool bridge, `aplay` fallback and per-sound notification channels. The old app-lock feature and its tests
 are deleted; legacy settings rows are ignored and still excluded from backups.
 
+## 2026-11-16 shared reading pane
+
+- Wide windows now give page bodies the same centred 760 px column that the
+  Settings master-detail pane already used. Lists, forms and dashboards keep
+  equal gutters instead of stretching cards to the window edge.
+- `SundialContentPane` in `lib/core/widgets/sundial_content_pane.dart` wraps the
+  shell tabs and every `SundialPage`, so pushed screens inherit the treatment
+  without per-page layout code. The settings pane now uses the same widget.
+- The Plan page opts out because the month and week grids are canvases that
+  need the full width. The shared width lives in `kContentMaxWidth`.
+- Updated screenshots: `v1.0-stats-desktop.png` and
+  `v1.5-radii-work-desktop.png`.
+- Validation: analyze clean, 249 app tests, 95 core tests.
+
+## 2026-11-16 plan month surface and fold
+
+- The Plan page opens on a full-surface month calendar: one stretched cell per
+  day, event and shift chips in their space/job colour, a today marker and a
+  "+N" overflow count. The fixed-width month sidebar is gone.
+- The month folds upward with a clipped-height animation into the full-width
+  week time grid on desktop and the selected-day timeline on phones. Phones
+  keep a seven-day strip for the selected week above the day lane, so tapping a
+  day or stepping across a week boundary keeps the week in view. The bottom bar
+  carries the expand/collapse chevrons (a single toggle on phones), Today, and
+  a Month/Week or Month/Day switch. Reduced motion snaps without the animation.
+- `month_calendar.dart` is the full month widget, `week_day_strip.dart` keeps
+  the selected week above the phone day lane, `day_timeline.dart` gains a fill
+  mode for that lane, and `plan_page.dart` owns the fold controller and the
+  separate month/timeline data ranges.
+- The week grid keeps its drag-to-move, resize and drag-to-create gestures and
+  gives the all-day row room for three chips. The phone chips drop the clock
+  label on narrow cells so the title keeps the space.
+- `plan_page_test.dart` covers the month-to-week and month-to-day folds,
+  including a mid-animation height assertion.
+- Screenshots: `v1.4-plan-month-desktop.png`, `v1.4-plan-week-desktop.png`,
+  `v1.4-plan-month-mobile.png`, `v1.4-plan-day-mobile.png` and
+  `v1.4-plan-month-dark-desktop.png`.
+- Validation: analyze clean, 248 app tests, 95 core tests, Linux debug and
+  Android debug APK pass.
+
 ## 2026-11-16 appearance palettes and picker
 
 - Space and tag palettes now offer 30+ colours while the original defaults keep
@@ -51,6 +92,8 @@ are deleted; legacy settings rows are ignored and still excluded from backups.
   no longer needs a separate icon row.
 - The paper dot pattern is denser and stronger so the background reads on both
   light and dark surfaces.
+- The desktop rail search uses the shared full-height pill with a short hint,
+  so it no longer clips on the narrow rail.
 - `space_editor_test.dart` covers the palette size and the avatar picker.
 - Validation: analyze clean, 247 app tests, 95 core tests, Linux debug and
   Android debug APK pass.

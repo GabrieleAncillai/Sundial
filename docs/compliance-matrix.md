@@ -79,9 +79,10 @@ the product-polish claims as proof.
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| Collapsible month/week switch | Met (existing) | `plan_page.dart` |
+| Full-surface month calendar on open | Met | `month_calendar.dart` stretches the grid across the content area with event and shift chips |
+| Collapsible month switch that folds into the timeline | Met | `plan_page.dart` clips the month height with an `AnimationController`; `plan_page_test.dart` checks the mid-animation height |
 | Content below calendar never clips through navigation | Met (existing) | `Expanded` layout |
-| Phone selected-day list/timeline | Met (existing) | `plan_page.dart` |
+| Phone selected-day timeline | Met | `day_timeline.dart` fill mode plus the `week_day_strip.dart` seven-day strip for the selected week |
 | Desktop week time grid at 1024 px | Met | breakpoint is now 1024 window px, so a 1024 px window gets the rail plus the week grid |
 | Drag to move, bottom-edge resize, drag empty space to create, 15-minute snap | Met (existing) | `week_time_grid.dart` |
 | Shifts are background blocks and not draggable | Met (existing) | grid guards |

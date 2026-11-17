@@ -996,8 +996,11 @@ status. The important architecture additions are:
 - Timing semantics are explicit: scheduled, clock-in, deadline and anytime.
   A deadline's effective priority is raised by its remaining time.
 - The UI is responsive: a bottom navigation on phones and a configurable side
-  rail on wide windows. The Plan page becomes a collapsible month/week calendar
-  with a mobile list/timeline switch and a desktop week grid.
+  rail on wide windows. The Plan page opens on a full-surface month calendar;
+  collapsing it folds upward into the desktop week grid or the selected-day
+  phone timeline, which keeps a seven-day strip for the selected week. The old
+  fixed-width month sidebar and the phone list/timeline switch inside Plan are
+  gone; Today still has its list/timeline switch.
 - Settings are split into Appearance, Preferences, Data and backup, Online
   functionalities and About, with a search field and no app-lock surface. On
   desktop the same sections become a master-detail split: the menu and search
@@ -1032,7 +1035,9 @@ status. The important architecture additions are:
   replace stock dropdowns in the entry, shift, project and category forms.
 - Rendered evidence lives in [screenshots/](screenshots/):
   `v1.0-today-list-light.png`, `v1.0-today-timeline-light.png`,
-  `v1.0-work-desktop.png`, `v1.0-plan-desktop.png`,
+  `v1.0-work-desktop.png`, `v1.4-plan-month-desktop.png`,
+  `v1.4-plan-week-desktop.png`, `v1.4-plan-month-mobile.png`,
+  `v1.4-plan-day-mobile.png`, `v1.4-plan-month-dark-desktop.png`,
   `v1.0-stats-desktop.png`, `v1.0-personal-mobile.png`,
   `v1.0-settings-mobile.png`, `v1.0-appearance-mobile.png`,
   `v1.2-today-aero.png`, `v1.2-preferences-mobile.png` and
@@ -1098,6 +1103,15 @@ paths the audit found unsafe. The row-by-row status is in
 - **Date format and OLED.** Full dates, month/year, calendar headers and report
   ranges use the preference; OLED forces a dark palette so light text is not
   painted on black.
+- **Corner radii.** `lib/theme/app_radii.dart` is the single scale for the whole
+  app: 4 marker, 6 square marks, 10 xs, 14 sm, 18 md, 24 lg, 30 xl, 34 xxl and a
+  pill value, plus an icon ratio of 0.24 of the tile for avatars and the About
+  mark. The ratios come from the app icon, so rounding reads the same on a
+  74 px tile as on a card. Cards, sheets, dialogs, menus, snack bars and the
+  navigation bar use `RoundedSuperellipseBorder`, keeping the icon's continuous
+  curvature instead of a circular arc. Component shapes are set once in
+  `app_theme.dart`; screens consume tokens instead of raw numbers. The revised
+  screens are in `docs/screenshots/v1.5-radii-*.png`.
 
 Still open: Aero 2.0 approval and rollout (`docs/aero-2.md`), LAN rebind after a
 network change, timezone-aware Plan drags for entries stored in another zone,

@@ -52,8 +52,11 @@ not allowed; light body text is `ink` on `pearl`.
 4. **Hero**: one glass card per screen at most, used for the day/week summary.
 5. **Scrim**: dimmed, optionally blurred on wide layouts.
 
-Rounded corners: 16 px for chips and small controls, 20–24 px for cards, 26–28 px
-for sheets and the rail. Avoid giant blobs.
+Rounded corners come from the shared scale in `lib/theme/app_radii.dart`, which
+is derived from the app icon: 14 px for chips and small controls, 18 px for
+inputs and rows, 24 px for cards, 30–34 px for sheets, dialogs and the rail.
+Large surfaces use `RoundedSuperellipseBorder`, so corners keep the icon's
+continuous curvature. Avoid giant blobs.
 
 ## Component recipes
 

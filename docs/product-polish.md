@@ -54,10 +54,12 @@ Every space is an overview of user-created contexts:
 
 ## 4. Plan
 
-- Collapsible month calendar that smoothly switches between month and week.
+- Full-surface month calendar on open: one stretched cell per day, event and
+  shift chips, today marker and a "+N" overflow count when a day is busy.
+- The bottom bar collapses the month with a clipped-height fold. Desktop lands
+  on the full-week time grid; phones land on the selected-day timeline with a
+  seven-day strip for the selected week above it.
 - Content below the calendar must never clip through the navigation bar.
-- Phone: selected-day list / timeline switch.
-- Desktop: full-week time grid when the calendar is collapsed to week view.
 - Desktop interactions: drag a block to move it, drag its bottom edge to resize,
   and drag on empty grid space to create an entry. Shifts are background blocks
   and are not dragged.
@@ -254,7 +256,9 @@ Known follow-ups:
   salt/hash keys so an older database cannot leak them.
 - Screenshots from the rendering harness are in `docs/screenshots/`:
   `v1.0-today-list-light.png`, `v1.0-today-timeline-light.png`,
-  `v1.0-work-desktop.png`, `v1.0-plan-desktop.png`,
+  `v1.0-work-desktop.png`, `v1.4-plan-month-desktop.png`,
+  `v1.4-plan-week-desktop.png`, `v1.4-plan-month-mobile.png`,
+  `v1.4-plan-day-mobile.png`, `v1.4-plan-month-dark-desktop.png`,
   `v1.0-stats-desktop.png`, `v1.0-personal-mobile.png`,
   `v1.0-settings-mobile.png` and `v1.0-appearance-mobile.png`.
 - The screenshot pass exposed and fixed three UI defects: entry blocks
