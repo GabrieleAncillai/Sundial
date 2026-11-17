@@ -7,7 +7,6 @@ import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
-import '../../../theme/app_typography.dart';
 import '../../media/media_store.dart';
 import '../../media/sticker_editor.dart';
 import 'space_controls.dart';
@@ -95,59 +94,16 @@ class _ContextEditorSheetState extends ConsumerState<_ContextEditorSheet> {
           textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(labelText: l10n.descriptionOptional),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            ContextAvatarButton(
-              icon: _icon,
-              colorValue: _color,
-              imagePath: _imagePath,
-              size: 58,
-              radius: 18,
-              tooltip: l10n.chooseIcon,
-              onTap: _chooseIcon,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(l10n.image, style: SundialType.label(12, color: c.textSecondary)),
-                  const SizedBox(height: 4),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: [
-                      TextButton.icon(
-                        onPressed: _busy ? null : _pickImage,
-                        icon: const Icon(Icons.add_photo_alternate_outlined, size: 18),
-                        label: Text(_imagePath == null ? l10n.chooseImage : l10n.changeImage),
-                      ),
-                      if (_imagePath != null)
-                        TextButton(
-                          onPressed: _busy ? null : () => setState(() => _imagePath = null),
-                          style: TextButton.styleFrom(foregroundColor: c.danger),
-                          child: Text(l10n.removeImage),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            _OptionTile(
-              icon: Icons.palette_outlined,
-              label: l10n.color,
-              color: Color(_color),
-              onTap: _chooseColor,
-            ),
-          ],
+        const SizedBox(height: 18),
+        SpaceAppearanceCard(
+          icon: _icon,
+          colorValue: _color,
+          imagePath: _imagePath,
+          onChooseIcon: _chooseIcon,
+          onChooseImage: _pickImage,
+          onRemoveImage: () => setState(() => _imagePath = null),
+          onChooseColor: _chooseColor,
+          busy: _busy,
         ),
         const SizedBox(height: 22),
         FilledButton(
@@ -264,48 +220,5 @@ class _ContextEditorSheetState extends ConsumerState<_ContextEditorSheet> {
     if (confirmed != true || !mounted) return;
     await ref.read(repositoryProvider).deleteContext(existing.id);
     if (mounted) Navigator.of(context).pop();
-  }
-}
-
-class _OptionTile extends StatelessWidget {
-  const _OptionTile({required this.icon, required this.label, required this.onTap, this.color});
-
-  final IconData icon;
-  final String label;
-  final Color? color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.mc;
-    return Pressable(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: c.surfaceAlt,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: c.border),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (color != null)
-              Container(
-                width: 18,
-                height: 18,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-              )
-            else
-              Icon(icon, size: 18, color: c.accent),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: SundialType.body(12.5, weight: FontWeight.w700, color: c.text),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

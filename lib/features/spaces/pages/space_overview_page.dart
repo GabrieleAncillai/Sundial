@@ -7,6 +7,7 @@ import '../../../core/icons/sundial_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../../entries/widgets/task_card.dart';
 import '../../home_inventory/pages/home_inventory_page.dart';
@@ -70,7 +71,7 @@ class SpaceOverviewPage extends ConsumerWidget {
               height: 48,
               decoration: BoxDecoration(
                 color: Color(space.colorValue).withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(SundialRadii.md),
               ),
               child: Icon(
                 isWork
@@ -301,7 +302,7 @@ class _CountPill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
       decoration: BoxDecoration(
         color: c.surface,
-        borderRadius: BorderRadius.circular(100),
+        borderRadius: BorderRadius.circular(SundialRadii.pill),
         border: Border.all(color: c.border),
       ),
       child: Row(
@@ -343,7 +344,7 @@ class _ContextCard extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [accent.withValues(alpha: 0.13), c.surface],
           ),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(SundialRadii.lg),
           border: Border.all(color: accent.withValues(alpha: 0.28)),
         ),
         child: Column(
@@ -356,7 +357,6 @@ class _ContextCard extends StatelessWidget {
                   colorValue: item.colorValue,
                   imagePath: item.imagePath,
                   size: 48,
-                  radius: 15,
                 ),
                 const Spacer(),
                 Icon(Icons.chevron_right, size: 20, color: accent),
@@ -405,7 +405,7 @@ class _ProjectChip extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
         decoration: BoxDecoration(
           color: c.surface,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           border: Border.all(color: c.border),
         ),
         child: Row(
@@ -416,7 +416,6 @@ class _ProjectChip extends StatelessWidget {
               colorValue: project.colorValue,
               imagePath: project.imagePath,
               size: 30,
-              radius: 9,
             ),
             const SizedBox(width: 8),
             Text(
@@ -447,7 +446,7 @@ class _QuickLink extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: c.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           border: Border.all(color: c.border),
         ),
         child: Row(
@@ -455,7 +454,10 @@ class _QuickLink extends StatelessWidget {
             Container(
               width: 36,
               height: 36,
-              decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(11)),
+              decoration: BoxDecoration(
+                color: c.accentSoft,
+                borderRadius: BorderRadius.circular(SundialRadii.sm),
+              ),
               child: Icon(icon, size: 19, color: c.accent),
             ),
             const SizedBox(width: 11),
