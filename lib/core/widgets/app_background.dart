@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../core/settings_scope.dart';
 import '../../models/app_settings.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_radii.dart';
 
 /// The calm backdrop from the reference shell. The pattern is a preference:
 /// dots, grid, OLED black, plain or a custom colour. Aero adds a glossy sky.
@@ -202,7 +203,7 @@ class GlassSurface extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = EdgeInsets.zero,
-    this.radius = 22,
+    this.radius = SundialRadii.xl,
     this.blur = 18,
     this.tint,
     this.borderColor,
@@ -221,11 +222,14 @@ class GlassSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.mc;
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final shape = BorderRadius.circular(radius);
+    final shape = SundialShapes.rounded(
+      radius: radius,
+      side: BorderSide(color: borderColor ?? c.glassEdge),
+    );
     return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: shape,
-        boxShadow: shadows
+      decoration: ShapeDecoration(
+        shape: shape.copyWith(side: BorderSide.none),
+        shadows: shadows
             ? [
                 BoxShadow(color: c.shadow, blurRadius: 24, offset: const Offset(0, 10)),
                 BoxShadow(
@@ -236,17 +240,13 @@ class GlassSurface extends StatelessWidget {
               ]
             : null,
       ),
-      child: ClipRRect(
-        borderRadius: shape,
+      child: ClipPath(
+        clipper: ShapeBorderClipper(shape: shape),
         child: BackdropFilter(
           filter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
           child: Container(
             padding: padding,
-            decoration: BoxDecoration(
-              color: tint ?? c.glass,
-              borderRadius: shape,
-              border: Border.all(color: borderColor ?? c.glassEdge),
-            ),
+            decoration: ShapeDecoration(color: tint ?? c.glass, shape: shape),
             child: child,
           ),
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
 import '../settings_scope.dart';
 
@@ -39,7 +40,7 @@ class SundialSegmented<T> extends StatelessWidget {
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: aero ? c.glass : c.surfaceAlt,
-        borderRadius: BorderRadius.circular(100),
+        borderRadius: BorderRadius.circular(SundialRadii.pill),
         border: Border.all(color: c.border),
       ),
       child: Row(
@@ -62,7 +63,7 @@ class SundialSegmented<T> extends StatelessWidget {
                           colors: [Colors.white, c.surfaceAlt],
                         )
                       : null,
-                  borderRadius: BorderRadius.circular(100),
+                  borderRadius: BorderRadius.circular(SundialRadii.pill),
                   boxShadow: segment.value == selected
                       ? [
                           BoxShadow(color: c.shadow, blurRadius: 8, offset: const Offset(0, 2)),
@@ -75,7 +76,7 @@ class SundialSegmented<T> extends StatelessWidget {
                 // never add decoration padding or shift the label.
                 foregroundDecoration: segment.value == selected && aero
                     ? BoxDecoration(
-                        borderRadius: BorderRadius.circular(100),
+                        borderRadius: BorderRadius.circular(SundialRadii.pill),
                         border: Border.all(color: c.accent.withValues(alpha: 0.30)),
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,

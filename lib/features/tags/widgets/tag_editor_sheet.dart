@@ -8,6 +8,7 @@ import '../../../core/icons/sundial_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../../spaces/widgets/space_controls.dart';
 import '../tag_colors.dart';
@@ -110,7 +111,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
                     height: 38,
                     decoration: BoxDecoration(
                       color: tagColor(_color).withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(SundialRadii.sm),
                     ),
                     child: Icon(SundialIcons.resolve(_icon), size: 20, color: tagColor(_color)),
                   ),

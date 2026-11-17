@@ -8,6 +8,7 @@ import '../../../core/icons/sundial_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../home_scope.dart';
 import '../widgets/gadget_sheet.dart';
@@ -142,7 +143,7 @@ class _MaintenanceRow extends ConsumerWidget {
               height: 36,
               decoration: BoxDecoration(
                 color: overdue ? c.dangerSoft : c.homeSoft,
-                borderRadius: BorderRadius.circular(11),
+                borderRadius: BorderRadius.circular(SundialRadii.sm),
               ),
               child: Icon(
                 entry.icon.isEmpty

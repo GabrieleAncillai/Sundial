@@ -118,7 +118,6 @@ class _HabitEditorSheetState extends ConsumerState<_HabitEditorSheet> {
               icon: _icon,
               colorValue: _color,
               size: 46,
-              radius: 14,
               tooltip: l10n.chooseIcon,
               onTap: _chooseIcon,
             ),
@@ -239,7 +238,7 @@ class HabitCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              ContextAvatar(icon: habit.icon, colorValue: habit.colorValue, size: 42, radius: 13),
+              ContextAvatar(icon: habit.icon, colorValue: habit.colorValue, size: 42),
               const SizedBox(width: 11),
               Expanded(
                 child: Column(

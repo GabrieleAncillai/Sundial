@@ -9,6 +9,7 @@ import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../../../models/local_identity.dart';
 import '../../../models/paired_device.dart';
@@ -247,7 +248,10 @@ class _IdentityCard extends ConsumerWidget {
               Container(
                 width: 36,
                 height: 36,
-                decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(11)),
+                decoration: BoxDecoration(
+                  color: c.accentSoft,
+                  borderRadius: BorderRadius.circular(SundialRadii.sm),
+                ),
                 child: Icon(Icons.devices, size: 19, color: c.accent),
               ),
               const SizedBox(width: 12),
@@ -403,7 +407,10 @@ class _PairedDeviceCard extends ConsumerWidget {
               Container(
                 width: 34,
                 height: 34,
-                decoration: BoxDecoration(color: c.workSoft, borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(
+                  color: c.workSoft,
+                  borderRadius: BorderRadius.circular(SundialRadii.xs),
+                ),
                 child: Icon(Icons.phone_android, size: 18, color: c.work),
               ),
               const SizedBox(width: 10),
@@ -778,7 +785,7 @@ class _GuestPairingTabState extends ConsumerState<_GuestPairingTab> {
                         height: 36,
                         decoration: BoxDecoration(
                           color: c.accentSoft,
-                          borderRadius: BorderRadius.circular(11),
+                          borderRadius: BorderRadius.circular(SundialRadii.sm),
                         ),
                         child: Icon(Icons.devices_other, size: 19, color: c.accent),
                       ),

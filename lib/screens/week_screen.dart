@@ -9,6 +9,7 @@ import '../core/widgets/ui_kit.dart';
 import '../state/providers.dart';
 import '../state/settings_controller.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_radii.dart';
 import '../theme/app_typography.dart';
 import '../widgets/entry_widgets.dart';
 import 'entry_editor.dart';
@@ -181,7 +182,7 @@ class _DaySection extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: isToday ? c.accent : c.surfaceAlt,
-                  borderRadius: BorderRadius.circular(13),
+                  borderRadius: BorderRadius.circular(SundialRadii.sm),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

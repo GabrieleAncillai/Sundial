@@ -4,6 +4,7 @@ import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
 import '../widgets/app_sheet.dart';
 import '../widgets/sundial_search_field.dart';
@@ -234,7 +235,7 @@ class _ZoneRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         decoration: BoxDecoration(
           color: selected ? c.accentSoft : c.surfaceAlt,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           border: Border.all(color: selected ? c.accent.withValues(alpha: 0.5) : c.border),
         ),
         child: Row(

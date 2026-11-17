@@ -7,6 +7,7 @@ import '../../../models/home_item.dart';
 import '../../../models/shopping_item.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../home_scope.dart';
 import '../low_stock.dart';
@@ -49,7 +50,7 @@ class ShoppingListPage extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(14, 12, 12, 8),
               decoration: BoxDecoration(
                 color: c.dangerSoft,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(SundialRadii.lg),
                 border: Border.all(color: c.danger.withValues(alpha: 0.22)),
               ),
               child: Column(

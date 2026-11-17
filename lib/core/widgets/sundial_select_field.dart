@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
 import 'app_sheet.dart';
 import 'sundial_field_clear.dart';
@@ -75,7 +76,7 @@ class SundialSelectField extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(13, 11, 11, 11),
               decoration: BoxDecoration(
                 color: c.surfaceAlt,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(SundialRadii.md),
                 border: Border.all(color: c.border),
               ),
               child: Row(
@@ -242,7 +243,7 @@ class _SundialSelectOptionRow<T> extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: selected ? c.accentSoft : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
         ),
         child: Row(
           children: [

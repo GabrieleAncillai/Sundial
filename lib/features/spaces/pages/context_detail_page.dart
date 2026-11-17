@@ -8,6 +8,7 @@ import '../../../core/widgets/ui_kit.dart';
 import '../../../screens/entry_editor.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../../entries/widgets/task_card.dart';
 import '../../home_inventory/pages/home_inventory_page.dart';
@@ -86,7 +87,6 @@ class ContextDetailPage extends ConsumerWidget {
                 colorValue: item.colorValue,
                 imagePath: item.imagePath,
                 size: 72,
-                radius: 22,
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -343,7 +343,7 @@ class _ProjectsSection extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(9, 8, 13, 8),
               decoration: BoxDecoration(
                 color: context.mc.surface,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(SundialRadii.md),
                 border: Border.all(color: context.mc.border),
               ),
               child: Row(
@@ -354,7 +354,6 @@ class _ProjectsSection extends ConsumerWidget {
                     colorValue: project.colorValue,
                     imagePath: project.imagePath,
                     size: 30,
-                    radius: 9,
                   ),
                   const SizedBox(width: 8),
                   Column(
@@ -441,7 +440,7 @@ class _LinkRow extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: c.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           border: Border.all(color: c.border),
         ),
         child: Row(
@@ -451,7 +450,7 @@ class _LinkRow extends StatelessWidget {
               height: 38,
               decoration: BoxDecoration(
                 color: (color ?? c.accent).withValues(alpha: 0.13),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(SundialRadii.sm),
               ),
               child: Icon(icon, size: 20, color: color ?? c.accent),
             ),
@@ -493,7 +492,7 @@ class _Pill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(100),
+        borderRadius: BorderRadius.circular(SundialRadii.pill),
       ),
       child: Text(text, style: SundialType.label(10.5, color: color)),
     );

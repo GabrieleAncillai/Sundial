@@ -9,6 +9,7 @@ import '../features/shifts/shift_palette.dart';
 import '../screens/entry_editor.dart';
 import '../state/providers.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_radii.dart';
 import '../theme/app_typography.dart';
 
 /// Formats a UTC instant as a local time in [viewerTimeZone].
@@ -185,7 +186,7 @@ class ShiftTile extends ConsumerWidget {
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
           color: fill,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           border: Border.all(color: color.withValues(alpha: 0.18)),
         ),
         child: Row(
@@ -195,7 +196,7 @@ class ShiftTile extends ConsumerWidget {
               height: 54,
               decoration: BoxDecoration(
                 color: color,
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                borderRadius: const BorderRadius.horizontal(left: Radius.circular(SundialRadii.md)),
               ),
             ),
             const SizedBox(width: 12),
@@ -246,7 +247,7 @@ class ShiftChip extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: shiftSoftColor(context, occurrence.pattern, contexts),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(SundialRadii.xs),
         border: Border.all(color: color.withValues(alpha: 0.16)),
       ),
       child: Text(

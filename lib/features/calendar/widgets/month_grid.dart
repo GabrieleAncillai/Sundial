@@ -6,6 +6,7 @@ import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/pressable.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 
 /// A six-week month grid with per-day markers.
@@ -128,7 +129,7 @@ class _DayCell extends StatelessWidget {
           margin: const EdgeInsets.all(1.5),
           decoration: BoxDecoration(
             color: isSelected ? c.accent : null,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(SundialRadii.sm),
             border: isToday && !isSelected
                 ? Border.all(color: c.accent.withValues(alpha: 0.55), width: 1.3)
                 : null,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
 
 enum SundialNoticeTone { info, warning, danger }
@@ -28,7 +29,7 @@ class SundialNotice extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: soft,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(SundialRadii.md),
         border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
       child: Row(

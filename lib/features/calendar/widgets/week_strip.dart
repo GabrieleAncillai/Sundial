@@ -5,6 +5,7 @@ import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/pressable.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 
 class WeekStrip extends StatelessWidget {
@@ -88,7 +89,7 @@ class _WeekDay extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 2),
           decoration: BoxDecoration(
             color: isSelected ? c.accent : c.surfaceAlt,
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(SundialRadii.md),
             border: isToday && !isSelected
                 ? Border.all(color: c.accent.withValues(alpha: 0.55), width: 1.3)
                 : null,

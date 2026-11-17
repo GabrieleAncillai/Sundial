@@ -6,6 +6,7 @@ import '../../core/i18n/l10n.dart';
 import '../../state/providers.dart';
 import '../../state/settings_controller.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/entry_widgets.dart';
 
@@ -76,7 +77,7 @@ class SleepWindowCard extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
         color: window.warning ? c.dangerSoft : c.accentSoft,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(SundialRadii.md),
         border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
       child: Row(

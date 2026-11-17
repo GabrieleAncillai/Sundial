@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_radii.dart';
 import 'sundial_field_clear.dart';
 
 /// A tappable date value with the shared input decoration.
@@ -29,7 +30,7 @@ class SundialDateField extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(SundialRadii.md),
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: label,

@@ -10,6 +10,7 @@ import '../../../core/time/time_field.dart';
 import '../../../core/timezone/timezone_picker.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../../../models/shift_checklist.dart';
 import '../../../state/providers.dart';
@@ -487,7 +488,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     return SoftCard(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.fromLTRB(12, 10, 8, 6),
-      radius: 18,
+      radius: SundialRadii.lg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -528,7 +529,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       padding: const EdgeInsets.fromLTRB(10, 6, 4, 8),
       decoration: BoxDecoration(
         color: context.mc.surfaceAlt,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(SundialRadii.sm),
         border: Border.all(color: context.mc.border),
       ),
       child: Column(
@@ -594,7 +595,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
       decoration: BoxDecoration(
         color: context.mc.surfaceAlt,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(SundialRadii.md),
         border: Border.all(color: context.mc.border),
       ),
       child: Row(

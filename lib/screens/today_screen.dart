@@ -13,6 +13,7 @@ import '../features/shifts/widgets/shift_checklist_view.dart';
 import '../state/providers.dart';
 import '../state/settings_controller.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_radii.dart';
 import '../theme/app_typography.dart';
 import '../widgets/entry_widgets.dart';
 import 'entry_editor.dart';
@@ -223,7 +224,7 @@ class _ProgressCard extends StatelessWidget {
           ),
           const SizedBox(height: 9),
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(SundialRadii.xs),
             child: LinearProgressIndicator(
               value: ratio,
               minHeight: 8,
@@ -379,7 +380,7 @@ class _ErrorNotice extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: c.dangerSoft,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(SundialRadii.md),
         border: Border.all(color: c.danger.withValues(alpha: 0.25)),
       ),
       child: Row(

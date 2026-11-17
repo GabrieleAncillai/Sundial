@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../settings_scope.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
 
 /// The width at which Sundial swaps a phone sheet for a floating desktop dialog.
@@ -63,7 +64,7 @@ Future<T?> _showCompactSheet<T>({
     showDragHandle: false,
     backgroundColor: c.surface,
     barrierColor: Colors.black.withValues(alpha: 0.38),
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+    shape: SundialShapes.sheetTop(radius: SundialRadii.xxl),
     builder: (sheetContext) => KeyedSubtree(
       key: _compactKey,
       child: Padding(
@@ -156,7 +157,7 @@ class _AppSheetDialogRoute<T> extends PopupRoute<T> {
     final insets = media.viewInsets;
     final maxWidth = math.max(0.0, math.min(660.0, media.size.width - 48));
     final maxHeight = math.max(0.0, math.min(780.0, media.size.height - insets.bottom - 48));
-    final radius = BorderRadius.circular(28);
+    final shape = SundialShapes.rounded(radius: SundialRadii.xl);
 
     Widget panel = ConstrainedBox(
       constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight),
@@ -165,20 +166,15 @@ class _AppSheetDialogRoute<T> extends PopupRoute<T> {
         child: Material(
           color: c.surface,
           clipBehavior: Clip.antiAlias,
-          shape: RoundedRectangleBorder(
-            borderRadius: radius,
-            side: BorderSide(color: c.border),
-          ),
+          shape: shape.copyWith(side: BorderSide(color: c.border)),
           child: builder(context),
         ),
       ),
     );
     panel = Container(
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        boxShadow: [
-          BoxShadow(color: c.shadow, blurRadius: 42, offset: const Offset(0, 18), spreadRadius: -10),
-        ],
+      decoration: ShapeDecoration(
+        shape: shape,
+        shadows: [BoxShadow(color: c.shadow, blurRadius: 42, offset: const Offset(0, 18), spreadRadius: -10)],
       ),
       child: panel,
     );
@@ -269,7 +265,16 @@ class AppSheet extends StatelessWidget {
         wide ? 26 : 20,
         (wide ? 26 : bottom) + media.padding.bottom,
       ),
-      decoration: BoxDecoration(
+      decoration: ShapeDecoration(
+        shape: wide
+            ? SundialShapes.rounded(
+                radius: SundialRadii.xl,
+                side: BorderSide(color: aero ? c.glassEdge : c.border),
+              )
+            : SundialShapes.sheetTop(
+                radius: SundialRadii.xxl,
+                side: BorderSide(color: aero ? c.glassEdge : Colors.transparent),
+              ),
         color: aero ? null : c.surface,
         gradient: aero
             ? LinearGradient(
@@ -278,10 +283,6 @@ class AppSheet extends StatelessWidget {
                 colors: [c.surface, c.surfaceAlt],
               )
             : null,
-        borderRadius: wide
-            ? BorderRadius.circular(28)
-            : const BorderRadius.vertical(top: Radius.circular(30)),
-        border: Border.all(color: aero ? c.glassEdge : (wide ? c.border : Colors.transparent)),
       ),
       child: scroll ? SingleChildScrollView(child: content) : content,
     );
@@ -301,7 +302,10 @@ class SheetHandle extends StatelessWidget {
         width: 40,
         height: 4,
         margin: margin,
-        decoration: BoxDecoration(color: c.borderStrong, borderRadius: BorderRadius.circular(2)),
+        decoration: BoxDecoration(
+          color: c.borderStrong,
+          borderRadius: BorderRadius.circular(SundialRadii.marker),
+        ),
       ),
     );
   }
@@ -360,7 +364,7 @@ class SheetAction extends StatelessWidget {
     final color = accent ?? c.accent;
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(SundialRadii.md),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,

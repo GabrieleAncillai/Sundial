@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../models/app_settings.dart';
 import 'app_colors.dart';
+import 'app_radii.dart';
 import 'app_typography.dart';
 
 class SundialTheme {
@@ -81,7 +82,6 @@ class SundialTheme {
       onErrorContainer: c.danger,
     );
 
-    final radius = BorderRadius.circular(22);
     final text = SundialType.textTheme(c.text, c.textSecondary);
 
     return ThemeData(
@@ -118,8 +118,8 @@ class SundialTheme {
         shadowColor: c.shadow,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: radius,
+        shape: SundialShapes.rounded(
+          radius: SundialRadii.lg,
           side: BorderSide(color: c.border),
         ),
       ),
@@ -130,7 +130,7 @@ class SundialTheme {
         modalBarrierColor: Colors.black.withValues(alpha: 0.38),
         elevation: 0,
         constraints: const BoxConstraints(maxWidth: 620),
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+        shape: SundialShapes.sheetTop(radius: SundialRadii.xxl),
         dragHandleColor: c.borderStrong,
         dragHandleSize: const Size(40, 4),
         showDragHandle: true,
@@ -140,7 +140,7 @@ class SundialTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         constraints: const BoxConstraints(minWidth: 280, maxWidth: 440),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+        shape: SundialShapes.rounded(radius: SundialRadii.xl),
         titleTextStyle: SundialType.headline(19, color: c.text),
         contentTextStyle: SundialType.body(14, color: c.textSecondary),
       ),
@@ -150,7 +150,7 @@ class SundialTheme {
         contentTextStyle: SundialType.body(13.5, color: c.text),
         actionTextColor: c.accent,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: SundialShapes.rounded(radius: SundialRadii.md),
         insetPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -159,6 +159,7 @@ class SundialTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         height: 68,
+        indicatorShape: SundialShapes.rounded(radius: SundialRadii.md),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         labelTextStyle: WidgetStatePropertyAll(SundialType.label(10.5, color: c.textSecondary)),
         iconTheme: WidgetStateProperty.resolveWith(
@@ -211,21 +212,24 @@ class SundialTheme {
         labelStyle: SundialType.body(13.5, color: c.textSecondary),
         floatingLabelStyle: SundialType.label(12.5, color: c.accent),
         errorStyle: SundialType.body(12, color: c.danger),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(SundialRadii.md),
+          borderSide: BorderSide.none,
+        ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           borderSide: BorderSide(color: c.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           borderSide: BorderSide(color: c.accent, width: 1.4),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           borderSide: BorderSide(color: c.danger),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           borderSide: BorderSide(color: c.danger, width: 1.4),
         ),
       ),
@@ -236,7 +240,7 @@ class SundialTheme {
         ),
         checkColor: WidgetStatePropertyAll(c.onAccent),
         side: BorderSide(color: c.borderStrong, width: 1.5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(SundialRadii.xxs)),
       ),
       switchTheme: SwitchThemeData(
         trackColor: WidgetStateProperty.resolveWith(
@@ -254,7 +258,7 @@ class SundialTheme {
         selectedColor: c.accentSoft,
         disabledColor: c.surfaceAlt,
         side: BorderSide(color: c.border),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(SundialRadii.xs)),
         labelStyle: SundialType.label(12.5, color: c.textSecondary),
         secondaryLabelStyle: SundialType.label(12.5, color: c.accent),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -263,7 +267,7 @@ class SundialTheme {
         color: c.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: SundialShapes.rounded(radius: SundialRadii.md),
         textStyle: SundialType.body(14, color: c.text),
       ),
       listTileTheme: ListTileThemeData(
@@ -275,13 +279,13 @@ class SundialTheme {
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(color: c.accent, linearTrackColor: c.surfaceHigh),
       tooltipTheme: TooltipThemeData(
-        decoration: BoxDecoration(color: c.surfaceHigh, borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(color: c.surfaceHigh, borderRadius: BorderRadius.circular(SundialRadii.xs)),
         textStyle: SundialType.body(12, color: c.text),
       ),
       timePickerTheme: TimePickerThemeData(
         backgroundColor: c.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        hourMinuteShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: SundialShapes.rounded(radius: SundialRadii.xl),
+        hourMinuteShape: SundialShapes.rounded(radius: SundialRadii.md),
         hourMinuteColor: WidgetStateColor.resolveWith(
           (states) => states.contains(WidgetState.selected) ? c.accentSoft : c.surfaceAlt,
         ),
@@ -303,7 +307,7 @@ class SundialTheme {
       datePickerTheme: DatePickerThemeData(
         backgroundColor: c.surface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+        shape: SundialShapes.rounded(radius: SundialRadii.xl),
         headerBackgroundColor: c.accentSoft,
         headerForegroundColor: c.text,
         todayForegroundColor: WidgetStatePropertyAll(c.accent),

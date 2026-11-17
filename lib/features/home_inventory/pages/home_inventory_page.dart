@@ -7,6 +7,7 @@ import '../../../models/home_item.dart';
 import '../../../models/home_purchase.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../home_scope.dart';
 import '../low_stock.dart';
@@ -97,7 +98,7 @@ class _LowStockCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 12, 12, 8),
       decoration: BoxDecoration(
         color: c.dangerSoft,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(SundialRadii.lg),
         border: Border.all(color: c.danger.withValues(alpha: 0.22)),
       ),
       child: Column(
@@ -161,7 +162,7 @@ class _HomeItemTile extends ConsumerWidget {
                     height: 36,
                     decoration: BoxDecoration(
                       color: item.isLowStock ? c.dangerSoft : c.homeSoft,
-                      borderRadius: BorderRadius.circular(11),
+                      borderRadius: BorderRadius.circular(SundialRadii.sm),
                     ),
                     child: Icon(
                       item.isLowStock ? Icons.warning_amber_outlined : Icons.inventory_2_outlined,
@@ -270,7 +271,7 @@ class _QtyButton extends StatelessWidget {
       message: tooltip,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(9),
+        borderRadius: BorderRadius.circular(SundialRadii.xs),
         child: SizedBox(width: 32, height: 36, child: Icon(icon, size: 18, color: c.textSecondary)),
       ),
     );

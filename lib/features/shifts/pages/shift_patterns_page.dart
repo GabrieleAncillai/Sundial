@@ -6,6 +6,7 @@ import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import 'shift_pattern_editor_page.dart';
 
@@ -121,7 +122,10 @@ class _PatternRow extends StatelessWidget {
                   Container(
                     width: 36,
                     height: 36,
-                    decoration: BoxDecoration(color: c.workSoft, borderRadius: BorderRadius.circular(11)),
+                    decoration: BoxDecoration(
+                      color: c.workSoft,
+                      borderRadius: BorderRadius.circular(SundialRadii.sm),
+                    ),
                     child: Icon(Icons.work_outline, size: 19, color: c.work),
                   ),
                   const SizedBox(width: 12),

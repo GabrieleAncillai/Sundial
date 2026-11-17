@@ -7,6 +7,7 @@ import '../../../core/icons/sundial_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../tag_colors.dart';
 import '../widgets/tag_editor_sheet.dart';
@@ -114,7 +115,7 @@ class _TagRow extends StatelessWidget {
             height: 28,
             decoration: BoxDecoration(
               color: tagColor(tag.colorValue).withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(9),
+              borderRadius: BorderRadius.circular(SundialRadii.xs),
             ),
             child: Center(
               child: Icon(SundialIcons.resolve(tag.icon), size: 16, color: tagColor(tag.colorValue)),

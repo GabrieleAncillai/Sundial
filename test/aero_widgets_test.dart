@@ -4,6 +4,7 @@ import 'package:sundial/core/settings_scope.dart';
 import 'package:sundial/core/widgets/soft_card.dart';
 import 'package:sundial/models/app_settings.dart';
 import 'package:sundial/theme/app_colors.dart';
+import 'package:sundial/theme/app_radii.dart';
 import 'package:sundial/theme/app_theme.dart';
 
 Widget _host({required Widget child, AppSettings? settings}) {
@@ -16,11 +17,11 @@ Widget _host({required Widget child, AppSettings? settings}) {
   return AppSettingsScope(settings: settings, child: app);
 }
 
-BoxDecoration _cardDecoration(WidgetTester tester) {
+ShapeDecoration _cardDecoration(WidgetTester tester) {
   final container = tester.widget<Container>(
     find.descendant(of: find.byType(SoftCard), matching: find.byType(Container)),
   );
-  return container.decoration! as BoxDecoration;
+  return container.decoration! as ShapeDecoration;
 }
 
 void main() {
@@ -39,10 +40,10 @@ void main() {
     final decoration = _cardDecoration(tester);
     expect(decoration.gradient, isA<LinearGradient>());
     expect(decoration.color, isNull);
-    expect(decoration.border, isNotNull);
-    expect(decoration.boxShadow, isNotEmpty);
-    expect(container.foregroundDecoration, isA<BoxDecoration>());
-    expect((container.foregroundDecoration! as BoxDecoration).gradient, isA<LinearGradient>());
+    expect(decoration.shape, isA<RoundedSuperellipseBorder>());
+    expect(decoration.shadows, isNotEmpty);
+    expect(container.foregroundDecoration, isA<ShapeDecoration>());
+    expect((container.foregroundDecoration! as ShapeDecoration).gradient, isA<LinearGradient>());
   });
 
   testWidgets('aero with performance mode keeps the gradient but drops gloss and glow', (tester) async {
@@ -59,7 +60,7 @@ void main() {
     );
     final decoration = _cardDecoration(tester);
     expect(decoration.gradient, isA<LinearGradient>());
-    expect(decoration.boxShadow, isNull);
+    expect(decoration.shadows, isNull);
     expect(container.foregroundDecoration, isNull);
   });
 
@@ -72,6 +73,10 @@ void main() {
     final decoration = _cardDecoration(tester);
     expect(decoration.gradient, isNull);
     expect(decoration.color, SundialColors.light.surface);
+    expect(
+      (decoration.shape as RoundedSuperellipseBorder).borderRadius,
+      BorderRadius.circular(SundialRadii.lg),
+    );
     expect(container.foregroundDecoration, isNull);
   });
 }

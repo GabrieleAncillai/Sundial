@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
 import 'sundial_field_clear.dart';
 
@@ -30,7 +31,7 @@ class SundialSearchField extends StatelessWidget {
       padding: const EdgeInsets.only(left: 16, right: 6),
       decoration: BoxDecoration(
         color: c.surface,
-        borderRadius: BorderRadius.circular(100),
+        borderRadius: BorderRadius.circular(SundialRadii.pill),
         border: Border.all(color: c.border),
       ),
       child: Row(

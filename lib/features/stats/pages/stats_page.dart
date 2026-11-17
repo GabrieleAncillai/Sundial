@@ -14,6 +14,7 @@ import '../../../models/time_entry.dart';
 import '../../../state/providers.dart';
 import '../../../state/settings_controller.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../report_data.dart';
 import '../report_writer.dart';
@@ -533,7 +534,7 @@ class _StatCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
       decoration: BoxDecoration(
         color: c.surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(SundialRadii.lg),
         border: Border.all(color: c.border),
       ),
       child: Column(
@@ -575,7 +576,7 @@ class _BarChart extends StatelessWidget {
                       height: math.max(3, values[index] / top * 82),
                       decoration: BoxDecoration(
                         color: values[index] == 0 ? c.surfaceHigh : c.accent,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(SundialRadii.marker),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -639,7 +640,7 @@ class _BreakdownRow extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(SundialRadii.marker),
             child: LinearProgressIndicator(
               value: ratio.clamp(0, 1),
               minHeight: 4,
@@ -696,7 +697,7 @@ class _HabitRow extends StatelessWidget {
           SizedBox(
             width: 100,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(SundialRadii.marker),
               child: LinearProgressIndicator(
                 value: ratio,
                 minHeight: 5,

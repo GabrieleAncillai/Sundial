@@ -4,6 +4,7 @@ import '../../../app_version.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 
 class AboutPage extends StatelessWidget {
@@ -27,10 +28,11 @@ class AboutPage extends StatelessWidget {
               Container(
                 width: 74,
                 height: 74,
-                decoration: BoxDecoration(
+                decoration: ShapeDecoration(
                   color: c.accent,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
+                  // Same silhouette as the app icon, scaled to the tile.
+                  shape: SundialShapes.rounded(borderRadius: SundialShapes.icon(74)),
+                  shadows: [
                     BoxShadow(
                       color: c.accent.withValues(alpha: 0.25),
                       blurRadius: 20,

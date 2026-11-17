@@ -90,7 +90,7 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
         const SizedBox(height: 14),
         Row(
           children: [
-            ContextAvatar(icon: _icon, colorValue: c.home.toARGB32(), size: 44, radius: 13),
+            ContextAvatar(icon: _icon, colorValue: c.home.toARGB32(), size: 44),
             const SizedBox(width: 12),
             TextButton.icon(
               onPressed: _chooseIcon,

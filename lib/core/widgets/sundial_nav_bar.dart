@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
 import '../settings_scope.dart';
 import 'pressable.dart';
@@ -24,12 +25,15 @@ class SundialNavBar extends StatelessWidget {
     final aero = settings?.isAero ?? false;
     final reduced = settings?.performanceMode ?? false;
     final glow = aero && !reduced;
-    final radius = BorderRadius.circular(26);
+    final shape = SundialShapes.rounded(
+      radius: SundialRadii.xl,
+      side: BorderSide(color: aero ? c.glassEdge : c.border, width: aero ? 1.4 : 1),
+    );
     return Container(
       height: 64,
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        boxShadow: aero
+      decoration: ShapeDecoration(
+        shape: shape.copyWith(side: BorderSide.none),
+        shadows: aero
             ? [
                 BoxShadow(color: c.shadow, blurRadius: 24, offset: const Offset(0, 10)),
                 if (glow) BoxShadow(color: c.accent.withValues(alpha: 0.14), blurRadius: 22),
@@ -39,14 +43,10 @@ class SundialNavBar extends StatelessWidget {
                 BoxShadow(color: c.shadow.withValues(alpha: 0.35), blurRadius: 4, offset: const Offset(0, 1)),
               ],
       ),
-      child: ClipRRect(
-        borderRadius: radius,
+      child: ClipPath(
+        clipper: ShapeBorderClipper(shape: shape),
         child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: aero ? c.glass : c.navBg,
-            borderRadius: radius,
-            border: Border.all(color: aero ? c.glassEdge : c.border, width: aero ? 1.4 : 1),
-          ),
+          decoration: ShapeDecoration(shape: shape, color: aero ? c.glass : c.navBg),
           child: LayoutBuilder(
             builder: (context, box) {
               final slot = box.maxWidth / items.length;
@@ -90,7 +90,7 @@ class SundialNavBar extends StatelessWidget {
                                   c.accent.withValues(alpha: 0.16),
                                 ],
                               ),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(SundialRadii.md),
                               border: Border.all(color: c.accent.withValues(alpha: 0.32)),
                               boxShadow: glow
                                   ? [
@@ -104,7 +104,7 @@ class SundialNavBar extends StatelessWidget {
                             )
                           : BoxDecoration(
                               color: c.accentSoft,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(SundialRadii.md),
                               border: Border.all(color: c.accent.withValues(alpha: 0.22)),
                             ),
                     ),

@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import '../../theme/app_radii.dart';
 import 'sticker_processor.dart';
 
 export 'sticker_processor.dart';
@@ -367,7 +368,7 @@ class _StickerEditorPageState extends State<StickerEditorPage> {
 
   Widget _buildPreview(ThemeData theme, double side) {
     final image = _image;
-    final radius = BorderRadius.circular(18);
+    final radius = BorderRadius.circular(SundialRadii.lg);
     return SizedBox(
       key: _previewKey,
       width: side,
@@ -458,7 +459,7 @@ class _ErrorNotice extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: theme.colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(SundialRadii.sm),
       ),
       child: Row(
         children: [

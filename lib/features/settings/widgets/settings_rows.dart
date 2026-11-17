@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 
 /// A row that settings search can scroll to by [title].
@@ -102,7 +103,7 @@ class _SettingsSectionState extends State<SettingsSection> {
           SoftCard(
             padding: const EdgeInsets.symmetric(vertical: 2),
             clip: true,
-            radius: 20,
+            radius: SundialRadii.lg,
             child: Column(children: rows),
           ),
         ],
@@ -290,7 +291,7 @@ class _SettingsIcon extends StatelessWidget {
     return Container(
       width: 32,
       height: 32,
-      decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(SundialRadii.xs)),
       child: Icon(icon, size: 17, color: c.accent),
     );
   }

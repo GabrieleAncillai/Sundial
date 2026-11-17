@@ -10,6 +10,7 @@ import '../../../models/home_item.dart';
 import '../../../models/search_results.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../../../widgets/entry_widgets.dart';
 import '../../home_inventory/pages/home_inventory_page.dart';
@@ -209,7 +210,10 @@ class _HomeTile extends StatelessWidget {
                   Container(
                     width: 36,
                     height: 36,
-                    decoration: BoxDecoration(color: c.homeSoft, borderRadius: BorderRadius.circular(11)),
+                    decoration: BoxDecoration(
+                      color: c.homeSoft,
+                      borderRadius: BorderRadius.circular(SundialRadii.sm),
+                    ),
                     child: Icon(Icons.inventory_2_outlined, size: 19, color: c.home),
                   ),
                   const SizedBox(width: 12),
@@ -243,7 +247,10 @@ class _HomeTile extends StatelessWidget {
             Container(
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: c.dangerSoft, borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(
+                color: c.dangerSoft,
+                borderRadius: BorderRadius.circular(SundialRadii.xs),
+              ),
               child: Text(context.l10n.lowStock, style: SundialType.label(10, color: c.danger)),
             ),
         ],

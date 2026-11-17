@@ -10,6 +10,7 @@ import '../../../models/time_entry.dart';
 import '../../../screens/entry_editor.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 
 /// A friendly task row used by Today, space overviews and project screens.
@@ -48,7 +49,7 @@ class TaskCard extends ConsumerWidget {
         padding: EdgeInsets.fromLTRB(compact ? 10 : 12, compact ? 9 : 11, 10, compact ? 9 : 11),
         decoration: BoxDecoration(
           color: c.surface,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(SundialRadii.lg),
           border: Border.all(color: c.border),
         ),
         child: Row(
@@ -311,7 +312,10 @@ class _PriorityChip extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(left: 6),
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(7)),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(SundialRadii.xs),
+      ),
       child: Text(
         label,
         style: SundialType.label(9.5, color: color).copyWith(fontWeight: FontWeight.w800),

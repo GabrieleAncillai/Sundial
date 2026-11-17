@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_radii.dart';
 
 /// The reference switch: a small track with a sliding thumb, not a Material
 /// switch. It is used where a row needs a dense on/off control.
@@ -23,7 +24,7 @@ class TinySwitch extends StatelessWidget {
       alignment: value ? Alignment.centerRight : Alignment.centerLeft,
       decoration: BoxDecoration(
         color: value ? c.accent : c.surfaceHigh,
-        borderRadius: BorderRadius.circular(100),
+        borderRadius: BorderRadius.circular(SundialRadii.pill),
         border: Border.all(color: value ? c.accent : c.border),
       ),
       child: Container(
