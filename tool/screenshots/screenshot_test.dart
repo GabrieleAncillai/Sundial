@@ -80,9 +80,67 @@ void main() {
   testWidgets('render desktop Plan', (tester) async {
     await _renderShell(
       tester,
-      'v1.0-plan-desktop.png',
+      'v1.4-plan-month-desktop.png',
       database,
       view: _desktop,
+      act: (tester) async {
+        await tester.tap(find.text('Plan'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render desktop Plan week', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.4-plan-week-desktop.png',
+      database,
+      view: _desktop,
+      act: (tester) async {
+        await tester.tap(find.text('Plan'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Week'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render mobile Plan month', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.4-plan-month-mobile.png',
+      database,
+      view: _phone,
+      act: (tester) async {
+        await tester.tap(find.text('Plan'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render mobile Plan day', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.4-plan-day-mobile.png',
+      database,
+      view: _phone,
+      act: (tester) async {
+        await tester.tap(find.text('Plan'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Day'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render dark desktop Plan', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.4-plan-month-dark-desktop.png',
+      database,
+      view: _desktop,
+      brightness: Brightness.dark,
+      settings: const AppSettings(themeMode: ThemeMode.dark, themeVariant: SundialThemeVariant.dark),
       act: (tester) async {
         await tester.tap(find.text('Plan'));
         await tester.pumpAndSettle();
@@ -110,6 +168,8 @@ void main() {
       view: _desktopTall,
       act: (tester) async {
         await tester.tap(find.text('Plan'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Week'));
         await tester.pumpAndSettle();
       },
     );
@@ -206,6 +266,75 @@ void main() {
       settings: const AppSettings(themeVariant: SundialThemeVariant.aero),
     );
   });
+
+  testWidgets('render icon-radius Today', (tester) async {
+    await _renderShell(tester, 'v1.5-radii-today-mobile.png', database, view: _phone);
+  });
+
+  testWidgets('render icon-radius Today timeline', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.5-radii-timeline-mobile.png',
+      database,
+      view: _phone,
+      act: (tester) async {
+        await tester.tap(find.text('Timeline'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render icon-radius desktop Plan', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.5-radii-plan-desktop.png',
+      database,
+      view: _desktop,
+      act: (tester) async {
+        await tester.tap(find.text('Plan'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render icon-radius desktop Work', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.5-radii-work-desktop.png',
+      database,
+      view: _desktop,
+      act: (tester) async {
+        await tester.tap(find.text('Work'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render icon-radius mobile Settings', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.5-radii-settings-mobile.png',
+      database,
+      view: _phone,
+      act: (tester) async {
+        await tester.tap(find.byTooltip('Settings'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render icon-radius entry sheet', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.5-radii-entry-sheet-mobile.png',
+      database,
+      view: _phone,
+      act: (tester) async {
+        await tester.tap(find.text('Prep the dough'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
 }
 
 Future<void> _loadFonts() async {
@@ -238,6 +367,7 @@ Future<void> _renderShell(
   required ({Size size, double dpr}) view,
   Future<void> Function(WidgetTester tester)? act,
   AppSettings settings = const AppSettings(),
+  Brightness brightness = Brightness.light,
 }) async {
   tester.view.physicalSize = view.size;
   tester.view.devicePixelRatio = view.dpr;
@@ -262,7 +392,7 @@ Future<void> _renderShell(
           settings: settings,
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
-            theme: SundialTheme.forSettings(settings, Brightness.light),
+            theme: SundialTheme.forSettings(settings, brightness),
             locale: const Locale('en'),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

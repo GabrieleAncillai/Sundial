@@ -554,6 +554,18 @@ abstract class AppLocalizations {
   /// **'Next week'**
   String get nextWeek;
 
+  /// No description provided for @previousDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous day'**
+  String get previousDay;
+
+  /// No description provided for @nextDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Next day'**
+  String get nextDay;
+
   /// No description provided for @jumpToToday.
   ///
   /// In en, this message translates to:
@@ -2689,6 +2701,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove image'**
   String get removeImage;
+
+  /// No description provided for @imageHintEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a photo or keep the icon.'**
+  String get imageHintEmpty;
+
+  /// No description provided for @imageHintSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace the photo or remove it.'**
+  String get imageHintSet;
 
   /// No description provided for @createJob.
   ///

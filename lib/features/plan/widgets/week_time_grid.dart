@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
+import '../../../theme/app_radii.dart';
 import '../../calendar/widgets/open_end_entry_block.dart';
 import '../../shifts/shift_block_layout.dart';
 import '../../shifts/shift_block_painter.dart';
@@ -83,7 +84,9 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scroll.hasClients) return;
-      _scroll.jumpTo(math.min(_scroll.position.maxScrollExtent, hourHeight * 7));
+      // Land just above the 07:00 line so its label is not clipped by the
+      // viewport edge.
+      _scroll.jumpTo(math.min(_scroll.position.maxScrollExtent, hourHeight * 7 - 14));
     });
   }
 
@@ -186,7 +189,7 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
           ),
         ),
         SizedBox(
-          height: allDayLines * 17.0,
+          height: allDayLines * 20.0,
           child: Padding(
             padding: const EdgeInsets.only(left: _gutter),
             child: Row(
@@ -219,7 +222,7 @@ class _WeekTimeGridState extends State<WeekTimeGrid> {
         const SizedBox(height: 4),
         Expanded(
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(SundialRadii.lg),
             child: Container(
               color: c.surfaceAlt.withValues(alpha: 0.42),
               child: SingleChildScrollView(
@@ -580,7 +583,7 @@ class _DayColumn extends StatelessWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       color: c.accent.withValues(alpha: 0.28),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(SundialRadii.xs),
                       border: Border.all(color: c.accent),
                     ),
                   ),
@@ -917,7 +920,7 @@ class _EntryCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
         color: c.surface,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(SundialRadii.xs),
         border: Border(left: BorderSide(color: color, width: 3)),
         boxShadow: shadow
             ? [BoxShadow(color: c.shadow, blurRadius: 12, offset: const Offset(0, 4))]
@@ -1071,7 +1074,7 @@ class _AllDayChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(SundialRadii.marker),
         ),
         child: Text(
           occurrence.entry.title,

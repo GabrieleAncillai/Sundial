@@ -10,6 +10,7 @@ import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../../calendar/widgets/open_end_entry_block.dart';
 import '../../shifts/shift_block_layout.dart';
@@ -28,6 +29,7 @@ class DayTimeline extends ConsumerStatefulWidget {
     required this.spaces,
     required this.contexts,
     required this.onAdd,
+    this.fill = false,
   });
 
   final LocalDate day;
@@ -36,6 +38,10 @@ class DayTimeline extends ConsumerStatefulWidget {
   final List<Space> spaces;
   final List<PlannerContext> contexts;
   final VoidCallback onAdd;
+
+  /// Fill the available height instead of a card-sized viewport. The Plan page
+  /// uses this for its collapsed phone day, where the timeline owns the screen.
+  final bool fill;
 
   static const hourHeight = 54.0;
 
@@ -113,20 +119,135 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
     final nowOffset = now.difference(dayStart).inMinutes / 60 * DayTimeline.hourHeight;
     final viewportHeight = (MediaQuery.sizeOf(context).height * 0.55).clamp(360.0, 640.0);
 
+    Widget timelineCard() => ClipRRect(
+      borderRadius: BorderRadius.circular(SundialRadii.lg),
+      child: ScrollbarTheme(
+        data: ScrollbarThemeData(
+          thumbColor: WidgetStatePropertyAll(c.textTertiary.withValues(alpha: 0.35)),
+          thickness: const WidgetStatePropertyAll(3),
+        ),
+        child: Scrollbar(
+          controller: _scroll,
+          radius: const Radius.circular(2),
+          child: SingleChildScrollView(
+            controller: _scroll,
+            child: Container(
+              height: timelineHeight,
+              color: c.surfaceAlt.withValues(alpha: 0.45),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final shiftRenders = _shiftRenders(shifts, dayStart, dayEnd, constraints.maxWidth, context);
+                  return Stack(
+                    children: [
+                      for (var hour = 0; hour <= 24; hour++)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          top: hour * DayTimeline.hourHeight,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: 52,
+                                child: Transform.translate(
+                                  offset: Offset(0, hour == 0 ? 2 : -6),
+                                  child: Text(
+                                    hour == 24 ? '' : TimeOfDay(hour: hour, minute: 0).format(context),
+                                    textAlign: TextAlign.right,
+                                    style: SundialType.label(9.5, color: c.textTertiary),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  margin: const EdgeInsets.only(top: 6),
+                                  height: 1,
+                                  color: hour == 24 ? Colors.transparent : c.border,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (shiftRenders.isNotEmpty)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: CustomPaint(
+                              painter: ShiftBlockPainter(
+                                blocks: [
+                                  for (final render in shiftRenders)
+                                    ShiftBlockPaint(
+                                      rect: render.rect,
+                                      fillColor: render.fillColor,
+                                      stripeColor: render.stripeColor,
+                                    ),
+                                ],
+                                cornerRadius: 10,
+                                stripeWidth: 3,
+                              ),
+                            ),
+                          ),
+                        ),
+                      for (final render in shiftRenders)
+                        Positioned(
+                          left: render.rect.left + 7,
+                          top: render.labelTop,
+                          width: math.max(0.0, render.rect.width - 10),
+                          child: IgnorePointer(
+                            child: Text(
+                              render.shift.pattern.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: SundialType.body(11, weight: FontWeight.w700, color: c.text),
+                            ),
+                          ),
+                        ),
+                      for (final entry in timedEntries)
+                        _entryBlock(context, entry, dayStart, dayEnd, timeZone, c, timelineHeight),
+                      for (final entry in deadlineEntries)
+                        _deadlineBlock(context, entry, dayStart, dayEnd, timeZone, c, timelineHeight),
+                      if (now.isAfter(dayStart) && now.isBefore(dayEnd))
+                        Positioned(
+                          left: 52,
+                          right: 8,
+                          top: nowOffset.clamp(0, timelineHeight - 1),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(color: c.danger, shape: BoxShape.circle),
+                              ),
+                              Expanded(child: Container(height: 1.4, color: c.danger)),
+                            ],
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final empty = timedEntries.isEmpty && deadlineEntries.isEmpty && shifts.isEmpty && allDayEntries.isEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                formatFullDate(context, day.toDateTime()),
-                style: SundialType.title(15, color: c.text),
+        if (!widget.fill)
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  formatFullDate(context, day.toDateTime()),
+                  style: SundialType.title(15, color: c.text),
+                ),
               ),
-            ),
-            GlassIconButton(icon: Icons.add, tooltip: l10n.addOnThisDay, size: 34, onTap: widget.onAdd),
-          ],
-        ),
+              GlassIconButton(icon: Icons.add, tooltip: l10n.addOnThisDay, size: 34, onTap: widget.onAdd),
+            ],
+          ),
         if (allDayEntries.isNotEmpty) ...[
           const SizedBox(height: 8),
           Wrap(
@@ -138,7 +259,7 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: c.softForSpace(entry.entry.spaceId),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(SundialRadii.xs),
                     border: Border.all(color: c.forSpace(entry.entry.spaceId).withValues(alpha: 0.2)),
                   ),
                   child: Text(
@@ -149,133 +270,14 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
             ],
           ),
         ],
-        const SizedBox(height: 10),
-        if (timedEntries.isEmpty && deadlineEntries.isEmpty && shifts.isEmpty && allDayEntries.isEmpty)
+        if (!widget.fill || allDayEntries.isNotEmpty) const SizedBox(height: 10),
+        if (widget.fill)
+          Expanded(child: timelineCard())
+        else if (empty)
           AppEmptyState(icon: Icons.event_available_outlined, title: l10n.noEntriesOnDay, compact: true)
         else
-          SizedBox(
-            height: viewportHeight,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: ScrollbarTheme(
-                data: ScrollbarThemeData(
-                  thumbColor: WidgetStatePropertyAll(c.textTertiary.withValues(alpha: 0.35)),
-                  thickness: const WidgetStatePropertyAll(3),
-                ),
-                child: Scrollbar(
-                  controller: _scroll,
-                  radius: const Radius.circular(2),
-                  child: SingleChildScrollView(
-                    controller: _scroll,
-                    child: Container(
-                      height: timelineHeight,
-                      color: c.surfaceAlt.withValues(alpha: 0.45),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final shiftRenders = _shiftRenders(
-                            shifts,
-                            dayStart,
-                            dayEnd,
-                            constraints.maxWidth,
-                            context,
-                          );
-                          return Stack(
-                            children: [
-                              for (var hour = 0; hour <= 24; hour++)
-                                Positioned(
-                                  left: 0,
-                                  right: 0,
-                                  top: hour * DayTimeline.hourHeight,
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        width: 52,
-                                        child: Transform.translate(
-                                          offset: Offset(0, hour == 0 ? 2 : -6),
-                                          child: Text(
-                                            hour == 24
-                                                ? ''
-                                                : TimeOfDay(hour: hour, minute: 0).format(context),
-                                            textAlign: TextAlign.right,
-                                            style: SundialType.label(9.5, color: c.textTertiary),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Container(
-                                          margin: const EdgeInsets.only(top: 6),
-                                          height: 1,
-                                          color: hour == 24 ? Colors.transparent : c.border,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              if (shiftRenders.isNotEmpty)
-                                Positioned.fill(
-                                  child: IgnorePointer(
-                                    child: CustomPaint(
-                                      painter: ShiftBlockPainter(
-                                        blocks: [
-                                          for (final render in shiftRenders)
-                                            ShiftBlockPaint(
-                                              rect: render.rect,
-                                              fillColor: render.fillColor,
-                                              stripeColor: render.stripeColor,
-                                            ),
-                                        ],
-                                        cornerRadius: 10,
-                                        stripeWidth: 3,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              for (final render in shiftRenders)
-                                Positioned(
-                                  left: render.rect.left + 7,
-                                  top: render.labelTop,
-                                  width: math.max(0.0, render.rect.width - 10),
-                                  child: IgnorePointer(
-                                    child: Text(
-                                      render.shift.pattern.name,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: SundialType.body(11, weight: FontWeight.w700, color: c.text),
-                                    ),
-                                  ),
-                                ),
-                              for (final entry in timedEntries)
-                                _entryBlock(context, entry, dayStart, dayEnd, timeZone, c, timelineHeight),
-                              for (final entry in deadlineEntries)
-                                _deadlineBlock(context, entry, dayStart, dayEnd, timeZone, c, timelineHeight),
-                              if (now.isAfter(dayStart) && now.isBefore(dayEnd))
-                                Positioned(
-                                  left: 52,
-                                  right: 8,
-                                  top: nowOffset.clamp(0, timelineHeight - 1),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 8,
-                                        height: 8,
-                                        decoration: BoxDecoration(color: c.danger, shape: BoxShape.circle),
-                                      ),
-                                      Expanded(child: Container(height: 1.4, color: c.danger)),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        if (shifts.isNotEmpty) ...[
+          SizedBox(height: viewportHeight, child: timelineCard()),
+        if (!widget.fill && shifts.isNotEmpty) ...[
           const SizedBox(height: 12),
           SoftCard(
             child: Column(
@@ -323,7 +325,7 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
         decoration: BoxDecoration(
           color: c.warning.withValues(alpha: 0.10),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(SundialRadii.xs),
           border: Border.all(color: c.warning.withValues(alpha: 0.5)),
         ),
         child: Row(
@@ -439,7 +441,7 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
         decoration: BoxDecoration(
           color: c.surface,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(SundialRadii.xs),
           border: Border.all(color: color.withValues(alpha: 0.45)),
           boxShadow: [BoxShadow(color: c.shadow, blurRadius: 8, offset: const Offset(0, 3))],
         ),

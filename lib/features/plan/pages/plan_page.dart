@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
@@ -11,15 +12,14 @@ import '../../../screens/entry_editor.dart';
 import '../../../state/providers.dart';
 import '../../../state/settings_controller.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
-import '../../calendar/widgets/day_detail.dart';
 import '../../calendar/widgets/day_timeline.dart';
-import '../../calendar/widgets/month_grid.dart';
-import '../../calendar/widgets/week_strip.dart';
-import '../../shifts/shift_palette.dart';
+import '../../calendar/widgets/month_calendar.dart';
+import '../widgets/week_day_strip.dart';
 import '../widgets/week_time_grid.dart';
 
-enum _MobileMode { list, timeline }
+enum _PlanView { month, timeline }
 
 class PlanPage extends ConsumerStatefulWidget {
   const PlanPage({super.key});
@@ -28,11 +28,11 @@ class PlanPage extends ConsumerStatefulWidget {
   ConsumerState<PlanPage> createState() => _PlanPageState();
 }
 
-class _PlanPageState extends ConsumerState<PlanPage> {
+class _PlanPageState extends ConsumerState<PlanPage> with SingleTickerProviderStateMixin {
   late LocalDate _selected;
   late LocalDate _visibleMonth;
   bool _expanded = true;
-  _MobileMode _mode = _MobileMode.list;
+  late final AnimationController _fold;
 
   @override
   void initState() {
@@ -40,6 +40,13 @@ class _PlanPageState extends ConsumerState<PlanPage> {
     final today = localDateAt(ref.read(nowProvider), ref.read(deviceTimeZoneProvider));
     _selected = today;
     _visibleMonth = LocalDate(today.year, today.month, 1);
+    _fold = AnimationController(vsync: this, duration: const Duration(milliseconds: 360), value: 1);
+  }
+
+  @override
+  void dispose() {
+    _fold.dispose();
+    super.dispose();
   }
 
   @override
@@ -52,261 +59,222 @@ class _PlanPageState extends ConsumerState<PlanPage> {
     final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
     final contexts = ref.watch(contextsProvider(null)).value ?? const <PlannerContext>[];
     final weekStart = settings.weekStart;
-    final selectedWeek = _selected.startOfWeek(weekStart);
-    final rangeStart = _expanded ? _visibleMonth.startOfWeek(weekStart) : selectedWeek;
-    final rangeEnd = _expanded ? rangeStart.addDays(55) : selectedWeek.addDays(6);
-    final range = (start: rangeStart, end: rangeEnd);
-    final entriesState = ref.watch(entriesProvider(range));
-    final shiftsState = ref.watch(shiftsProvider(range));
-    final visibleEntries = (entriesState.value ?? const <EntryOccurrence>[]).where((entry) {
+    final desktop = MediaQuery.sizeOf(context).width >= 1024;
+
+    // The month surface always fetches every possible grid row, so flipping
+    // between months never shows an empty tail.
+    final monthFirst = _visibleMonth.startOfWeek(weekStart);
+    final monthRange = (start: monthFirst, end: monthFirst.addDays(41));
+    final timelineStart = desktop ? _selected.startOfWeek(weekStart) : _selected;
+    final timelineRange = (start: timelineStart, end: desktop ? timelineStart.addDays(6) : timelineStart);
+
+    final monthEntriesState = ref.watch(entriesProvider(monthRange));
+    final monthShiftsState = ref.watch(shiftsProvider(monthRange));
+    final timelineEntriesState = ref.watch(entriesProvider(timelineRange));
+    final timelineShiftsState = ref.watch(shiftsProvider(timelineRange));
+
+    bool showsEntry(EntryOccurrence entry) {
       if (entry.entry.spaceId != 'work') return true;
       if (settings.hideWorkSpace) return false;
       if (entry.entry.kind == EntryKind.deadline) return true;
       return settings.isWorkTime(now, timeZone);
-    }).toList();
-    final visibleShifts = settings.hideWorkSpace || !settings.isWorkTime(now, timeZone)
+    }
+
+    List<EntryOccurrence> visibleEntries(AsyncValue<List<EntryOccurrence>> state) =>
+        (state.value ?? const <EntryOccurrence>[]).where(showsEntry).toList();
+
+    List<ShiftOccurrence> visibleShifts(AsyncValue<List<ShiftOccurrence>> state) =>
+        settings.hideWorkSpace || !settings.isWorkTime(now, timeZone)
         ? const <ShiftOccurrence>[]
-        : shiftsState.value ?? const <ShiftOccurrence>[];
+        : state.value ?? const <ShiftOccurrence>[];
 
-    final colors = {for (final space in spaces) space.id: space.colorValue};
-    final markers = <int, Set<int>>{};
-    for (final entry in visibleEntries) {
-      (markers[entry.displayDate.key] ??= <int>{}).add(colors[entry.entry.spaceId] ?? 0xFF888888);
-    }
-    final shiftColors = <int, Set<int>>{};
-    for (final shift in visibleShifts) {
-      (shiftColors[shift.displayDate.key] ??= <int>{}).add(
-        shiftColor(context, shift.pattern, contexts).toARGB32(),
-      );
-    }
-    final selectedEntries = visibleEntries.where((entry) => entry.displayDate == _selected).toList();
-    final selectedShifts = visibleShifts.where((shift) => shift.displayDate == _selected).toList();
+    final monthEntries = visibleEntries(monthEntriesState);
+    final monthShifts = visibleShifts(monthShiftsState);
+    final timelineEntries = visibleEntries(timelineEntriesState);
+    final timelineShifts = visibleShifts(timelineShiftsState);
+    final entriesError = monthEntriesState.error ?? timelineEntriesState.error;
+    final shiftsError = monthShiftsState.error ?? timelineShiftsState.error;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // The shell switches to the side rail at 900 window px, but the week
-        // grid also needs room for the month panel. At 1024 the desktop grid
-        // is required; below that the selected-day layout is clearer.
-        final desktop = MediaQuery.sizeOf(context).width >= 1024;
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 16, 6),
-              child: _PlanHeader(
-                title: _title(context),
-                desktop: desktop,
-                onPrevious: () => _step(context, -1),
-                onNext: () => _step(context, 1),
-                onToday: () => _goToToday(today),
-                expanded: _expanded,
-                onToggle: () => setState(() => _expanded = !_expanded),
-              ),
-            ),
-            if (entriesState.hasError)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: SundialNotice(text: l10n.couldNotLoadDay('${entriesState.error}')),
-              ),
-            if (shiftsState.hasError)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: SundialNotice(text: l10n.couldNotLoadShifts('${shiftsState.error}')),
-              ),
-            Expanded(
-              child: desktop
-                  ? _desktop(
-                      context,
-                      spaces: spaces,
-                      contexts: contexts,
-                      entries: visibleEntries,
-                      shifts: visibleShifts,
-                      markers: markers,
-                      shiftColors: shiftColors,
-                      today: today,
-                      weekStart: weekStart,
-                      timeZone: timeZone,
-                      now: now,
-                    )
-                  : _mobile(
-                      context,
-                      spaces: spaces,
-                      contexts: contexts,
-                      selectedEntries: selectedEntries,
-                      selectedShifts: selectedShifts,
-                      markers: markers,
-                      shiftColors: shiftColors,
-                      today: today,
-                      weekStart: weekStart,
-                    ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _mobile(
-    BuildContext context, {
-    required List<Space> spaces,
-    required List<PlannerContext> contexts,
-    required List<EntryOccurrence> selectedEntries,
-    required List<ShiftOccurrence> selectedShifts,
-    required Map<int, Set<int>> markers,
-    required Map<int, Set<int>> shiftColors,
-    required LocalDate today,
-    required int weekStart,
-  }) {
-    final l10n = context.l10n;
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-      children: [
-        SoftCard(
-          padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-          child: AnimatedSize(
-            duration: MediaQuery.disableAnimationsOf(context)
-                ? Duration.zero
-                : const Duration(milliseconds: 260),
-            curve: Curves.easeOutCubic,
-            alignment: Alignment.topCenter,
-            child: _expanded
-                ? MonthGrid(
-                    month: _visibleMonth,
-                    selected: _selected,
-                    today: today,
-                    weekStart: weekStart,
-                    markers: markers,
-                    shiftColors: shiftColors,
-                    onSelected: _select,
-                  )
-                : WeekStrip(
-                    selected: _selected,
-                    today: today,
-                    weekStart: weekStart,
-                    markers: markers,
-                    shiftColors: shiftColors,
-                    onSelected: _select,
-                  ),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(desktop ? 20 : 16, 10, desktop ? 16 : 16, 8),
+      child: Column(
+        children: [
+          _PlanHeader(
+            title: _title(context, desktop),
+            previousTooltip: _expanded
+                ? l10n.previousMonth
+                : desktop
+                ? l10n.previousWeek
+                : l10n.previousDay,
+            nextTooltip: _expanded
+                ? l10n.nextMonth
+                : desktop
+                ? l10n.nextWeek
+                : l10n.nextDay,
+            onPrevious: () => _step(desktop, -1),
+            onNext: () => _step(desktop, 1),
           ),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: Text(l10n.selectedDay, style: SundialType.label(11, color: context.mc.textTertiary)),
+          if (entriesError != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: SundialNotice(text: l10n.couldNotLoadDay('$entriesError')),
             ),
-            SundialSegmented<_MobileMode>(
-              segments: [
-                SundialSegment(value: _MobileMode.list, label: l10n.listView, icon: Icons.checklist),
-                SundialSegment(
-                  value: _MobileMode.timeline,
-                  label: l10n.timelineView,
-                  icon: Icons.view_day_outlined,
-                ),
-              ],
-              selected: _mode,
-              onChanged: (value) => setState(() => _mode = value),
-              compact: true,
+          if (shiftsError != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: SundialNotice(text: l10n.couldNotLoadShifts('$shiftsError')),
             ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        AnimatedSwitcher(
-          duration: MediaQuery.disableAnimationsOf(context)
-              ? Duration.zero
-              : const Duration(milliseconds: 240),
-          child: _mode == _MobileMode.list
-              ? SoftCard(
-                  key: const ValueKey('plan-list'),
-                  padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
-                  child: CalendarDayDetail(
-                    date: _selected,
-                    entries: selectedEntries,
-                    shifts: selectedShifts,
-                    spaces: spaces,
-                    contexts: contexts,
-                    onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
-                  ),
-                )
-              : SoftCard(
-                  key: const ValueKey('plan-timeline'),
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-                  child: DayTimeline(
-                    day: _selected,
-                    entries: selectedEntries,
-                    shifts: selectedShifts,
-                    spaces: spaces,
-                    contexts: contexts,
-                    onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
-                  ),
-                ),
-        ),
-      ],
+          const SizedBox(height: 10),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final timeline = _timelinePanel(
+                  context,
+                  desktop: desktop,
+                  entries: timelineEntries,
+                  shifts: timelineShifts,
+                  spaces: spaces,
+                  contexts: contexts,
+                  timeZone: timeZone,
+                  now: now,
+                  today: today,
+                  weekStart: weekStart,
+                );
+                final month = _monthPanel(
+                  context,
+                  entries: monthEntries,
+                  shifts: monthShifts,
+                  spaces: spaces,
+                  contexts: contexts,
+                  today: today,
+                  weekStart: weekStart,
+                  timeZone: timeZone,
+                );
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    KeyedSubtree(
+                      key: ValueKey(desktop ? 'plan-week' : 'plan-day'),
+                      child: ExcludeSemantics(
+                        excluding: _expanded,
+                        child: IgnorePointer(ignoring: _expanded, child: timeline),
+                      ),
+                    ),
+                    AnimatedBuilder(
+                      animation: _fold,
+                      builder: (context, child) {
+                        final extent = Curves.easeInOutCubic.transform(_fold.value);
+                        if (extent <= 0) return const SizedBox.shrink();
+                        return Positioned(
+                          left: 0,
+                          top: 0,
+                          right: 0,
+                          height: constraints.maxHeight * extent,
+                          child: DecoratedBox(
+                            key: const ValueKey('plan-fold'),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(SundialRadii.lg),
+                              boxShadow: [
+                                if (extent > 0 && extent < 1)
+                                  BoxShadow(
+                                    color: context.mc.shadow,
+                                    blurRadius: 22,
+                                    offset: const Offset(0, 8),
+                                  ),
+                              ],
+                            ),
+                            child: ClipRect(
+                              child: OverflowBox(
+                                alignment: Alignment.topCenter,
+                                minHeight: constraints.maxHeight,
+                                maxHeight: constraints.maxHeight,
+                                child: child,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      child: KeyedSubtree(key: const ValueKey('plan-month'), child: month),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          _PlanToolbar(
+            expanded: _expanded,
+            desktop: desktop,
+            onCollapse: () => _setExpanded(false),
+            onExpand: () => _setExpanded(true),
+            onToday: () => _goToToday(today),
+            onViewChanged: (view) => _setExpanded(view == _PlanView.month),
+            onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _desktop(
+  Widget _monthPanel(
     BuildContext context, {
-    required List<Space> spaces,
-    required List<PlannerContext> contexts,
     required List<EntryOccurrence> entries,
     required List<ShiftOccurrence> shifts,
-    required Map<int, Set<int>> markers,
-    required Map<int, Set<int>> shiftColors,
+    required List<Space> spaces,
+    required List<PlannerContext> contexts,
     required LocalDate today,
     required int weekStart,
     required String timeZone,
-    required DateTime now,
   }) {
-    final week = _selected.startOfWeek(weekStart);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 18),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            width: 286,
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: SoftCard(
-                      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                      child: AnimatedSize(
-                        duration: MediaQuery.disableAnimationsOf(context)
-                            ? Duration.zero
-                            : const Duration(milliseconds: 260),
-                        curve: Curves.easeOutCubic,
-                        alignment: Alignment.topCenter,
-                        child: _expanded
-                            ? MonthGrid(
-                                month: _visibleMonth,
-                                selected: _selected,
-                                today: today,
-                                weekStart: weekStart,
-                                markers: markers,
-                                shiftColors: shiftColors,
-                                onSelected: _select,
-                              )
-                            : WeekStrip(
-                                selected: _selected,
-                                today: today,
-                                weekStart: weekStart,
-                                markers: markers,
-                                shiftColors: shiftColors,
-                                onSelected: _select,
-                              ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-              ],
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: WeekTimeGrid(
-              weekStart: week,
+    final c = context.mc;
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(SundialRadii.lg),
+        border: Border.all(color: c.border),
+      ),
+      child: MonthCalendar(
+        month: _visibleMonth,
+        selected: _selected,
+        today: today,
+        weekStart: weekStart,
+        entries: entries,
+        shifts: shifts,
+        spaces: spaces,
+        contexts: contexts,
+        viewerTimeZone: timeZone,
+        onSelected: _select,
+        onOpenEntry: (occurrence) =>
+            showEntryEditor(context, entry: occurrence.entry, initialDate: occurrence.date, spaces: spaces),
+      ),
+    );
+  }
+
+  Widget _timelinePanel(
+    BuildContext context, {
+    required bool desktop,
+    required List<EntryOccurrence> entries,
+    required List<ShiftOccurrence> shifts,
+    required List<Space> spaces,
+    required List<PlannerContext> contexts,
+    required String timeZone,
+    required DateTime now,
+    required LocalDate today,
+    required int weekStart,
+  }) {
+    final c = context.mc;
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(SundialRadii.lg),
+        border: Border.all(color: c.border),
+      ),
+      padding: EdgeInsets.fromLTRB(10, 10, 10, desktop ? 6 : 8),
+      child: desktop
+          ? WeekTimeGrid(
+              weekStart: _selected.startOfWeek(ref.read(settingsProvider).weekStart),
               entries: entries,
               shifts: shifts,
               spaces: spaces,
@@ -328,26 +296,64 @@ class _PlanPageState extends ConsumerState<PlanPage> {
               ),
               onMove: (occurrence, date, start, end) => _move(context, occurrence, date, start, end),
               onResize: (occurrence, end) => _resize(context, occurrence, end),
+            )
+          : Column(
+              children: [
+                WeekDayStrip(selected: _selected, today: today, weekStart: weekStart, onSelected: _select),
+                const SizedBox(height: 4),
+                Expanded(
+                  child: DayTimeline(
+                    fill: true,
+                    day: _selected,
+                    entries: entries,
+                    shifts: shifts,
+                    spaces: spaces,
+                    contexts: contexts,
+                    onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
-  String _title(BuildContext context) => formatMonthYear(
-    context,
-    (_expanded ? _visibleMonth : _selected.startOfWeek(ref.read(settingsProvider).weekStart)).toDateTime(),
-  );
+  String _title(BuildContext context, bool desktop) {
+    if (_expanded) return formatMonthYear(context, _visibleMonth.toDateTime());
+    if (desktop) {
+      final start = _selected.startOfWeek(ref.read(settingsProvider).weekStart);
+      final end = start.addDays(6);
+      return '${formatShortDate(context, start.toDateTime())} – '
+          '${formatShortDate(context, end.toDateTime())}';
+    }
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    return '${DateFormat.EEEE(locale).format(_selected.toDateTime())} · '
+        '${formatShortDate(context, _selected.toDateTime())}';
+  }
 
-  void _step(BuildContext context, int direction) {
+  void _setExpanded(bool value) {
+    if (_expanded == value) return;
+    setState(() => _expanded = value);
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _fold.value = value ? 1 : 0;
+    } else if (value) {
+      _fold.forward();
+    } else {
+      _fold.reverse();
+    }
+  }
+
+  void _step(bool desktop, int direction) {
     setState(() {
       if (_expanded) {
         final index = _visibleMonth.year * 12 + _visibleMonth.month - 1 + direction;
-        _visibleMonth = LocalDate(index ~/ 12, index % 12 + 1, 1);
-        _selected = _visibleMonth;
+        final month = LocalDate(index ~/ 12, index % 12 + 1, 1);
+        final day = _selected.day.clamp(1, month.daysInMonth);
+        _visibleMonth = month;
+        _selected = LocalDate(month.year, month.month, day);
       } else {
-        _selected = _selected.startOfWeek(ref.read(settingsProvider).weekStart).addDays(7 * direction);
+        _selected = desktop
+            ? _selected.startOfWeek(ref.read(settingsProvider).weekStart).addDays(7 * direction)
+            : _selected.addDays(direction);
         _visibleMonth = LocalDate(_selected.year, _selected.month, 1);
       }
     });
@@ -524,25 +530,20 @@ class _PlanPageState extends ConsumerState<PlanPage> {
 class _PlanHeader extends StatelessWidget {
   const _PlanHeader({
     required this.title,
-    required this.desktop,
+    required this.previousTooltip,
+    required this.nextTooltip,
     required this.onPrevious,
     required this.onNext,
-    required this.onToday,
-    required this.expanded,
-    required this.onToggle,
   });
 
   final String title;
-  final bool desktop;
+  final String previousTooltip;
+  final String nextTooltip;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
-  final VoidCallback onToday;
-  final bool expanded;
-  final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final c = context.mc;
     return Row(
       children: [
@@ -550,36 +551,127 @@ class _PlanHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SectionLabel(l10n.plan, color: c.accent),
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: SundialType.headline(24, color: c.text),
+              SectionLabel(context.l10n.plan, color: c.accent),
+              AnimatedSwitcher(
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 220),
+                child: Align(
+                  key: ValueKey(title),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: SundialType.headline(24, color: c.text),
+                  ),
+                ),
               ),
             ],
           ),
         ),
-        GlassIconButton(icon: Icons.today, tooltip: l10n.jumpToToday, size: 34, onTap: onToday),
-        const SizedBox(width: 4),
-        GlassIconButton(
-          icon: Icons.chevron_left,
-          tooltip: desktop ? l10n.previousWeek : l10n.previousMonth,
-          size: 34,
-          onTap: onPrevious,
+        GlassIconButton(icon: Icons.chevron_left, tooltip: previousTooltip, size: 36, onTap: onPrevious),
+        const SizedBox(width: 8),
+        GlassIconButton(icon: Icons.chevron_right, tooltip: nextTooltip, size: 36, onTap: onNext),
+      ],
+    );
+  }
+}
+
+class _PlanToolbar extends StatelessWidget {
+  const _PlanToolbar({
+    required this.expanded,
+    required this.desktop,
+    required this.onCollapse,
+    required this.onExpand,
+    required this.onToday,
+    required this.onViewChanged,
+    required this.onAdd,
+  });
+
+  final bool expanded;
+  final bool desktop;
+  final VoidCallback onCollapse;
+  final VoidCallback onExpand;
+  final VoidCallback onToday;
+  final ValueChanged<_PlanView> onViewChanged;
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.mc;
+    final l10n = context.l10n;
+    final narrow = MediaQuery.sizeOf(context).width < 520;
+
+    final today = narrow
+        ? GlassIconButton(icon: Icons.today_outlined, tooltip: l10n.jumpToToday, size: 32, onTap: onToday)
+        : GlassPill(
+            height: 32,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            onTap: onToday,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.today_outlined, size: 14, color: c.textSecondary),
+                const SizedBox(width: 5),
+                Text(l10n.today, style: SundialType.label(11.5, color: c.text)),
+              ],
+            ),
+          );
+
+    // Phones do not have room for two chevrons plus Today and the view switch,
+    // so the chevron becomes a single toggle. Desktop keeps the pair.
+    final controls = narrow
+        ? <Widget>[
+            GlassIconButton(
+              icon: expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+              tooltip: expanded ? l10n.collapseCalendar : l10n.expandCalendar,
+              size: 32,
+              onTap: expanded ? onCollapse : onExpand,
+            ),
+            const SizedBox(width: 6),
+            today,
+          ]
+        : <Widget>[
+            GlassIconButton(
+              icon: Icons.keyboard_arrow_up,
+              tooltip: l10n.collapseCalendar,
+              size: 32,
+              onTap: expanded ? onCollapse : null,
+            ),
+            const SizedBox(width: 2),
+            GlassIconButton(
+              icon: Icons.keyboard_arrow_down,
+              tooltip: l10n.expandCalendar,
+              size: 32,
+              onTap: expanded ? null : onExpand,
+            ),
+            const SizedBox(width: 6),
+            today,
+          ];
+
+    return Row(
+      children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Row(mainAxisSize: MainAxisSize.min, children: controls),
+          ),
         ),
-        GlassIconButton(
-          icon: Icons.chevron_right,
-          tooltip: desktop ? l10n.nextWeek : l10n.nextMonth,
-          size: 34,
-          onTap: onNext,
+        SundialSegmented<_PlanView>(
+          segments: [
+            SundialSegment(value: _PlanView.month, label: l10n.monthView),
+            SundialSegment(value: _PlanView.timeline, label: desktop ? l10n.weekView : l10n.dayView),
+          ],
+          selected: expanded ? _PlanView.month : _PlanView.timeline,
+          onChanged: onViewChanged,
+          compact: true,
         ),
-        const SizedBox(width: 4),
-        GlassIconButton(
-          icon: expanded ? Icons.unfold_less : Icons.unfold_more,
-          tooltip: expanded ? l10n.collapseCalendar : l10n.expandCalendar,
-          size: 34,
-          onTap: onToggle,
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: GlassIconButton(icon: Icons.add, tooltip: l10n.addEntry, size: 34, onTap: onAdd),
+          ),
         ),
       ],
     );

@@ -272,6 +272,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nextWeek => 'Next week';
 
   @override
+  String get previousDay => 'Previous day';
+
+  @override
+  String get nextDay => 'Next day';
+
+  @override
   String get jumpToToday => 'Jump to today';
 
   @override
@@ -1423,6 +1429,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get removeImage => 'Remove image';
+
+  @override
+  String get imageHintEmpty => 'Add a photo or keep the icon.';
+
+  @override
+  String get imageHintSet => 'Replace the photo or remove it.';
 
   @override
   String get createJob => 'Create job';
