@@ -42,6 +42,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get delete => 'Delete';
 
   @override
+  String get remove => 'Remove';
+
+  @override
   String get save => 'Save';
 
   @override
@@ -543,13 +546,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeInventory => 'Home inventory';
 
   @override
-  String get homeInventorySubtitle => 'Quantities, locations and reorder levels.';
+  String get homeInventorySubtitle => 'Everything you keep at home, with stock levels that stay useful.';
 
   @override
   String get shoppingList => 'Shopping list';
 
   @override
-  String get shoppingListSubtitle => 'Groceries and household items to buy.';
+  String get shoppingListSubtitle => 'Restock what the house needs, plus the occasional one-off.';
 
   @override
   String get addHomeItem => 'Add an item';
@@ -588,13 +591,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addLowStockItems => 'Add low-stock items';
 
   @override
-  String get noLowStock => 'Nothing is below its reorder level.';
+  String get noLowStock => 'Nothing is below its minimum stock.';
 
   @override
-  String get homeInventoryEmpty => 'No household items yet.';
+  String get homeInventoryEmpty => 'Your home inventory is empty.';
 
   @override
-  String get shoppingListEmpty => 'The shopping list is empty.';
+  String get shoppingListEmpty => 'Nothing to buy yet.';
 
   @override
   String get addShoppingItem => 'Add to the list';
@@ -1211,14 +1214,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String lowStockCount(int count) {
-    return '$count items below their reorder level';
+    return '$count items below their minimum stock';
   }
 
   @override
-  String get maintenance => 'Maintenance';
+  String get maintenance => 'Gadgets';
 
   @override
-  String get maintenanceSubtitle => 'Tasks due after their last service.';
+  String get maintenanceSubtitle => 'Service schedules for appliances, filters and vehicles.';
 
   @override
   String get maintenanceDue => 'Due now';
@@ -2349,4 +2352,471 @@ class AppLocalizationsEn extends AppLocalizations {
   String recurrenceUntil(Object date) {
     return 'until $date';
   }
+
+  @override
+  String get homeInventoryEmptyBody => 'Start from the household catalog or add something custom.';
+
+  @override
+  String get addInventoryItem => 'Add to inventory';
+
+  @override
+  String get browseHouseholdCatalog => 'Browse the household catalog';
+
+  @override
+  String get householdCatalog => 'Household catalog';
+
+  @override
+  String get catalogSubtitle => 'Common household items with sensible defaults.';
+
+  @override
+  String get catalogSearchHint => 'Search olive oil, toilet paper, coffee…';
+
+  @override
+  String get catalogNoResults => 'No catalog items match.';
+
+  @override
+  String get catalogInInventory => 'In inventory';
+
+  @override
+  String get catalogAddItem => 'Add';
+
+  @override
+  String get createCustomItem => 'Create a custom item';
+
+  @override
+  String get createCustomHint => 'Something that is not in the catalog.';
+
+  @override
+  String get inventorySearch => 'Search inventory';
+
+  @override
+  String get inventoryFilterAll => 'All';
+
+  @override
+  String get inventoryFilterLow => 'Low stock';
+
+  @override
+  String get inventoryFilterExpiring => 'Expiring';
+
+  @override
+  String get inventoryNoMatches => 'No items match these filters.';
+
+  @override
+  String get uncategorized => 'Uncategorized';
+
+  @override
+  String productsCount(int count) {
+    return '$count products';
+  }
+
+  @override
+  String get productsCountOne => '1 product';
+
+  @override
+  String variantsCount(int count) {
+    return '$count sizes';
+  }
+
+  @override
+  String get variantsCountOne => '1 size';
+
+  @override
+  String get lowStockItems => 'Low stock';
+
+  @override
+  String get expiringItems => 'Expiring soon';
+
+  @override
+  String get expiredItems => 'Expired';
+
+  @override
+  String expiresOn(String date) {
+    return 'Expires $date';
+  }
+
+  @override
+  String get expiresAtLabel => 'Expires at';
+
+  @override
+  String get noExpiry => 'No expiry date';
+
+  @override
+  String get expiresToday => 'Expires today';
+
+  @override
+  String expiredOn(String date) {
+    return 'Expired $date';
+  }
+
+  @override
+  String get minimumStock => 'Minimum stock';
+
+  @override
+  String minStockValue(String quantity) {
+    return 'Min $quantity';
+  }
+
+  @override
+  String get packSize => 'Size / pack';
+
+  @override
+  String get packSizeHint => 'e.g. 5 gal bottle, 1 kg bag';
+
+  @override
+  String get packSizeRequired => 'Give this size a pack description, for example 5 gal or 1 kg.';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get locations => 'Locations';
+
+  @override
+  String get addAnotherSize => 'Add another size';
+
+  @override
+  String get editProduct => 'Edit product';
+
+  @override
+  String get variantEditHint =>
+      'Changes here apply to this size only. Open the product to rename every size.';
+
+  @override
+  String get archiveProductQuestion => 'Remove this product?';
+
+  @override
+  String get archiveProductBody => 'Every size of this product leaves the inventory but stays in backups.';
+
+  @override
+  String get archiveVariantQuestion => 'Remove this size?';
+
+  @override
+  String get archiveVariantBody => 'This size leaves the inventory. Other sizes stay.';
+
+  @override
+  String get inventorySetup => 'Inventory setup';
+
+  @override
+  String get inventorySetupSubtitle => 'Categories, locations and units';
+
+  @override
+  String get manageInventorySetup => 'Manage categories, locations and units';
+
+  @override
+  String get manageCategories => 'Categories';
+
+  @override
+  String get manageLocations => 'Locations';
+
+  @override
+  String get manageUnits => 'Units';
+
+  @override
+  String get newCategory => 'New category';
+
+  @override
+  String get newLocation => 'New location';
+
+  @override
+  String get editLocation => 'Edit location';
+
+  @override
+  String get newUnit => 'New unit';
+
+  @override
+  String get editUnit => 'Edit unit';
+
+  @override
+  String get noLocations => 'No locations yet.';
+
+  @override
+  String get noUnits => 'No units yet.';
+
+  @override
+  String get duplicateName => 'That name is already in use.';
+
+  @override
+  String get categoryManagerSubtitle => 'Give each kind of household item a color and icon.';
+
+  @override
+  String get locationManagerSubtitle => 'Where things live in and around the house.';
+
+  @override
+  String get unitManagerSubtitle => 'How you count, weigh or measure stock.';
+
+  @override
+  String get categoryNameLabel => 'Category name';
+
+  @override
+  String get locationName => 'Location name';
+
+  @override
+  String get unitName => 'Unit name';
+
+  @override
+  String get unitSymbol => 'Short form';
+
+  @override
+  String get unitKind => 'Unit type';
+
+  @override
+  String get unitKindCount => 'Count';
+
+  @override
+  String get unitKindWeight => 'Weight';
+
+  @override
+  String get unitKindVolume => 'Volume';
+
+  @override
+  String get unitKindLength => 'Length';
+
+  @override
+  String get unitKindOther => 'Other';
+
+  @override
+  String get deleteCategoryQuestion => 'Delete this category?';
+
+  @override
+  String get deleteCategoryBody => 'Items keep their text category until you edit them.';
+
+  @override
+  String get deleteLocationQuestion => 'Delete this location?';
+
+  @override
+  String get deleteLocationBody => 'It is removed from every item that uses it.';
+
+  @override
+  String get deleteUnitQuestion => 'Delete this unit?';
+
+  @override
+  String get deleteUnitBody => 'Items keep the unit text until you edit them.';
+
+  @override
+  String inStockCount(String count) {
+    return '$count in stock';
+  }
+
+  @override
+  String get shoppingListEmptyBody => 'Add an item or let the inventory suggest what is running low.';
+
+  @override
+  String couldNotLoadHome(Object error) {
+    return 'Could not load household data: $error';
+  }
+
+  @override
+  String get stockSuggestions => 'Stock suggestions';
+
+  @override
+  String get stockSuggestionsBody => 'From your inventory, ready to add.';
+
+  @override
+  String get addAllSuggestions => 'Add all';
+
+  @override
+  String suggestionLowStock(String quantity) {
+    return 'Low stock · buy $quantity';
+  }
+
+  @override
+  String get suggestionOutOfStock => 'Out of stock';
+
+  @override
+  String get suggestionExpired => 'Expired · replace';
+
+  @override
+  String get suggestionAlreadyListed => 'On the list';
+
+  @override
+  String get addSuggestion => 'Add';
+
+  @override
+  String get shoppingSearch => 'Search the list';
+
+  @override
+  String get shoppingOneOff => 'One-off item';
+
+  @override
+  String get shoppingOneOffHint => 'Something you do not keep in inventory.';
+
+  @override
+  String get shoppingAddHint => 'What do you need to buy?';
+
+  @override
+  String get linkedInventory => 'Inventory';
+
+  @override
+  String linkedTo(String name) {
+    return 'Linked to $name';
+  }
+
+  @override
+  String get restocksInventory => 'Restocks inventory';
+
+  @override
+  String addedToInventory(String quantity, String name) {
+    return 'Added $quantity to $name.';
+  }
+
+  @override
+  String get shoppingItemCategory => 'Category';
+
+  @override
+  String get shoppingItemQuantity => 'Quantity';
+
+  @override
+  String get shoppingItemUnit => 'Unit';
+
+  @override
+  String get shoppingItemPack => 'Size / pack';
+
+  @override
+  String shoppingItemsCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get shoppingItemsCountOne => '1 item';
+
+  @override
+  String get noShoppingSuggestions => 'Nothing needs restocking.';
+
+  @override
+  String get markBought => 'Mark bought';
+
+  @override
+  String get markNotBought => 'Mark not bought';
+
+  @override
+  String get gadgetsEmpty => 'No gadgets yet.';
+
+  @override
+  String get gadgetsEmptyBody =>
+      'Track the AC, water tank, boiler, car and anything else that needs service.';
+
+  @override
+  String get gadgetAll => 'All gadgets';
+
+  @override
+  String gadgetEveryDays(int count) {
+    return 'Every $count days';
+  }
+
+  @override
+  String get gadgetDueToday => 'Due today';
+
+  @override
+  String gadgetDueIn(int count) {
+    return 'Due in $count days';
+  }
+
+  @override
+  String gadgetOverdueBy(int count) {
+    return 'Overdue by $count days';
+  }
+
+  @override
+  String get gadgetNoTime => 'All day';
+
+  @override
+  String gadgetTimeRange(String start, String end) {
+    return '$start–$end';
+  }
+
+  @override
+  String get logService => 'Log service';
+
+  @override
+  String get logServiceTitle => 'Log service';
+
+  @override
+  String get serviceDate => 'Service date';
+
+  @override
+  String get serviceNote => 'What was done?';
+
+  @override
+  String get serviceNoteHint => 'Optional notes for the history';
+
+  @override
+  String serviceLogged(String date) {
+    return 'Service logged. Next due $date.';
+  }
+
+  @override
+  String get couldNotLogService => 'Could not log the service. Check the gadget and try again.';
+
+  @override
+  String get couldNotReschedule => 'Could not reschedule. The gadget may have changed.';
+
+  @override
+  String get serviceHistory => 'Service history';
+
+  @override
+  String get serviceHistoryEmpty => 'No services logged yet.';
+
+  @override
+  String serviceHistoryNext(String date) {
+    return 'Next due $date';
+  }
+
+  @override
+  String get reschedule => 'Reschedule';
+
+  @override
+  String get rescheduleMaintenance => 'Reschedule maintenance';
+
+  @override
+  String get rescheduleBody => 'Move the next due date without logging a service.';
+
+  @override
+  String get newDueDate => 'New due date';
+
+  @override
+  String rescheduled(String date) {
+    return 'Next due $date.';
+  }
+
+  @override
+  String get addCalendarEvent => 'Add to calendar';
+
+  @override
+  String get addCalendarEventBody => 'Record the service as a completed event with a time block.';
+
+  @override
+  String get serviceAt => 'Service time';
+
+  @override
+  String get duration => 'Duration';
+
+  @override
+  String durationMinutes(int count) {
+    return '$count min';
+  }
+
+  @override
+  String durationHours(int count) {
+    return '$count h';
+  }
+
+  @override
+  String get durationCustom => 'Custom';
+
+  @override
+  String get durationMinutesLabel => 'Minutes';
+
+  @override
+  String get blockCalendar => 'Show on the calendar';
+
+  @override
+  String get blockCalendarBody => 'Reserve a time block on the due date.';
+
+  @override
+  String serviceEventTitle(String name) {
+    return '$name service';
+  }
+
+  @override
+  String get saveSettings => 'Save';
 }

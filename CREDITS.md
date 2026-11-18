@@ -15,6 +15,12 @@ Sundial is not affiliated with or endorsed by InlitX. The upstream projects are
 credited as design and architecture references. If any code is ever adapted from
 them, their GPL-3.0-only notices and Section 7(b) attributions must be retained.
 
+The Home inventory catalog adapts the *concept* of GymMane's nutrition library
+(`lib/services/food_library.dart` and the seeded TSV data): a searchable,
+localized library with defaults and art that the user can extend. The household
+item data, icons and screens are original to Sundial and remain GPL-3.0-only.
+No GymMane code or data files are copied.
+
 Sundial itself is GPL-3.0-only; see [LICENSE](LICENSE) and
 [ADDITIONAL_TERMS.md](ADDITIONAL_TERMS.md).
 

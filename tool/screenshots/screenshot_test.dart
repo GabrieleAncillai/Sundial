@@ -13,6 +13,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sundial/app/app_shell.dart';
 import 'package:sundial/core/i18n/l10n.dart';
 import 'package:sundial/core/settings_scope.dart';
+import 'package:sundial/features/home_inventory/pages/home_inventory_page.dart';
+import 'package:sundial/features/home_inventory/pages/household_catalog_page.dart';
+import 'package:sundial/features/home_inventory/pages/maintenance_page.dart';
+import 'package:sundial/features/home_inventory/pages/shopping_list_page.dart';
 import 'package:sundial/models/app_settings.dart';
 import 'package:sundial/models/home_item.dart';
 import 'package:sundial/models/shopping_item.dart';
@@ -335,6 +339,46 @@ void main() {
       },
     );
   });
+
+  testWidgets('render mobile Home inventory with sizes', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.6-home-inventory-mobile.png',
+      database,
+      view: _phone,
+      home: const HomeInventoryPage(),
+    );
+  });
+
+  testWidgets('render mobile household catalog', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.6-home-catalog-mobile.png',
+      database,
+      view: _phone,
+      home: const HouseholdCatalogPage(homeId: 'home'),
+    );
+  });
+
+  testWidgets('render mobile shopping suggestions', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.6-home-shopping-mobile.png',
+      database,
+      view: _phone,
+      home: const ShoppingListPage(),
+    );
+  });
+
+  testWidgets('render mobile gadgets with service state', (tester) async {
+    await _renderShell(
+      tester,
+      'v1.6-home-gadgets-mobile.png',
+      database,
+      view: _phone,
+      home: const MaintenancePage(),
+    );
+  });
 }
 
 Future<void> _loadFonts() async {
@@ -368,6 +412,7 @@ Future<void> _renderShell(
   Future<void> Function(WidgetTester tester)? act,
   AppSettings settings = const AppSettings(),
   Brightness brightness = Brightness.light,
+  Widget? home,
 }) async {
   tester.view.physicalSize = view.size;
   tester.view.devicePixelRatio = view.dpr;
@@ -396,7 +441,7 @@ Future<void> _renderShell(
             locale: const Locale('en'),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const AppShell(),
+            home: home ?? const AppShell(),
           ),
         ),
       ),
@@ -539,6 +584,139 @@ Future<void> _seed(AppDatabase database) async {
       reorderLevel: 1,
     ),
   );
+  await database.saveHomeItem(
+    const HomeItem(
+      id: 'water-gallon',
+      contextId: 'apartment',
+      groupId: 'water',
+      catalogId: 'catalog-drinking-water',
+      name: 'Drinking water',
+      icon: 'water',
+      category: 'Food & pantry',
+      categoryId: 'home-food',
+      location: 'Kitchen',
+      locationIds: ['home-loc-kitchen'],
+      quantity: 3,
+      unit: 'Bottle',
+      unitId: 'home-unit-bottle',
+      packSize: '5 gal',
+      minQuantity: 2,
+    ),
+  );
+  await database.saveHomeItem(
+    const HomeItem(
+      id: 'water-litre',
+      contextId: 'apartment',
+      groupId: 'water',
+      catalogId: 'catalog-drinking-water',
+      name: 'Drinking water',
+      icon: 'water',
+      category: 'Food & pantry',
+      categoryId: 'home-food',
+      location: 'Kitchen',
+      locationIds: ['home-loc-kitchen'],
+      quantity: 1,
+      unit: 'Bottle',
+      unitId: 'home-unit-bottle',
+      packSize: '5 L',
+      minQuantity: 2,
+    ),
+  );
+  await database.saveHomeItem(
+    HomeItem(
+      id: 'coffee',
+      contextId: 'apartment',
+      catalogId: 'catalog-ground-coffee',
+      name: 'Ground coffee',
+      icon: 'local_cafe',
+      category: 'Food & pantry',
+      categoryId: 'home-food',
+      location: 'Pantry',
+      locationIds: const ['home-loc-pantry'],
+      quantity: 1,
+      unit: 'Bag',
+      unitId: 'home-unit-bag',
+      packSize: '1 kg',
+      minQuantity: 2,
+      expiresAt: _today.addDays(9),
+    ),
+  );
+  await database.saveHomeItem(
+    const HomeItem(
+      id: 'toilet-paper',
+      contextId: 'apartment',
+      catalogId: 'catalog-toilet-paper',
+      name: 'Toilet paper',
+      icon: 'toilet_paper',
+      category: 'Household consumables',
+      categoryId: 'home-consumables',
+      location: 'Main bathroom, Guest bathroom',
+      locationIds: ['home-loc-main-bathroom', 'home-loc-guest-bathroom'],
+      quantity: 8,
+      unit: 'Roll',
+      unitId: 'home-unit-roll',
+      packSize: 'pack of 12',
+      minQuantity: 4,
+    ),
+  );
+  await database.saveHomeItem(
+    const HomeItem(
+      id: 'olive-oil',
+      contextId: 'apartment',
+      catalogId: 'catalog-olive-oil',
+      name: 'Olive oil',
+      icon: 'oil',
+      category: 'Food & pantry',
+      categoryId: 'home-food',
+      location: 'Pantry',
+      locationIds: ['home-loc-pantry'],
+      quantity: 2,
+      unit: 'Bottle',
+      unitId: 'home-unit-bottle',
+      packSize: '1 L',
+      minQuantity: 1,
+    ),
+  );
+  await database.saveShoppingItem(
+    const ShoppingItem(
+      id: 'buy-water',
+      contextId: 'apartment',
+      name: 'Drinking water',
+      quantity: 2,
+      unit: 'Bottle',
+      packSize: '5 gal',
+      homeItemId: 'water-gallon',
+      category: 'Food & pantry',
+      categoryId: 'home-food',
+      icon: 'water',
+    ),
+  );
+  await database.saveShoppingItem(
+    const ShoppingItem(
+      id: 'buy-coffee',
+      contextId: 'apartment',
+      name: 'Ground coffee',
+      quantity: 2,
+      unit: 'Bag',
+      packSize: '1 kg',
+      homeItemId: 'coffee',
+      category: 'Food & pantry',
+      categoryId: 'home-food',
+      icon: 'local_cafe',
+    ),
+  );
+  await database.saveShoppingItem(
+    const ShoppingItem(
+      id: 'mugs',
+      contextId: 'apartment',
+      name: 'Coffee mugs',
+      quantity: 4,
+      unit: 'Piece',
+      category: 'Kitchenware & goods',
+      categoryId: 'home-kitchenware',
+      icon: 'mug',
+    ),
+  );
   await database.saveShoppingItem(const ShoppingItem(id: 'milk', name: 'Milk', quantity: 2, unit: 'L'));
 }
 
@@ -558,6 +736,7 @@ List<Entry> _entries(DateTime created) {
     DateTime? completedAt,
     LocalDate? date,
     int? repeatAfterCompletionDays,
+    DateTime? lastCompletedAt,
   }) {
     return Entry(
       id: id,
@@ -575,6 +754,7 @@ List<Entry> _entries(DateTime created) {
       status: status,
       completedAt: completedAt,
       repeatAfterCompletionDays: repeatAfterCompletionDays,
+      lastCompletedAt: lastCompletedAt,
       createdAt: created,
       updatedAt: created,
     );
@@ -625,6 +805,28 @@ List<Entry> _entries(DateTime created) {
       context: 'apartment',
       date: _today.addDays(-9),
       repeatAfterCompletionDays: 90,
+      lastCompletedAt: DateTime.utc(2026, 8, 2, 12),
+    ),
+    entry(
+      'ac',
+      'home',
+      'Service the AC',
+      kind: EntryKind.obligation,
+      allDay: false,
+      start: 9 * 60,
+      end: 11 * 60,
+      context: 'apartment',
+      date: _today.addDays(12),
+      repeatAfterCompletionDays: 180,
+    ),
+    entry(
+      'fridge',
+      'home',
+      'Clean the fridge filter',
+      kind: EntryKind.obligation,
+      context: 'apartment',
+      date: _today.addDays(4),
+      repeatAfterCompletionDays: 60,
     ),
     entry(
       'dinner',

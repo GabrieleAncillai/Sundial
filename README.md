@@ -94,11 +94,18 @@ Reboot rescheduling is blocked by EMUI and documented as an OEM limitation.
   rotation, sync/MCP switches and About.
 - Versioned JSON backup and a validated, transactional restore, older schema
   upgrades (3–8) and daily local copies with rotation.
-- Home inventory with quantity, unit, location, reorder levels, quick ±1
-  adjustments and purchase history; a shopping list grouped by category and
-  location, with clear-bought and reorder.
-- Interval-after-completion maintenance that advances from the actual
-  completion date, with a dedicated due/upcoming page.
+- Home inventory with a 124-item household catalog, product groups and
+  independent size variants (for example 5-gallon and 5-litre water bottles),
+  user-managed categories, locations and units with icons and colours, multiple
+  locations per variant, expiry dates, per-variant minimum stock, quick ±1
+  adjustments and purchase history.
+- A shopping list grouped by category that suggests restocking low, empty and
+  expired inventory, links a line to the exact variant it restocks, and still
+  handles one-off purchases. Checking a linked line updates stock; unchecking
+  reverses the recorded purchase.
+- Gadgets with interval-after-completion service schedules, a service log,
+  manual rescheduling that does not pretend the work was done, and optional
+  timed calendar blocks for the service.
 - A read-only GymMane schedule import for weekly gym blocks, and CSV
   export/import for entries, shopping and inventory.
 - A soft sleep window on Today, with configurable commute, wind-down and wake
@@ -125,7 +132,7 @@ Reboot rescheduling is blocked by EMUI and documented as an OEM limitation.
   themes, a shared UI kit, a floating shell and a dotted paper background.
 - Accessibility basics: semantics on calendar days and shifts, text scaling in
   the calendar, keyboard shortcuts for search and tab switching.
-- A schema v1/v2/v3/v4/v5/v6/v7 to v8 migration tested against real prior rows.
+- A schema v1 through v13 migration path tested against real prior rows.
 - A pure Dart domain package with the timezone, recurrence, shift and sleep
   rules.
 - Android debug APK, Linux debug build and a tagged release workflow for split
@@ -140,6 +147,9 @@ Reboot rescheduling is blocked by EMUI and documented as an OEM limitation.
   backup schemas, CSV interchange, home-tracking views. Done.
 - v0.9: full MCP tool set and sessions, persistent LAN snapshots, work-hours and
   quiet-hours rules, custom reminder times and actions. Done.
+- Post-v0.9: schema v13 Home rework with product variants, the household
+  catalog, reference categories/locations/units, expiry and minimum stock,
+  inventory-linked shopping suggestions and gadget service logs. Done.
 - v1.0: device verification, accessibility/contrast audit, final docs and a
   signed release.
 

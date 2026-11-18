@@ -35,7 +35,7 @@ class BackupService {
   BackupService(this._database, {Directory? mediaDirectory}) : _mediaDirectory = mediaDirectory;
 
   static const appTag = 'sundial';
-  static const currentSchemaVersion = 12;
+  static const currentSchemaVersion = 13;
 
   /// The oldest payload this build still upgrades. v1 and v2 are excluded on
   /// purpose: they predate timezone-aware entries and cannot be mapped safely.
@@ -80,9 +80,14 @@ class BackupService {
     final patternTags = await _database.select(_database.shiftPatternTagRecords).get();
     final checklistItems = await _database.select(_database.shiftChecklistItemRecords).get();
     final checklistCompletions = await _database.select(_database.shiftChecklistCompletionRecords).get();
+    final homeCategories = await _database.select(_database.homeCategoryRecords).get();
+    final homeLocations = await _database.select(_database.homeLocationRecords).get();
+    final homeUnits = await _database.select(_database.homeUnitRecords).get();
     final homeItems = await _database.select(_database.homeItemRecords).get();
+    final homeItemLocations = await _database.select(_database.homeItemLocationRecords).get();
     final shoppingItems = await _database.select(_database.shoppingItemRecords).get();
     final homePurchases = await _database.select(_database.homePurchaseRecords).get();
+    final maintenanceLogs = await _database.select(_database.maintenanceLogRecords).get();
     final settings = await _database.select(_database.settingRecords).get();
 
     spaces.sort((a, b) {
@@ -124,8 +129,16 @@ class BackupService {
       return byItem != 0 ? byItem : a.dateKey.compareTo(b.dateKey);
     });
     homeItems.sort((a, b) => a.id.compareTo(b.id));
+    homeItemLocations.sort((a, b) {
+      final byItem = a.homeItemId.compareTo(b.homeItemId);
+      return byItem != 0 ? byItem : a.locationId.compareTo(b.locationId);
+    });
+    homeCategories.sort((a, b) => a.id.compareTo(b.id));
+    homeLocations.sort((a, b) => a.id.compareTo(b.id));
+    homeUnits.sort((a, b) => a.id.compareTo(b.id));
     shoppingItems.sort((a, b) => a.id.compareTo(b.id));
     homePurchases.sort((a, b) => a.id.compareTo(b.id));
+    maintenanceLogs.sort((a, b) => a.id.compareTo(b.id));
     settings.sort((a, b) => a.key.compareTo(b.key));
 
     final media = <String, String>{};
@@ -351,23 +364,75 @@ class BackupService {
             'createdAt': _date(row.createdAt),
           },
       ],
+      'homeCategories': [
+        for (final row in homeCategories)
+          {
+            'id': row.id,
+            'name': row.name,
+            'icon': row.icon,
+            'color': row.color,
+            'position': row.position,
+            'createdAt': _date(row.createdAt),
+            'updatedAt': _date(row.updatedAt),
+            'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
+      'homeLocations': [
+        for (final row in homeLocations)
+          {
+            'id': row.id,
+            'name': row.name,
+            'icon': row.icon,
+            'color': row.color,
+            'position': row.position,
+            'createdAt': _date(row.createdAt),
+            'updatedAt': _date(row.updatedAt),
+            'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
+      'homeUnits': [
+        for (final row in homeUnits)
+          {
+            'id': row.id,
+            'name': row.name,
+            'symbol': row.symbol,
+            'kind': row.kind,
+            'position': row.position,
+            'createdAt': _date(row.createdAt),
+            'updatedAt': _date(row.updatedAt),
+            'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
       'homeItems': [
         for (final row in homeItems)
           {
             'id': row.id,
             'contextId': row.contextId,
+            'groupId': row.groupId,
             'name': row.name,
+            'description': row.description,
+            'icon': row.icon,
+            'color': row.color,
+            'catalogId': row.catalogId,
             'category': row.category,
+            'categoryId': row.categoryId,
             'location': row.location,
             'quantity': row.quantity,
+            'minQuantity': row.minQuantity,
             'reorderLevel': row.reorderLevel,
             'unit': row.unit,
+            'unitId': row.unitId,
+            'packSize': row.packSize,
+            'expiresAt': row.expiresDateKey == null ? null : LocalDate.fromKey(row.expiresDateKey!).iso,
             'notes': row.notes,
             'lastPurchasedAt': _nullableDate(row.lastPurchasedAt),
             'createdAt': _date(row.createdAt),
             'updatedAt': _date(row.updatedAt),
             'deletedAt': _nullableDate(row.deletedAt),
           },
+      ],
+      'homeItemLocations': [
+        for (final row in homeItemLocations) {'homeItemId': row.homeItemId, 'locationId': row.locationId},
       ],
       'shoppingItems': [
         for (final row in shoppingItems)
@@ -377,9 +442,15 @@ class BackupService {
             'name': row.name,
             'quantity': row.quantity,
             'unit': row.unit,
+            'packSize': row.packSize,
             'checked': row.checked,
             'note': row.note,
             'homeItemId': row.homeItemId,
+            'catalogId': row.catalogId,
+            'category': row.category,
+            'categoryId': row.categoryId,
+            'icon': row.icon,
+            'color': row.color,
             'position': row.position,
             'createdAt': _date(row.createdAt),
             'updatedAt': _date(row.updatedAt),
@@ -395,6 +466,18 @@ class BackupService {
             'quantity': row.quantity,
             'note': row.note,
             'purchasedAt': _date(row.purchasedAt),
+          },
+      ],
+      'maintenanceLogs': [
+        for (final row in maintenanceLogs)
+          {
+            'id': row.id,
+            'entryId': row.entryId,
+            'performedOn': LocalDate.fromKey(row.performedDateKey).iso,
+            'nextDue': LocalDate.fromKey(row.nextDueDateKey).iso,
+            'note': row.note,
+            'durationMinutes': row.durationMinutes,
+            'createdAt': _date(row.createdAt),
           },
       ],
       'settings': {
@@ -441,9 +524,14 @@ class BackupService {
     final patternTags = _maps(payload, 'shiftPatternTags');
     final checklistItems = _maps(payload, 'shiftChecklistItems');
     final checklistCompletions = _maps(payload, 'shiftChecklistCompletions');
+    final homeCategories = _maps(payload, 'homeCategories');
+    final homeLocations = _maps(payload, 'homeLocations');
+    final homeUnits = _maps(payload, 'homeUnits');
     final homeItems = _maps(payload, 'homeItems');
+    final homeItemLocations = _maps(payload, 'homeItemLocations');
     final shoppingItems = _maps(payload, 'shoppingItems');
     final homePurchases = _maps(payload, 'homePurchases');
+    final maintenanceLogs = _maps(payload, 'maintenanceLogs');
     final settings = _map(payload, 'settings');
     final media = _map(payload, 'media');
 
@@ -491,9 +579,14 @@ class BackupService {
       await _database.delete(_database.timeEntryRecords).go();
       await _database.delete(_database.shiftChecklistCompletionRecords).go();
       await _database.delete(_database.shiftChecklistItemRecords).go();
+      await _database.delete(_database.maintenanceLogRecords).go();
       await _database.delete(_database.homePurchaseRecords).go();
+      await _database.delete(_database.homeItemLocationRecords).go();
       await _database.delete(_database.shoppingItemRecords).go();
       await _database.delete(_database.homeItemRecords).go();
+      await _database.delete(_database.homeCategoryRecords).go();
+      await _database.delete(_database.homeLocationRecords).go();
+      await _database.delete(_database.homeUnitRecords).go();
       await _database.delete(_database.entryTagRecords).go();
       await _database.delete(_database.completionRecords).go();
       await _database.delete(_database.reminderRecords).go();
@@ -607,6 +700,57 @@ class BackupService {
             );
       }
 
+      for (final row in homeCategories) {
+        await _database
+            .into(_database.homeCategoryRecords)
+            .insert(
+              HomeCategoryRecordsCompanion(
+                id: Value(_string(row, 'id')),
+                name: Value(_string(row, 'name')),
+                icon: Value(_optionalString(row, 'icon') ?? 'category'),
+                color: Value(_integer(row, 'color')),
+                position: Value(_optionalInteger(row, 'position') ?? 0),
+                createdAt: Value(_dateTime(row, 'createdAt')),
+                updatedAt: Value(_dateTime(row, 'updatedAt')),
+                deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
+      for (final row in homeLocations) {
+        await _database
+            .into(_database.homeLocationRecords)
+            .insert(
+              HomeLocationRecordsCompanion(
+                id: Value(_string(row, 'id')),
+                name: Value(_string(row, 'name')),
+                icon: Value(_optionalString(row, 'icon') ?? 'place'),
+                color: Value(_integer(row, 'color')),
+                position: Value(_optionalInteger(row, 'position') ?? 0),
+                createdAt: Value(_dateTime(row, 'createdAt')),
+                updatedAt: Value(_dateTime(row, 'updatedAt')),
+                deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
+      for (final row in homeUnits) {
+        await _database
+            .into(_database.homeUnitRecords)
+            .insert(
+              HomeUnitRecordsCompanion(
+                id: Value(_string(row, 'id')),
+                name: Value(_string(row, 'name')),
+                symbol: Value(_optionalString(row, 'symbol') ?? ''),
+                kind: Value(_optionalString(row, 'kind') ?? 'count'),
+                position: Value(_optionalInteger(row, 'position') ?? 0),
+                createdAt: Value(_dateTime(row, 'createdAt')),
+                updatedAt: Value(_dateTime(row, 'updatedAt')),
+                deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
       for (final row in homeItems) {
         await _database
             .into(_database.homeItemRecords)
@@ -614,18 +758,40 @@ class BackupService {
               HomeItemRecordsCompanion(
                 id: Value(_string(row, 'id')),
                 contextId: Value(_optionalString(row, 'contextId')),
+                groupId: Value(_optionalString(row, 'groupId')),
                 name: Value(_string(row, 'name')),
-                category: Value(_string(row, 'category')),
-                location: Value(_string(row, 'location')),
+                description: Value(_optionalString(row, 'description') ?? ''),
+                icon: Value(_optionalString(row, 'icon') ?? 'inventory'),
+                color: Value(_optionalInteger(row, 'color')),
+                catalogId: Value(_optionalString(row, 'catalogId')),
+                category: Value(_optionalString(row, 'category') ?? ''),
+                categoryId: Value(_optionalString(row, 'categoryId')),
+                location: Value(_optionalString(row, 'location') ?? ''),
                 quantity: Value(_number(row, 'quantity')),
+                minQuantity: Value(_optionalNumber(row, 'minQuantity')),
                 reorderLevel: Value(_optionalNumber(row, 'reorderLevel')),
-                unit: Value(_string(row, 'unit')),
-                notes: Value(_string(row, 'notes')),
+                unit: Value(_optionalString(row, 'unit') ?? ''),
+                unitId: Value(_optionalString(row, 'unitId')),
+                packSize: Value(_optionalString(row, 'packSize') ?? ''),
+                expiresDateKey: Value(_optionalDateKey(row, 'expiresAt')),
+                notes: Value(_optionalString(row, 'notes') ?? ''),
                 lastPurchasedAt: Value(_optionalDateTime(row, 'lastPurchasedAt')),
                 createdAt: Value(_dateTime(row, 'createdAt')),
                 updatedAt: Value(_dateTime(row, 'updatedAt')),
                 deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
               ),
+            );
+      }
+
+      for (final row in homeItemLocations) {
+        await _database
+            .into(_database.homeItemLocationRecords)
+            .insert(
+              HomeItemLocationRecordsCompanion.insert(
+                homeItemId: _string(row, 'homeItemId'),
+                locationId: _string(row, 'locationId'),
+              ),
+              mode: InsertMode.insertOrIgnore,
             );
       }
 
@@ -638,10 +804,16 @@ class BackupService {
                 contextId: Value(_optionalString(row, 'contextId')),
                 name: Value(_string(row, 'name')),
                 quantity: Value(_number(row, 'quantity')),
-                unit: Value(_string(row, 'unit')),
+                unit: Value(_optionalString(row, 'unit') ?? ''),
+                packSize: Value(_optionalString(row, 'packSize') ?? ''),
                 checked: Value(_boolean(row, 'checked')),
-                note: Value(_string(row, 'note')),
+                note: Value(_optionalString(row, 'note') ?? ''),
                 homeItemId: Value(_optionalString(row, 'homeItemId')),
+                catalogId: Value(_optionalString(row, 'catalogId')),
+                category: Value(_optionalString(row, 'category') ?? ''),
+                categoryId: Value(_optionalString(row, 'categoryId')),
+                icon: Value(_optionalString(row, 'icon') ?? 'shopping_basket'),
+                color: Value(_optionalInteger(row, 'color')),
                 position: Value(_optionalInteger(row, 'position') ?? 0),
                 createdAt: Value(_dateTime(row, 'createdAt')),
                 updatedAt: Value(_dateTime(row, 'updatedAt')),
@@ -698,6 +870,22 @@ class BackupService {
                 createdAt: Value(_dateTime(row, 'createdAt')),
                 updatedAt: Value(_dateTime(row, 'updatedAt')),
                 deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
+      for (final row in maintenanceLogs) {
+        await _database
+            .into(_database.maintenanceLogRecords)
+            .insert(
+              MaintenanceLogRecordsCompanion.insert(
+                id: _string(row, 'id'),
+                entryId: _string(row, 'entryId'),
+                performedDateKey: _dateKey(row, 'performedOn'),
+                nextDueDateKey: _dateKey(row, 'nextDue'),
+                note: Value(_optionalString(row, 'note') ?? ''),
+                durationMinutes: Value(_optionalInteger(row, 'durationMinutes')),
+                createdAt: _dateTime(row, 'createdAt'),
               ),
             );
       }
@@ -868,6 +1056,12 @@ class BackupService {
       }
     });
 
+    // Older payloads carry category, location and unit text but no reference
+    // rows. Seed the household vocabulary and map those strings after the
+    // plan is safely in place.
+    await _database.seedHomeReferenceDefaults();
+    await _database.repairHomeItemReferences();
+
     // The restore replaced the plan, so media that belonged to the old one is
     // no longer reachable. Best effort: a failure here only leaves unused files.
     await _pruneMedia(previousMedia, keep: mediaBytes.keys.toSet());
@@ -1002,6 +1196,24 @@ class BackupService {
   static int? _optionalInteger(Map<String, Object?> row, String key) {
     if (row[key] == null) return null;
     return _integer(row, key);
+  }
+
+  static int _dateKey(Map<String, Object?> row, String key) {
+    final value = row[key];
+    if (value is int) return value;
+    if (value is String && value.isNotEmpty) {
+      try {
+        return LocalDate.parse(value).key;
+      } on FormatException {
+        // Fall through to the validation error below.
+      }
+    }
+    throw BackupFormatException('$key is not a date');
+  }
+
+  static int? _optionalDateKey(Map<String, Object?> row, String key) {
+    if (row[key] == null || row[key] == '') return null;
+    return _dateKey(row, key);
   }
 
   static double _number(Map<String, Object?> row, String key) {

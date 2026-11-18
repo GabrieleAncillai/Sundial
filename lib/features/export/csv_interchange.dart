@@ -37,14 +37,37 @@ class CsvInterchangeService {
     'notes',
   ];
 
-  static const shoppingColumns = ['name', 'quantity', 'unit', 'checked', 'note', 'homeItem'];
-  static const inventoryColumns = [
+  static const shoppingColumns = [
     'name',
+    'quantity',
+    'unit',
+    'packSize',
     'category',
+    'catalogId',
+    'icon',
+    'color',
+    'checked',
+    'note',
+    'homeItem',
+    'homeItemPack',
+  ];
+  static const inventoryColumns = [
+    'groupId',
+    'catalogId',
+    'name',
+    'description',
+    'icon',
+    'color',
+    'category',
+    'categoryId',
     'location',
     'quantity',
     'unit',
+    'unitId',
+    'packSize',
+    'minQuantity',
     'reorderLevel',
+    'expiresAt',
     'notes',
     'lastPurchased',
   ];
@@ -87,7 +110,7 @@ class CsvInterchangeService {
 
   Future<String> exportShopping() async {
     final homeItems = await _repository.watchHomeItems().first;
-    final names = {for (final item in homeItems) item.id: item.name};
+    final byId = {for (final item in homeItems) item.id: item};
     final items = await _repository.watchShoppingItems().first;
     return encodeCsv(shoppingColumns, [
       for (final item in items)
@@ -95,9 +118,15 @@ class CsvInterchangeService {
           item.name,
           _number(item.quantity),
           item.unit,
+          item.packSize,
+          item.category,
+          item.catalogId ?? '',
+          item.icon,
+          item.colorValue == null ? '' : '${item.colorValue}',
           '${item.checked}',
           item.note,
-          names[item.homeItemId] ?? '',
+          byId[item.homeItemId]?.name ?? '',
+          byId[item.homeItemId]?.packSize ?? '',
         ],
     ]);
   }
@@ -107,12 +136,22 @@ class CsvInterchangeService {
     return encodeCsv(inventoryColumns, [
       for (final item in items)
         [
+          item.productGroupId,
+          item.catalogId ?? '',
           item.name,
+          item.description,
+          item.icon,
+          item.colorValue == null ? '' : '${item.colorValue}',
           item.category,
+          item.categoryId ?? '',
           item.location,
           _number(item.quantity),
           item.unit,
+          item.unitId ?? '',
+          item.packSize,
+          item.minimumStock == null ? '' : _number(item.minimumStock!),
           item.reorderLevel == null ? '' : _number(item.reorderLevel!),
+          item.expiresAt?.iso ?? '',
           item.notes,
           item.lastPurchasedAt?.toUtc().toIso8601String() ?? '',
         ],
@@ -226,8 +265,12 @@ class CsvInterchangeService {
     final header = _header(table.first);
     final existing = await _repository.watchShoppingItems().first;
     final homeItems = await _repository.watchHomeItems().first;
-    final homeByName = {for (final item in homeItems) item.name.toLowerCase(): item.id};
-    final seen = {for (final item in existing) item.name.trim().toLowerCase()};
+    final homeByKey = {for (final item in homeItems) _homeItemKey(item.name, item.packSize): item.id};
+    final homeByName = <String, List<HomeItem>>{};
+    for (final item in homeItems) {
+      (homeByName[item.name.trim().toLowerCase()] ??= <HomeItem>[]).add(item);
+    }
+    final seen = {for (final item in existing) _shoppingKey(item.name, item.packSize, item.unit)};
     var imported = 0;
     var duplicates = 0;
     var skipped = 0;
@@ -239,19 +282,32 @@ class CsvInterchangeService {
         skipped++;
         continue;
       }
-      if (!seen.add(name.toLowerCase())) {
+      final packSize = values['packsize']?.trim() ?? '';
+      final unit = values['unit']?.trim() ?? '';
+      if (!seen.add(_shoppingKey(name, packSize, unit))) {
         duplicates++;
         continue;
       }
       final quantity = double.tryParse((values['quantity'] ?? '').trim()) ?? 1;
       final homeName = (values['homeitem'] ?? '').trim().toLowerCase();
-      final homeId = homeName.isEmpty ? null : homeByName[homeName];
+      final homePack = (values['homeitempack'] ?? '').trim();
+      final homeId = homeName.isEmpty
+          ? null
+          : (homeByKey[_homeItemKey(homeName, homePack)] ??
+                (homeByName[homeName]?.length == 1 ? homeByName[homeName]!.single.id : null));
+      final linked = homeId == null ? null : homeItems.firstWhere((item) => item.id == homeId);
       await _repository.saveShoppingItem(
         ShoppingItem(
           id: const Uuid().v4(),
           name: name,
           quantity: quantity <= 0 ? 1 : quantity,
-          unit: values['unit'] ?? '',
+          unit: unit,
+          packSize: packSize,
+          catalogId: _optionalText(values['catalogid']),
+          category: linked?.category ?? (values['category'] ?? ''),
+          categoryId: linked?.categoryId,
+          icon: linked?.icon ?? _optionalText(values['icon']) ?? 'shopping_basket',
+          colorValue: linked?.colorValue ?? _optionalInt(values['color']),
           checked: (values['checked'] ?? '').toLowerCase() == 'true',
           note: values['note'] ?? '',
           homeItemId: homeId,
@@ -268,7 +324,7 @@ class CsvInterchangeService {
     if (table.isEmpty) return const CsvImportReport(imported: 0, duplicates: 0, skipped: 0);
     final header = _header(table.first);
     final existing = await _repository.watchHomeItems().first;
-    final seen = {for (final item in existing) item.name.trim().toLowerCase()};
+    final seen = {for (final item in existing) _shoppingKey(item.name, item.packSize, item.unit)};
     var imported = 0;
     var duplicates = 0;
     var skipped = 0;
@@ -279,26 +335,40 @@ class CsvInterchangeService {
         skipped++;
         continue;
       }
-      if (!seen.add(name.toLowerCase())) {
+      final packSize = values['packsize']?.trim() ?? '';
+      final unit = values['unit']?.trim() ?? '';
+      if (!seen.add(_shoppingKey(name, packSize, unit))) {
         duplicates++;
         continue;
       }
       final reorder = double.tryParse((values['reorderlevel'] ?? '').trim());
+      final minimum = double.tryParse((values['minquantity'] ?? '').trim()) ?? reorder;
       await _repository.saveHomeItem(
         HomeItem(
           id: const Uuid().v4(),
+          groupId: _optionalText(values['groupid']),
+          catalogId: _optionalText(values['catalogid']),
           name: name,
+          description: values['description'] ?? '',
+          icon: _optionalText(values['icon']) ?? 'inventory',
+          colorValue: _optionalInt(values['color']),
           category: values['category'] ?? '',
+          categoryId: _optionalText(values['categoryid']),
           location: values['location'] ?? '',
           quantity: double.tryParse((values['quantity'] ?? '').trim()) ?? 0,
-          unit: values['unit'] ?? '',
+          unit: unit,
+          unitId: _optionalText(values['unitid']),
+          packSize: packSize,
+          minQuantity: minimum,
           reorderLevel: reorder,
+          expiresAt: _parseDate((values['expiresat'] ?? '').trim()),
           notes: values['notes'] ?? '',
           lastPurchasedAt: DateTime.tryParse((values['lastpurchased'] ?? '').trim()),
         ),
       );
       imported++;
     }
+    if (imported > 0) await _repository.repairHomeItemReferences();
     return CsvImportReport(imported: imported, duplicates: duplicates, skipped: skipped);
   }
 
@@ -401,6 +471,22 @@ class CsvInterchangeService {
     final endMinute = entry.endMinute;
     if (entry.allDay || endMinute == null || endMinute < 1440) return '';
     return date.addDays(endMinute ~/ 1440).iso;
+  }
+
+  static String _homeItemKey(String name, String packSize) =>
+      '${name.trim().toLowerCase()}|${packSize.trim().toLowerCase()}';
+
+  static String _shoppingKey(String name, String packSize, String unit) =>
+      '${name.trim().toLowerCase()}|${packSize.trim().toLowerCase()}|${unit.trim().toLowerCase()}';
+
+  static String? _optionalText(String? value) {
+    final clean = value?.trim() ?? '';
+    return clean.isEmpty ? null : clean;
+  }
+
+  static int? _optionalInt(String? value) {
+    final clean = value?.trim() ?? '';
+    return clean.isEmpty ? null : int.tryParse(clean);
   }
 
   static LocalDate? _parseDate(String value) {

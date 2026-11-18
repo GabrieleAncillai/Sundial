@@ -254,4 +254,77 @@ void main() {
     final duplicate = await targetService.importInventory(inventoryCsv);
     expect(duplicate.duplicates, 1);
   });
+
+  test('inventory CSV keeps product groups and sizes', () async {
+    await database.saveHomeItem(
+      const HomeItem(
+        id: 'water-gallon',
+        groupId: 'water',
+        catalogId: 'catalog-drinking-water',
+        name: 'Drinking water',
+        icon: 'water',
+        colorValue: 0xFF2F7ED8,
+        category: 'Food & pantry',
+        categoryId: 'home-food',
+        unit: 'Bottle',
+        unitId: 'home-unit-bottle',
+        packSize: '5 gal',
+        quantity: 3,
+        minQuantity: 1,
+      ),
+    );
+    await database.saveHomeItem(
+      const HomeItem(
+        id: 'water-litre',
+        groupId: 'water',
+        catalogId: 'catalog-drinking-water',
+        name: 'Drinking water',
+        icon: 'water',
+        colorValue: 0xFF2F7ED8,
+        category: 'Food & pantry',
+        categoryId: 'home-food',
+        unit: 'Bottle',
+        unitId: 'home-unit-bottle',
+        packSize: '5 L',
+        quantity: 4,
+        minQuantity: 2,
+      ),
+    );
+    await database.saveShoppingItem(
+      const ShoppingItem(
+        id: 'buy-litre',
+        name: 'Drinking water',
+        quantity: 2,
+        unit: 'Bottle',
+        packSize: '5 L',
+        homeItemId: 'water-litre',
+      ),
+    );
+    final service = CsvInterchangeService(repository);
+    final inventoryCsv = await service.exportInventory();
+    final shoppingCsv = await service.exportShopping();
+
+    final target = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(target.close);
+    await target.seedDefaults();
+    final targetService = CsvInterchangeService(PlannerRepository(target));
+    expect((await targetService.importInventory(inventoryCsv)).imported, 2);
+    expect((await targetService.importShopping(shoppingCsv)).imported, 1);
+
+    final items = await target.watchHomeItems().first;
+    expect(items, hasLength(2));
+    expect(items.map((item) => item.productGroupId).toSet(), {'water'});
+    expect(items.map((item) => item.packSize).toSet(), {'5 gal', '5 L'});
+    expect(items.every((item) => item.catalogId == 'catalog-drinking-water'), isTrue);
+    expect(items.every((item) => item.icon == 'water'), isTrue);
+    expect(items.every((item) => item.colorValue == 0xFF2F7ED8), isTrue);
+
+    final shopping = (await target.watchShoppingItems().first).single;
+    final linked = items.firstWhere((item) => item.id == shopping.homeItemId);
+    expect(linked.packSize, '5 L');
+    expect(shopping.packSize, '5 L');
+
+    final duplicate = await targetService.importInventory(inventoryCsv);
+    expect(duplicate.duplicates, 2);
+  });
 }

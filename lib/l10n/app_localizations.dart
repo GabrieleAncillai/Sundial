@@ -158,6 +158,12 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get delete;
 
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
   /// No description provided for @save.
   ///
   /// In en, this message translates to:
@@ -1043,7 +1049,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeInventorySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Quantities, locations and reorder levels.'**
+  /// **'Everything you keep at home, with stock levels that stay useful.'**
   String get homeInventorySubtitle;
 
   /// No description provided for @shoppingList.
@@ -1055,7 +1061,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingListSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Groceries and household items to buy.'**
+  /// **'Restock what the house needs, plus the occasional one-off.'**
   String get shoppingListSubtitle;
 
   /// No description provided for @addHomeItem.
@@ -1133,19 +1139,19 @@ abstract class AppLocalizations {
   /// No description provided for @noLowStock.
   ///
   /// In en, this message translates to:
-  /// **'Nothing is below its reorder level.'**
+  /// **'Nothing is below its minimum stock.'**
   String get noLowStock;
 
   /// No description provided for @homeInventoryEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No household items yet.'**
+  /// **'Your home inventory is empty.'**
   String get homeInventoryEmpty;
 
   /// No description provided for @shoppingListEmpty.
   ///
   /// In en, this message translates to:
-  /// **'The shopping list is empty.'**
+  /// **'Nothing to buy yet.'**
   String get shoppingListEmpty;
 
   /// No description provided for @addShoppingItem.
@@ -2273,19 +2279,19 @@ abstract class AppLocalizations {
   /// No description provided for @lowStockCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} items below their reorder level'**
+  /// **'{count} items below their minimum stock'**
   String lowStockCount(int count);
 
   /// No description provided for @maintenance.
   ///
   /// In en, this message translates to:
-  /// **'Maintenance'**
+  /// **'Gadgets'**
   String get maintenance;
 
   /// No description provided for @maintenanceSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Tasks due after their last service.'**
+  /// **'Service schedules for appliances, filters and vehicles.'**
   String get maintenanceSubtitle;
 
   /// No description provided for @maintenanceDue.
@@ -4375,6 +4381,852 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'until {date}'**
   String recurrenceUntil(Object date);
+
+  /// No description provided for @homeInventoryEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from the household catalog or add something custom.'**
+  String get homeInventoryEmptyBody;
+
+  /// No description provided for @addInventoryItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to inventory'**
+  String get addInventoryItem;
+
+  /// No description provided for @browseHouseholdCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse the household catalog'**
+  String get browseHouseholdCatalog;
+
+  /// No description provided for @householdCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Household catalog'**
+  String get householdCatalog;
+
+  /// No description provided for @catalogSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Common household items with sensible defaults.'**
+  String get catalogSubtitle;
+
+  /// No description provided for @catalogSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search olive oil, toilet paper, coffee…'**
+  String get catalogSearchHint;
+
+  /// No description provided for @catalogNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No catalog items match.'**
+  String get catalogNoResults;
+
+  /// No description provided for @catalogInInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'In inventory'**
+  String get catalogInInventory;
+
+  /// No description provided for @catalogAddItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get catalogAddItem;
+
+  /// No description provided for @createCustomItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a custom item'**
+  String get createCustomItem;
+
+  /// No description provided for @createCustomHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Something that is not in the catalog.'**
+  String get createCustomHint;
+
+  /// No description provided for @inventorySearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search inventory'**
+  String get inventorySearch;
+
+  /// No description provided for @inventoryFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get inventoryFilterAll;
+
+  /// No description provided for @inventoryFilterLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low stock'**
+  String get inventoryFilterLow;
+
+  /// No description provided for @inventoryFilterExpiring.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiring'**
+  String get inventoryFilterExpiring;
+
+  /// No description provided for @inventoryNoMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No items match these filters.'**
+  String get inventoryNoMatches;
+
+  /// No description provided for @uncategorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncategorized'**
+  String get uncategorized;
+
+  /// No description provided for @productsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} products'**
+  String productsCount(int count);
+
+  /// No description provided for @productsCountOne.
+  ///
+  /// In en, this message translates to:
+  /// **'1 product'**
+  String get productsCountOne;
+
+  /// No description provided for @variantsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sizes'**
+  String variantsCount(int count);
+
+  /// No description provided for @variantsCountOne.
+  ///
+  /// In en, this message translates to:
+  /// **'1 size'**
+  String get variantsCountOne;
+
+  /// No description provided for @lowStockItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Low stock'**
+  String get lowStockItems;
+
+  /// No description provided for @expiringItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiring soon'**
+  String get expiringItems;
+
+  /// No description provided for @expiredItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get expiredItems;
+
+  /// No description provided for @expiresOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires {date}'**
+  String expiresOn(String date);
+
+  /// No description provided for @expiresAtLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires at'**
+  String get expiresAtLabel;
+
+  /// No description provided for @noExpiry.
+  ///
+  /// In en, this message translates to:
+  /// **'No expiry date'**
+  String get noExpiry;
+
+  /// No description provided for @expiresToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires today'**
+  String get expiresToday;
+
+  /// No description provided for @expiredOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired {date}'**
+  String expiredOn(String date);
+
+  /// No description provided for @minimumStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum stock'**
+  String get minimumStock;
+
+  /// No description provided for @minStockValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Min {quantity}'**
+  String minStockValue(String quantity);
+
+  /// No description provided for @packSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Size / pack'**
+  String get packSize;
+
+  /// No description provided for @packSizeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 5 gal bottle, 1 kg bag'**
+  String get packSizeHint;
+
+  /// No description provided for @packSizeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Give this size a pack description, for example 5 gal or 1 kg.'**
+  String get packSizeRequired;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @locations.
+  ///
+  /// In en, this message translates to:
+  /// **'Locations'**
+  String get locations;
+
+  /// No description provided for @addAnotherSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Add another size'**
+  String get addAnotherSize;
+
+  /// No description provided for @editProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit product'**
+  String get editProduct;
+
+  /// No description provided for @variantEditHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes here apply to this size only. Open the product to rename every size.'**
+  String get variantEditHint;
+
+  /// No description provided for @archiveProductQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this product?'**
+  String get archiveProductQuestion;
+
+  /// No description provided for @archiveProductBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every size of this product leaves the inventory but stays in backups.'**
+  String get archiveProductBody;
+
+  /// No description provided for @archiveVariantQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this size?'**
+  String get archiveVariantQuestion;
+
+  /// No description provided for @archiveVariantBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This size leaves the inventory. Other sizes stay.'**
+  String get archiveVariantBody;
+
+  /// No description provided for @inventorySetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory setup'**
+  String get inventorySetup;
+
+  /// No description provided for @inventorySetupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories, locations and units'**
+  String get inventorySetupSubtitle;
+
+  /// No description provided for @manageInventorySetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage categories, locations and units'**
+  String get manageInventorySetup;
+
+  /// No description provided for @manageCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get manageCategories;
+
+  /// No description provided for @manageLocations.
+  ///
+  /// In en, this message translates to:
+  /// **'Locations'**
+  String get manageLocations;
+
+  /// No description provided for @manageUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'Units'**
+  String get manageUnits;
+
+  /// No description provided for @newCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'New category'**
+  String get newCategory;
+
+  /// No description provided for @newLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'New location'**
+  String get newLocation;
+
+  /// No description provided for @editLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit location'**
+  String get editLocation;
+
+  /// No description provided for @newUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'New unit'**
+  String get newUnit;
+
+  /// No description provided for @editUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit unit'**
+  String get editUnit;
+
+  /// No description provided for @noLocations.
+  ///
+  /// In en, this message translates to:
+  /// **'No locations yet.'**
+  String get noLocations;
+
+  /// No description provided for @noUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'No units yet.'**
+  String get noUnits;
+
+  /// No description provided for @duplicateName.
+  ///
+  /// In en, this message translates to:
+  /// **'That name is already in use.'**
+  String get duplicateName;
+
+  /// No description provided for @categoryManagerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Give each kind of household item a color and icon.'**
+  String get categoryManagerSubtitle;
+
+  /// No description provided for @locationManagerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Where things live in and around the house.'**
+  String get locationManagerSubtitle;
+
+  /// No description provided for @unitManagerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How you count, weigh or measure stock.'**
+  String get unitManagerSubtitle;
+
+  /// No description provided for @categoryNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name'**
+  String get categoryNameLabel;
+
+  /// No description provided for @locationName.
+  ///
+  /// In en, this message translates to:
+  /// **'Location name'**
+  String get locationName;
+
+  /// No description provided for @unitName.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit name'**
+  String get unitName;
+
+  /// No description provided for @unitSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Short form'**
+  String get unitSymbol;
+
+  /// No description provided for @unitKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit type'**
+  String get unitKind;
+
+  /// No description provided for @unitKindCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get unitKindCount;
+
+  /// No description provided for @unitKindWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get unitKindWeight;
+
+  /// No description provided for @unitKindVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get unitKindVolume;
+
+  /// No description provided for @unitKindLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Length'**
+  String get unitKindLength;
+
+  /// No description provided for @unitKindOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get unitKindOther;
+
+  /// No description provided for @deleteCategoryQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this category?'**
+  String get deleteCategoryQuestion;
+
+  /// No description provided for @deleteCategoryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Items keep their text category until you edit them.'**
+  String get deleteCategoryBody;
+
+  /// No description provided for @deleteLocationQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this location?'**
+  String get deleteLocationQuestion;
+
+  /// No description provided for @deleteLocationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It is removed from every item that uses it.'**
+  String get deleteLocationBody;
+
+  /// No description provided for @deleteUnitQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this unit?'**
+  String get deleteUnitQuestion;
+
+  /// No description provided for @deleteUnitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Items keep the unit text until you edit them.'**
+  String get deleteUnitBody;
+
+  /// No description provided for @inStockCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} in stock'**
+  String inStockCount(String count);
+
+  /// No description provided for @shoppingListEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an item or let the inventory suggest what is running low.'**
+  String get shoppingListEmptyBody;
+
+  /// No description provided for @couldNotLoadHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load household data: {error}'**
+  String couldNotLoadHome(Object error);
+
+  /// No description provided for @stockSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock suggestions'**
+  String get stockSuggestions;
+
+  /// No description provided for @stockSuggestionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'From your inventory, ready to add.'**
+  String get stockSuggestionsBody;
+
+  /// No description provided for @addAllSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Add all'**
+  String get addAllSuggestions;
+
+  /// No description provided for @suggestionLowStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Low stock · buy {quantity}'**
+  String suggestionLowStock(String quantity);
+
+  /// No description provided for @suggestionOutOfStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of stock'**
+  String get suggestionOutOfStock;
+
+  /// No description provided for @suggestionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired · replace'**
+  String get suggestionExpired;
+
+  /// No description provided for @suggestionAlreadyListed.
+  ///
+  /// In en, this message translates to:
+  /// **'On the list'**
+  String get suggestionAlreadyListed;
+
+  /// No description provided for @addSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get addSuggestion;
+
+  /// No description provided for @shoppingSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search the list'**
+  String get shoppingSearch;
+
+  /// No description provided for @shoppingOneOff.
+  ///
+  /// In en, this message translates to:
+  /// **'One-off item'**
+  String get shoppingOneOff;
+
+  /// No description provided for @shoppingOneOffHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Something you do not keep in inventory.'**
+  String get shoppingOneOffHint;
+
+  /// No description provided for @shoppingAddHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you need to buy?'**
+  String get shoppingAddHint;
+
+  /// No description provided for @linkedInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get linkedInventory;
+
+  /// No description provided for @linkedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked to {name}'**
+  String linkedTo(String name);
+
+  /// No description provided for @restocksInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Restocks inventory'**
+  String get restocksInventory;
+
+  /// No description provided for @addedToInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {quantity} to {name}.'**
+  String addedToInventory(String quantity, String name);
+
+  /// No description provided for @shoppingItemCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get shoppingItemCategory;
+
+  /// No description provided for @shoppingItemQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get shoppingItemQuantity;
+
+  /// No description provided for @shoppingItemUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get shoppingItemUnit;
+
+  /// No description provided for @shoppingItemPack.
+  ///
+  /// In en, this message translates to:
+  /// **'Size / pack'**
+  String get shoppingItemPack;
+
+  /// No description provided for @shoppingItemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String shoppingItemsCount(int count);
+
+  /// No description provided for @shoppingItemsCountOne.
+  ///
+  /// In en, this message translates to:
+  /// **'1 item'**
+  String get shoppingItemsCountOne;
+
+  /// No description provided for @noShoppingSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing needs restocking.'**
+  String get noShoppingSuggestions;
+
+  /// No description provided for @markBought.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark bought'**
+  String get markBought;
+
+  /// No description provided for @markNotBought.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark not bought'**
+  String get markNotBought;
+
+  /// No description provided for @gadgetsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No gadgets yet.'**
+  String get gadgetsEmpty;
+
+  /// No description provided for @gadgetsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Track the AC, water tank, boiler, car and anything else that needs service.'**
+  String get gadgetsEmptyBody;
+
+  /// No description provided for @gadgetAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All gadgets'**
+  String get gadgetAll;
+
+  /// No description provided for @gadgetEveryDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {count} days'**
+  String gadgetEveryDays(int count);
+
+  /// No description provided for @gadgetDueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Due today'**
+  String get gadgetDueToday;
+
+  /// No description provided for @gadgetDueIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Due in {count} days'**
+  String gadgetDueIn(int count);
+
+  /// No description provided for @gadgetOverdueBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue by {count} days'**
+  String gadgetOverdueBy(int count);
+
+  /// No description provided for @gadgetNoTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All day'**
+  String get gadgetNoTime;
+
+  /// No description provided for @gadgetTimeRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{start}–{end}'**
+  String gadgetTimeRange(String start, String end);
+
+  /// No description provided for @logService.
+  ///
+  /// In en, this message translates to:
+  /// **'Log service'**
+  String get logService;
+
+  /// No description provided for @logServiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log service'**
+  String get logServiceTitle;
+
+  /// No description provided for @serviceDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Service date'**
+  String get serviceDate;
+
+  /// No description provided for @serviceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'What was done?'**
+  String get serviceNote;
+
+  /// No description provided for @serviceNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional notes for the history'**
+  String get serviceNoteHint;
+
+  /// No description provided for @serviceLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'Service logged. Next due {date}.'**
+  String serviceLogged(String date);
+
+  /// No description provided for @couldNotLogService.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not log the service. Check the gadget and try again.'**
+  String get couldNotLogService;
+
+  /// No description provided for @couldNotReschedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reschedule. The gadget may have changed.'**
+  String get couldNotReschedule;
+
+  /// No description provided for @serviceHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Service history'**
+  String get serviceHistory;
+
+  /// No description provided for @serviceHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No services logged yet.'**
+  String get serviceHistoryEmpty;
+
+  /// No description provided for @serviceHistoryNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next due {date}'**
+  String serviceHistoryNext(String date);
+
+  /// No description provided for @reschedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Reschedule'**
+  String get reschedule;
+
+  /// No description provided for @rescheduleMaintenance.
+  ///
+  /// In en, this message translates to:
+  /// **'Reschedule maintenance'**
+  String get rescheduleMaintenance;
+
+  /// No description provided for @rescheduleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the next due date without logging a service.'**
+  String get rescheduleBody;
+
+  /// No description provided for @newDueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'New due date'**
+  String get newDueDate;
+
+  /// No description provided for @rescheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Next due {date}.'**
+  String rescheduled(String date);
+
+  /// No description provided for @addCalendarEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to calendar'**
+  String get addCalendarEvent;
+
+  /// No description provided for @addCalendarEventBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Record the service as a completed event with a time block.'**
+  String get addCalendarEventBody;
+
+  /// No description provided for @serviceAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Service time'**
+  String get serviceAt;
+
+  /// No description provided for @duration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get duration;
+
+  /// No description provided for @durationMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min'**
+  String durationMinutes(int count);
+
+  /// No description provided for @durationHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} h'**
+  String durationHours(int count);
+
+  /// No description provided for @durationCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get durationCustom;
+
+  /// No description provided for @durationMinutesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get durationMinutesLabel;
+
+  /// No description provided for @blockCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Show on the calendar'**
+  String get blockCalendar;
+
+  /// No description provided for @blockCalendarBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reserve a time block on the due date.'**
+  String get blockCalendarBody;
+
+  /// No description provided for @serviceEventTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} service'**
+  String serviceEventTitle(String name);
+
+  /// No description provided for @saveSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveSettings;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

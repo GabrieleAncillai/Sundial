@@ -763,6 +763,8 @@ class McpServer {
       name: name,
       quantity: _numberArg(arguments, 'quantity', 1).clamp(0.01, double.infinity).toDouble(),
       unit: arguments['unit'] as String? ?? '',
+      packSize: arguments['packSize'] as String? ?? '',
+      category: arguments['category'] as String? ?? '',
       note: arguments['note'] as String? ?? '',
       homeItemId: arguments['homeItemId'] as String?,
     );
@@ -857,7 +859,7 @@ class McpServer {
       },
       {
         'name': 'home.inventory',
-        'description': 'Household inventory with quantities, locations and low-stock flags.',
+        'description': 'Household inventory variants with stock, minimums, expiry and locations.',
         'inputSchema': {'type': 'object', 'properties': <String, Object?>{}},
       },
       {
@@ -996,6 +998,8 @@ class McpServer {
               'name': {'type': 'string'},
               'quantity': {'type': 'number', 'minimum': 0.01, 'default': 1},
               'unit': {'type': 'string'},
+              'packSize': {'type': 'string'},
+              'category': {'type': 'string'},
               'note': {'type': 'string'},
               'contextId': {'type': 'string', 'description': 'A Home context. Defaults to the first home.'},
               'homeItemId': {'type': 'string'},

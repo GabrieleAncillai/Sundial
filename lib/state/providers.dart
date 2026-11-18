@@ -12,6 +12,8 @@ import '../features/sync/peer_discovery.dart';
 import '../features/sync/sync_service.dart';
 import '../models/date_range.dart';
 import '../models/home_item.dart';
+import '../models/home_reference.dart';
+import '../models/maintenance_log.dart';
 import '../models/time_entry.dart';
 import '../models/local_identity.dart';
 import '../models/paired_device.dart';
@@ -126,6 +128,33 @@ final homeItemsProvider = StreamProvider<List<HomeItem>>(
 final shoppingItemsProvider = StreamProvider<List<ShoppingItem>>(
   (ref) => ref.watch(repositoryProvider).watchShoppingItems(),
 );
+
+final homeCategoriesProvider = StreamProvider<List<HomeCategory>>(
+  (ref) => ref.watch(repositoryProvider).watchHomeCategories(),
+);
+
+final homeLocationsProvider = StreamProvider<List<HomeLocation>>(
+  (ref) => ref.watch(repositoryProvider).watchHomeLocations(),
+);
+
+final homeUnitsProvider = StreamProvider<List<HomeUnit>>(
+  (ref) => ref.watch(repositoryProvider).watchHomeUnits(),
+);
+
+final maintenanceLogsProvider = StreamProvider.family<List<MaintenanceLog>, String>(
+  (ref, entryId) => ref.watch(repositoryProvider).watchMaintenanceLogs(entryId),
+);
+
+/// Open home gadgets regardless of how far their next due date is.
+final maintenanceEntriesProvider = StreamProvider<List<Entry>>((ref) {
+  final now = ref.watch(nowProvider);
+  final timeZone = ref.watch(deviceTimeZoneProvider);
+  final today = localDateAt(now, timeZone);
+  return ref
+      .watch(repositoryProvider)
+      .watchOpenEntries(today.addDays(3650))
+      .map((entries) => entries.where((entry) => entry.isMaintenance).toList());
+});
 
 final backupServiceProvider = Provider<BackupService>((ref) => BackupService(ref.watch(databaseProvider)));
 

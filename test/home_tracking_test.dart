@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sundial/core/i18n/l10n.dart';
+import 'package:sundial/data/home_reference_defaults.dart';
 import 'package:sundial/features/home_inventory/pages/maintenance_page.dart';
 import 'package:sundial/features/home_inventory/pages/shopping_list_page.dart';
 import 'package:sundial/models/app_settings.dart';
 import 'package:sundial/models/home_item.dart';
+import 'package:sundial/models/maintenance_log.dart';
 import 'package:sundial/models/shopping_item.dart';
 import 'package:sundial/state/providers.dart';
 import 'package:sundial/state/settings_controller.dart';
@@ -19,7 +21,7 @@ void main() {
         overrides: [
           homeItemsProvider.overrideWith(
             (ref) => Stream.value(const [
-              HomeItem(id: 'rice', name: 'Rice', category: 'Pantry', location: 'Kitchen'),
+              HomeItem(id: 'rice', name: 'Rice', category: 'Pantry', location: 'Kitchen', quantity: 1),
             ]),
           ),
           shoppingItemsProvider.overrideWith(
@@ -28,6 +30,9 @@ void main() {
               ShoppingItem(id: 'soap-buy', name: 'Soap'),
             ]),
           ),
+          homeCategoriesProvider.overrideWith((ref) => Stream.value(defaultHomeCategories)),
+          homeLocationsProvider.overrideWith((ref) => Stream.value(defaultHomeLocations)),
+          homeUnitsProvider.overrideWith((ref) => Stream.value(defaultHomeUnits)),
         ],
         child: MaterialApp(
           theme: SundialTheme.light,
@@ -42,7 +47,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
 
-    expect(find.text('Pantry · Kitchen'), findsOneWidget);
+    expect(find.text('Pantry'), findsOneWidget);
     expect(find.text('Other'), findsOneWidget);
     expect(find.text('Rice'), findsOneWidget);
     expect(find.text('Clear bought'), findsNothing);
@@ -68,10 +73,8 @@ void main() {
           initialSettingsProvider.overrideWithValue(const AppSettings()),
           deviceTimeZoneProvider.overrideWith(() => DeviceTimeZoneController(initial: 'Europe/Madrid')),
           nowProvider.overrideWithValue(now),
-          entriesProvider.overrideWith(
-            (ref, range) =>
-                Stream.value([EntryOccurrence(date: entry.date!, displayDate: entry.date!, entry: entry)]),
-          ),
+          maintenanceEntriesProvider.overrideWith((ref) => Stream.value([entry])),
+          maintenanceLogsProvider.overrideWith((ref, entryId) => Stream.value(const <MaintenanceLog>[])),
         ],
         child: MaterialApp(
           theme: SundialTheme.light,

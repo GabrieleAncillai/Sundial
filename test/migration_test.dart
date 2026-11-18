@@ -139,7 +139,7 @@ void main() {
     expect(columns.map((row) => row.data['name']), contains('time_zone'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 12);
+    expect(version.data.values.single, 13);
   });
 
   test('migrates real v2 data and keeps tags usable', () async {
@@ -201,7 +201,7 @@ void main() {
     expect((await database.watchTags().first).single.name, 'Tax');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 12);
+    expect(version.data.values.single, 13);
   });
 
   test('migrates real v3 data and exposes the v0.3 tables', () async {
@@ -255,7 +255,7 @@ void main() {
 
     await database.saveShiftChecklistItems('missing-pattern', const []);
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 12);
+    expect(version.data.values.single, 13);
   });
 
   test('migrates real v4 data and creates the pairing tables', () async {
@@ -409,7 +409,7 @@ void main() {
     expect(paired.port, 8766);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 12);
+    expect(version.data.values.single, 13);
   });
 
   test('migrates real v5 checklist rows to per-slot keys', () async {
@@ -479,7 +479,7 @@ void main() {
     expect(saved.windDownMinutes, 20);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 12);
+    expect(version.data.values.single, 13);
   });
 
   test('migrates real v6 rows to shopping order and purchase history', () async {
@@ -536,7 +536,7 @@ void main() {
     expect(history.single.note, 'Shop run');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 12);
+    expect(version.data.values.single, 13);
   });
 
   test('migrates real v7 rows to custom reminder times and remote snapshots', () async {
@@ -611,7 +611,7 @@ void main() {
     expect(await database.readRemoteSnapshots(), isEmpty);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 12);
+    expect(version.data.values.single, 13);
   });
 
   test('migrates real v8 rows to contexts, projects, habits and tracked tasks', () async {
@@ -686,7 +686,7 @@ void main() {
     expect((await database.readShiftChecklistItems('bar')).single.dayIndex, 2);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 12);
+    expect(version.data.values.single, 13);
   });
 
   test('repairs a database written by the draft v9 build', () async {
@@ -849,7 +849,7 @@ void main() {
     expect(nextDue, LocalDate.parse('2027-10-29'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 12);
+    expect(version.data.values.single, 13);
   });
 
   test('a v10 database gains habit weekdays and keeps writing', () async {
@@ -907,7 +907,7 @@ void main() {
     expect(updated.targetPerWeek, 3);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 12);
+    expect(version.data.values.single, 13);
   });
 
   test('repairs the draft leftovers a v1.2 build reported as v10', () async {
@@ -993,6 +993,85 @@ void main() {
     expect(draftTable, isEmpty);
 
     final version = await repaired.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 12);
+    expect(version.data.values.single, 13);
+  });
+
+  test('migrates v12 inventory text into variants and reference rows', () async {
+    final directory = await Directory.systemTemp.createTemp('sundial-v12-home');
+    final path = p.join(directory.path, 'sundial.sqlite');
+    final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
+
+    final raw = sqlite3.open(path);
+    raw.execute('CREATE TABLE setting_records (key TEXT NOT NULL PRIMARY KEY, value TEXT NOT NULL)');
+    raw.execute('CREATE TABLE entry_records (id TEXT NOT NULL PRIMARY KEY)');
+    raw.execute('''
+      CREATE TABLE home_item_records (
+        id TEXT NOT NULL PRIMARY KEY,
+        context_id TEXT NULL,
+        name TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT '',
+        location TEXT NOT NULL DEFAULT '',
+        quantity REAL NOT NULL DEFAULT 0,
+        reorder_level REAL NULL,
+        unit TEXT NOT NULL DEFAULT '',
+        notes TEXT NOT NULL DEFAULT '',
+        last_purchased_at INTEGER NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER NULL
+      )
+    ''');
+    raw.execute('''
+      CREATE TABLE shopping_item_records (
+        id TEXT NOT NULL PRIMARY KEY,
+        name TEXT NOT NULL,
+        quantity REAL NOT NULL DEFAULT 1,
+        unit TEXT NOT NULL DEFAULT '',
+        checked INTEGER NOT NULL DEFAULT 0,
+        note TEXT NOT NULL DEFAULT '',
+        home_item_id TEXT NULL,
+        context_id TEXT NULL,
+        position INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER NULL
+      )
+    ''');
+    raw.execute(
+      'INSERT INTO home_item_records '
+      '(id, name, category, location, quantity, reorder_level, unit, notes, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['rice', 'Rice', 'Food & pantry', 'Kitchen', 2.0, 1.0, 'kg', '', createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO shopping_item_records '
+      '(id, name, quantity, unit, checked, note, home_item_id, position, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['buy-rice', 'Rice', 3.0, 'kg', 0, '', 'rice', 0, createdAt, createdAt],
+    );
+    raw.execute('PRAGMA user_version = 12');
+    raw.dispose();
+
+    final database = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(() async {
+      await database.close();
+      await directory.delete(recursive: true);
+    });
+
+    final item = (await database.watchHomeItems().first).single;
+    expect(item.groupId, 'rice');
+    expect(item.categoryId, 'home-food');
+    expect(item.unitId, 'home-unit-kg');
+    expect(item.locationIds, ['home-loc-kitchen']);
+    expect(item.minimumStock, 1);
+    expect(item.expiresAt, isNull);
+
+    final shopping = (await database.watchShoppingItems().first).single;
+    expect(shopping.categoryId, 'home-food');
+    expect(shopping.icon, 'restaurant');
+    expect((await database.watchHomeCategories().first), isNotEmpty);
+
+    final version = await database.customSelect('PRAGMA user_version').getSingle();
+    expect(version.data.values.single, 13);
   });
 }

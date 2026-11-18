@@ -4,8 +4,76 @@ Keep this file current. A fresh context window should be able to resume from it.
 
 ## Current milestone
 
-`feat/product-polish` reworks the product surface after v0.9. The foundation is
-in place and green:
+Schema v13 and the Home rework are implemented and green. See the dated entry
+below and section 4.2 of `docs/full-docs.md`.
+
+## 2026-11-17 Home inventory, shopping and gadgets rework
+
+- **Inventory is product + stock variants.** `home_item_records` gained
+  `groupId`; one card groups every size of the same product. Three 5-gallon
+  water bottles and four 5-litre bottles are one product with two variants,
+  each with its own unit, pack size, quantity, minimum, expiry and locations.
+  The editor adds another size without re-entering the product and accepts
+  multiple locations per variant.
+- **Reference data replaces free text.** New `home_category_records`,
+  `home_location_records`, `home_unit_records` and
+  `home_item_location_records` tables, seeded through
+  `homeReferenceSeeded`. Categories and locations carry an icon and colour;
+  units carry a symbol and kind. `HomeReferencePage` creates, renames,
+  recolours and deletes them with duplicate-name and delete guards. Existing
+  rows are backfilled by name, and deleted rows are not resurrected by text.
+- **Household catalog.** `lib/data/household_catalog.dart` ships 124 common
+  household goods across 12 categories with EN/ES names and descriptions,
+  icons, colours and default category/unit/pack/minimum/shelf life.
+  `HouseholdCatalogPage` searches by localized text, shows what is already in
+  inventory, reuses an existing product group for another size and still
+  accepts a custom item. The catalog pattern adapts GymMane's nutrition
+  library; the data and UI are original (see `CREDITS.md`).
+- **Shopping is inventory-aware.** Low, empty and expired stock produces a
+  suggestion card with per-item and add-all actions. Shopping lines can link to
+  an exact variant; checking one restocks that variant, stamps the purchase and
+  writes history. Unchecking reverses the quantity recorded at check time,
+  even if the line was edited or relinked. Removing a variant unlinks its
+  lines. One-off purchases remain a first-class path.
+- **Gadgets support the real maintenance loop.** Interval presets, a next due
+  date that starts after the actual service, manual rescheduling, a service log
+  with note and duration, and an optional completed calendar event with a
+  start/end block. Service dates are read in the entry zone (UTC for all-day
+  rows), so timezone travel cannot shift an all-day service by a day. Delete
+  actions confirm first.
+- **Fixes from the quality review.** Quantity labels read `3 Bottle · 5 gal`
+  instead of multiplying the pack. Clearing a category or unit persists the
+  clear. Linked shopping lines lock the fields the inventory owns. The
+  inventory, shopping and gadget pages show a load-error notice instead of
+  looking empty. Checkboxes and switches carry semantic labels and 48 dp
+  targets. Shopping unit names are localized. Inventory search matches
+  localized catalog names, descriptions, units and categories. Removal dialogs
+  say “Remove” rather than “Delete”.
+- **Schema and data path.** Schema v13 (from v12), with a real v12 fixture
+  migration test. Backup, auto-backup, CSV, LAN payload, MCP shopping add and
+  global search understand the new fields and reference rows. `clearAllData`
+  deletes maintenance logs before entries and reseeds reference data.
+- **Docs and captures.** `docs/full-docs.md` section 4.2 and the data model are
+  updated; `docs/reference-map.md`, `README.md` and `CREDITS.md` describe the
+  rework and the GymMane catalog inspiration. New screenshots:
+  `v1.6-home-inventory-mobile.png`, `v1.6-home-catalog-mobile.png`,
+  `v1.6-home-shopping-mobile.png` and `v1.6-home-gadgets-mobile.png`.
+- **Validation.** `flutter analyze --no-fatal-infos` clean; 271 app tests pass;
+  95 core tests pass; the CI format check is clean; Linux debug and Android
+  debug APK builds pass; the screenshot suite renders 26 captures. New and
+  updated coverage is in `test/home_inventory_v2_test.dart` (19 tests),
+  `test/migration_test.dart`, `test/backup_test.dart`,
+  `test/csv_interchange_test.dart` and `test/home_tracking_test.dart`.
+
+Open follow-ups: expose manual section ordering (positions are stored), use the
+unit kind for purchase rounding, include maintenance logs in the read-only LAN
+snapshot, and add widget tests for the reference manager and the log/reschedule
+sheets.
+
+## Product-polish baseline
+
+The `feat/product-polish` branch reworks the product surface after v0.9. These
+parts are in place and green:
 
 - Responsive shell: bottom navigation on phones, a configurable left/right side
   rail on desktop.

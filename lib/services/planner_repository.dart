@@ -2,7 +2,9 @@ import 'package:sundial_core/sundial_core.dart';
 
 import '../models/home_item.dart';
 import '../models/home_purchase.dart';
+import '../models/home_reference.dart';
 import '../models/local_identity.dart';
+import '../models/maintenance_log.dart';
 import '../models/paired_device.dart';
 import '../models/remote_snapshot.dart';
 import '../models/reminder.dart';
@@ -60,9 +62,32 @@ class PlannerRepository {
 
   Stream<List<HomeItem>> watchHomeItems() => _database.watchHomeItems();
 
-  Future<void> saveHomeItem(HomeItem item) => _database.saveHomeItem(item);
+  Future<void> saveHomeItem(HomeItem item, {bool updateGroup = false}) =>
+      _database.saveHomeItem(item, updateGroup: updateGroup);
 
   Future<void> archiveHomeItem(String id) => _database.archiveHomeItem(id);
+
+  Future<void> archiveHomeGroup(String groupId) => _database.archiveHomeGroup(groupId);
+
+  Stream<List<HomeCategory>> watchHomeCategories() => _database.watchHomeCategories();
+
+  Future<void> saveHomeCategory(HomeCategory category) => _database.saveHomeCategory(category);
+
+  Future<void> deleteHomeCategory(String id) => _database.deleteHomeCategory(id);
+
+  Stream<List<HomeLocation>> watchHomeLocations() => _database.watchHomeLocations();
+
+  Future<void> saveHomeLocation(HomeLocation location) => _database.saveHomeLocation(location);
+
+  Future<void> deleteHomeLocation(String id) => _database.deleteHomeLocation(id);
+
+  Stream<List<HomeUnit>> watchHomeUnits() => _database.watchHomeUnits();
+
+  Future<void> saveHomeUnit(HomeUnit unit) => _database.saveHomeUnit(unit);
+
+  Future<void> deleteHomeUnit(String id) => _database.deleteHomeUnit(id);
+
+  Future<void> repairHomeItemReferences() => _database.repairHomeItemReferences();
 
   Stream<List<ShoppingItem>> watchShoppingItems() => _database.watchShoppingItems();
 
@@ -126,6 +151,28 @@ class PlannerRepository {
 
   Future<LocalDate?> completeMaintenanceEntry(String id, LocalDate completionDate) =>
       _database.completeMaintenanceEntry(id, completionDate);
+
+  /// Records a service on a gadget, optionally inserting the calendar event the
+  /// user created for the work in the same transaction.
+  Future<LocalDate?> logMaintenanceService({
+    required String entryId,
+    required LocalDate performedOn,
+    String note = '',
+    int? durationMinutes,
+    Entry? calendarEvent,
+  }) => _database.completeMaintenanceEntry(
+    entryId,
+    performedOn,
+    note: note,
+    durationMinutes: durationMinutes,
+    calendarEvent: calendarEvent,
+  );
+
+  Stream<List<MaintenanceLog>> watchMaintenanceLogs(String entryId) =>
+      _database.watchMaintenanceLogs(entryId);
+
+  Future<LocalDate?> rescheduleMaintenance(String entryId, LocalDate nextDue) =>
+      _database.rescheduleMaintenance(entryId, nextDue);
 
   Future<Map<String, String>> readSettings() => _database.readSettings();
 

@@ -7,6 +7,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sundial/features/backup/backup_service.dart';
 import 'package:sundial/models/home_item.dart';
+import 'package:sundial/models/home_reference.dart';
 import 'package:sundial/models/local_identity.dart';
 import 'package:sundial/models/paired_device.dart';
 import 'package:sundial/models/reminder.dart';
@@ -149,11 +150,22 @@ void main() {
     await database.saveHomeItem(
       const HomeItem(
         id: 'rice',
+        groupId: 'rice',
         name: 'Rice',
-        category: 'Pantry',
+        description: 'Long-grain rice',
+        icon: 'rice',
+        colorValue: 0xFFB07D5C,
+        catalogId: 'catalog-long-grain-rice',
+        category: 'Food & pantry',
+        categoryId: 'home-food',
         location: 'Kitchen',
+        locationIds: ['home-loc-kitchen'],
         quantity: 2,
         unit: 'kg',
+        unitId: 'home-unit-kg',
+        packSize: '1 kg bag',
+        minQuantity: 1,
+        expiresAt: LocalDate(2027, 1, 1),
         reorderLevel: 1,
       ),
     );
@@ -168,6 +180,24 @@ void main() {
       ),
     );
     await database.adjustHomeQuantity('rice', 2, note: 'Weekend shop');
+    await database.saveEntry(
+      Entry(
+        id: 'boiler',
+        spaceId: 'home',
+        title: 'Boiler service',
+        date: LocalDate.parse('2026-11-09'),
+        allDay: true,
+        repeatAfterCompletionDays: 30,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    await database.completeMaintenanceEntry(
+      'boiler',
+      LocalDate.parse('2026-11-10'),
+      note: 'Replaced the filter',
+      durationMinutes: 60,
+    );
   }
 
   test('backups exclude the pairing identity, certificates and shared keys', () async {
@@ -202,7 +232,7 @@ void main() {
 
     final exported = await BackupService(source).exportJson();
     final payload = jsonDecode(exported) as Map<String, dynamic>;
-    expect(payload['schemaVersion'], 12);
+    expect(payload['schemaVersion'], 13);
     expect(payload.containsKey('identity'), isFalse);
     expect(payload.containsKey('pairedDevices'), isFalse);
     expect(exported, isNot(contains('cGluaGFzaA==')));
@@ -300,6 +330,22 @@ void main() {
     before.remove('exportedAt');
     after.remove('exportedAt');
     expect(after, before);
+  });
+
+  test('a restored unit with an unknown kind falls back to other', () async {
+    final exported = await BackupService(source).exportJson();
+    final payload = jsonDecode(exported) as Map<String, Object?>;
+    final units = (payload['homeUnits']! as List<Object?>).cast<Map<String, Object?>>();
+    final modifiedId = units.first['id']! as String;
+    units.first['kind'] = 'not-a-kind';
+
+    final target = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(target.close);
+    await BackupService(target).importJson(jsonEncode(payload));
+
+    final restored = await target.watchHomeUnits().first;
+    expect(restored, isNotEmpty);
+    expect(restored.firstWhere((unit) => unit.id == modifiedId).kind, HomeUnitKind.other);
   });
 
   test('accepts a schema v9 backup', () async {

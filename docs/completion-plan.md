@@ -1,6 +1,7 @@
 # Sundial completion plan
 
-Status: active. Baseline v0.5. Last updated 2026-11-09.
+Status: active. Baseline v0.9 plus the schema v13 Home rework. Last updated
+2026-11-17.
 
 This is the working plan that takes Sundial from the v0.5 release candidate to a
 daily-usable v1.0. It is deliberately broader than the original v1.0 gate: the
@@ -193,6 +194,42 @@ reminder planner; custom reminder times use `time_minute`; and Android
 notifications carry snooze/complete actions. Tests: 135 app tests and 85 core
 tests.
 
+### Post-v0.9 Home rework (schema v13)
+
+- [x] Model one stock variant per row and group variants under a stable product
+      id, so the same product can have several sizes and units with independent
+      stock, minimums, expiry and locations.
+- [x] Replace free-text categories, locations and units with editable reference
+      rows that carry an icon, colour, symbol and unit kind, and allow multiple
+      locations per variant.
+- [x] Seed a searchable household catalog with localized names and
+      descriptions, art, defaults and conservative shelf life, and reuse the
+      GymMane nutrition-library pattern without copying its data.
+- [x] Tie the shopping list to inventory: low, empty and expired stock produces
+      suggestions; linked lines restock the exact variant; one-off purchases
+      remain possible.
+- [x] Make gadgets support service logging, rescheduling without a service, and
+      optional completed calendar blocks with a start and end time.
+- [x] Add a real v12→v13 migration test and keep backup, CSV, LAN, MCP and
+      search in sync with the new fields.
+
+Acceptance: three 5-gallon bottles and four 5-litre bottles are one product with
+two variants; checking the 5-litre line restocks only that size; unchecking
+restores the recorded purchase; clearing a category persists; a service logged
+from the performed date advances from that date and never drifts an all-day row
+across a timezone; both builds and both test suites pass.
+
+**Shipped in v13:** `home_category_records`, `home_location_records`,
+`home_unit_records`, `home_item_location_records` and
+`maintenance_log_records`; product-group and reference columns on
+`home_item_records`; catalog/art/category metadata on `shopping_items`. The
+`home_inventory` feature gained the grouped inventory page, the household
+catalog, the reference manager, inventory-aware shopping suggestions and the
+gadget service loop. Tests: 271 app tests and 95 core tests, plus the real
+v12→v13 fixture. Screenshots: `v1.6-home-inventory-mobile.png`,
+`v1.6-home-catalog-mobile.png`, `v1.6-home-shopping-mobile.png` and
+`v1.6-home-gadgets-mobile.png`.
+
 ### v1.0 Device verification, polish and release
 
 - [ ] Run the full Android device checklist, including the new v0.7-v0.9 flows.
@@ -230,6 +267,9 @@ the full table are in `docs/device-run-2026-11-09.md`.
 | Home inventory | Core list and low stock | Adjustments, dashboard and history | v0.8 |
 | Shopping | Core list | Grouping, clear checked and reorder | v0.8 |
 | Maintenance | Interval after completion | Dedicated due/overdue view | v0.8 |
+| Home inventory (v13) | One row per item with a reorder level | Product groups, variant sizes, catalog, reference data, expiry/minimum | v13 |
+| Shopping (v13) | Category/location grouping | Inventory suggestions and exact-variant restock | v13 |
+| Gadgets (v13) | Due view and completion | Service log, reschedule, optional calendar block | v13 |
 | App lock | None | Optional local PIN lock | v0.8 |
 | MCP | Four tools, loopback JSON-RPC | Full tool set and streamable sessions | v0.9 |
 | LAN sync | In-memory summary snapshots | Persistent read-only snapshots and richer query | v0.9 |

@@ -6,51 +6,56 @@ import 'package:uuid/uuid.dart';
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/icons/sundial_icons.dart';
+import '../../../core/time/time_field.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
 import '../../spaces/widgets/space_controls.dart';
+import '../maintenance_dates.dart';
 
 /// Adds or edits a home gadget.
 ///
-/// Gadgets stay maintenance entries: completion advances the next date from the
-/// completion day. The sheet adds the two fields entries cannot express on their
-/// own, an icon and the last service date, and keeps the due date stable when
-/// only the name or notes change.
+/// The gadget is a maintenance entry with an interval that starts on the date
+/// the service actually happened. It can optionally reserve a timed block on
+/// the calendar so the work has a real slot instead of only a due date.
 Future<void> showGadgetEditor(
   BuildContext context, {
   required String homeId,
   required LocalDate today,
   Entry? gadget,
+  LocalDate? lastServiced,
 }) {
   return showAppSheet<void>(
     context: context,
-    builder: (_) => _GadgetSheet(homeId: homeId, today: today, gadget: gadget),
+    builder: (_) => _GadgetSheet(homeId: homeId, today: today, gadget: gadget, lastServiced: lastServiced),
   );
 }
 
 class _GadgetSheet extends ConsumerStatefulWidget {
-  const _GadgetSheet({required this.homeId, required this.today, this.gadget});
+  const _GadgetSheet({required this.homeId, required this.today, this.gadget, this.lastServiced});
 
   final String homeId;
   final LocalDate today;
   final Entry? gadget;
+  final LocalDate? lastServiced;
 
   @override
   ConsumerState<_GadgetSheet> createState() => _GadgetSheetState();
 }
 
 class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
-  late final TextEditingController _name = TextEditingController(text: widget.gadget?.title ?? '');
-  late final TextEditingController _notes = TextEditingController(text: widget.gadget?.notes ?? '');
-  late final TextEditingController _interval = TextEditingController(
-    text: '${widget.gadget?.repeatAfterCompletionDays ?? 30}',
-  );
+  late final _name = TextEditingController(text: widget.gadget?.title ?? '');
+  late final _notes = TextEditingController(text: widget.gadget?.notes ?? '');
+  late final _interval = TextEditingController(text: '${widget.gadget?.repeatAfterCompletionDays ?? 90}');
   late String _icon = widget.gadget?.icon ?? 'build';
-  late LocalDate? _lastServiced = widget.gadget?.lastCompletedAt == null
-      ? null
-      : LocalDate.fromDateTime(widget.gadget!.lastCompletedAt!.toLocal());
+  late LocalDate? _lastServiced =
+      widget.lastServiced ?? (widget.gadget == null ? null : maintenanceServiceDate(widget.gadget!));
+  late bool _blockCalendar = widget.gadget != null && !widget.gadget!.allDay;
+  late int _startMinute = widget.gadget?.startMinute ?? 9 * 60;
+  late int _durationMinutes = _initialDuration();
+  bool _intervalDirty = false;
+  bool _lastServicedDirty = false;
   bool _busy = false;
 
   @override
@@ -61,18 +66,30 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
     super.dispose();
   }
 
-  int get _intervalDays {
-    final parsed = int.tryParse(_interval.text.trim());
-    return parsed == null || parsed <= 0 ? 30 : parsed.clamp(1, 3650);
+  int _initialDuration() {
+    final gadget = widget.gadget;
+    if (gadget == null || gadget.startMinute == null || gadget.endMinute == null) return 60;
+    return (gadget.endMinute! - gadget.startMinute!).clamp(15, 12 * 60);
   }
 
-  LocalDate get _nextDue => nextMaintenanceDue(
-    lastServiced: _lastServiced,
-    currentDue: widget.gadget?.date,
-    currentInterval: widget.gadget?.repeatAfterCompletionDays,
-    interval: _intervalDays,
-    today: widget.today,
-  );
+  int get _intervalDays {
+    final parsed = int.tryParse(_interval.text.trim());
+    return parsed == null || parsed <= 0 ? 90 : parsed.clamp(1, 3650);
+  }
+
+  LocalDate get _nextDue {
+    final existing = widget.gadget;
+    if (existing != null && !_intervalDirty && !_lastServicedDirty && existing.date != null) {
+      return existing.date!;
+    }
+    return nextMaintenanceDue(
+      lastServiced: _lastServiced,
+      currentDue: existing?.date,
+      currentInterval: existing?.repeatAfterCompletionDays,
+      interval: _intervalDays,
+      today: widget.today,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +100,7 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
       children: [
         TextField(
           controller: _name,
-          autofocus: true,
+          autofocus: widget.gadget == null,
           textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(labelText: l10n.gadgetName),
         ),
@@ -103,8 +120,24 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
         TextField(
           controller: _interval,
           keyboardType: TextInputType.number,
-          onChanged: (_) => setState(() {}),
+          onChanged: (_) => setState(() => _intervalDirty = true),
           decoration: InputDecoration(labelText: l10n.gadgetIntervalDays),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final days in const [30, 90, 180, 365])
+              _PresetChip(
+                label: l10n.daysValue(days),
+                selected: _intervalDays == days,
+                onTap: () => setState(() {
+                  _interval.text = '$days';
+                  _intervalDirty = true;
+                }),
+              ),
+          ],
         ),
         const SizedBox(height: 8),
         Text(
@@ -118,10 +151,47 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
               ? l10n.gadgetNeverServiced
               : formatFullDate(context, _lastServiced!.toDateTime()),
           onTap: _pickLastServiced,
-          onClear: _lastServiced == null ? null : () => setState(() => _lastServiced = null),
+          onClear: _lastServiced == null
+              ? null
+              : () => setState(() {
+                  _lastServiced = null;
+                  _lastServicedDirty = true;
+                }),
           clearTooltip: l10n.clearDate,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
+        _ToggleRow(
+          icon: Icons.event_available_outlined,
+          title: l10n.blockCalendar,
+          subtitle: l10n.blockCalendarBody,
+          value: _blockCalendar,
+          onChanged: (value) => setState(() => _blockCalendar = value),
+        ),
+        if (_blockCalendar) ...[
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: SundialTimeField(
+                  label: l10n.startTime,
+                  valueLabel: formatMinuteLabel(context, _startMinute),
+                  initialMinute: _startMinute,
+                  clearable: false,
+                  onChanged: (minute) => setState(() => _startMinute = minute % 1440),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _DurationField(
+                  value: _durationMinutes,
+                  onChanged: (value) => setState(() => _durationMinutes = value),
+                ),
+              ),
+            ],
+          ),
+        ],
+        const SizedBox(height: 14),
         TextField(
           controller: _notes,
           minLines: 2,
@@ -163,7 +233,10 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
       lastDate: widget.today.toDateTime(),
     );
     if (picked == null || !mounted) return;
-    setState(() => _lastServiced = LocalDate.fromDateTime(picked));
+    setState(() {
+      _lastServiced = LocalDate.fromDateTime(picked);
+      _lastServicedDirty = true;
+    });
   }
 
   Future<void> _save() async {
@@ -172,7 +245,12 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
     setState(() => _busy = true);
     final repository = ref.read(repositoryProvider);
     final now = DateTime.now().toUtc();
-    final lastServiced = _lastServiced?.toDateTime().toUtc();
+    final timeZone = ref.read(deviceTimeZoneProvider);
+    // All-day rows keep their service date in UTC; timed rows use the zone they
+    // block the calendar in. Reading either with toLocal() can shift a day.
+    final storedZone = _blockCalendar ? timeZone : 'UTC';
+    final lastServiced = _lastServiced == null ? null : instantAt(_lastServiced!, 12 * 60, storedZone);
+    final endMinute = _blockCalendar ? _startMinute + _durationMinutes : null;
     try {
       final existing = widget.gadget;
       if (existing == null) {
@@ -186,7 +264,10 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
             icon: _icon,
             kind: EntryKind.obligation,
             date: _nextDue,
-            allDay: true,
+            allDay: !_blockCalendar,
+            startMinute: _blockCalendar ? _startMinute : null,
+            endMinute: endMinute,
+            timeZone: _blockCalendar ? timeZone : null,
             repeatAfterCompletionDays: _intervalDays,
             lastCompletedAt: lastServiced,
             createdAt: now,
@@ -200,6 +281,10 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
             notes: _notes.text.trim(),
             icon: _icon,
             date: _nextDue,
+            allDay: !_blockCalendar,
+            startMinute: _blockCalendar ? _startMinute : null,
+            endMinute: endMinute,
+            timeZone: _blockCalendar ? timeZone : null,
             repeatAfterCompletionDays: _intervalDays,
             lastCompletedAt: lastServiced,
             updatedAt: now,
@@ -214,14 +299,142 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
       ).showSnackBar(SnackBar(content: Text(context.l10n.couldNotSave('$error'))));
       return;
     }
+    if (!mounted) return;
+    await ref.read(reminderCoordinatorProvider).reschedule();
     if (mounted) Navigator.of(context).pop();
   }
 
   Future<void> _delete() async {
     final gadget = widget.gadget;
     if (gadget == null) return;
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.deleteEntryQuestion),
+        content: Text(l10n.deleteEntryBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(l10n.cancel)),
+          FilledButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: Text(l10n.delete)),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
     setState(() => _busy = true);
-    await ref.read(repositoryProvider).deleteEntry(gadget.id);
-    if (mounted) Navigator.of(context).pop();
+    try {
+      await ref.read(repositoryProvider).deleteEntry(gadget.id);
+      await ref.read(reminderCoordinatorProvider).reschedule();
+      if (mounted) Navigator.of(context).pop();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.couldNotDelete('$error'))));
+    }
+  }
+}
+
+class _ToggleRow extends StatelessWidget {
+  const _ToggleRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.mc;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+      decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(14)),
+      child: Row(
+        children: [
+          Icon(icon, size: 19, color: c.textSecondary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: SundialType.body(13, weight: FontWeight.w700, color: c.text),
+                ),
+                Text(subtitle, style: SundialType.body(11, color: c.textSecondary)),
+              ],
+            ),
+          ),
+          Semantics(
+            label: title,
+            child: Switch(value: value, onChanged: onChanged),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PresetChip extends StatelessWidget {
+  const _PresetChip({required this.label, required this.selected, required this.onTap});
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.mc;
+    return Pressable(
+      onTap: onTap,
+      semanticButton: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected ? c.accentSoft : c.surfaceAlt,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: selected ? c.accent.withValues(alpha: 0.35) : c.border),
+        ),
+        child: Text(label, style: SundialType.label(11.5, color: selected ? c.accent : c.textSecondary)),
+      ),
+    );
+  }
+}
+
+class _DurationField extends StatelessWidget {
+  const _DurationField({required this.value, required this.onChanged});
+
+  final int value;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final label = value % 60 == 0 ? l10n.durationHours(value ~/ 60) : l10n.durationMinutes(value);
+    return SundialSelectField(
+      label: l10n.duration,
+      valueLabel: label,
+      leading: const Icon(Icons.timer_outlined),
+      onTap: () async {
+        final picked = await showSundialSelectSheet<int>(
+          context: context,
+          title: l10n.duration,
+          selected: value,
+          options: [
+            for (final minutes in const [30, 60, 90, 120, 240, 480])
+              SundialSelectOption(
+                value: minutes,
+                label: minutes % 60 == 0 ? l10n.durationHours(minutes ~/ 60) : l10n.durationMinutes(minutes),
+              ),
+          ],
+        );
+        if (picked != null) onChanged(picked);
+      },
+    );
   }
 }

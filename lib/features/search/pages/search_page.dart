@@ -14,6 +14,7 @@ import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../../../widgets/entry_widgets.dart';
 import '../../home_inventory/pages/home_inventory_page.dart';
+import '../../home_inventory/widgets/home_art.dart';
 
 class SearchPage extends ConsumerStatefulWidget {
   const SearchPage({super.key, this.initialQuery});
@@ -194,6 +195,7 @@ class _HomeTile extends StatelessWidget {
     final details = [
       if (item.category.isNotEmpty) item.category,
       if (item.location.isNotEmpty) item.location,
+      if (item.packSize.isNotEmpty) item.packSize,
       '${_quantity(item.quantity)}${item.unit.isEmpty ? '' : ' ${item.unit}'}',
     ];
     return Padding(
@@ -224,7 +226,7 @@ class _HomeTile extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            item.name,
+                            homeItemDisplayName(item, Localizations.localeOf(context)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: SundialType.body(14, weight: FontWeight.w700, color: c.text),

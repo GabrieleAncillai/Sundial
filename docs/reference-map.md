@@ -32,7 +32,7 @@ git clone https://github.com/InlitX/streak.git ../Streak
 | Empty and error states | `lib/widgets/ui_kit.dart` | `lib/core/widgets/app_empty_state.dart`, `lib/core/widgets/startup_failure.dart` | Calm, useful, never an error-looking dead end. |
 | Accessibility | `lib/screens/settings_screen.dart` | `lib/core/widgets/*`, `lib/core/shortcuts/*` | Semantics, text scaling, keyboard shortcuts on desktop. |
 | Home widgets | `lib/services/home_widget_bridge.dart`, `lib/services/nutrition_widgets.dart` | `lib/services/home_widget_service.dart`, `lib/services/todos_widget_service.dart`, `lib/services/widget_action_service.dart` | Follow the working Android widget pattern. |
-| Home inventory, shopping and maintenance | none | none | New planner domain. The settings rows and sheets follow GymMane/Streak patterns; the model and rules live in Sundial. |
+| Home inventory, shopping and maintenance | `lib/services/food_library.dart`, `assets/data/foods.tsv`, `lib/screens/nutrition/food.dart` (seeded library, search, picker and portion/measure flow) | none | Neither reference has a planner inventory. The seeded household catalog, search, art tiles and measure picker adapt the GymMane nutrition library pattern. Product variants, reference categories/locations/units, expiry/minimum stock, inventory-linked shopping suggestions and gadget service logs are Sundial-specific and live in `features/home_inventory` and schema v13. |
 | ICS import | `lib/services/workout_import.dart` for local file-picking patterns | `lib/services/import_service.dart` for validation and dedupe patterns | No reference implements iCalendar. The parser is Sundial-specific and deliberately narrow. |
 | Sleep window and shift checklists | none | none | New planner domain; pure calculation in `sundial_core`, UI in `features/sleep` and `features/shifts`. |
 | LAN pairing, query and MCP | none | `lib/services/auto_sync.dart`, `lib/services/folder_sync.dart` (shared-folder backup exchange only) | Neither reference has LAN pairing or MCP. Sundial uses standard TLS pinning, PBKDF2, HMAC and a nonce cache in `features/sync`; the richer snapshot is persisted read-only. The MCP adapter exposes the v0.9 tool set with `Mcp-Session-Id` and one-message SSE responses. |
@@ -52,12 +52,17 @@ git clone https://github.com/InlitX/streak.git ../Streak
   `ChangeNotifier`/`provider`. Sundial keeps Drift and Riverpod for date-range
   queries, completion joins and transactional backup import. The audit is in
   `docs/full-docs.md`.
-- **Home inventory, ICS import, interval maintenance, sleep window and shift
-  checklists.** Neither reference has these planner-specific domains. They are
-  implemented and tested in `sundial_core`, the repository and the
-  `home_inventory`, `import`, `shifts` and `sleep` feature folders. The settings
-  rows follow the GymMane/Streak patterns; the visual layer uses the shared kit.
-  See the v0.3 deviation note in `docs/full-docs.md`.
+- **Home inventory, shopping and maintenance.** Neither reference has these
+  planner-specific domains. They are implemented and tested in `sundial_core`,
+  the repository and the `home_inventory`, `import`, `shifts` and `sleep`
+  feature folders. The settings rows follow the GymMane/Streak patterns; the
+  visual layer uses the shared kit. The seeded household catalog adapts the
+  idea of GymMane's nutrition library (`FoodLibrary` plus a TSV seed) to
+  household goods: the data and UI are Sundial-specific, catalog ids are stable
+  and the names/descriptions are localized. The v13 rework adds one row per
+  stock variant grouped by product, user-managed reference data, inventory-linked
+  shopping suggestions and gadget service logs. See the v0.3 and v13 deviation
+  notes in `docs/full-docs.md`.
 - **CSV interchange and the GymMane weekly-plan adapter.** GymMane exports its
   own backup and exercise CSV shapes; it has no consumer for another planner's
   weekly plan. Sundial's CSV columns and the read-only `weeklyPlan`/`routines`

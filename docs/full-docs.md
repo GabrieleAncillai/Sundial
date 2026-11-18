@@ -1,7 +1,7 @@
 # Sundial: full docs
 
-Status: v0.9, MCP, LAN reliability and notification controls. Last updated
-2026-11-09. The active completion program is in
+Status: v0.9 baseline plus the v13 Home rework and the product-polish pass. Last
+updated 2026-11-17. The active completion program is in
 [completion-plan.md](completion-plan.md); the constraint audit is in
 [compliance-audit.md](compliance-audit.md).
 
@@ -132,24 +132,57 @@ usually tracked in a separate list or not at all.
 
 **What the app should do.**
 
-- Household inventory: item name, category, location, quantity, unit, reorder
-  level and notes.
-- Shopping and grocery lists: check items off as bought, optionally link to an
-  inventory item.
-- Low-stock and "to buy" views that stay lightweight.
-- Periodic maintenance and repairs.
+- Household inventory built from a catalog of common goods, with a real product
+  and one or more stock variants. Each variant can use its own unit, pack size,
+  quantity, minimum stock, expiry date and locations. Three 5-gallon water
+  bottles and four 5-litre bottles are two variants of one product, not four
+  unrelated rows.
+- Persisted categories, locations and units that the user can add, rename,
+  recolor and delete. Categories and locations carry an icon and color; units
+  carry a short symbol and a count/weight/volume/length kind.
+- Shopping and grocery lists that are tied to inventory: low, empty and expired
+  stock becomes a suggestion, linked lines restock the exact variant, and
+  one-off items still work without inventory.
+- Periodic maintenance and repairs, with a service log, manual rescheduling, and
+  an optional timed calendar block for the next service or the service that was
+  just done.
 - Three shapes of obligation:
   1. Fixed calendar recurrence: rent, utility bills, subscriptions.
   2. Interval after completion: service the boiler every 6 months after the
      last service.
   3. One-off with a date: an inspection, a repair, a delivery.
 
-The current model handles all three. `home_item_records` and
-`shopping_item_records` cover inventory and the shopping list; checking a
-linked line updates the household quantity and last-purchased time, and
-unchecking reverses it. `lastCompletedAt` plus `repeatAfterCompletionDays` on an
-entry covers interval maintenance, and completing the task advances its date
-from the day it was actually done.
+The v13 model handles the Home surface. `home_item_records` stores one row per
+stock variant, grouped by `groupId`; `home_category_records`,
+`home_location_records` and `home_unit_records` are user-editable reference
+data, and `home_item_location_records` allows an item to live in more than one
+place. Checking a linked shopping line restocks that exact variant and records
+the purchase. `lastCompletedAt` plus `repeatAfterCompletionDays` on an entry
+covers interval maintenance; `maintenance_log_records` keeps the service
+history, and rescheduling moves the next due date without pretending the work
+was done.
+
+**Seeded catalog.** `lib/data/household_catalog.dart` carries the built-in
+household catalog, with English and Spanish names, descriptions, an icon, a
+color, a default category, unit, pack size, minimum and optional shelf life.
+Catalog ids are stable (`catalog-*`), so a renamed item keeps its art and
+localized name until the user deliberately changes it. The database seeds only
+categories, locations and units; the catalog itself is code, not rows.
+
+**Shipped screens and rules.** `features/home_inventory/pages/` holds the
+grouped inventory, the searchable catalog, the category/location/unit manager,
+the grouped shopping list and the gadget page. The inventory editor keeps
+product-level fields on the product and size fields on the variant, so adding
+another size reuses the group and only asks for the pack size; clearing a
+category or unit persists the clear instead of remapping the old text. A
+quantity reads `3 Bottle · 5 gal`, never `3 × 5 gal`: the pack describes the
+size, it is not a multiplier. Checking a linked shopping line records the
+purchase and restocking it; unchecking reverses the recorded purchase even if
+the line was edited or relinked, and removing a variant unlinks its lines so an
+archived size cannot receive stock. Gadget service dates are read in the
+entry's zone (UTC for all-day rows), so an all-day service never drifts a day
+in far-east or far-west device zones. The pages are covered by
+`test/home_inventory_v2_test.dart` and the screenshots `v1.6-home-*.png`.
 
 **Not this.** A full inventory-management or accounting system. A lightweight
 list that answers "what do we have, what is missing, what needs service" is the
@@ -380,9 +413,10 @@ does not update changed rows.
 
 ## 6. Data model (target)
 
-The migration path is v1 → v2 → v3 → v4 → v5 → v6. The shipped schema has the
-shape below, including tags, home items, shopping items, per-slot shift
-checklists, shift tags, per-pattern sleep buffers and the local pairing identity.
+The migration path is v1 → … → v12 → v13. The shipped schema has the shape
+below, including tags, reference-data-backed home variants, shopping items,
+per-slot shift checklists, shift tags, per-pattern sleep buffers, maintenance
+logs and the local pairing identity.
 
 - **spaces**: id, name, color, position, timestamps, soft delete. Seeded with
   Personal, Work and Home. Spaces are rows, not an enum.
@@ -409,12 +443,28 @@ checklists, shift tags, per-pattern sleep buffers and the local pairing identity
 - **tags**: id, space id (nullable), name, color, position, timestamps, soft
   delete.
 - **entry_tags**: entry id, tag id.
-- **home_items**: id, name, category, location, quantity, unit, reorder level,
-  notes, last purchased at, timestamps, soft delete.
-- **shopping_items**: id, name, quantity, unit, checked, note, optional
-  home_item link, timestamps, soft delete. Checking a linked item adds its
-  quantity to the inventory and stamps `lastPurchasedAt`; unchecking reverses
-  the change.
+- **home_categories**: id, name, icon, color, position, timestamps, soft
+  delete. Seeded with food, spices, household consumables, cleaning, personal
+  care, medicine, makeup, kitchenware, textiles, tools, miscellaneous and
+  pet/garden categories; every row is editable.
+- **home_locations**: id, name, icon, color, position, timestamps, soft delete.
+  Seeded with kitchen, pantry, rooms, bathrooms, bedroom, hall, stairs, garage,
+  yard, patio, laundry, storage, basement, attic, shed, car, balcony and office.
+- **home_units**: id, name, short symbol, kind (`count`, `weight`, `volume`,
+  `length`, `other`), position, timestamps, soft delete. Custom units are
+  first-class.
+- **home_items**: one row per stock variant: id, home context, product group id,
+  name, description, icon, color, catalog id, category id/name, location id/name,
+  quantity, unit id/name, pack size, minimum quantity, expiry date, notes, last
+  purchased at, timestamps, soft delete. `reorderLevel` remains as a legacy
+  mirror of the minimum for older backups and CSV files.
+- **home_item_locations**: variant id plus location id. One variant can sit in
+  several places.
+- **shopping_items**: id, name, quantity, unit, pack size, checked, note,
+  optional home_item link, catalog/category/icon/color metadata, position,
+  timestamps, soft delete. Checking a linked item restocks that exact variant
+  and stamps `lastPurchasedAt`; unchecking reverses the quantity recorded in
+  the purchase row, not the line's current (possibly edited) quantity.
 - **shift_checklist_items**: id, pattern id, label, position. They belong to a
   pattern, not to an entry.
 - **shift_checklist_completions**: checklist item id, the shift date in the
@@ -425,6 +475,9 @@ checklists, shift tags, per-pattern sleep buffers and the local pairing identity
 - **maintenance**: reuse entries with `lastCompletedAt` and
   `repeatAfterCompletionDays`. Completing one records a completion row and
   advances the date from the day it was actually completed.
+- **maintenance_logs**: id, entry id, performed date, next due date, note,
+  duration minutes, created at. Completing a gadget writes a log; rescheduling
+  moves the next due date without writing one.
 - **settings**: key and value.
 - **identity_records**: one local row with the device id and name, username,
   PBKDF2 salt and hash, self-signed certificate PEM, private key PEM and MCP
