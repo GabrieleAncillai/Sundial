@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/home_widget/home_widget_service.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/features/home_widget/home_widget_service.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 void main() {
   setUpAll(initializeTimeZones);

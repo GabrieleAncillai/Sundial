@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
 import '../core/i18n/recurrence_label.dart';
 import '../core/widgets/ui_kit.dart';
+import '../features/shifts/shift_palette.dart';
 import '../screens/entry_editor.dart';
 import '../state/providers.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_radii.dart';
 import '../theme/app_typography.dart';
 
 /// Formats a UTC instant as a local time in [viewerTimeZone].
@@ -33,7 +35,8 @@ String formatEntryTime(BuildContext context, EntryOccurrence occurrence, String 
   if (entry.allDay) return context.l10n.allDay;
   final startAt = occurrence.startAt ?? entry.startAt;
   final endAt = occurrence.endAt ?? entry.endAt;
-  if (startAt == null || endAt == null) return context.l10n.allDay;
+  if (startAt == null) return context.l10n.allDay;
+  if (endAt == null) return '${formatInstantTime(context, startAt, viewerTimeZone)} –';
   return _formatRange(context, startAt, endAt, viewerTimeZone);
 }
 
@@ -128,7 +131,7 @@ class EntryTile extends ConsumerWidget {
                     entry.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: ManeType.body(
+                    style: SundialType.body(
                       14.5,
                       weight: FontWeight.w700,
                       color: isCompleted ? muted : c.text,
@@ -139,7 +142,7 @@ class EntryTile extends ConsumerWidget {
                     details.join(' · '),
                     maxLines: dense ? 1 : 2,
                     overflow: TextOverflow.ellipsis,
-                    style: ManeType.body(11.5, color: muted),
+                    style: SundialType.body(11.5, color: muted),
                   ),
                 ],
               ),
@@ -162,14 +165,16 @@ class EntryTile extends ConsumerWidget {
 }
 
 class ShiftTile extends ConsumerWidget {
-  const ShiftTile({super.key, required this.occurrence});
+  const ShiftTile({super.key, required this.occurrence, this.contexts = const <PlannerContext>[]});
 
   final ShiftOccurrence occurrence;
+  final List<PlannerContext> contexts;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = context.mc;
-    final color = c.forSpace(occurrence.pattern.spaceId);
+    final color = shiftColor(context, occurrence.pattern, contexts);
+    final fill = shiftSoftColor(context, occurrence.pattern, contexts);
     final viewerTimeZone = ref.watch(deviceTimeZoneProvider);
     final slot = occurrence.slot;
     final title = slot.label.isEmpty ? occurrence.pattern.name : '${occurrence.pattern.name} · ${slot.label}';
@@ -180,8 +185,8 @@ class ShiftTile extends ConsumerWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: c.softForSpace(occurrence.pattern.spaceId),
-          borderRadius: BorderRadius.circular(16),
+          color: fill,
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           border: Border.all(color: color.withValues(alpha: 0.18)),
         ),
         child: Row(
@@ -191,7 +196,7 @@ class ShiftTile extends ConsumerWidget {
               height: 54,
               decoration: BoxDecoration(
                 color: color,
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                borderRadius: const BorderRadius.horizontal(left: Radius.circular(SundialRadii.md)),
               ),
             ),
             const SizedBox(width: 12),
@@ -205,12 +210,12 @@ class ShiftTile extends ConsumerWidget {
                   children: [
                     Text(
                       title,
-                      style: ManeType.body(13.5, weight: FontWeight.w700, color: c.text),
+                      style: SundialType.body(13.5, weight: FontWeight.w700, color: c.text),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       formatShiftTime(context, occurrence, viewerTimeZone),
-                      style: ManeType.body(11.5, color: c.textSecondary),
+                      style: SundialType.body(11.5, color: c.textSecondary),
                     ),
                   ],
                 ),
@@ -225,29 +230,29 @@ class ShiftTile extends ConsumerWidget {
 }
 
 class ShiftChip extends ConsumerWidget {
-  const ShiftChip({super.key, required this.occurrence});
+  const ShiftChip({super.key, required this.occurrence, this.contexts = const <PlannerContext>[]});
 
   final ShiftOccurrence occurrence;
+  final List<PlannerContext> contexts;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final c = context.mc;
     final viewerTimeZone = ref.watch(deviceTimeZoneProvider);
     final label = occurrence.slot.label.isEmpty
         ? occurrence.pattern.name
         : '${occurrence.slot.label} · ${occurrence.pattern.name}';
-    final color = c.forSpace(occurrence.pattern.spaceId);
+    final color = shiftColor(context, occurrence.pattern, contexts);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: c.softForSpace(occurrence.pattern.spaceId),
-        borderRadius: BorderRadius.circular(8),
+        color: shiftSoftColor(context, occurrence.pattern, contexts),
+        borderRadius: BorderRadius.circular(SundialRadii.xs),
         border: Border.all(color: color.withValues(alpha: 0.16)),
       ),
       child: Text(
         '$label · ${formatShiftTime(context, occurrence, viewerTimeZone)}',
-        style: ManeType.label(10.5, color: c.textSecondary),
+        style: SundialType.label(10.5, color: context.mc.textSecondary),
       ),
     );
   }
@@ -260,14 +265,14 @@ void _showReadOnly(BuildContext context, Entry entry) {
     context: context,
     builder: (sheetContext) => AppSheet(
       children: [
-        Text(entry.title, style: ManeType.headline(21, color: c.text)),
+        Text(entry.title, style: SundialType.headline(21, color: c.text)),
         const SizedBox(height: 6),
-        Text(l10n.importedEvent, style: ManeType.label(12, color: c.accent)),
+        Text(l10n.importedEvent, style: SundialType.label(12, color: c.accent)),
         const SizedBox(height: 12),
-        Text(l10n.readOnlyNotice, style: ManeType.body(14, color: c.textSecondary)),
+        Text(l10n.readOnlyNotice, style: SundialType.body(14, color: c.textSecondary)),
         if (entry.notes.isNotEmpty) ...[
           const SizedBox(height: 14),
-          Text(entry.notes, style: ManeType.body(14, color: c.text)),
+          Text(entry.notes, style: SundialType.body(14, color: c.text)),
         ],
         const SizedBox(height: 22),
         FilledButton(onPressed: () => Navigator.of(sheetContext).pop(), child: Text(l10n.close)),

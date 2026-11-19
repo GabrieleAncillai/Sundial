@@ -9,7 +9,7 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get appName => 'Mane';
+  String get appName => 'Sundial';
 
   @override
   String get today => 'Hoy';
@@ -40,6 +40,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get delete => 'Eliminar';
+
+  @override
+  String get remove => 'Quitar';
 
   @override
   String get save => 'Guardar';
@@ -272,6 +275,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get nextWeek => 'Semana siguiente';
 
   @override
+  String get previousDay => 'Día anterior';
+
+  @override
+  String get nextDay => 'Día siguiente';
+
+  @override
   String get jumpToToday => 'Ir a hoy';
 
   @override
@@ -379,6 +388,9 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get remindersUnavailable => 'No se pudieron leer los recordatorios, así que se dejaron sin cambios.';
+
+  @override
   String get dataAndBackup => 'Datos y copia de seguridad';
 
   @override
@@ -449,10 +461,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get backupInvalid => 'Este archivo no es una copia válida de Mane.';
+  String get backupInvalid => 'Este archivo no es una copia válida de Sundial.';
 
   @override
-  String get backupFuture => 'Esta copia viene de una versión más reciente de Mane.';
+  String get backupFuture => 'Esta copia viene de una versión más reciente de Sundial.';
 
   @override
   String get importConfirmTitle => '¿Sustituir tus datos?';
@@ -508,13 +520,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get basedOnGymMane => 'Basado en GymMane de InlitX';
+  String get basedOnSundial => 'Basado en Sundial por Gabriele Ancillai';
 
   @override
-  String get basedOnStreak => 'Basado en Streak de InlitX';
-
-  @override
-  String get basedOnMane => 'Basado en Mane por los colaboradores de Mane';
+  String get inspiredBy => 'Inspirado en GymMane y Streak de InlitX';
 
   @override
   String version(String version) {
@@ -526,14 +535,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get licenseBody =>
-      'Mane es software libre bajo GPL-3.0-only. Se ofrece sin garantía. Consulta LICENSE y ADDITIONAL_TERMS.md en el repositorio.';
+      'Sundial es software libre bajo GPL-3.0-only. Se ofrece sin garantía. Consulta LICENSE y ADDITIONAL_TERMS.md en el repositorio.';
 
   @override
   String get credits => 'Créditos';
 
   @override
-  String get creditsBody =>
-      'Creado tomando como referencia GymMane y Streak de InlitX. Basado en Mane por los colaboradores de Mane.';
+  String get creditsBody => 'Un proyecto independiente de Gabriele Ancillai.';
 
   @override
   String get tagsManager => 'Etiquetas';
@@ -542,13 +550,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeInventory => 'Inventario del hogar';
 
   @override
-  String get homeInventorySubtitle => 'Cantidades, lugares y niveles de reposición.';
+  String get homeInventorySubtitle => 'Todo lo que guardas en casa, con niveles de stock útiles.';
 
   @override
   String get shoppingList => 'Lista de la compra';
 
   @override
-  String get shoppingListSubtitle => 'Comida y productos para la casa.';
+  String get shoppingListSubtitle => 'Repón lo que necesita la casa y añade compras puntuales.';
 
   @override
   String get addHomeItem => 'Añadir un artículo';
@@ -587,13 +595,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get addLowStockItems => 'Añadir artículos bajos';
 
   @override
-  String get noLowStock => 'Nada está por debajo de su nivel de reposición.';
+  String get noLowStock => 'Nada está por debajo de su stock mínimo.';
 
   @override
-  String get homeInventoryEmpty => 'Todavía no hay artículos en casa.';
+  String get homeInventoryEmpty => 'Tu inventario del hogar está vacío.';
 
   @override
-  String get shoppingListEmpty => 'La lista de la compra está vacía.';
+  String get shoppingListEmpty => 'Todavía no hay nada que comprar.';
 
   @override
   String get addShoppingItem => 'Añadir a la lista';
@@ -752,10 +760,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get slotLabel => 'Etiqueta';
 
   @override
-  String get startTime => 'Inicio';
+  String get startTime => 'Hora de inicio';
 
   @override
-  String get endTime => 'Fin';
+  String get endTime => 'Hora de fin';
 
   @override
   String get exceptions => 'Excepciones de fecha';
@@ -797,6 +805,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get deletePatternBody => 'Sus turnos desaparecerán del calendario.';
 
   @override
+  String get discardChangesQuestion => '¿Descartar los cambios?';
+
+  @override
+  String get discardChangesBody =>
+      'Este patrón de turnos tiene cambios sin guardar. Si sales ahora, no se guardarán.';
+
+  @override
+  String get keepEditing => 'Seguir editando';
+
+  @override
+  String get discardChanges => 'Descartar';
+
+  @override
   String get invalidTimeZone => 'Usa una zona IANA como Europe/Madrid.';
 
   @override
@@ -818,7 +839,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get shiftChecklistSubtitle => 'Tareas para marcar en cada turno de este patrón.';
 
   @override
-  String get addChecklistItem => 'Añadir tarea';
+  String get addChecklistItem => 'Añadir elemento';
 
   @override
   String get checklistItemLabel => 'Tarea de la lista';
@@ -914,7 +935,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get discoveredOnNetwork => 'Encontrados en esta red';
 
   @override
-  String get noDiscoveredDevices => 'Todavía no se han encontrado otros dispositivos Mane.';
+  String get noDiscoveredDevices => 'Todavía no se han encontrado otros dispositivos Sundial.';
 
   @override
   String get address => 'Dirección';
@@ -952,7 +973,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get neverReached => 'Todavía sin conexión';
 
   @override
-  String get refreshDevices => 'Actualizar';
+  String get refreshDevices => 'Actualizar dispositivos';
 
   @override
   String remoteToday(int entries, int shifts) {
@@ -995,6 +1016,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get mcpEndpointSubtitle => 'Solo lectura por defecto, solo loopback y apagado salvo que lo actives.';
+
+  @override
+  String mcpStartFailed(String error) {
+    return 'No se pudo iniciar el servidor MCP: $error';
+  }
 
   @override
   String get mcpWriteTools => 'Permitir herramientas de escritura';
@@ -1184,44 +1210,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gymmaneImportEmpty => 'El respaldo no contiene un plan semanal.';
 
   @override
-  String get appLock => 'Bloqueo de la app';
-
-  @override
-  String get appLockSubtitle => 'Pide un PIN al abrir la app.';
-
-  @override
-  String get appLockPinTitle => 'Elige un PIN';
-
-  @override
-  String get appLockPinRepeat => 'Repite el PIN';
-
-  @override
-  String get appLockPinMismatch => 'Los PIN no coinciden.';
-
-  @override
-  String get appLockUnlockTitle => 'Introduce tu PIN';
-
-  @override
-  String get appLockUnlockSubtitle => 'Desbloquea Mane';
-
-  @override
-  String get appLockWrong => 'PIN incorrecto. Inténtalo de nuevo.';
-
-  @override
-  String appLockLockedOut(int seconds) {
-    return 'Demasiados intentos. Espera $seconds s.';
-  }
-
-  @override
-  String get appLockEnabled => 'Bloqueo activado.';
-
-  @override
-  String get appLockDisabled => 'Bloqueo desactivado.';
-
-  @override
-  String get appLockPinLength => 'Usa de 4 a 8 dígitos.';
-
-  @override
   String get purchaseHistory => 'Historial de compras';
 
   @override
@@ -1235,14 +1223,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String lowStockCount(int count) {
-    return '$count productos bajo el umbral';
+    return '$count artículos por debajo de su stock mínimo';
   }
 
   @override
-  String get maintenance => 'Mantenimiento';
+  String get maintenance => 'Aparatos';
 
   @override
-  String get maintenanceSubtitle => 'Tareas que vencen después del último servicio.';
+  String get maintenanceSubtitle => 'Mantenimientos de electrodomésticos, filtros y vehículos.';
 
   @override
   String get maintenanceDue => 'Vence ahora';
@@ -1317,4 +1305,1532 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get hoursWindow => 'Configurar franja';
+
+  @override
+  String get todayTab => 'Hoy';
+
+  @override
+  String get planTab => 'Plan';
+
+  @override
+  String get statsTab => 'Estadísticas';
+
+  @override
+  String get workTab => 'Trabajo';
+
+  @override
+  String get homeTab => 'Casa';
+
+  @override
+  String get personalTab => 'Personal';
+
+  @override
+  String get workSpace => 'Trabajo';
+
+  @override
+  String get homeSpace => 'Casa';
+
+  @override
+  String get personalSpace => 'Personal';
+
+  @override
+  String get jobs => 'Trabajos';
+
+  @override
+  String get homes => 'Casas';
+
+  @override
+  String get chooseHome => 'Elige una casa';
+
+  @override
+  String get peopleAndGroups => 'Personas y grupos';
+
+  @override
+  String get projectsSection => 'Proyectos';
+
+  @override
+  String get householdSection => 'Hogar';
+
+  @override
+  String get tasksSection => 'Tareas';
+
+  @override
+  String get habitsSection => 'Hábitos';
+
+  @override
+  String get gadgetsSection => 'Aparatos';
+
+  @override
+  String get inventorySection => 'Inventario';
+
+  @override
+  String get shoppingSection => 'Compra';
+
+  @override
+  String get newJob => 'Nuevo trabajo';
+
+  @override
+  String get editJob => 'Editar trabajo';
+
+  @override
+  String get newHome => 'Nueva casa';
+
+  @override
+  String get editHome => 'Editar casa';
+
+  @override
+  String get newPerson => 'Nueva persona o grupo';
+
+  @override
+  String get editPerson => 'Editar persona o grupo';
+
+  @override
+  String get newProject => 'Nuevo proyecto';
+
+  @override
+  String get editProject => 'Editar proyecto';
+
+  @override
+  String get jobName => 'Nombre del trabajo';
+
+  @override
+  String get homeName => 'Nombre de la casa';
+
+  @override
+  String get personName => 'Nombre';
+
+  @override
+  String get projectName => 'Nombre del proyecto';
+
+  @override
+  String get projectDescription => 'Descripción (opcional)';
+
+  @override
+  String get name => 'Nombre';
+
+  @override
+  String get descriptionOptional => 'Descripción (opcional)';
+
+  @override
+  String get icon => 'Icono';
+
+  @override
+  String get color => 'Color';
+
+  @override
+  String get image => 'Imagen';
+
+  @override
+  String get chooseIcon => 'Elegir un icono';
+
+  @override
+  String get searchIcons => 'Buscar iconos';
+
+  @override
+  String get noIconsFound => 'Ningún icono coincide con la búsqueda.';
+
+  @override
+  String get recommendedIcons => 'Sugeridos';
+
+  @override
+  String get allIcons => 'Todos los iconos';
+
+  @override
+  String get chooseImage => 'Elegir imagen';
+
+  @override
+  String get changeImage => 'Cambiar imagen';
+
+  @override
+  String get removeImage => 'Quitar imagen';
+
+  @override
+  String get imageHintEmpty => 'Añade una foto o mantén el icono.';
+
+  @override
+  String get imageHintSet => 'Cambia la foto o quítala.';
+
+  @override
+  String get createJob => 'Crear trabajo';
+
+  @override
+  String get createHome => 'Crear casa';
+
+  @override
+  String get createPerson => 'Crear persona o grupo';
+
+  @override
+  String get createProject => 'Crear proyecto';
+
+  @override
+  String get noJobs => 'Todavía no hay trabajos.';
+
+  @override
+  String get noJobsHint => 'Añade un trabajo para agrupar sus turnos, proyectos y tareas.';
+
+  @override
+  String get noHomes => 'Todavía no hay casas.';
+
+  @override
+  String get noHomesHint => 'Añade una casa para organizar inventario, aparatos y proyectos.';
+
+  @override
+  String get noPeople => 'Todavía no hay personas o grupos.';
+
+  @override
+  String get noPeopleHint => 'Usa proyectos para separar el tiempo con cada persona.';
+
+  @override
+  String get noProjects => 'Todavía no hay proyectos.';
+
+  @override
+  String get noProjectsHint => 'Los proyectos agrupan tareas afines sin crear otro espacio.';
+
+  @override
+  String get noHabits => 'Todavía no hay hábitos.';
+
+  @override
+  String get noHabitsHint => 'Añade un hábito para seguir una rutina personal.';
+
+  @override
+  String get noTasks => 'Aquí todavía no hay nada.';
+
+  @override
+  String get noTasksHint => 'Añade una tarea desde esta pantalla o desde Hoy.';
+
+  @override
+  String get upcomingTasks => 'Próximas';
+
+  @override
+  String get openTasks => 'Tareas abiertas';
+
+  @override
+  String get overdueTasks => 'Atrasadas';
+
+  @override
+  String get unscheduledTasks => 'Cuando quieras';
+
+  @override
+  String taskCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tareas',
+      one: '1 tarea',
+      zero: 'Sin tareas',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String projectCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count proyectos',
+      one: '1 proyecto',
+      zero: 'Sin proyectos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String habitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hábitos',
+      one: '1 hábito',
+      zero: 'Sin hábitos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String addTaskFor(String name) {
+    return 'Añadir una tarea para $name';
+  }
+
+  @override
+  String get jobSummary => 'Turnos, listas y proyectos de trabajo';
+
+  @override
+  String get homeSummary => 'Inventario, aparatos y proyectos del hogar';
+
+  @override
+  String get personalSummary => 'Proyectos, hábitos y gestiones personales';
+
+  @override
+  String get manageJobs => 'Gestionar trabajos';
+
+  @override
+  String get manageHomes => 'Gestionar casas';
+
+  @override
+  String get managePeople => 'Gestionar personas y grupos';
+
+  @override
+  String get noContextsYet => 'Crea uno para empezar.';
+
+  @override
+  String get addFirstContext => 'Crear el primero';
+
+  @override
+  String get shiftChecklists => 'Listas de turno';
+
+  @override
+  String checklistForDay(int day) {
+    return 'Lista del día $day';
+  }
+
+  @override
+  String get allDays => 'Todos los días';
+
+  @override
+  String get checklistItemHint => '¿Qué hay que hacer?';
+
+  @override
+  String get reorderChecklistHint => 'Arrastra para ordenar. Cada día puede tener una lista distinta.';
+
+  @override
+  String get addProject => 'Añadir proyecto';
+
+  @override
+  String get addHabit => 'Añadir hábito';
+
+  @override
+  String get editHabit => 'Editar hábito';
+
+  @override
+  String get habitName => 'Nombre del hábito';
+
+  @override
+  String get targetPerWeek => 'Objetivo semanal';
+
+  @override
+  String timesPerWeek(int count) {
+    return '$count× por semana';
+  }
+
+  @override
+  String streakDays(int count) {
+    return 'Racha de $count días';
+  }
+
+  @override
+  String streakWeeks(int count) {
+    return 'Racha de $count semanas';
+  }
+
+  @override
+  String get thisWeek => 'Esta semana';
+
+  @override
+  String get habitHistory => 'Historial';
+
+  @override
+  String get habitActiveDays => 'Días activos';
+
+  @override
+  String get habitCheckIns => 'Registros';
+
+  @override
+  String get habitHistoryHint => 'Los días rellenos están hechos. Los días con borde están programados.';
+
+  @override
+  String get markHabitDone => 'Marcar hecho';
+
+  @override
+  String get habitDone => 'Hecho hoy';
+
+  @override
+  String get addGadget => 'Añadir aparato';
+
+  @override
+  String get gadgetEdit => 'Editar aparato';
+
+  @override
+  String get gadgetIcon => 'Icono';
+
+  @override
+  String get gadgetIntervalDays => 'Intervalo (días)';
+
+  @override
+  String get gadgetLastServiced => 'Último mantenimiento';
+
+  @override
+  String get gadgetNeverServiced => 'Sin mantenimientos';
+
+  @override
+  String gadgetLastServicedOn(String date) {
+    return 'Último mantenimiento: $date';
+  }
+
+  @override
+  String gadgetNextDue(String date) {
+    return 'Próximo vencimiento: $date';
+  }
+
+  @override
+  String get clearDate => 'Quitar la fecha';
+
+  @override
+  String get clearText => 'Borrar texto';
+
+  @override
+  String get gadgetName => 'Nombre del aparato';
+
+  @override
+  String get maintenanceIntervalDays => 'Días entre revisiones';
+
+  @override
+  String nextDue(String date) {
+    return 'Próxima: $date';
+  }
+
+  @override
+  String deleteContextQuestion(String name) {
+    return '¿Eliminar $name?';
+  }
+
+  @override
+  String get deleteContextBody =>
+      'Sus tareas siguen en tu plan pero pierden esta agrupación. Sus turnos, hábitos y vínculos del hogar se eliminan.';
+
+  @override
+  String get deleteProjectQuestion => '¿Eliminar este proyecto?';
+
+  @override
+  String get deleteProjectBody => 'Las tareas pierden este proyecto pero conservan su espacio y contexto.';
+
+  @override
+  String get listView => 'Lista';
+
+  @override
+  String get timelineView => 'Horario';
+
+  @override
+  String get progressToday => 'Progreso de hoy';
+
+  @override
+  String doneOfTotal(int done, int total) {
+    return '$done de $total hechas';
+  }
+
+  @override
+  String get allDone => 'Todo lo de hoy está hecho.';
+
+  @override
+  String tasksLeft(int count) {
+    return 'Quedan $count para hoy';
+  }
+
+  @override
+  String get clockIn => 'Fichar entrada';
+
+  @override
+  String get clockOut => 'Fichar salida';
+
+  @override
+  String get clockedIn => 'En marcha';
+
+  @override
+  String get trackedTime => 'Registrado';
+
+  @override
+  String trackedTimeValue(String duration) {
+    return '$duration registrado';
+  }
+
+  @override
+  String get deadline => 'Fecha límite';
+
+  @override
+  String dueIn(String time) {
+    return 'Vence en $time';
+  }
+
+  @override
+  String get overdue => 'Atrasada';
+
+  @override
+  String get anytime => 'Cuando sea';
+
+  @override
+  String get priority => 'Prioridad';
+
+  @override
+  String get priorityNone => 'Sin prioridad';
+
+  @override
+  String get priorityLow => 'Baja';
+
+  @override
+  String get priorityMedium => 'Media';
+
+  @override
+  String get priorityHigh => 'Alta';
+
+  @override
+  String get completeTask => 'Completar tarea';
+
+  @override
+  String get reopenTask => 'Reabrir tarea';
+
+  @override
+  String get plan => 'Plan';
+
+  @override
+  String get month => 'Mes';
+
+  @override
+  String get day => 'Día';
+
+  @override
+  String get collapseCalendar => 'Contraer calendario';
+
+  @override
+  String get expandCalendar => 'Expandir calendario';
+
+  @override
+  String get desktopWeekHint =>
+      'Arrastra los bloques para moverlos, el borde inferior para cambiar la duración o un hueco vacío para crear.';
+
+  @override
+  String createEntryAt(String time) {
+    return 'Crear a las $time';
+  }
+
+  @override
+  String get entryMoved => 'Entrada movida.';
+
+  @override
+  String couldNotMoveEntry(String error) {
+    return 'No se pudo mover la entrada: $error';
+  }
+
+  @override
+  String get stats => 'Estadísticas';
+
+  @override
+  String get overview => 'Resumen';
+
+  @override
+  String get completionRate => 'Tasa de finalización';
+
+  @override
+  String get tasksCompleted => 'Tareas completadas';
+
+  @override
+  String get overdueDeadlines => 'Fechas límite atrasadas';
+
+  @override
+  String get bySpace => 'Por espacio';
+
+  @override
+  String get byProject => 'Por proyecto';
+
+  @override
+  String get byDay => 'Por día';
+
+  @override
+  String get habitConsistency => 'Constancia de hábitos';
+
+  @override
+  String get rangeWeek => 'Semana';
+
+  @override
+  String get rangeMonth => 'Mes';
+
+  @override
+  String get rangeQuarter => 'Trimestre';
+
+  @override
+  String get rangeYear => 'Año';
+
+  @override
+  String get exportReport => 'Exportar informe';
+
+  @override
+  String get exportSummaryReport => 'Informe resumido (PDF)';
+
+  @override
+  String get exportSummaryCsv => 'Resumen (CSV)';
+
+  @override
+  String get exportDetailedCsv => 'Detalle (CSV)';
+
+  @override
+  String get exportDetailedReport => 'Informe detallado (PDF)';
+
+  @override
+  String get exportReportCsv => 'Informe (CSV)';
+
+  @override
+  String get reportExported => 'Informe guardado.';
+
+  @override
+  String reportFailed(String error) {
+    return 'No se pudo exportar el informe: $error';
+  }
+
+  @override
+  String get totalTracked => 'Total registrado';
+
+  @override
+  String get shiftHours => 'Horas de turno';
+
+  @override
+  String get shiftHoursHint => 'Turnos programados en este rango. No cuentan como tiempo registrado.';
+
+  @override
+  String get shareOfTotal => 'Porcentaje';
+
+  @override
+  String get noTrackedTime => 'No hay tiempo registrado en este rango.';
+
+  @override
+  String get completed => 'Completadas';
+
+  @override
+  String get openLabel => 'Abiertas';
+
+  @override
+  String get deadlineLoad => 'Fechas límite';
+
+  @override
+  String get settingsSearch => 'Buscar ajustes';
+
+  @override
+  String get generalSection => 'General';
+
+  @override
+  String get noSettingsFound => 'Ningún ajuste coincide con la búsqueda.';
+
+  @override
+  String get appearanceSubtitle => 'Tema, color, fondo y tamaño del texto';
+
+  @override
+  String get preferencesSubtitle => 'Idioma, fechas, horarios y recordatorios';
+
+  @override
+  String get dataSubtitle => 'Copias, calendarios, CSV y datos locales';
+
+  @override
+  String get onlineSubtitle => 'Emparejar dispositivos y ejecutar el MCP local';
+
+  @override
+  String get themeAero => 'Aero';
+
+  @override
+  String get colorScheme => 'Esquema de color';
+
+  @override
+  String get schemeSage => 'Salvia';
+
+  @override
+  String get schemeOcean => 'Océano';
+
+  @override
+  String get schemeSunset => 'Atardecer';
+
+  @override
+  String get schemeViolet => 'Violeta';
+
+  @override
+  String get schemeMono => 'Monocromo';
+
+  @override
+  String get background => 'Fondo';
+
+  @override
+  String get backgroundDots => 'Puntos';
+
+  @override
+  String get backgroundGrid => 'Cuadrícula';
+
+  @override
+  String get backgroundOled => 'Negro OLED';
+
+  @override
+  String get backgroundPlain => 'Liso';
+
+  @override
+  String get backgroundCustom => 'Personalizado';
+
+  @override
+  String get customBackgroundColor => 'Color personalizado';
+
+  @override
+  String get textSize => 'Tamaño del texto';
+
+  @override
+  String get textSmall => 'Pequeño';
+
+  @override
+  String get textDefault => 'Predeterminado';
+
+  @override
+  String get textLarge => 'Grande';
+
+  @override
+  String get textExtraLarge => 'Muy grande';
+
+  @override
+  String get navigationSide => 'Lado de la navegación';
+
+  @override
+  String get navLeft => 'Izquierda';
+
+  @override
+  String get navRight => 'Derecha';
+
+  @override
+  String get dateFormatLabel => 'Formato de fecha';
+
+  @override
+  String get dateFormatSystem => 'Sistema';
+
+  @override
+  String get dateFormatDmy => 'Día / mes / año';
+
+  @override
+  String get dateFormatMdy => 'Mes / día / año';
+
+  @override
+  String get dateFormatYmd => 'Año / mes / día';
+
+  @override
+  String get performanceMode => 'Modo rendimiento';
+
+  @override
+  String get performanceModeSubtitle => 'Reduce desenfoque, sombras y animaciones largas.';
+
+  @override
+  String get preferencesSection => 'Preferencias';
+
+  @override
+  String get dataSection => 'Datos y copias';
+
+  @override
+  String get onlineSection => 'Funciones en línea';
+
+  @override
+  String get onlineEnable => 'Activar funciones en línea';
+
+  @override
+  String get onlineEnableSubtitle =>
+      'Sincronización LAN y MCP local. Desactivado por defecto; el planificador funciona sin ellas.';
+
+  @override
+  String get devicesAndSync => 'Dispositivos y sincronización';
+
+  @override
+  String get devicesAndSyncSubtitle => 'Busca dispositivos en esta red y empareja.';
+
+  @override
+  String get mcpServer => 'Servidor MCP';
+
+  @override
+  String get mcpPort => 'Puerto';
+
+  @override
+  String get mcpPortHint => 'Puerto local entre 1024 y 65535.';
+
+  @override
+  String get applyPort => 'Aplicar puerto';
+
+  @override
+  String portSaved(int port) {
+    return 'El endpoint MCP ahora usa el puerto $port.';
+  }
+
+  @override
+  String mcpPortUnavailable(int port) {
+    return 'No se pudo usar el puerto $port. Puede que ya esté en uso.';
+  }
+
+  @override
+  String get deleteAllData => 'Eliminar todos los datos';
+
+  @override
+  String get deleteAllDataSubtitle =>
+      'Quita el plan, dispositivos, enlaces de copia y ajustes de este dispositivo.';
+
+  @override
+  String get deleteAllDataQuestion => '¿Eliminar todos los datos locales?';
+
+  @override
+  String get deleteAllDataBody => 'No se puede deshacer. Los archivos exportados no se borran.';
+
+  @override
+  String get dataDeleted => 'Datos locales eliminados.';
+
+  @override
+  String get dataDeleteFailed => 'No se pudieron eliminar los datos locales. No se borró nada.';
+
+  @override
+  String get dataDeleteIncomplete =>
+      'Se eliminó el plan, pero algunos archivos multimedia o copias automáticas no se pudieron borrar. Revisa los permisos de almacenamiento y bórralos desde la carpeta de datos de la app.';
+
+  @override
+  String get nearbyDevices => 'Dispositivos cercanos';
+
+  @override
+  String get scanningDevices => 'Buscando dispositivos Sundial en esta red…';
+
+  @override
+  String get noNearbyDevices =>
+      'No se han encontrado dispositivos Sundial. Asegúrate de que el otro dispositivo tiene las funciones en línea activadas.';
+
+  @override
+  String pairWithDevice(String name) {
+    return 'Emparejar con $name';
+  }
+
+  @override
+  String get pairCode => 'Código de emparejamiento';
+
+  @override
+  String get pairCodeHint => 'Introduce el código de seis dígitos del otro dispositivo.';
+
+  @override
+  String pairingWith(String name) {
+    return 'Emparejando con $name';
+  }
+
+  @override
+  String get syncExplainer =>
+      'Sundial encuentra tus otros dispositivos en la red local. El emparejamiento guarda una clave compartida una sola vez, así que cambiar de red o de IP no rompe el vínculo. La sincronización es de solo lectura y nunca sustituye tu plan local.';
+
+  @override
+  String get pairSuccess => 'Dispositivo emparejado.';
+
+  @override
+  String pairFailed(String error) {
+    return 'No se pudo emparejar: $error';
+  }
+
+  @override
+  String get timing => 'Horario';
+
+  @override
+  String get timingScheduled => 'Programada';
+
+  @override
+  String get timingClockIn => 'Fichar';
+
+  @override
+  String get timingDeadline => 'Fecha límite';
+
+  @override
+  String get timingAnytime => 'Cuando sea';
+
+  @override
+  String get timingScheduledHint => 'Empieza y termina a una hora fija.';
+
+  @override
+  String get timingClockInHint => 'Ficha al empezar; fichar salida pausa y conserva el tiempo registrado.';
+
+  @override
+  String get timingDeadlineHint => 'Puede hacerse en cualquier momento hasta la fecha límite.';
+
+  @override
+  String get timingAnytimeHint => 'Sin hora fija. Complétala cuando esté.';
+
+  @override
+  String get context => 'Trabajo, casa o persona';
+
+  @override
+  String get noContext => 'Sin trabajo, casa o persona';
+
+  @override
+  String get noProject => 'Sin proyecto';
+
+  @override
+  String get project => 'Proyecto';
+
+  @override
+  String get categories => 'Categorías';
+
+  @override
+  String get addCategory => 'Añadir categoría';
+
+  @override
+  String get editCategory => 'Editar categoría';
+
+  @override
+  String get categoryName => 'Nombre de la categoría';
+
+  @override
+  String get noCategories => 'Todavía no hay categorías.';
+
+  @override
+  String get stickerImage => 'Imagen';
+
+  @override
+  String get pickImage => 'Elegir una imagen';
+
+  @override
+  String get zoomHint => 'Pellizca o desplaza para ampliar y arrastra para encuadrar el cuadrado.';
+
+  @override
+  String get tolerance => 'Tolerancia del fondo';
+
+  @override
+  String get outline => 'Borde blanco de pegatina';
+
+  @override
+  String get outlineWidth => 'Grosor del borde';
+
+  @override
+  String get reset => 'Restablecer';
+
+  @override
+  String get useImage => 'Usar imagen';
+
+  @override
+  String get noImage => 'No hay imagen seleccionada.';
+
+  @override
+  String get imageError => 'No se pudo cargar la imagen.';
+
+  @override
+  String get choosePhotoOrIcon => 'Elige una foto o usa un icono';
+
+  @override
+  String get mediaHint => 'Recorta la imagen, quita un fondo liso y añade un borde blanco de pegatina.';
+
+  @override
+  String get soundSection => 'Sonido';
+
+  @override
+  String get interactionSounds => 'Sonidos de interacción';
+
+  @override
+  String get interactionSoundsSubtitle =>
+      'Tonos breves y suaves al tocar, cambiar de pestaña, completar o fichar. Apagados por defecto.';
+
+  @override
+  String get soundPackLabel => 'Paquete de sonidos';
+
+  @override
+  String get soundPackSoft => 'Suave';
+
+  @override
+  String get soundPackAero => 'Aero';
+
+  @override
+  String get previewSound => 'Escuchar';
+
+  @override
+  String get alarmSounds => 'Sonidos de alarma';
+
+  @override
+  String get alarmSoundsSubtitle => 'Se usan en los recordatorios programados.';
+
+  @override
+  String get alarmSoundSoft => 'Suave';
+
+  @override
+  String get alarmSoundChime => 'Campana';
+
+  @override
+  String get alarmSoundBright => 'Brillante';
+
+  @override
+  String get timezoneSubtitle => 'Zona de las nuevas entradas con hora. Se muestra en la del dispositivo.';
+
+  @override
+  String get timezoneDevice => 'Zona del dispositivo';
+
+  @override
+  String get timezoneSearch => 'Buscar ciudad o región';
+
+  @override
+  String get timezoneUseDevice => 'Usar la zona del dispositivo';
+
+  @override
+  String get planningTimeZone => 'Zona de planificación';
+
+  @override
+  String get repeatEnds => 'Termina';
+
+  @override
+  String get repeatEndsNever => 'Nunca';
+
+  @override
+  String get repeatEndsOnDate => 'En una fecha';
+
+  @override
+  String get repeatEndsAfter => 'Después de';
+
+  @override
+  String repeatOccurrences(int count) {
+    return '$count veces';
+  }
+
+  @override
+  String get repeatEvery => 'Cada';
+
+  @override
+  String get repeatUnitDays => 'días';
+
+  @override
+  String get repeatUnitWeeks => 'semanas';
+
+  @override
+  String get repeatUnitMonths => 'meses';
+
+  @override
+  String get repeatUnitYears => 'años';
+
+  @override
+  String get repeatOnDays => 'Repetir los días';
+
+  @override
+  String get repeatMonthlyMode => 'Patrón mensual';
+
+  @override
+  String get repeatMonthlyDay => 'Día del mes';
+
+  @override
+  String get repeatMonthlyOrdinal => 'Posición del día';
+
+  @override
+  String get repeatOrdinalFirst => 'Primer';
+
+  @override
+  String get repeatOrdinalSecond => 'Segundo';
+
+  @override
+  String get repeatOrdinalThird => 'Tercer';
+
+  @override
+  String get repeatOrdinalFourth => 'Cuarto';
+
+  @override
+  String get repeatOrdinalLast => 'Último';
+
+  @override
+  String get repeatEndDate => 'Fecha de fin';
+
+  @override
+  String get repeatSummaryNever => 'No se repite';
+
+  @override
+  String get clearStart => 'Quitar la hora de inicio';
+
+  @override
+  String get clearEnd => 'Quitar la hora de fin';
+
+  @override
+  String get clearTime => 'Quitar la hora';
+
+  @override
+  String get time => 'Hora';
+
+  @override
+  String get setTime => 'Establecer';
+
+  @override
+  String get timeFieldInvalid => 'Escribe una hora como 9:30 o 21:30.';
+
+  @override
+  String get noTime => 'Sin hora';
+
+  @override
+  String get pauseTask => 'Pausar';
+
+  @override
+  String get resumeTask => 'Reanudar';
+
+  @override
+  String get finishTask => 'Terminar';
+
+  @override
+  String get paused => 'En pausa';
+
+  @override
+  String sessionsTracked(int count) {
+    return '$count sesiones';
+  }
+
+  @override
+  String get sessionsTrackedOne => '1 sesión';
+
+  @override
+  String recurrenceUntil(Object date) {
+    return 'hasta el $date';
+  }
+
+  @override
+  String get homeInventoryEmptyBody => 'Empieza con el catálogo del hogar o crea algo personalizado.';
+
+  @override
+  String get addInventoryItem => 'Añadir al inventario';
+
+  @override
+  String get browseHouseholdCatalog => 'Ver el catálogo del hogar';
+
+  @override
+  String get householdCatalog => 'Catálogo del hogar';
+
+  @override
+  String get catalogSubtitle => 'Artículos comunes con valores sensatos por defecto.';
+
+  @override
+  String get catalogSearchHint => 'Busca aceite de oliva, papel higiénico, café…';
+
+  @override
+  String get catalogNoResults => 'Ningún artículo del catálogo coincide.';
+
+  @override
+  String get catalogInInventory => 'En el inventario';
+
+  @override
+  String get catalogAddItem => 'Añadir';
+
+  @override
+  String get createCustomItem => 'Crear un artículo personalizado';
+
+  @override
+  String get createCustomHint => 'Algo que no está en el catálogo.';
+
+  @override
+  String get inventorySearch => 'Buscar en el inventario';
+
+  @override
+  String get inventoryFilterAll => 'Todo';
+
+  @override
+  String get inventoryFilterLow => 'Stock bajo';
+
+  @override
+  String get inventoryFilterExpiring => 'Caduca pronto';
+
+  @override
+  String get inventoryNoMatches => 'Ningún artículo coincide con estos filtros.';
+
+  @override
+  String get uncategorized => 'Sin categoría';
+
+  @override
+  String productsCount(int count) {
+    return '$count productos';
+  }
+
+  @override
+  String get productsCountOne => '1 producto';
+
+  @override
+  String variantsCount(int count) {
+    return '$count tamaños';
+  }
+
+  @override
+  String get variantsCountOne => '1 tamaño';
+
+  @override
+  String get lowStockItems => 'Stock bajo';
+
+  @override
+  String get expiringItems => 'Caduca pronto';
+
+  @override
+  String get expiredItems => 'Caducado';
+
+  @override
+  String expiresOn(String date) {
+    return 'Caduca el $date';
+  }
+
+  @override
+  String get expiresAtLabel => 'Fecha de caducidad';
+
+  @override
+  String get noExpiry => 'Sin caducidad';
+
+  @override
+  String get expiresToday => 'Caduca hoy';
+
+  @override
+  String expiredOn(String date) {
+    return 'Caducó el $date';
+  }
+
+  @override
+  String get minimumStock => 'Stock mínimo';
+
+  @override
+  String minStockValue(String quantity) {
+    return 'Mín. $quantity';
+  }
+
+  @override
+  String get packSize => 'Tamaño / formato';
+
+  @override
+  String get packSizeHint => 'p. ej. botella de 20 L, bolsa de 1 kg';
+
+  @override
+  String get packSizeRequired => 'Dale un formato a este tamaño, por ejemplo 20 L o 1 kg.';
+
+  @override
+  String get description => 'Descripción';
+
+  @override
+  String get locations => 'Ubicaciones';
+
+  @override
+  String get addAnotherSize => 'Añadir otro tamaño';
+
+  @override
+  String get editProduct => 'Editar producto';
+
+  @override
+  String get variantEditHint =>
+      'Los cambios se aplican solo a este tamaño. Abre el producto para renombrar todos los tamaños.';
+
+  @override
+  String get archiveProductQuestion => '¿Quitar este producto?';
+
+  @override
+  String get archiveProductBody =>
+      'Todos los tamaños salen del inventario, pero siguen en las copias de seguridad.';
+
+  @override
+  String get archiveVariantQuestion => '¿Quitar este tamaño?';
+
+  @override
+  String get archiveVariantBody => 'Este tamaño sale del inventario. Los demás se quedan.';
+
+  @override
+  String get inventorySetup => 'Configuración del inventario';
+
+  @override
+  String get inventorySetupSubtitle => 'Categorías, ubicaciones y unidades';
+
+  @override
+  String get manageInventorySetup => 'Gestionar categorías, ubicaciones y unidades';
+
+  @override
+  String get manageCategories => 'Categorías';
+
+  @override
+  String get manageLocations => 'Ubicaciones';
+
+  @override
+  String get manageUnits => 'Unidades';
+
+  @override
+  String get newCategory => 'Nueva categoría';
+
+  @override
+  String get newLocation => 'Nueva ubicación';
+
+  @override
+  String get editLocation => 'Editar ubicación';
+
+  @override
+  String get newUnit => 'Nueva unidad';
+
+  @override
+  String get editUnit => 'Editar unidad';
+
+  @override
+  String get noLocations => 'Todavía no hay ubicaciones.';
+
+  @override
+  String get noUnits => 'Todavía no hay unidades.';
+
+  @override
+  String get duplicateName => 'Ese nombre ya está en uso.';
+
+  @override
+  String get categoryManagerSubtitle => 'Dale a cada tipo de artículo un color y un icono.';
+
+  @override
+  String get locationManagerSubtitle => 'Dónde viven las cosas dentro y fuera de casa.';
+
+  @override
+  String get unitManagerSubtitle => 'Cómo cuentas, pesas o mides el stock.';
+
+  @override
+  String get categoryNameLabel => 'Nombre de la categoría';
+
+  @override
+  String get locationName => 'Nombre de la ubicación';
+
+  @override
+  String get unitName => 'Nombre de la unidad';
+
+  @override
+  String get unitSymbol => 'Forma corta';
+
+  @override
+  String get unitKind => 'Tipo de unidad';
+
+  @override
+  String get unitKindCount => 'Cuenta';
+
+  @override
+  String get unitKindWeight => 'Peso';
+
+  @override
+  String get unitKindVolume => 'Volumen';
+
+  @override
+  String get unitKindLength => 'Longitud';
+
+  @override
+  String get unitKindOther => 'Otro';
+
+  @override
+  String get deleteCategoryQuestion => '¿Eliminar esta categoría?';
+
+  @override
+  String get deleteCategoryBody => 'Los artículos conservan su categoría de texto hasta que los edites.';
+
+  @override
+  String get deleteLocationQuestion => '¿Eliminar esta ubicación?';
+
+  @override
+  String get deleteLocationBody => 'Se quita de todos los artículos que la usan.';
+
+  @override
+  String get deleteUnitQuestion => '¿Eliminar esta unidad?';
+
+  @override
+  String get deleteUnitBody => 'Los artículos conservan el texto de la unidad hasta que los edites.';
+
+  @override
+  String inStockCount(String count) {
+    return '$count en stock';
+  }
+
+  @override
+  String get shoppingListEmptyBody => 'Añade un artículo o deja que el inventario sugiera lo que falta.';
+
+  @override
+  String couldNotLoadHome(Object error) {
+    return 'No se pudieron cargar los datos del hogar: $error';
+  }
+
+  @override
+  String get stockSuggestions => 'Sugerencias de stock';
+
+  @override
+  String get stockSuggestionsBody => 'Desde tu inventario, listas para añadir.';
+
+  @override
+  String get addAllSuggestions => 'Añadir todo';
+
+  @override
+  String suggestionLowStock(String quantity) {
+    return 'Stock bajo · comprar $quantity';
+  }
+
+  @override
+  String get suggestionOutOfStock => 'Sin stock';
+
+  @override
+  String get suggestionExpired => 'Caducado · reponer';
+
+  @override
+  String get suggestionAlreadyListed => 'En la lista';
+
+  @override
+  String get addSuggestion => 'Añadir';
+
+  @override
+  String get shoppingSearch => 'Buscar en la lista';
+
+  @override
+  String get shoppingOneOff => 'Compra puntual';
+
+  @override
+  String get shoppingOneOffHint => 'Algo que no guardas en el inventario.';
+
+  @override
+  String get shoppingAddHint => '¿Qué necesitas comprar?';
+
+  @override
+  String get linkedInventory => 'Inventario';
+
+  @override
+  String linkedTo(String name) {
+    return 'Vinculado a $name';
+  }
+
+  @override
+  String get restocksInventory => 'Repone inventario';
+
+  @override
+  String addedToInventory(String quantity, String name) {
+    return 'Se añadieron $quantity a $name.';
+  }
+
+  @override
+  String get shoppingItemCategory => 'Categoría';
+
+  @override
+  String get shoppingItemQuantity => 'Cantidad';
+
+  @override
+  String get shoppingItemUnit => 'Unidad';
+
+  @override
+  String get shoppingItemPack => 'Tamaño / formato';
+
+  @override
+  String shoppingItemsCount(int count) {
+    return '$count artículos';
+  }
+
+  @override
+  String get shoppingItemsCountOne => '1 artículo';
+
+  @override
+  String get noShoppingSuggestions => 'No hay nada que reponer.';
+
+  @override
+  String get markBought => 'Marcar comprado';
+
+  @override
+  String get markNotBought => 'Marcar no comprado';
+
+  @override
+  String get gadgetsEmpty => 'Todavía no hay aparatos.';
+
+  @override
+  String get gadgetsEmptyBody =>
+      'Controla el aire acondicionado, el depósito de agua, la caldera, el coche y todo lo que necesite servicio.';
+
+  @override
+  String get gadgetAll => 'Todos los aparatos';
+
+  @override
+  String gadgetEveryDays(int count) {
+    return 'Cada $count días';
+  }
+
+  @override
+  String get gadgetDueToday => 'Toca hoy';
+
+  @override
+  String gadgetDueIn(int count) {
+    return 'Toca en $count días';
+  }
+
+  @override
+  String gadgetOverdueBy(int count) {
+    return 'Atrasado $count días';
+  }
+
+  @override
+  String get gadgetNoTime => 'Todo el día';
+
+  @override
+  String gadgetTimeRange(String start, String end) {
+    return '$start–$end';
+  }
+
+  @override
+  String get logService => 'Registrar servicio';
+
+  @override
+  String get logServiceTitle => 'Registrar servicio';
+
+  @override
+  String get serviceDate => 'Fecha del servicio';
+
+  @override
+  String get serviceNote => '¿Qué se hizo?';
+
+  @override
+  String get serviceNoteHint => 'Notas opcionales para el historial';
+
+  @override
+  String serviceLogged(String date) {
+    return 'Servicio registrado. Próximo: $date.';
+  }
+
+  @override
+  String get couldNotLogService =>
+      'No se pudo registrar el servicio. Revisa el aparato e inténtalo de nuevo.';
+
+  @override
+  String get couldNotReschedule => 'No se pudo reprogramar. Puede que el aparato haya cambiado.';
+
+  @override
+  String get serviceHistory => 'Historial de servicios';
+
+  @override
+  String get serviceHistoryEmpty => 'Todavía no hay servicios registrados.';
+
+  @override
+  String serviceHistoryNext(String date) {
+    return 'Próximo: $date';
+  }
+
+  @override
+  String get reschedule => 'Reprogramar';
+
+  @override
+  String get rescheduleMaintenance => 'Reprogramar mantenimiento';
+
+  @override
+  String get rescheduleBody => 'Mueve la próxima fecha sin registrar un servicio.';
+
+  @override
+  String get newDueDate => 'Nueva fecha';
+
+  @override
+  String rescheduled(String date) {
+    return 'Próximo: $date.';
+  }
+
+  @override
+  String get addCalendarEvent => 'Añadir al calendario';
+
+  @override
+  String get addCalendarEventBody =>
+      'Registra el servicio como un evento completado con un bloque de tiempo.';
+
+  @override
+  String get serviceAt => 'Hora del servicio';
+
+  @override
+  String get duration => 'Duración';
+
+  @override
+  String durationMinutes(int count) {
+    return '$count min';
+  }
+
+  @override
+  String durationHours(int count) {
+    return '$count h';
+  }
+
+  @override
+  String get durationCustom => 'Personalizada';
+
+  @override
+  String get durationMinutesLabel => 'Minutos';
+
+  @override
+  String get blockCalendar => 'Mostrar en el calendario';
+
+  @override
+  String get blockCalendarBody => 'Reserva un bloque de tiempo en la fecha de vencimiento.';
+
+  @override
+  String serviceEventTitle(String name) {
+    return 'Servicio de $name';
+  }
+
+  @override
+  String get saveSettings => 'Guardar';
 }

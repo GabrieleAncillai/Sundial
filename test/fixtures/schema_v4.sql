@@ -1,4 +1,4 @@
--- Mane schema v4, captured from the v0.3 release before the pairing work.
+-- Sundial schema v4, captured from the v0.3 release before the pairing work.
 -- The migration test inserts v4 rows and opens AppDatabase so v4 -> v5 runs.
 CREATE TABLE "completion_records" ("entry_id" TEXT NOT NULL REFERENCES entry_records (id), "date_key" INTEGER NOT NULL, "created_at" INTEGER NOT NULL, PRIMARY KEY ("entry_id", "date_key"));
 

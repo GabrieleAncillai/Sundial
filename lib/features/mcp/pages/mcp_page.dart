@@ -22,7 +22,7 @@ class McpPage extends ConsumerWidget {
     final controller = ref.read(settingsProvider.notifier);
     final identity = ref.watch(identityProvider).value;
 
-    return ManePage(
+    return SundialPage(
       title: l10n.mcpEndpoint,
       subtitle: l10n.mcpEndpointSubtitle,
       child: ListView(
@@ -56,6 +56,17 @@ class McpPage extends ConsumerWidget {
                   onChanged: (value) async {
                     await controller.setMcpEnabled(value);
                     await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
+                    final error = ref.read(mcpServerProvider).lastError;
+                    if (value && error != null) {
+                      // A busy or invalid port must not leave the switch on.
+                      await controller.setMcpEnabled(false);
+                      await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(context.l10n.mcpStartFailed(error))));
+                      }
+                    }
                   },
                 ),
                 SettingsSwitchRow(
@@ -70,6 +81,13 @@ class McpPage extends ConsumerWidget {
                         }
                       : null,
                 ),
+                SettingsNavRow(
+                  icon: Icons.settings_ethernet,
+                  title: l10n.mcpPort,
+                  subtitle: l10n.mcpPortHint,
+                  value: '${settings.mcpPort}',
+                  onTap: () => _editPort(context, ref, settings.mcpPort),
+                ),
               ],
             ),
             SettingsSection(
@@ -81,13 +99,13 @@ class McpPage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SelectableText(
-                        'http://127.0.0.1:${McpServer.port}${McpServer.path}',
-                        style: ManeType.body(13, weight: FontWeight.w700, color: context.mc.text),
+                        'http://127.0.0.1:${settings.mcpPort}${McpServer.path}',
+                        style: SundialType.body(13, weight: FontWeight.w700, color: context.mc.text),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        settings.mcpEnabled ? l10n.mcpRunning(McpServer.port) : l10n.mcpStopped,
-                        style: ManeType.body(
+                        settings.mcpEnabled ? l10n.mcpRunning(settings.mcpPort) : l10n.mcpStopped,
+                        style: SundialType.body(
                           11.5,
                           color: settings.mcpEnabled ? context.mc.success : context.mc.textSecondary,
                         ),
@@ -95,13 +113,13 @@ class McpPage extends ConsumerWidget {
                       const SizedBox(height: 12),
                       SelectableText(
                         identity.mcpToken,
-                        style: ManeType.body(
+                        style: SundialType.body(
                           11.5,
                           color: context.mc.textSecondary,
                         ).copyWith(fontFamily: 'monospace'),
                       ),
                       const SizedBox(height: 6),
-                      Text(l10n.mcpTokenHint, style: ManeType.body(11.5, color: context.mc.textSecondary)),
+                      Text(l10n.mcpTokenHint, style: SundialType.body(11.5, color: context.mc.textSecondary)),
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
@@ -130,7 +148,10 @@ class McpPage extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Text(l10n.mcpLoopbackHint, style: ManeType.body(11.5, color: context.mc.textSecondary)),
+                      Text(
+                        l10n.mcpLoopbackHint,
+                        style: SundialType.body(11.5, color: context.mc.textSecondary),
+                      ),
                     ],
                   ),
                 ),
@@ -147,8 +168,9 @@ class McpPage extends ConsumerWidget {
                       SelectableText(
                         'personal.today  work.next_shifts  plan.range\n'
                         'plan.search  plan.get  work.shifts  tags.list\n'
+                        'spaces.list  habits.list  time.sessions\n'
                         'home.shopping  home.inventory  sleep.window',
-                        style: ManeType.body(
+                        style: SundialType.body(
                           11.5,
                           color: context.mc.textSecondary,
                         ).copyWith(fontFamily: 'monospace', height: 1.5),
@@ -158,15 +180,16 @@ class McpPage extends ConsumerWidget {
                         SelectableText(
                           'plan.create  plan.update  plan.complete\n'
                           'plan.uncomplete  plan.delete\n'
-                          'home.shopping_add  home.shopping_check',
-                          style: ManeType.body(
+                          'home.shopping_add  home.shopping_check\n'
+                          'habits.check  time.start  time.stop',
+                          style: SundialType.body(
                             11.5,
                             color: context.mc.textSecondary,
                           ).copyWith(fontFamily: 'monospace', height: 1.5),
                         ),
                       ],
                       const SizedBox(height: 8),
-                      Text(l10n.mcpToolsHint, style: ManeType.body(11.5, color: context.mc.textSecondary)),
+                      Text(l10n.mcpToolsHint, style: SundialType.body(11.5, color: context.mc.textSecondary)),
                     ],
                   ),
                 ),
@@ -176,5 +199,44 @@ class McpPage extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _editPort(BuildContext context, WidgetRef ref, int current) async {
+    final l10n = context.l10n;
+    final controller = TextEditingController(text: '$current');
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.mcpPort),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(labelText: l10n.mcpPort, helperText: l10n.mcpPortHint),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text(l10n.cancel)),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            child: Text(l10n.applyPort),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    final parsed = int.tryParse(result?.trim() ?? '');
+    if (parsed == null || parsed < 1024 || parsed > 65535) return;
+    final previous = ref.read(settingsProvider).mcpPort;
+    await ref.read(settingsProvider.notifier).setMcpPort(parsed);
+    try {
+      await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
+    } on Object {
+      await ref.read(settingsProvider.notifier).setMcpPort(previous);
+      await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.mcpPortUnavailable(parsed))));
+      return;
+    }
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.portSaved(parsed))));
   }
 }

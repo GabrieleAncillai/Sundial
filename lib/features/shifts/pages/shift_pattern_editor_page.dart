@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
+import '../../../core/time/time_field.dart';
+import '../../../core/timezone/timezone_picker.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../../../models/shift_checklist.dart';
 import '../../../state/providers.dart';
 
 class ShiftPatternEditorPage extends ConsumerStatefulWidget {
-  const ShiftPatternEditorPage({super.key, this.pattern});
+  const ShiftPatternEditorPage({super.key, this.pattern, this.contextId});
 
   final ShiftPattern? pattern;
+  final String? contextId;
 
   @override
   ConsumerState<ShiftPatternEditorPage> createState() => _ShiftPatternEditorPageState();
@@ -25,6 +30,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
   late final TextEditingController _nameController;
   late final TextEditingController _timeZoneController;
   late String _spaceId;
+  String? _contextId;
   late int _cycleDays;
   late LocalDate _anchorDate;
   late List<_SlotDraft> _slots;
@@ -35,8 +41,10 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
   List<_ChecklistDraft> _checklist = <_ChecklistDraft>[];
   bool _checklistLoading = false;
   late String _deviceTimeZone;
+  late String _baseline;
   int _nextDraftId = 0;
   bool _saving = false;
+  bool _leaving = false;
 
   @override
   void initState() {
@@ -45,7 +53,8 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     _deviceTimeZone = ref.read(deviceTimeZoneProvider);
     _nameController = TextEditingController(text: pattern?.name ?? '');
     _timeZoneController = TextEditingController(text: pattern?.timeZone ?? _deviceTimeZone);
-    _spaceId = pattern?.spaceId ?? 'work';
+    _spaceId = 'work';
+    _contextId = pattern?.contextId ?? widget.contextId;
     _cycleDays = pattern?.cycleDays ?? 7;
     _anchorDate = pattern?.anchorDate ?? localDateAt(ref.read(nowProvider), _deviceTimeZone);
     _tagIds = {...?pattern?.tagIds};
@@ -63,6 +72,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     ];
     _exceptions = [...?pattern?.exceptions];
     if (pattern != null) _loadChecklist(pattern.id);
+    _baseline = _fingerprint();
   }
 
   Future<void> _loadChecklist(String patternId) async {
@@ -71,8 +81,16 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       final items = await ref.read(repositoryProvider).readShiftChecklistItems(patternId);
       if (!mounted) return;
       setState(() {
-        _checklist = [for (final item in items) _ChecklistDraft(id: item.id, label: item.label)];
+        _checklist = [
+          for (final item in items)
+            _ChecklistDraft(
+              id: item.id,
+              label: item.label,
+              dayIndex: item.dayIndex != null && item.dayIndex! < _cycleDays ? item.dayIndex : null,
+            ),
+        ];
         _checklistLoading = false;
+        _baseline = _fingerprint();
       });
     } catch (error) {
       if (!mounted) return;
@@ -91,6 +109,15 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     setState(() => _checklist.removeAt(index));
   }
 
+  void _moveChecklistItem(int index, int delta) {
+    final target = index + delta;
+    if (target < 0 || target >= _checklist.length) return;
+    setState(() {
+      final item = _checklist.removeAt(index);
+      _checklist.insert(target, item);
+    });
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -105,239 +132,349 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     return text.isEmpty ? null : int.tryParse(text);
   }
 
+  /// Everything the page can change, in a stable order. Comparing this with
+  /// the value captured on load avoids false prompts when a field is reverted.
+  String _fingerprint() {
+    final slots = [..._slots]
+      ..sort((a, b) {
+        final byDay = a.dayIndex.compareTo(b.dayIndex);
+        if (byDay != 0) return byDay;
+        final byStart = a.startMinute.compareTo(b.startMinute);
+        if (byStart != 0) return byStart;
+        return a.endMinute.compareTo(b.endMinute);
+      });
+    final exceptions = [..._exceptions]
+      ..sort((a, b) {
+        final byDate = a.date.compareTo(b.date);
+        if (byDate != 0) return byDate;
+        return a.type.index.compareTo(b.type.index);
+      });
+    final tags = _tagIds.toList()..sort();
+    return [
+      _nameController.text,
+      _contextId ?? '',
+      _timeZoneController.text,
+      _commuteController.text.trim(),
+      _windDownController.text.trim(),
+      '$_cycleDays',
+      _anchorDate.key,
+      for (final slot in slots) '${slot.dayIndex}|${slot.label}|${slot.startMinute}|${slot.endMinute}',
+      for (final exception in exceptions)
+        '${exception.date.key}|${exception.type.name}|${exception.startMinute}|'
+            '${exception.endMinute}|${exception.note}',
+      tags.join(','),
+      for (final item in _checklist) '${item.id}|${item.label}|${item.dayIndex}',
+    ].join('\u0000');
+  }
+
+  bool get _dirty => _fingerprint() != _baseline;
+
+  Future<void> _confirmLeave() async {
+    if (_leaving) return;
+    if (!_dirty) {
+      _leave();
+      return;
+    }
+    final l10n = context.l10n;
+    final discard = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.discardChangesQuestion),
+        content: Text(l10n.discardChangesBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(l10n.keepEditing)),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.discardChanges),
+          ),
+        ],
+      ),
+    );
+    if (discard == true && mounted) _leave();
+  }
+
+  void _leave() {
+    _leaving = true;
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
+    _spaceId = 'work';
     final availableTags = (ref.watch(tagsProvider).value ?? const <Tag>[])
         .where((tag) => tag.appliesTo(_spaceId))
         .toList();
+    final contexts = ref.watch(contextsProvider(_spaceId)).value ?? const <PlannerContext>[];
+    if (_contextId != null && !contexts.any((item) => item.id == _contextId)) {
+      _contextId = null;
+    }
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final activeSpace = spaces.any((space) => space.id == _spaceId) ? _spaceId : spaces.first.id;
-    _spaceId = activeSpace;
 
     final preview = _preview();
     final conflicts = preview?.findConflicts() ?? const <ShiftConflict>[];
 
-    return ManePage(
-      title: widget.pattern == null ? l10n.newShiftPattern : l10n.editShiftPattern,
-      actions: [
-        if (widget.pattern != null)
-          GlassIconButton(icon: Icons.delete_outline, tooltip: l10n.delete, onTap: _saving ? null : _delete),
-      ],
-      child: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: 20),
-          children: [
-            TextFormField(
-              controller: _nameController,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(labelText: l10n.patternName, border: const OutlineInputBorder()),
-              validator: (value) => value == null || value.trim().isEmpty ? l10n.patternNameRequired : null,
+    return PopScope<Object?>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) _confirmLeave();
+      },
+      child: SundialPage(
+        title: widget.pattern == null ? l10n.newShiftPattern : l10n.editShiftPattern,
+        actions: [
+          if (widget.pattern != null)
+            GlassIconButton(
+              icon: Icons.delete_outline,
+              tooltip: l10n.delete,
+              onTap: _saving ? null : _delete,
             ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: _spaceId,
-              decoration: InputDecoration(labelText: l10n.space, border: const OutlineInputBorder()),
-              items: [
-                for (final space in spaces)
-                  DropdownMenuItem(
-                    value: space.id,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+        ],
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: 20),
+            children: [
+              TextFormField(
+                controller: _nameController,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(labelText: l10n.patternName, border: const OutlineInputBorder()),
+                validator: (value) => value == null || value.trim().isEmpty ? l10n.patternNameRequired : null,
+              ),
+              if (contexts.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                SundialSelectField(
+                  label: l10n.context,
+                  valueLabel:
+                      contexts.where((item) => item.id == _contextId).firstOrNull?.name ?? l10n.noContext,
+                  leading: const Icon(Icons.work_outline),
+                  onTap: () async {
+                    final picked = await showSundialSelectSheet<String>(
+                      context: context,
+                      title: l10n.context,
+                      selected: _contextId ?? '',
+                      options: [
+                        SundialSelectOption(value: '', label: l10n.noContext),
+                        for (final item in contexts)
+                          SundialSelectOption(
+                            value: item.id,
+                            label: item.name,
+                            leading: Container(
+                              width: 9,
+                              height: 9,
+                              decoration: BoxDecoration(
+                                color: Color(item.colorValue),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                    if (picked != null && mounted) {
+                      setState(() => _contextId = picked.isEmpty ? null : picked);
+                    }
+                  },
+                ),
+              ],
+              if (availableTags.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                SectionLabel(l10n.shiftTags),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final tag in availableTags)
+                      FilterChip(
+                        label: Text(tag.name),
+                        selected: _tagIds.contains(tag.id),
+                        avatar: CircleAvatar(backgroundColor: Color(tag.colorValue), radius: 5),
+                        onSelected: (selected) => setState(() {
+                          if (selected) {
+                            _tagIds.add(tag.id);
+                          } else {
+                            _tagIds.remove(tag.id);
+                          }
+                        }),
+                      ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 12),
+              SundialSelectField(
+                label: l10n.timeZone,
+                valueLabel: _timeZoneController.text,
+                leading: const Icon(Icons.public),
+                onTap: () => _pickTimeZone(context),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _commuteController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: l10n.commuteOverride,
+                        helperText: l10n.inheritSleepBuffers,
+                      ),
+                      validator: (value) {
+                        final text = value?.trim() ?? '';
+                        if (text.isEmpty) return null;
+                        final minutes = int.tryParse(text);
+                        return minutes == null || minutes < 0 || minutes > 1440 ? l10n.invalidTimeZone : null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _windDownController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: l10n.windDownOverride,
+                        helperText: l10n.inheritSleepBuffers,
+                      ),
+                      validator: (value) {
+                        final text = value?.trim() ?? '';
+                        if (text.isEmpty) return null;
+                        final minutes = int.tryParse(text);
+                        return minutes == null || minutes < 0 || minutes > 1440 ? l10n.invalidTimeZone : null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(child: Text(l10n.cycleLength, style: theme.textTheme.bodyLarge)),
+                  IconButton(
+                    onPressed: _cycleDays > 1 ? () => _setCycleDays(_cycleDays - 1) : null,
+                    icon: const Icon(Icons.remove_circle_outline),
+                  ),
+                  Text(l10n.cycleLengthValue(_cycleDays), style: theme.textTheme.titleMedium),
+                  IconButton(
+                    onPressed: _cycleDays < 28 ? () => _setCycleDays(_cycleDays + 1) : null,
+                    icon: const Icon(Icons.add_circle_outline),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              SundialDateField(
+                label: l10n.anchorDate,
+                valueLabel: formatFullDate(context, _anchorDate.toDateTime()),
+                onTap: _pickAnchorDate,
+              ),
+              const SizedBox(height: 20),
+              for (var index = 0; index < _cycleDays; index++) _buildDay(index, locale),
+              const SizedBox(height: 8),
+              _SectionHeader(title: l10n.exceptions, actionLabel: l10n.addException, onAction: _addException),
+              if (_exceptions.isEmpty)
+                Text(
+                  l10n.noExceptions,
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                )
+              else
+                for (final exception in _exceptions) _buildException(exception, locale),
+              const SizedBox(height: 20),
+              _SectionHeader(
+                title: l10n.shiftChecklist,
+                actionLabel: l10n.addChecklistItem,
+                onAction: _addChecklistItem,
+              ),
+              if (_checklistLoading)
+                const LinearProgressIndicator()
+              else if (_checklist.isEmpty)
+                Text(
+                  l10n.noChecklistItems,
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                )
+              else
+                for (var index = 0; index < _checklist.length; index++)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Column(
                       children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(color: Color(space.colorValue), shape: BoxShape.circle),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                key: ValueKey('checklist-${_checklist[index].id}'),
+                                initialValue: _checklist[index].label,
+                                textCapitalization: TextCapitalization.sentences,
+                                decoration: InputDecoration(labelText: l10n.checklistItemLabel),
+                                onChanged: (value) =>
+                                    _checklist[index] = _checklist[index].copyWith(label: value),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: index == 0 ? null : () => _moveChecklistItem(index, -1),
+                              icon: const Icon(Icons.keyboard_arrow_up),
+                              tooltip: l10n.moveUp,
+                            ),
+                            IconButton(
+                              onPressed: index == _checklist.length - 1
+                                  ? null
+                                  : () => _moveChecklistItem(index, 1),
+                              icon: const Icon(Icons.keyboard_arrow_down),
+                              tooltip: l10n.moveDown,
+                            ),
+                            IconButton(
+                              onPressed: () => _removeChecklistItem(index),
+                              icon: const Icon(Icons.remove_circle_outline),
+                              tooltip: l10n.delete,
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Text(space.name),
+                        DropdownButtonFormField<int?>(
+                          initialValue: _checklist[index].dayIndex,
+                          decoration: InputDecoration(labelText: l10n.shiftChecklists),
+                          items: [
+                            DropdownMenuItem<int?>(value: null, child: Text(l10n.allDays)),
+                            for (var day = 0; day < _cycleDays; day++)
+                              DropdownMenuItem<int?>(value: day, child: Text(l10n.checklistForDay(day + 1))),
+                          ],
+                          onChanged: (value) =>
+                              _checklist[index] = _checklist[index].copyWith(dayIndex: value),
+                        ),
                       ],
                     ),
                   ),
-              ],
-              onChanged: (value) {
-                if (value != null) setState(() => _spaceId = value);
-              },
-            ),
-            if (availableTags.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              SectionLabel(l10n.shiftTags),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  for (final tag in availableTags)
-                    FilterChip(
-                      label: Text(tag.name),
-                      selected: _tagIds.contains(tag.id),
-                      avatar: CircleAvatar(backgroundColor: Color(tag.colorValue), radius: 5),
-                      onSelected: (selected) => setState(() {
-                        if (selected) {
-                          _tagIds.add(tag.id);
-                        } else {
-                          _tagIds.remove(tag.id);
-                        }
-                      }),
-                    ),
-                ],
+              const SizedBox(height: 20),
+              _SectionHeader(title: l10n.preview),
+              if (preview != null && conflicts.isNotEmpty)
+                Text(
+                  l10n.conflictsFound,
+                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
+                )
+              else if (preview != null)
+                Text(
+                  l10n.noConflicts,
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              if (preview != null && conflicts.isEmpty)
+                _Preview(
+                  pattern: preview,
+                  deviceTimeZone: _deviceTimeZone,
+                  today: localDateAt(ref.watch(nowProvider), _deviceTimeZone),
+                ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: _saving ? null : _save,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: _saving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.savePattern),
+                ),
               ),
             ],
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _timeZoneController,
-              decoration: InputDecoration(labelText: l10n.timeZone, hintText: 'Europe/Madrid'),
-              validator: (value) {
-                final zone = value?.trim() ?? '';
-                if (zone.isEmpty || !isKnownTimeZone(zone)) return l10n.invalidTimeZone;
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _commuteController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: l10n.commuteOverride,
-                      helperText: l10n.inheritSleepBuffers,
-                    ),
-                    validator: (value) {
-                      final text = value?.trim() ?? '';
-                      if (text.isEmpty) return null;
-                      final minutes = int.tryParse(text);
-                      return minutes == null || minutes < 0 || minutes > 1440 ? l10n.invalidTimeZone : null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _windDownController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: l10n.windDownOverride,
-                      helperText: l10n.inheritSleepBuffers,
-                    ),
-                    validator: (value) {
-                      final text = value?.trim() ?? '';
-                      if (text.isEmpty) return null;
-                      final minutes = int.tryParse(text);
-                      return minutes == null || minutes < 0 || minutes > 1440 ? l10n.invalidTimeZone : null;
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(child: Text(l10n.cycleLength, style: theme.textTheme.bodyLarge)),
-                IconButton(
-                  onPressed: _cycleDays > 1 ? () => _setCycleDays(_cycleDays - 1) : null,
-                  icon: const Icon(Icons.remove_circle_outline),
-                ),
-                Text(l10n.cycleLengthValue(_cycleDays), style: theme.textTheme.titleMedium),
-                IconButton(
-                  onPressed: _cycleDays < 28 ? () => _setCycleDays(_cycleDays + 1) : null,
-                  icon: const Icon(Icons.add_circle_outline),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            InkWell(
-              onTap: _pickAnchorDate,
-              borderRadius: BorderRadius.circular(4),
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: l10n.anchorDate,
-                  prefixIcon: const Icon(Icons.event_outlined, size: 20),
-                ),
-                child: Text(DateFormat.yMMMMEEEEd(locale).format(_anchorDate.toDateTime())),
-              ),
-            ),
-            const SizedBox(height: 20),
-            for (var index = 0; index < _cycleDays; index++) _buildDay(index, locale),
-            const SizedBox(height: 8),
-            _SectionHeader(title: l10n.exceptions, actionLabel: l10n.addException, onAction: _addException),
-            if (_exceptions.isEmpty)
-              Text(
-                l10n.noExceptions,
-                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              )
-            else
-              for (final exception in _exceptions) _buildException(exception, locale),
-            const SizedBox(height: 20),
-            _SectionHeader(
-              title: l10n.shiftChecklist,
-              actionLabel: l10n.addChecklistItem,
-              onAction: _addChecklistItem,
-            ),
-            if (_checklistLoading)
-              const LinearProgressIndicator()
-            else if (_checklist.isEmpty)
-              Text(
-                l10n.noChecklistItems,
-                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              )
-            else
-              for (var index = 0; index < _checklist.length; index++)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          key: ValueKey('checklist-${_checklist[index].id}'),
-                          initialValue: _checklist[index].label,
-                          textCapitalization: TextCapitalization.sentences,
-                          decoration: InputDecoration(labelText: l10n.checklistItemLabel),
-                          onChanged: (value) => _checklist[index] = _checklist[index].copyWith(label: value),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => _removeChecklistItem(index),
-                        icon: const Icon(Icons.remove_circle_outline),
-                        tooltip: l10n.delete,
-                      ),
-                    ],
-                  ),
-                ),
-            const SizedBox(height: 20),
-            _SectionHeader(title: l10n.preview),
-            if (preview != null && conflicts.isNotEmpty)
-              Text(
-                l10n.conflictsFound,
-                style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
-              )
-            else if (preview != null)
-              Text(
-                l10n.noConflicts,
-                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
-            if (preview != null && conflicts.isEmpty)
-              _Preview(
-                pattern: preview,
-                deviceTimeZone: _deviceTimeZone,
-                today: localDateAt(ref.watch(nowProvider), _deviceTimeZone),
-              ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _saving ? null : _save,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: _saving
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : Text(l10n.savePattern),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -351,7 +488,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     return SoftCard(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.fromLTRB(12, 10, 8, 6),
-      radius: 18,
+      radius: SundialRadii.lg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -360,19 +497,19 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
               Expanded(
                 child: Text(
                   '${l10n.cycleDay(index + 1)} · ${DateFormat.E(locale).format(date.toDateTime())}',
-                  style: ManeType.title(13.5, color: context.mc.text),
+                  style: SundialType.title(13.5, color: context.mc.text),
                 ),
               ),
               Text(
-                DateFormat.MMMd(locale).format(date.toDateTime()),
-                style: ManeType.body(11.5, color: context.mc.textSecondary),
+                formatShortDate(context, date.toDateTime()),
+                style: SundialType.body(11.5, color: context.mc.textSecondary),
               ),
             ],
           ),
           if (daySlots.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Text(l10n.noSlots, style: ManeType.body(11.5, color: context.mc.textTertiary)),
+              child: Text(l10n.noSlots, style: SundialType.body(11.5, color: context.mc.textTertiary)),
             ),
           for (final slot in daySlots) _buildSlot(slot),
           TextButton.icon(
@@ -392,7 +529,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       padding: const EdgeInsets.fromLTRB(10, 6, 4, 8),
       decoration: BoxDecoration(
         color: context.mc.surfaceAlt,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(SundialRadii.sm),
         border: Border.all(color: context.mc.border),
       ),
       child: Column(
@@ -418,18 +555,22 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
           Row(
             children: [
               Expanded(
-                child: _TimeField(
+                child: SundialTimeField(
                   label: l10n.startTime,
-                  value: _timeLabel(slot.startMinute),
-                  onTap: () => _pickTime(slot, true),
+                  valueLabel: _timeLabel(slot.startMinute),
+                  initialMinute: slot.startMinute,
+                  clearable: false,
+                  onChanged: (minute) => setState(() => _applySlotTime(slot, true, minute)),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: _TimeField(
+                child: SundialTimeField(
                   label: l10n.endTime,
-                  value: _timeLabel(slot.endMinute),
-                  onTap: () => _pickTime(slot, false),
+                  valueLabel: _timeLabel(slot.endMinute),
+                  initialMinute: slot.endMinute,
+                  clearable: false,
+                  onChanged: (minute) => setState(() => _applySlotTime(slot, false, minute)),
                 ),
               ),
             ],
@@ -454,7 +595,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
       decoration: BoxDecoration(
         color: context.mc.surfaceAlt,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(SundialRadii.md),
         border: Border.all(color: context.mc.border),
       ),
       child: Row(
@@ -466,11 +607,11 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${DateFormat.yMMMd(locale).format(exception.date.toDateTime())} · $type$times',
-                    style: ManeType.body(12.5, color: context.mc.text),
+                    '${formatFullDate(context, exception.date.toDateTime())} · $type$times',
+                    style: SundialType.body(12.5, color: context.mc.text),
                   ),
                   if (exception.note.isNotEmpty)
-                    Text(exception.note, style: ManeType.body(11.5, color: context.mc.textSecondary)),
+                    Text(exception.note, style: SundialType.body(11.5, color: context.mc.textSecondary)),
                 ],
               ),
             ),
@@ -486,15 +627,18 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
   }
 
   String _timeLabel(int minutes) {
-    final normalized = minutes % 1440;
-    final label = TimeOfDay(hour: normalized ~/ 60, minute: normalized % 60).format(context);
-    return minutes >= 1440 ? '$label ${context.l10n.overnightSuffix}' : label;
+    return formatMinuteLabel(context, minutes, overnightSuffix: context.l10n.overnightSuffix);
   }
 
   void _setCycleDays(int value) {
     setState(() {
       _cycleDays = value;
       _slots.removeWhere((slot) => slot.dayIndex >= value);
+      // A stale day index would make the dropdown value invalid and crash.
+      _checklist = [
+        for (final item in _checklist)
+          item.dayIndex != null && item.dayIndex! >= value ? item.copyWith(dayIndex: null) : item,
+      ];
     });
   }
 
@@ -512,23 +656,14 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     });
   }
 
-  Future<void> _pickTime(_SlotDraft slot, bool isStart) async {
-    final current = isStart ? slot.startMinute : slot.endMinute;
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: (current ~/ 60) % 24, minute: current % 60),
-    );
-    if (picked == null || !mounted) return;
-    setState(() {
-      final value = picked.hour * 60 + picked.minute;
-      if (isStart) {
-        final duration = slot.endMinute - slot.startMinute;
-        slot.startMinute = value;
-        slot.endMinute = value + duration;
-      } else {
-        slot.endMinute = value > slot.startMinute ? value : value + 1440;
-      }
-    });
+  void _applySlotTime(_SlotDraft slot, bool isStart, int value) {
+    if (isStart) {
+      final duration = slot.endMinute - slot.startMinute;
+      slot.startMinute = value;
+      slot.endMinute = value + duration;
+    } else {
+      slot.endMinute = value > slot.startMinute ? value : value + 1440;
+    }
   }
 
   Future<void> _pickAnchorDate() async {
@@ -557,6 +692,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       return ShiftPattern(
         id: widget.pattern?.id ?? 'preview',
         spaceId: _spaceId,
+        contextId: _contextId,
         name: _nameController.text.trim(),
         timeZone: _timeZoneController.text.trim(),
         cycleDays: _cycleDays,
@@ -581,6 +717,20 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     }
   }
 
+  Future<void> _pickTimeZone(BuildContext context) async {
+    final l10n = context.l10n;
+    final picked = await showTimeZonePicker(
+      context,
+      selected: _timeZoneController.text,
+      title: l10n.timeZone,
+      searchHint: l10n.timezoneSearch,
+      deviceLabel: l10n.timezoneDevice,
+      deviceZone: _deviceTimeZone,
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _timeZoneController.text = picked.isEmpty ? _deviceTimeZone : picked);
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     final pattern = _preview();
@@ -597,6 +747,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     final saved = ShiftPattern(
       id: widget.pattern?.id ?? const Uuid().v4(),
       spaceId: pattern.spaceId,
+      contextId: pattern.contextId,
       name: pattern.name,
       timeZone: pattern.timeZone,
       cycleDays: pattern.cycleDays,
@@ -613,7 +764,12 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       await ref.read(repositoryProvider).saveShiftChecklistItems(saved.id, [
         for (final draft in _checklist)
           if (draft.label.trim().isNotEmpty)
-            ShiftChecklistItem(id: draft.id, patternId: saved.id, label: draft.label.trim()),
+            ShiftChecklistItem(
+              id: draft.id,
+              patternId: saved.id,
+              label: draft.label.trim(),
+              dayIndex: draft.dayIndex,
+            ),
       ]);
     } catch (error) {
       if (!mounted) return;
@@ -624,7 +780,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       return;
     }
     if (!mounted) return;
-    Navigator.of(context).pop();
+    _leave();
   }
 
   Future<void> _delete() async {
@@ -649,18 +805,25 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     );
     if (confirmed != true || !mounted) return;
     await ref.read(repositoryProvider).deleteShiftPattern(pattern.id);
-    if (mounted) Navigator.of(context).pop();
+    if (mounted) _leave();
   }
 }
 
 class _ChecklistDraft {
-  const _ChecklistDraft({required this.id, required this.label});
+  const _ChecklistDraft({required this.id, required this.label, this.dayIndex});
 
   final String id;
   final String label;
+  final int? dayIndex;
 
-  _ChecklistDraft copyWith({String? label}) => _ChecklistDraft(id: id, label: label ?? this.label);
+  _ChecklistDraft copyWith({String? label, Object? dayIndex = _unset}) => _ChecklistDraft(
+    id: id,
+    label: label ?? this.label,
+    dayIndex: identical(dayIndex, _unset) ? this.dayIndex : dayIndex as int?,
+  );
 }
+
+const _unset = Object();
 
 class _SlotDraft {
   _SlotDraft({
@@ -694,26 +857,6 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _TimeField extends StatelessWidget {
-  const _TimeField({required this.label, required this.value, required this.onTap});
-
-  final String label;
-  final String value;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
-      child: InputDecorator(
-        decoration: InputDecoration(labelText: label, isDense: true),
-        child: Text(value, maxLines: 1, overflow: TextOverflow.ellipsis),
-      ),
-    );
-  }
-}
-
 class _Preview extends StatelessWidget {
   const _Preview({required this.pattern, required this.deviceTimeZone, required this.today});
 
@@ -725,10 +868,9 @@ class _Preview extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.mc;
     final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final occurrences = pattern.occurrencesBetween(today, today.addDays(27), viewerTimeZone: deviceTimeZone);
     if (occurrences.isEmpty) {
-      return Text(l10n.noSlots, style: ManeType.body(11.5, color: c.textSecondary));
+      return Text(l10n.noSlots, style: SundialType.body(11.5, color: c.textSecondary));
     }
 
     return Column(
@@ -741,8 +883,8 @@ class _Preview extends StatelessWidget {
                 SizedBox(
                   width: 92,
                   child: Text(
-                    DateFormat.MMMEd(locale).format(occurrence.displayDate.toDateTime()),
-                    style: ManeType.body(11.5, color: c.textSecondary),
+                    formatShortDate(context, occurrence.displayDate.toDateTime()),
+                    style: SundialType.body(11.5, color: c.textSecondary),
                   ),
                 ),
                 Expanded(
@@ -755,7 +897,7 @@ class _Preview extends StatelessWidget {
                 Text(
                   '${_formatTime(context, occurrence.startAt, deviceTimeZone)} – '
                   '${_formatTime(context, occurrence.endAt, deviceTimeZone)}',
-                  style: ManeType.body(11.5, color: c.textSecondary),
+                  style: SundialType.body(11.5, color: c.textSecondary),
                 ),
               ],
             ),
@@ -801,19 +943,16 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     return AlertDialog(
       title: Text(l10n.addException),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            InkWell(
+            SundialDateField(
+              label: l10n.exceptionDate,
+              valueLabel: formatFullDate(context, _date.toDateTime()),
               onTap: _pickDate,
-              child: InputDecorator(
-                decoration: InputDecoration(labelText: l10n.exceptionDate),
-                child: Text(DateFormat.yMMMd(locale).format(_date.toDateTime())),
-              ),
             ),
             const SizedBox(height: 10),
             DropdownButtonFormField<ShiftExceptionType>(
@@ -833,18 +972,22 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: _DialogTimeField(
+                    child: SundialTimeField(
                       label: l10n.startTime,
-                      value: _timeLabel(_startMinute),
-                      onTap: () => _pickTime(true),
+                      valueLabel: _timeLabel(_startMinute),
+                      initialMinute: _startMinute,
+                      clearable: false,
+                      onChanged: (minute) => setState(() => _startMinute = minute % 1440),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: _DialogTimeField(
+                    child: SundialTimeField(
                       label: l10n.endTime,
-                      value: _timeLabel(_endMinute),
-                      onTap: () => _pickTime(false),
+                      valueLabel: _timeLabel(_endMinute),
+                      initialMinute: _endMinute,
+                      clearable: false,
+                      onChanged: (minute) => setState(() => _endMinute = minute % 1440),
                     ),
                   ),
                 ],
@@ -866,9 +1009,7 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
   }
 
   String _timeLabel(int minutes) {
-    final normalized = minutes % 1440;
-    final label = TimeOfDay(hour: normalized ~/ 60, minute: normalized % 60).format(context);
-    return minutes >= 1440 ? '$label ${context.l10n.overnightSuffix}' : label;
+    return formatMinuteLabel(context, minutes, overnightSuffix: context.l10n.overnightSuffix);
   }
 
   Future<void> _pickDate() async {
@@ -881,25 +1022,6 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
     if (picked != null && mounted) setState(() => _date = LocalDate.fromDateTime(picked));
   }
 
-  Future<void> _pickTime(bool isStart) async {
-    final current = isStart ? _startMinute : _endMinute;
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: (current ~/ 60) % 24, minute: current % 60),
-    );
-    if (picked == null || !mounted) return;
-    setState(() {
-      final value = picked.hour * 60 + picked.minute;
-      if (isStart) {
-        final duration = _endMinute - _startMinute;
-        _startMinute = value;
-        _endMinute = value + duration;
-      } else {
-        _endMinute = value > _startMinute ? value : value + 1440;
-      }
-    });
-  }
-
   void _save() {
     Navigator.of(context).pop(
       ShiftException(
@@ -908,25 +1030,6 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
         startMinute: _type == ShiftExceptionType.free ? null : _startMinute,
         endMinute: _type == ShiftExceptionType.free ? null : _endMinute,
         note: _noteController.text.trim(),
-      ),
-    );
-  }
-}
-
-class _DialogTimeField extends StatelessWidget {
-  const _DialogTimeField({required this.label, required this.value, required this.onTap});
-
-  final String label;
-  final String value;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: InputDecorator(
-        decoration: InputDecoration(labelText: label),
-        child: Text(value),
       ),
     );
   }

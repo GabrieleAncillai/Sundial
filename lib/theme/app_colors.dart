@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// Mane's hand-authored palette. Screens should read these tokens through
+/// Sundial's hand-authored palette. Screens should read these tokens through
 /// `context.mc` instead of deriving colours from generated Material roles.
 @immutable
-class ManeColors extends ThemeExtension<ManeColors> {
-  const ManeColors({
+class SundialColors extends ThemeExtension<SundialColors> {
+  const SundialColors({
     required this.pageBg,
     required this.surface,
     required this.surfaceAlt,
@@ -66,7 +66,7 @@ class ManeColors extends ThemeExtension<ManeColors> {
   final Color glassEdge;
   final Color shadow;
 
-  static const light = ManeColors(
+  static const light = SundialColors(
     pageBg: Color(0xFFF6F4EF),
     surface: Color(0xFFFFFEFA),
     surfaceAlt: Color(0xFFEFECE5),
@@ -98,7 +98,7 @@ class ManeColors extends ThemeExtension<ManeColors> {
     shadow: Color(0x1A000000),
   );
 
-  static const dark = ManeColors(
+  static const dark = SundialColors(
     pageBg: Color(0xFF0F1210),
     surface: Color(0xFF191D1A),
     surfaceAlt: Color(0xFF222823),
@@ -130,6 +130,47 @@ class ManeColors extends ThemeExtension<ManeColors> {
     shadow: Color(0x66000000),
   );
 
+  static const aero = SundialColors(
+    pageBg: Color(0xFFDFF3FF),
+    surface: Color(0xFFF9FDFF),
+    surfaceAlt: Color(0xFFEAF7FE),
+    surfaceHigh: Color(0xFFD8EFFC),
+    navBg: Color(0xF2F4FBFF),
+    border: Color(0xFFBFE4F5),
+    borderStrong: Color(0xFF8FCBE8),
+    text: Color(0xFF083247),
+    textSecondary: Color(0xFF356579),
+    textTertiary: Color(0xFF6A93A5),
+    accent: Color(0xFF0A8FCF),
+    accentSoft: Color(0x260A8FCF),
+    onAccent: Color(0xFFFFFFFF),
+    personal: Color(0xFF2FA98F),
+    personalSoft: Color(0x262FA98F),
+    work: Color(0xFF2F7ED8),
+    workSoft: Color(0x262F7ED8),
+    home: Color(0xFF4FB56B),
+    homeSoft: Color(0x264FB56B),
+    danger: Color(0xFFC63B3B),
+    dangerSoft: Color(0x26C63B3B),
+    warning: Color(0xFFB27413),
+    warningSoft: Color(0x26B27413),
+    success: Color(0xFF2E8B57),
+    successSoft: Color(0x262E8B57),
+    info: Color(0xFF2574A9),
+    glass: Color(0xCCFFFFFF),
+    glassEdge: Color(0x66FFFFFF),
+    shadow: Color(0x1A1B6D92),
+  );
+
+  /// Applies one of the accent presets without touching the space colours.
+  SundialColors withAccent(Color accent, {Color? onAccent}) => copyWith(
+    accent: accent,
+    accentSoft: accent.withValues(alpha: 0.16),
+    onAccent: onAccent ?? _contrastOn(accent),
+  );
+
+  static Color _contrastOn(Color color) => color.computeLuminance() > 0.55 ? Colors.black : Colors.white;
+
   Color forSpace(String id) => switch (id) {
     'personal' => personal,
     'work' => work,
@@ -145,7 +186,7 @@ class ManeColors extends ThemeExtension<ManeColors> {
   };
 
   @override
-  ManeColors copyWith({
+  SundialColors copyWith({
     Color? pageBg,
     Color? surface,
     Color? surfaceAlt,
@@ -176,7 +217,7 @@ class ManeColors extends ThemeExtension<ManeColors> {
     Color? glassEdge,
     Color? shadow,
   }) {
-    return ManeColors(
+    return SundialColors(
       pageBg: pageBg ?? this.pageBg,
       surface: surface ?? this.surface,
       surfaceAlt: surfaceAlt ?? this.surfaceAlt,
@@ -210,10 +251,10 @@ class ManeColors extends ThemeExtension<ManeColors> {
   }
 
   @override
-  ManeColors lerp(ManeColors? other, double t) {
+  SundialColors lerp(SundialColors? other, double t) {
     if (other == null) return this;
     Color c(Color a, Color b) => Color.lerp(a, b, t)!;
-    return ManeColors(
+    return SundialColors(
       pageBg: c(pageBg, other.pageBg),
       surface: c(surface, other.surface),
       surfaceAlt: c(surfaceAlt, other.surfaceAlt),
@@ -247,6 +288,6 @@ class ManeColors extends ThemeExtension<ManeColors> {
   }
 }
 
-extension ManeColorsContext on BuildContext {
-  ManeColors get mc => Theme.of(this).extension<ManeColors>() ?? ManeColors.light;
+extension SundialColorsContext on BuildContext {
+  SundialColors get mc => Theme.of(this).extension<SundialColors>() ?? SundialColors.light;
 }

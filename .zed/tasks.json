@@ -1,4 +1,4 @@
-// Mane development tasks. See https://zed.dev/docs/tasks
+// Sundial development tasks. See https://zed.dev/docs/tasks
 [
   {
     "label": "deps: pub get",
@@ -44,14 +44,14 @@
   },
   {
     "label": "test: core",
-    "command": "cd packages/mane_core && dart test",
+    "command": "cd packages/sundial_core && dart test",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "save": "all"
   },
   {
     "label": "test: all",
-    "command": "flutter test && (cd packages/mane_core && dart test)",
+    "command": "flutter test && (cd packages/sundial_core && dart test)",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "save": "all"
@@ -65,21 +65,21 @@
   },
   {
     "label": "lint: format",
-    "command": "find lib test packages/mane_core/lib packages/mane_core/test -type f -name '*.dart' -not -name '*.g.dart' -print0 | xargs -0 dart format --line-length 110",
+    "command": "find lib test packages/sundial_core/lib packages/sundial_core/test -type f -name '*.dart' -not -name '*.g.dart' -print0 | xargs -0 dart format --line-length 110",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "save": "all"
   },
   {
     "label": "lint: format check",
-    "command": "find lib test packages/mane_core/lib packages/mane_core/test -type f -name '*.dart' -not -name '*.g.dart' -not -name 'app_localizations*.dart' -print0 | xargs -0 dart format --line-length 110 --output=none --set-exit-if-changed",
+    "command": "find lib test packages/sundial_core/lib packages/sundial_core/test -type f -name '*.dart' -not -name '*.g.dart' -not -name 'app_localizations*.dart' -print0 | xargs -0 dart format --line-length 110 --output=none --set-exit-if-changed",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "save": "none"
   },
   {
     "label": "verify: all",
-    "command": "flutter analyze --no-fatal-infos && flutter test && (cd packages/mane_core && dart test) && flutter build linux --debug && flutter build apk --debug",
+    "command": "flutter analyze --no-fatal-infos && flutter test && (cd packages/sundial_core && dart test) && flutter build linux --debug && flutter build apk --debug",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "save": "all"

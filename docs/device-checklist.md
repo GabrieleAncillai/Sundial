@@ -82,14 +82,14 @@ the home-screen widget.
 - [ ] **BLOCKED.** The app is whitelisted and in the active bucket, but the boot
       receiver still did not run. The exact EMUI App launch path and a
       restricted-bucket 30-minute reminder test still need the user.
-- [ ] If it is delayed, exclude Mane from optimization and repeat the test.
+- [ ] If it is delayed, exclude Sundial from optimization and repeat the test.
       Record the exact OEM setting path.
 
 ## Timezone change
 
 - [x] Create a timed entry anchored in `Europe/Madrid`, and an all-day birthday
       on the same date.
-- [x] Change the device timezone to `America/New_York`. Open or resume Mane.
+- [x] Change the device timezone to `America/New_York`. Open or resume Sundial.
 - [x] The timed entry moves by the expected offset; the all-day birthday stays
       on the same date.
 - [x] Change the timezone back and verify the timed entry returns.
@@ -136,9 +136,9 @@ discovery is unavailable" and mDNS could not be used.
 
 ## Widget
 
-- [ ] **BLOCKED.** Long-press the home screen, add the Mane widget, and confirm
+- [ ] **BLOCKED.** Long-press the home screen, add the Sundial widget, and confirm
       it shows today's plan and the next shift. This needs the user's launcher.
-- [ ] Tap the widget; Mane opens.
+- [ ] Tap the widget; Sundial opens.
 - [ ] Change today's plan in the app, resume, and confirm the widget updates.
 
 ## Backup
@@ -147,8 +147,8 @@ discovery is unavailable" and mDNS could not be used.
       the original state returns.
 - [x] Pair the devices, export a backup, and import it into a fresh install.
       The pairing is not restored and both devices still open normally.
-- [x] Enable automatic local backups, background and resume Mane, and confirm a
-      `mane-auto-*.json` file exists in the app support `backups` folder (use
+- [x] Enable automatic local backups, background and resume Sundial, and confirm a
+      `sundial-auto-*.json` file exists in the app support `backups` folder (use
       `adb shell run-as` on a debug build).
 - [ ] Change the copy count, let several days pass or adjust the clock, and
       confirm older copies are removed. Not forced in this run.

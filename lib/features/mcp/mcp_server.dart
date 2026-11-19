@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../app_version.dart';
@@ -44,6 +44,10 @@ class McpServer {
   bool _writesEnabled = false;
   final Map<String, DateTime> _sessions = {};
 
+  /// Last bind failure, cleared on a successful start. Settings uses it to
+  /// revert the switch instead of showing a server that is not running.
+  String? lastError;
+
   int get boundPort => _server?.port ?? 0;
 
   Future<int> start({
@@ -52,19 +56,37 @@ class McpServer {
     int port = 0,
     InternetAddress? address,
   }) async {
+    lastError = null;
     if (_server != null) {
-      _writesEnabled = writesEnabled;
-      return _server!.port;
+      final identityChanged =
+          _identity?.mcpToken != identity.mcpToken ||
+          _identity?.privateKeyPem != identity.privateKeyPem ||
+          _identity?.certificatePem != identity.certificatePem;
+      final portChanged = port != 0 && port != _server!.port;
+      if (!identityChanged && !portChanged) {
+        _writesEnabled = writesEnabled;
+        return _server!.port;
+      }
+      // A rotated token or a new port must take effect without an app restart.
+      await stop();
     }
     _identity = identity;
     _writesEnabled = writesEnabled;
-    final server = await HttpServer.bind(address ?? InternetAddress.loopbackIPv4, port, shared: false);
-    _server = server;
-    server.listen(_handle, onError: (Object _) {});
-    return server.port;
+    try {
+      final server = await HttpServer.bind(address ?? InternetAddress.loopbackIPv4, port, shared: false);
+      _server = server;
+      server.listen(_handle, onError: (Object _) {});
+      return server.port;
+    } catch (error) {
+      // The settings switch reports this instead of leaving an unhandled async
+      // error and a switch that lies about the server state.
+      lastError = '$error';
+      rethrow;
+    }
   }
 
   Future<void> stop() async {
+    _sessions.clear();
     await _server?.close(force: true);
     _server = null;
   }
@@ -182,7 +204,7 @@ class McpServer {
           'capabilities': {
             'tools': {'listChanged': false},
           },
-          'serverInfo': {'name': 'mane', 'version': appVersion},
+          'serverInfo': {'name': 'sundial', 'version': appVersion},
         };
       case 'ping':
         return <String, Object?>{};
@@ -310,6 +332,102 @@ class McpServer {
         return {
           'tags': [for (final tag in tags) SyncPayloads.tagJson(tag)],
         };
+      case 'spaces.list':
+        final spaces = await _repository.watchSpaces().first;
+        final contexts = await _repository.watchContexts().first;
+        final projects = await _repository.watchProjects().first;
+        return {
+          'spaces': [
+            for (final space in spaces) {'id': space.id, 'name': space.name, 'color': space.colorValue},
+          ],
+          'contexts': [
+            for (final context in contexts)
+              {
+                'id': context.id,
+                'spaceId': context.spaceId,
+                'name': context.name,
+                'description': context.description,
+                'icon': context.icon,
+                'color': context.colorValue,
+                'imagePath': context.imagePath,
+              },
+          ],
+          'projects': [
+            for (final project in projects)
+              {
+                'id': project.id,
+                'spaceId': project.spaceId,
+                'contextId': project.contextId,
+                'name': project.name,
+                'description': project.description,
+                'icon': project.icon,
+                'color': project.colorValue,
+                'imagePath': project.imagePath,
+              },
+          ],
+        };
+      case 'habits.list':
+        final habits = await _repository.watchHabits().first;
+        final completions = await _repository.watchHabitCompletions().first;
+        final weekStart = AppSettings.fromMap(await _repository.readSettings()).weekStart;
+        return {
+          'today': today.iso,
+          'habits': [
+            for (final habit in habits)
+              {
+                'id': habit.id,
+                'spaceId': habit.spaceId,
+                'contextId': habit.contextId,
+                'name': habit.name,
+                'description': habit.description,
+                'icon': habit.icon,
+                'color': habit.colorValue,
+                'targetPerWeek': habit.targetPerWeek,
+                'weekdays': habit.weekdays.toList()..sort(),
+                'progressThisWeek': habit.weekProgress(
+                  completions[habit.id] ?? const <LocalDate>{},
+                  today,
+                  weekStart,
+                ),
+                'streak': habit.streak(
+                  completions[habit.id] ?? const <LocalDate>{},
+                  today,
+                  weekStart: weekStart,
+                ),
+                'doneToday': completions[habit.id]?.contains(today) ?? false,
+                'archived': habit.archived,
+              },
+          ],
+        };
+      case 'time.sessions':
+        final start = _dateArg(arguments, 'start') ?? today.addDays(-7);
+        final end = _dateArg(arguments, 'end') ?? today;
+        if (end.isBefore(start) || end.differenceInDays(start) > 366) {
+          throw const _RpcException(-32602, 'Invalid start/end range');
+        }
+        final sessions = await _repository.readTimeEntriesBetween(
+          instantAt(start, 0, timeZone),
+          instantAt(end.addDays(1), 0, timeZone),
+        );
+        final entries = await _repository.readEntriesByIds({for (final session in sessions) session.entryId});
+        return {
+          'start': start.iso,
+          'end': end.iso,
+          'sessions': [
+            for (final session in sessions)
+              {
+                'id': session.id,
+                'entryId': session.entryId,
+                'title': entries[session.entryId]?.title,
+                'spaceId': entries[session.entryId]?.spaceId,
+                'occurrenceDateKey': session.occurrenceDateKey,
+                'startedAt': session.startedAt.toUtc().toIso8601String(),
+                'endedAt': session.endedAt?.toUtc().toIso8601String(),
+                'durationMinutes': session.durationAt(now.toUtc()).inMinutes,
+                'note': session.note,
+              },
+          ],
+        };
       case 'sleep.window':
         return _sleepWindow(arguments, today, timeZone);
       case 'plan.create':
@@ -333,9 +451,62 @@ class McpServer {
       case 'home.shopping_check':
         _requireWrites();
         return _checkShopping(arguments);
+      case 'habits.check':
+        _requireWrites();
+        return _checkHabit(arguments, today);
+      case 'time.start':
+        _requireWrites();
+        return _startSession(arguments, today);
+      case 'time.stop':
+        _requireWrites();
+        return _stopSession(arguments, today);
       default:
         throw const _RpcException(-32602, 'Unknown tool');
     }
+  }
+
+  Future<Map<String, Object?>> _checkHabit(Map<String, Object?> arguments, LocalDate today) async {
+    final habitId = _stringArg(arguments, 'habitId');
+    final habits = await _repository.watchHabits().first;
+    if (!habits.any((habit) => habit.id == habitId)) throw const _RpcException(-32602, 'Unknown habitId');
+    final date = _dateArg(arguments, 'date') ?? today;
+    final completed = arguments['completed'];
+    if (completed is! bool) throw const _RpcException(-32602, 'completed must be a boolean');
+    await _repository.setHabitCompleted(habitId, date, completed: completed);
+    return {'habitId': habitId, 'date': date.iso, 'completed': completed};
+  }
+
+  Future<Map<String, Object?>> _startSession(Map<String, Object?> arguments, LocalDate today) async {
+    final entry = await _writableEntry(_stringArg(arguments, 'entryId'));
+    final date = _dateArg(arguments, 'date') ?? entry.date ?? today;
+    final session = await _repository.clockIn(
+      EntryOccurrence(date: date, displayDate: date, entry: entry),
+      at: _clock().toUtc(),
+    );
+    return {'id': session.id, 'entryId': entry.id, 'startedAt': session.startedAt.toUtc().toIso8601String()};
+  }
+
+  Future<Map<String, Object?>> _stopSession(Map<String, Object?> arguments, LocalDate today) async {
+    final entry = await _writableEntry(_stringArg(arguments, 'entryId'));
+    final date = _dateArg(arguments, 'date') ?? entry.date ?? today;
+    final session = await _repository.clockOut(
+      EntryOccurrence(date: date, displayDate: date, entry: entry),
+      at: _clock().toUtc(),
+    );
+    if (session == null) return {'stopped': false};
+    return {
+      'stopped': true,
+      'id': session.id,
+      'entryId': entry.id,
+      'endedAt': session.endedAt?.toUtc().toIso8601String(),
+    };
+  }
+
+  Future<Entry> _writableEntry(String entryId) async {
+    final entry = await _repository.readEntry(entryId);
+    if (entry == null || entry.deletedAt != null) throw const _RpcException(-32602, 'Unknown entryId');
+    if (entry.readOnly) throw const _RpcException(-32602, 'This entry is read-only');
+    return entry;
   }
 
   (LocalDate, LocalDate) _dateRange(Map<String, Object?> arguments, LocalDate today, {int defaultDays = 7}) {
@@ -493,21 +664,26 @@ class McpServer {
     }
     final allDay = arguments['allDay'] is bool ? arguments['allDay'] as bool : existing.allDay;
     final date = _dateArg(arguments, 'date') ?? existing.date;
-    final endDate = _dateArg(arguments, 'endDate') ?? existing.endDate;
+    final endDate = arguments.containsKey('endDate') ? _dateArg(arguments, 'endDate') : existing.endDate;
     final timeZone = arguments['timeZone'] is String
         ? arguments['timeZone'] as String
         : (existing.timeZone ?? deviceTimeZone);
     if (!isKnownTimeZone(timeZone)) throw const _RpcException(-32602, 'Unknown timeZone');
-    final startMinute = _optionalIntArg(arguments, 'startMinute') ?? existing.startMinute ?? 9 * 60;
-    final endMinute = _optionalIntArg(arguments, 'endMinute') ?? existing.endMinute ?? startMinute + 60;
+    final startMinute = arguments.containsKey('startMinute')
+        ? _optionalIntArg(arguments, 'startMinute')
+        : existing.startMinute;
+    final endMinute = arguments.containsKey('endMinute')
+        ? _optionalIntArg(arguments, 'endMinute')
+        : existing.endMinute;
     final kind = _enumArg(EntryKind.values, arguments['kind']) ?? existing.kind;
     final status = _enumArg(EntryStatus.values, arguments['status']) ?? existing.status;
     final tagIds = (arguments['tagIds'] as List?)?.whereType<String>().toSet() ?? existing.tagIds;
+    final timed = !allDay && (startMinute != null || endMinute != null);
+    final carriesEndDate = allDay || (startMinute != null && endMinute != null);
 
     final Entry updated;
     try {
-      updated = Entry(
-        id: existing.id,
+      updated = existing.copyWith(
         spaceId: spaceId,
         title: (arguments['title'] as String?)?.trim().isNotEmpty == true
             ? (arguments['title'] as String).trim()
@@ -515,27 +691,51 @@ class McpServer {
         notes: arguments['notes'] as String? ?? existing.notes,
         kind: kind,
         date: date,
-        endDate: allDay ? endDate : null,
+        endDate: carriesEndDate ? endDate : null,
         startMinute: allDay || date == null ? null : startMinute,
         endMinute: allDay || date == null ? null : endMinute,
-        timeZone: allDay || date == null ? null : timeZone,
+        timeZone: timed && date != null ? timeZone : null,
         tagIds: tagIds,
         allDay: allDay,
-        source: existing.source,
-        externalId: existing.externalId,
-        readOnly: existing.readOnly,
-        lastCompletedAt: existing.lastCompletedAt,
-        repeatAfterCompletionDays: existing.repeatAfterCompletionDays,
-        status: status,
         recurrence: existing.recurrence,
-        createdAt: existing.createdAt,
         updatedAt: _clock().toUtc(),
       );
     } on ArgumentError catch (error) {
       throw _RpcException(-32602, '$error');
     }
     await _repository.saveEntry(updated);
+    // Status changes go through the same lifecycle path as the UI so a
+    // maintenance date advances, a recurring series completes one occurrence,
+    // and a running session stops.
+    if (status != existing.status) {
+      await _applyStatus(existing, status, arguments, deviceTimeZone);
+    }
     return {'id': updated.id};
+  }
+
+  Future<void> _applyStatus(
+    Entry entry,
+    EntryStatus status,
+    Map<String, Object?> arguments,
+    String timeZone,
+  ) async {
+    if (status == EntryStatus.done && entry.isMaintenance) {
+      await _repository.completeMaintenanceEntry(entry.id, localDateAt(_clock(), timeZone));
+      return;
+    }
+    if (entry.recurrence != null) {
+      final raw = arguments['date'];
+      if (raw is! String) throw const _RpcException(-32602, 'date is required for a recurring entry');
+      final LocalDate date;
+      try {
+        date = LocalDate.parse(raw);
+      } on FormatException {
+        throw const _RpcException(-32602, 'date must be YYYY-MM-DD');
+      }
+      await _repository.setOccurrenceCompleted(entry.id, date, status == EntryStatus.done);
+      return;
+    }
+    await _repository.setEntryStatus(entry.id, status);
   }
 
   Future<Map<String, Object?>> _deletePlan(Map<String, Object?> arguments) async {
@@ -551,16 +751,25 @@ class McpServer {
 
   Future<Map<String, Object?>> _addShopping(Map<String, Object?> arguments) async {
     final name = _stringArg(arguments, 'name').trim();
+    final requestedHome = arguments['contextId'] as String?;
+    final homes = await _repository.watchContexts(spaceId: 'home').first;
+    final contextId = requestedHome ?? (homes.isEmpty ? null : homes.first.id);
+    if (contextId != null && !homes.any((home) => home.id == contextId)) {
+      throw const _RpcException(-32602, 'Unknown contextId for a Home line');
+    }
     final item = ShoppingItem(
       id: const Uuid().v4(),
+      contextId: contextId,
       name: name,
       quantity: _numberArg(arguments, 'quantity', 1).clamp(0.01, double.infinity).toDouble(),
       unit: arguments['unit'] as String? ?? '',
+      packSize: arguments['packSize'] as String? ?? '',
+      category: arguments['category'] as String? ?? '',
       note: arguments['note'] as String? ?? '',
       homeItemId: arguments['homeItemId'] as String?,
     );
     await _repository.saveShoppingItem(item);
-    return {'id': item.id};
+    return {'id': item.id, 'contextId': item.contextId};
   }
 
   Future<Map<String, Object?>> _checkShopping(Map<String, Object?> arguments) async {
@@ -573,7 +782,7 @@ class McpServer {
 
   void _requireWrites() {
     if (!_writesEnabled) {
-      throw const _RpcException(-32602, 'Write tools are disabled in Mane settings');
+      throw const _RpcException(-32602, 'Write tools are disabled in Sundial settings');
     }
   }
 
@@ -650,13 +859,34 @@ class McpServer {
       },
       {
         'name': 'home.inventory',
-        'description': 'Household inventory with quantities, locations and low-stock flags.',
+        'description': 'Household inventory variants with stock, minimums, expiry and locations.',
         'inputSchema': {'type': 'object', 'properties': <String, Object?>{}},
       },
       {
         'name': 'tags.list',
         'description': 'All tags, including the space they belong to.',
         'inputSchema': {'type': 'object', 'properties': <String, Object?>{}},
+      },
+      {
+        'name': 'spaces.list',
+        'description': 'Spaces, jobs/homes/people contexts and projects in one call.',
+        'inputSchema': {'type': 'object', 'properties': <String, Object?>{}},
+      },
+      {
+        'name': 'habits.list',
+        'description': 'Habits with their weekday schedule, this week progress and streak.',
+        'inputSchema': {'type': 'object', 'properties': <String, Object?>{}},
+      },
+      {
+        'name': 'time.sessions',
+        'description': 'Tracked sessions between two local dates, newest data from the repository.',
+        'inputSchema': {
+          'type': 'object',
+          'properties': {
+            'start': {'type': 'string', 'description': 'YYYY-MM-DD, defaults to today - 7 days'},
+            'end': {'type': 'string', 'description': 'YYYY-MM-DD, defaults to today'},
+          },
+        },
       },
       {
         'name': 'sleep.window',
@@ -768,7 +998,10 @@ class McpServer {
               'name': {'type': 'string'},
               'quantity': {'type': 'number', 'minimum': 0.01, 'default': 1},
               'unit': {'type': 'string'},
+              'packSize': {'type': 'string'},
+              'category': {'type': 'string'},
               'note': {'type': 'string'},
+              'contextId': {'type': 'string', 'description': 'A Home context. Defaults to the first home.'},
               'homeItemId': {'type': 'string'},
             },
             'required': ['name'],
@@ -786,6 +1019,43 @@ class McpServer {
             'required': ['id', 'checked'],
           },
         },
+        {
+          'name': 'habits.check',
+          'description': 'Mark a habit done or not done for one date.',
+          'inputSchema': {
+            'type': 'object',
+            'properties': {
+              'habitId': {'type': 'string'},
+              'date': {'type': 'string', 'description': 'YYYY-MM-DD, defaults to today'},
+              'completed': {'type': 'boolean'},
+            },
+            'required': ['habitId', 'completed'],
+          },
+        },
+        {
+          'name': 'time.start',
+          'description': 'Clock in to a writable task, keyed by its occurrence date.',
+          'inputSchema': {
+            'type': 'object',
+            'properties': {
+              'entryId': {'type': 'string'},
+              'date': {'type': 'string', 'description': 'YYYY-MM-DD for a recurring occurrence'},
+            },
+            'required': ['entryId'],
+          },
+        },
+        {
+          'name': 'time.stop',
+          'description': 'Pause a running clock-in session without writing the entry end.',
+          'inputSchema': {
+            'type': 'object',
+            'properties': {
+              'entryId': {'type': 'string'},
+              'date': {'type': 'string', 'description': 'YYYY-MM-DD for a recurring occurrence'},
+            },
+            'required': ['entryId'],
+          },
+        },
       ]);
     }
     return tools;
@@ -793,7 +1063,7 @@ class McpServer {
 
   String _bearerToken(HttpRequest request) {
     final header = request.headers.value(HttpHeaders.authorizationHeader);
-    if (header == null) return request.headers.value('x-mane-mcp-token') ?? '';
+    if (header == null) return request.headers.value('x-sundial-mcp-token') ?? '';
     if (!header.toLowerCase().startsWith('bearer ')) return '';
     return header.substring(7).trim();
   }

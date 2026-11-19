@@ -57,7 +57,7 @@ jobs:
 
       - name: Test domain package
         run: dart test
-        working-directory: packages/mane_core
+        working-directory: packages/sundial_core
 
       - name: Require Android signing secrets
         env:
@@ -76,12 +76,12 @@ jobs:
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          echo "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/mane-release.jks"
+          echo "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/sundial-release.jks"
           cat > android/key.properties <<EOF
           storePassword=$STORE_PASSWORD
           keyPassword=$KEY_PASSWORD
           keyAlias=$KEY_ALIAS
-          storeFile=$RUNNER_TEMP/mane-release.jks
+          storeFile=$RUNNER_TEMP/sundial-release.jks
           EOF
 
       - name: Build split release APKs
@@ -93,17 +93,17 @@ jobs:
       - name: Collect release files
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "mane-${VERSION}-armeabi-v7a.apk"
-          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "mane-${VERSION}-arm64-v8a.apk"
-          cp build/app/outputs/flutter-apk/app-x86_64-release.apk "mane-${VERSION}-x86_64.apk"
-          tar -czf "mane-${VERSION}-linux-x64.tar.gz" -C build/linux/x64/release/bundle .
-          sha256sum mane-*.apk mane-*.tar.gz > SHA256SUMS
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "sundial-${VERSION}-armeabi-v7a.apk"
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "sundial-${VERSION}-arm64-v8a.apk"
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk "sundial-${VERSION}-x86_64.apk"
+          tar -czf "sundial-${VERSION}-linux-x64.tar.gz" -C build/linux/x64/release/bundle .
+          sha256sum sundial-*.apk sundial-*.tar.gz > SHA256SUMS
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            mane-*.apk
-            mane-*.tar.gz
+            sundial-*.apk
+            sundial-*.tar.gz
             SHA256SUMS
           generate_release_notes: true

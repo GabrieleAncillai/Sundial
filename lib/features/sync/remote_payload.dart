@@ -1,4 +1,4 @@
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../models/home_item.dart';
 import '../../models/shopping_item.dart';
@@ -32,6 +32,11 @@ abstract final class SyncPayloads {
     'startMinute': entry.startMinute,
     'endMinute': entry.endMinute,
     'timeZone': entry.timeZone,
+    'icon': entry.icon,
+    'contextId': entry.contextId,
+    'projectId': entry.projectId,
+    'priority': entry.priority.name,
+    'completedAt': entry.completedAt?.toIso8601String(),
     'startAt': entry.startAt?.toIso8601String(),
     'endAt': entry.endAt?.toIso8601String(),
     'allDay': entry.allDay,
@@ -66,12 +71,23 @@ abstract final class SyncPayloads {
 
   static Map<String, Object?> homeItemJson(HomeItem item) => {
     'id': item.id,
+    'contextId': item.contextId,
+    'groupId': item.productGroupId,
     'name': item.name,
+    'description': item.description,
+    'icon': item.icon,
+    'color': item.colorValue,
+    'catalogId': item.catalogId,
     'category': item.category,
+    'categoryId': item.categoryId,
     'location': item.location,
+    'locationIds': item.locationIds,
     'quantity': item.quantity,
     'unit': item.unit,
-    'reorderLevel': item.reorderLevel,
+    'unitId': item.unitId,
+    'packSize': item.packSize,
+    'minQuantity': item.minimumStock,
+    'expiresAt': item.expiresAt?.iso,
     'notes': item.notes,
     'lastPurchasedAt': item.lastPurchasedAt?.toIso8601String(),
     'lowStock': item.isLowStock,
@@ -79,12 +95,19 @@ abstract final class SyncPayloads {
 
   static Map<String, Object?> shoppingItemJson(ShoppingItem item) => {
     'id': item.id,
+    'contextId': item.contextId,
     'name': item.name,
     'quantity': item.quantity,
     'unit': item.unit,
+    'packSize': item.packSize,
     'checked': item.checked,
     'note': item.note,
     'homeItemId': item.homeItemId,
+    'catalogId': item.catalogId,
+    'category': item.category,
+    'categoryId': item.categoryId,
+    'icon': item.icon,
+    'color': item.colorValue,
   };
 
   static Future<Map<String, Object?>> summary({

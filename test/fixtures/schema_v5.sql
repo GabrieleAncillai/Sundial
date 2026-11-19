@@ -1,4 +1,4 @@
--- Mane schema v5, captured before the v0.7 shift work.
+-- Sundial schema v5, captured before the v0.7 shift work.
 -- The migration test inserts v5 rows and opens AppDatabase so v5 -> v6 runs.
 CREATE TABLE "completion_records" ("entry_id" TEXT NOT NULL REFERENCES entry_records (id), "date_key" INTEGER NOT NULL, "created_at" INTEGER NOT NULL, PRIMARY KEY ("entry_id", "date_key"));
 

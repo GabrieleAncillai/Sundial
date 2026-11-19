@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
+import '../core/i18n/date_labels.dart';
 import '../core/i18n/l10n.dart';
 import '../core/widgets/ui_kit.dart';
 import '../state/providers.dart';
 import '../state/settings_controller.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_radii.dart';
 import '../theme/app_typography.dart';
 import '../widgets/entry_widgets.dart';
 import 'entry_editor.dart';
@@ -31,6 +33,7 @@ class _WeekScreenState extends ConsumerState<WeekScreen> {
     final start = today.startOfWeek(settings.weekStart).addDays(7 * _offsetWeeks);
     final range = (start: start, end: start.addDays(6));
     final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
+    final contexts = ref.watch(contextsProvider(null)).value ?? const <PlannerContext>[];
     final entriesState = ref.watch(entriesProvider(range));
     final shiftsState = ref.watch(shiftsProvider(range));
     final allEntries = entriesState.value ?? const <EntryOccurrence>[];
@@ -65,8 +68,9 @@ class _WeekScreenState extends ConsumerState<WeekScreen> {
           onToday: () => setState(() => _offsetWeeks = 0),
         ),
         const SizedBox(height: 16),
-        if (entriesState.hasError) ManeNotice(text: context.l10n.couldNotLoadDay('${entriesState.error}')),
-        if (shiftsState.hasError) ManeNotice(text: context.l10n.couldNotLoadShifts('${shiftsState.error}')),
+        if (entriesState.hasError) SundialNotice(text: context.l10n.couldNotLoadDay('${entriesState.error}')),
+        if (shiftsState.hasError)
+          SundialNotice(text: context.l10n.couldNotLoadShifts('${shiftsState.error}')),
         for (var index = 0; index < 7; index++) ...[
           _DaySection(
             date: start.addDays(index),
@@ -74,6 +78,7 @@ class _WeekScreenState extends ConsumerState<WeekScreen> {
             entries: entriesByDate[start.addDays(index)] ?? const [],
             shifts: shiftsByDate[start.addDays(index)] ?? const [],
             spaces: spaces,
+            contexts: contexts,
           ),
           const SizedBox(height: 10),
         ],
@@ -99,8 +104,6 @@ class _WeekHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.mc;
     final end = start.addDays(6);
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final format = DateFormat.MMMd(locale);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -109,8 +112,9 @@ class _WeekHeader extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                '${format.format(start.toDateTime())} – ${format.format(end.toDateTime())}',
-                style: ManeType.headline(23, color: c.text),
+                '${formatShortDate(context, start.toDateTime())} – '
+                '${formatShortDate(context, end.toDateTime())}',
+                style: SundialType.headline(23, color: c.text),
               ),
             ),
             GlassIconButton(
@@ -147,6 +151,7 @@ class _DaySection extends StatelessWidget {
     required this.entries,
     required this.shifts,
     required this.spaces,
+    required this.contexts,
   });
 
   final LocalDate date;
@@ -154,6 +159,7 @@ class _DaySection extends StatelessWidget {
   final List<EntryOccurrence> entries;
   final List<ShiftOccurrence> shifts;
   final List<Space> spaces;
+  final List<PlannerContext> contexts;
 
   @override
   Widget build(BuildContext context) {
@@ -176,16 +182,16 @@ class _DaySection extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: isToday ? c.accent : c.surfaceAlt,
-                  borderRadius: BorderRadius.circular(13),
+                  borderRadius: BorderRadius.circular(SundialRadii.sm),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       DateFormat.E(locale).format(date.toDateTime()).toUpperCase(),
-                      style: ManeType.label(9.5, color: isToday ? c.onAccent : c.textTertiary),
+                      style: SundialType.label(9.5, color: isToday ? c.onAccent : c.textTertiary),
                     ),
-                    Text('${date.day}', style: ManeType.title(16, color: isToday ? c.onAccent : c.text)),
+                    Text('${date.day}', style: SundialType.title(16, color: isToday ? c.onAccent : c.text)),
                   ],
                 ),
               ),
@@ -196,7 +202,9 @@ class _DaySection extends StatelessWidget {
                     : Wrap(
                         spacing: 6,
                         runSpacing: 4,
-                        children: shifts.map((item) => ShiftChip(occurrence: item)).toList(),
+                        children: shifts
+                            .map((item) => ShiftChip(occurrence: item, contexts: contexts))
+                            .toList(),
                       ),
               ),
               GlassIconButton(
@@ -210,7 +218,7 @@ class _DaySection extends StatelessWidget {
           if (empty)
             Padding(
               padding: const EdgeInsets.fromLTRB(54, 8, 8, 2),
-              child: Text(context.l10n.nothingPlanned, style: ManeType.body(12, color: c.textTertiary)),
+              child: Text(context.l10n.nothingPlanned, style: SundialType.body(12, color: c.textTertiary)),
             )
           else if (entries.isNotEmpty)
             Padding(

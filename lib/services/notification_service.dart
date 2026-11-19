@@ -2,9 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../models/app_settings.dart';
 import 'reminder_planner.dart';
 
 /// Thin wrapper around `flutter_local_notifications`.
@@ -19,14 +20,15 @@ class NotificationService {
     : _deviceTimeZone = deviceTimeZone,
       _ready = true;
 
-  static const channelId = 'mane_reminders';
-  static const channelName = 'Mane reminders';
+  static const channelId = 'sundial_reminders';
+  static const channelName = 'Sundial reminders';
   static const channelDescription = 'Entry and all-day reminders';
 
   final FlutterLocalNotificationsPlugin _plugin;
   final Set<int> _scheduledIds = {};
   bool _ready = false;
   String _deviceTimeZone = 'UTC';
+  SundialAlarmSound _alarmSound = SundialAlarmSound.chime;
   String? _pendingEntryId;
   (String, String, LocalDate?)? _pendingAction;
 
@@ -61,6 +63,28 @@ class NotificationService {
 
   bool get isReady => _ready;
 
+  static String channelIdFor(SundialAlarmSound sound) => 'sundial_reminders_${sound.name}';
+
+  /// Android keeps one channel per alarm sound because a channel's sound cannot
+  /// be changed after creation. Linux uses the desktop notification sound.
+  static NotificationDetails detailsFor(SundialAlarmSound sound) => NotificationDetails(
+    android: AndroidNotificationDetails(
+      channelIdFor(sound),
+      channelName,
+      channelDescription: channelDescription,
+      importance: Importance.high,
+      priority: Priority.high,
+      sound: RawResourceAndroidNotificationSound('sundial_alarm_${sound.name}'),
+      actions: const [
+        AndroidNotificationAction(snoozeAction, 'Snooze 10 minutes', showsUserInterface: true),
+        AndroidNotificationAction(completeAction, 'Mark complete', showsUserInterface: true),
+      ],
+    ),
+    linux: const LinuxNotificationDetails(),
+  );
+
+  void setAlarmSound(SundialAlarmSound sound) => _alarmSound = sound;
+
   String? takePendingEntry() {
     final id = _pendingEntryId;
     _pendingEntryId = null;
@@ -73,27 +97,34 @@ class NotificationService {
     return action;
   }
 
-  Future<void> initialize({required String deviceTimeZone}) async {
+  Future<void> initialize({
+    required String deviceTimeZone,
+    SundialAlarmSound alarmSound = SundialAlarmSound.chime,
+  }) async {
     if (_ready) return;
     _deviceTimeZone = deviceTimeZone;
+    _alarmSound = alarmSound;
     try {
-      const android = AndroidInitializationSettings('ic_stat_mane');
-      const linux = LinuxInitializationSettings(defaultActionName: 'Mane');
+      const android = AndroidInitializationSettings('ic_stat_sundial');
+      const linux = LinuxInitializationSettings(defaultActionName: 'Sundial');
       await _plugin.initialize(
         settings: const InitializationSettings(android: android, linux: linux),
         onDidReceiveNotificationResponse: _onResponse,
       );
 
       if (defaultTargetPlatform == TargetPlatform.android) {
-        const channel = AndroidNotificationChannel(
-          channelId,
-          channelName,
-          description: channelDescription,
-          importance: Importance.high,
-        );
-        await _plugin
-            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-            ?.createNotificationChannel(channel);
+        final android = _plugin
+            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+        for (final sound in SundialAlarmSound.values) {
+          final channel = AndroidNotificationChannel(
+            channelIdFor(sound),
+            channelName,
+            description: channelDescription,
+            importance: Importance.high,
+            sound: RawResourceAndroidNotificationSound('sundial_alarm_${sound.name}'),
+          );
+          await android?.createNotificationChannel(channel);
+        }
       }
 
       final launch = await _plugin.getNotificationAppLaunchDetails();
@@ -170,7 +201,7 @@ class NotificationService {
             title: plan.title,
             body: plan.body.isEmpty ? null : plan.body,
             scheduledDate: scheduled,
-            notificationDetails: reminderDetails,
+            notificationDetails: detailsFor(_alarmSound),
             androidScheduleMode: mode,
             payload: _encodePayload(plan.entryId, plan.date),
           );
@@ -212,7 +243,7 @@ class NotificationService {
         title: title,
         body: body.isEmpty ? null : body,
         scheduledDate: scheduled,
-        notificationDetails: reminderDetails,
+        notificationDetails: detailsFor(_alarmSound),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         payload: _encodePayload(entryId, date),
       );

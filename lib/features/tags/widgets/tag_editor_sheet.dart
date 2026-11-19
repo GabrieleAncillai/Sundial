@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/l10n.dart';
+import '../../../core/icons/sundial_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
+import '../../spaces/widgets/space_controls.dart';
 import '../tag_colors.dart';
 
 Future<void> showTagEditor(BuildContext context, {Tag? tag, required List<Space> spaces}) =>
@@ -31,6 +34,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
   late final TextEditingController _nameController;
   late String? _spaceId;
   late int _color;
+  late String _icon;
   bool _saving = false;
 
   @override
@@ -39,6 +43,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
     _nameController = TextEditingController(text: widget.tag?.name ?? '');
     _spaceId = widget.tag?.spaceId;
     _color = widget.tag?.colorValue ?? tagPalette.first;
+    _icon = widget.tag?.icon ?? 'folder';
   }
 
   @override
@@ -52,7 +57,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
     final l10n = context.l10n;
     final c = context.mc;
     return AppSheet(
-      title: widget.tag == null ? l10n.addTag : l10n.editTag,
+      title: widget.tag == null ? l10n.addCategory : l10n.editCategory,
       children: [
         Form(
           key: _formKey,
@@ -63,36 +68,76 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
                 controller: _nameController,
                 autofocus: true,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(labelText: l10n.tagName),
+                decoration: InputDecoration(labelText: l10n.categoryName),
                 validator: (value) => value == null || value.trim().isEmpty ? l10n.tagNameRequired : null,
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String?>(
-                initialValue: _spaceId,
-                decoration: InputDecoration(labelText: l10n.tagSpace),
-                items: [
-                  DropdownMenuItem<String?>(value: null, child: Text(l10n.tagSpaceAny)),
-                  for (final space in widget.spaces)
-                    DropdownMenuItem<String?>(
-                      value: space.id,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
+              SundialSelectField(
+                label: l10n.tagSpace,
+                valueLabel: _spaceId == null
+                    ? l10n.tagSpaceAny
+                    : widget.spaces.where((space) => space.id == _spaceId).firstOrNull?.name ??
+                          l10n.tagSpaceAny,
+                leading: const Icon(Icons.space_dashboard_outlined),
+                onTap: () async {
+                  final picked = await showSundialSelectSheet<String>(
+                    context: context,
+                    title: l10n.tagSpace,
+                    selected: _spaceId ?? '',
+                    options: [
+                      SundialSelectOption(value: '', label: l10n.tagSpaceAny),
+                      for (final space in widget.spaces)
+                        SundialSelectOption(
+                          value: space.id,
+                          label: space.name,
+                          leading: Container(
+                            width: 9,
+                            height: 9,
                             decoration: BoxDecoration(color: Color(space.colorValue), shape: BoxShape.circle),
                           ),
-                          const SizedBox(width: 8),
-                          Text(space.name),
-                        ],
-                      ),
-                    ),
-                ],
-                onChanged: (value) => setState(() => _spaceId = value),
+                        ),
+                    ],
+                  );
+                  if (picked != null && mounted) {
+                    setState(() => _spaceId = picked.isEmpty ? null : picked);
+                  }
+                },
               ),
               const SizedBox(height: 16),
-              Text(l10n.tagColor, style: ManeType.label(12.5, color: c.textSecondary)),
+              Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: tagColor(_color).withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(SundialRadii.sm),
+                    ),
+                    child: Icon(SundialIcons.resolve(_icon), size: 20, color: tagColor(_color)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l10n.icon,
+                      style: SundialType.body(13, weight: FontWeight.w700, color: c.text),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () async {
+                      final picked = await showIconPicker(
+                        context,
+                        selected: _icon,
+                        recommended: SundialIcons.personalRecommended,
+                      );
+                      if (picked != null && mounted) setState(() => _icon = picked);
+                    },
+                    icon: const Icon(Icons.category_outlined, size: 18),
+                    label: Text(l10n.chooseIcon),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(l10n.tagColor, style: SundialType.label(12.5, color: c.textSecondary)),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 10,
@@ -109,9 +154,20 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
                         decoration: BoxDecoration(
                           color: tagColor(color),
                           shape: BoxShape.circle,
-                          border: color == _color ? Border.all(color: c.text, width: 2.5) : null,
+                          border: Border.all(
+                            color: color == _color ? c.text : c.border,
+                            width: color == _color ? 2.5 : 1,
+                          ),
                         ),
-                        child: color == _color ? Icon(Icons.check, size: 18, color: c.onAccent) : null,
+                        child: color == _color
+                            ? Icon(
+                                Icons.check,
+                                size: 18,
+                                color: tagColor(color).computeLuminance() > 0.38
+                                    ? Colors.black87
+                                    : Colors.white,
+                              )
+                            : null,
                       ),
                     ),
                 ],
@@ -139,6 +195,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
       spaceId: _spaceId,
       name: _nameController.text.trim(),
       colorValue: _color,
+      icon: _icon,
       position: existing?.position ?? 0,
     );
     try {

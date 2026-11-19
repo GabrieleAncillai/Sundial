@@ -1,14 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../models/app_settings.dart';
 import 'app_colors.dart';
+import 'app_radii.dart';
 import 'app_typography.dart';
 
-class ManeTheme {
-  ManeTheme._();
+class SundialTheme {
+  SundialTheme._();
 
-  static ThemeData get light => _build(Brightness.light, ManeColors.light);
-  static ThemeData get dark => _build(Brightness.dark, ManeColors.dark);
+  static ThemeData get light => _build(Brightness.light, SundialColors.light);
+  static ThemeData get dark => _build(Brightness.dark, SundialColors.dark);
+
+  static ThemeData forSettings(AppSettings settings, Brightness brightness) {
+    // OLED paints black behind the content; Aero's pearl palette would become
+    // unreadable there, so OLED opts out of the Aero surface treatment.
+    final aero = settings.isAero && settings.backgroundStyle != SundialBackgroundStyle.oled;
+    final effective = aero ? Brightness.light : brightness;
+    final base = aero
+        ? SundialColors.aero
+        : effective == Brightness.dark
+        ? SundialColors.dark
+        : SundialColors.light;
+    final accent = _accentFor(settings.accentScheme, effective, aero: aero);
+    return _build(effective, base.withAccent(accent));
+  }
+
+  static Color _accentFor(SundialAccentScheme scheme, Brightness brightness, {required bool aero}) {
+    if (aero) return SundialColors.aero.accent;
+    final dark = brightness == Brightness.dark;
+    return switch (scheme) {
+      SundialAccentScheme.sage => dark ? const Color(0xFF8FB39D) : const Color(0xFF4F6D5A),
+      SundialAccentScheme.ocean => dark ? const Color(0xFF82B1FF) : const Color(0xFF2D6CDF),
+      SundialAccentScheme.sunset => dark ? const Color(0xFFE89A7B) : const Color(0xFFC25B3F),
+      SundialAccentScheme.violet => dark ? const Color(0xFFB6A2FF) : const Color(0xFF6E52D8),
+      SundialAccentScheme.mono => dark ? const Color(0xFFD0D0D0) : const Color(0xFF444444),
+    };
+  }
 
   static SystemUiOverlayStyle systemBars(Brightness brightness) {
     final icons = brightness == Brightness.dark ? Brightness.light : Brightness.dark;
@@ -24,7 +52,7 @@ class ManeTheme {
     );
   }
 
-  static ThemeData _build(Brightness brightness, ManeColors c) {
+  static ThemeData _build(Brightness brightness, SundialColors c) {
     final scheme = ColorScheme.fromSeed(seedColor: c.accent, brightness: brightness).copyWith(
       primary: c.accent,
       onPrimary: c.onAccent,
@@ -54,14 +82,13 @@ class ManeTheme {
       onErrorContainer: c.danger,
     );
 
-    final radius = BorderRadius.circular(22);
-    final text = ManeType.textTheme(c.text, c.textSecondary);
+    final text = SundialType.textTheme(c.text, c.textSecondary);
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
-      fontFamily: ManeType.family,
+      fontFamily: SundialType.family,
       scaffoldBackgroundColor: Colors.transparent,
       canvasColor: c.pageBg,
       textTheme: text,
@@ -83,7 +110,7 @@ class ManeTheme {
         systemOverlayStyle: systemBars(brightness),
         foregroundColor: c.text,
         iconTheme: IconThemeData(color: c.text, size: 22),
-        titleTextStyle: ManeType.headline(20, color: c.text),
+        titleTextStyle: SundialType.headline(20, color: c.text),
       ),
       cardTheme: CardThemeData(
         color: c.surface,
@@ -91,8 +118,8 @@ class ManeTheme {
         shadowColor: c.shadow,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: radius,
+        shape: SundialShapes.rounded(
+          radius: SundialRadii.lg,
           side: BorderSide(color: c.border),
         ),
       ),
@@ -103,7 +130,7 @@ class ManeTheme {
         modalBarrierColor: Colors.black.withValues(alpha: 0.38),
         elevation: 0,
         constraints: const BoxConstraints(maxWidth: 620),
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+        shape: SundialShapes.sheetTop(radius: SundialRadii.xxl),
         dragHandleColor: c.borderStrong,
         dragHandleSize: const Size(40, 4),
         showDragHandle: true,
@@ -113,17 +140,17 @@ class ManeTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         constraints: const BoxConstraints(minWidth: 280, maxWidth: 440),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-        titleTextStyle: ManeType.headline(19, color: c.text),
-        contentTextStyle: ManeType.body(14, color: c.textSecondary),
+        shape: SundialShapes.rounded(radius: SundialRadii.xl),
+        titleTextStyle: SundialType.headline(19, color: c.text),
+        contentTextStyle: SundialType.body(14, color: c.textSecondary),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: c.surfaceHigh,
-        contentTextStyle: ManeType.body(13.5, color: c.text),
+        contentTextStyle: SundialType.body(13.5, color: c.text),
         actionTextColor: c.accent,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: SundialShapes.rounded(radius: SundialRadii.md),
         insetPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -132,8 +159,9 @@ class ManeTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         height: 68,
+        indicatorShape: SundialShapes.rounded(radius: SundialRadii.md),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        labelTextStyle: WidgetStatePropertyAll(ManeType.label(10.5, color: c.textSecondary)),
+        labelTextStyle: WidgetStatePropertyAll(SundialType.label(10.5, color: c.textSecondary)),
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
             size: 22,
@@ -150,7 +178,7 @@ class ManeTheme {
           minimumSize: const Size(0, 48),
           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
           shape: const StadiumBorder(),
-          textStyle: ManeType.label(14, color: c.onAccent),
+          textStyle: SundialType.label(14, color: c.onAccent),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -160,7 +188,7 @@ class ManeTheme {
           minimumSize: const Size(0, 46),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           shape: const StadiumBorder(),
-          textStyle: ManeType.label(13.5, color: c.text),
+          textStyle: SundialType.label(13.5, color: c.text),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -169,7 +197,7 @@ class ManeTheme {
           minimumSize: const Size(0, 44),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           shape: const StadiumBorder(),
-          textStyle: ManeType.label(13.5, color: c.accent),
+          textStyle: SundialType.label(13.5, color: c.accent),
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
@@ -180,25 +208,28 @@ class ManeTheme {
         fillColor: c.surfaceAlt,
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: ManeType.body(14, color: c.textTertiary),
-        labelStyle: ManeType.body(13.5, color: c.textSecondary),
-        floatingLabelStyle: ManeType.label(12.5, color: c.accent),
-        errorStyle: ManeType.body(12, color: c.danger),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+        hintStyle: SundialType.body(14, color: c.textTertiary),
+        labelStyle: SundialType.body(13.5, color: c.textSecondary),
+        floatingLabelStyle: SundialType.label(12.5, color: c.accent),
+        errorStyle: SundialType.body(12, color: c.danger),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(SundialRadii.md),
+          borderSide: BorderSide.none,
+        ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           borderSide: BorderSide(color: c.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           borderSide: BorderSide(color: c.accent, width: 1.4),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           borderSide: BorderSide(color: c.danger),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(SundialRadii.md),
           borderSide: BorderSide(color: c.danger, width: 1.4),
         ),
       ),
@@ -209,7 +240,7 @@ class ManeTheme {
         ),
         checkColor: WidgetStatePropertyAll(c.onAccent),
         side: BorderSide(color: c.borderStrong, width: 1.5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(SundialRadii.xxs)),
       ),
       switchTheme: SwitchThemeData(
         trackColor: WidgetStateProperty.resolveWith(
@@ -227,34 +258,34 @@ class ManeTheme {
         selectedColor: c.accentSoft,
         disabledColor: c.surfaceAlt,
         side: BorderSide(color: c.border),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        labelStyle: ManeType.label(12.5, color: c.textSecondary),
-        secondaryLabelStyle: ManeType.label(12.5, color: c.accent),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(SundialRadii.xs)),
+        labelStyle: SundialType.label(12.5, color: c.textSecondary),
+        secondaryLabelStyle: SundialType.label(12.5, color: c.accent),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       ),
       popupMenuTheme: PopupMenuThemeData(
         color: c.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        textStyle: ManeType.body(14, color: c.text),
+        shape: SundialShapes.rounded(radius: SundialRadii.md),
+        textStyle: SundialType.body(14, color: c.text),
       ),
       listTileTheme: ListTileThemeData(
         iconColor: c.textSecondary,
         textColor: c.text,
-        titleTextStyle: ManeType.body(15, color: c.text),
-        subtitleTextStyle: ManeType.body(12.5, color: c.textSecondary),
+        titleTextStyle: SundialType.body(15, color: c.text),
+        subtitleTextStyle: SundialType.body(12.5, color: c.textSecondary),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(color: c.accent, linearTrackColor: c.surfaceHigh),
       tooltipTheme: TooltipThemeData(
-        decoration: BoxDecoration(color: c.surfaceHigh, borderRadius: BorderRadius.circular(10)),
-        textStyle: ManeType.body(12, color: c.text),
+        decoration: BoxDecoration(color: c.surfaceHigh, borderRadius: BorderRadius.circular(SundialRadii.xs)),
+        textStyle: SundialType.body(12, color: c.text),
       ),
       timePickerTheme: TimePickerThemeData(
         backgroundColor: c.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        hourMinuteShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: SundialShapes.rounded(radius: SundialRadii.xl),
+        hourMinuteShape: SundialShapes.rounded(radius: SundialRadii.md),
         hourMinuteColor: WidgetStateColor.resolveWith(
           (states) => states.contains(WidgetState.selected) ? c.accentSoft : c.surfaceAlt,
         ),
@@ -268,7 +299,7 @@ class ManeTheme {
           (states) => states.contains(WidgetState.selected) ? c.accent : c.textSecondary,
         ),
         dayPeriodBorderSide: BorderSide(color: c.border),
-        helpTextStyle: ManeType.kicker(color: c.textSecondary),
+        helpTextStyle: SundialType.kicker(color: c.textSecondary),
         entryModeIconColor: c.textSecondary,
         cancelButtonStyle: TextButton.styleFrom(foregroundColor: c.textSecondary),
         confirmButtonStyle: TextButton.styleFrom(foregroundColor: c.accent),
@@ -276,7 +307,7 @@ class ManeTheme {
       datePickerTheme: DatePickerThemeData(
         backgroundColor: c.surface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+        shape: SundialShapes.rounded(radius: SundialRadii.xl),
         headerBackgroundColor: c.accentSoft,
         headerForegroundColor: c.text,
         todayForegroundColor: WidgetStatePropertyAll(c.accent),

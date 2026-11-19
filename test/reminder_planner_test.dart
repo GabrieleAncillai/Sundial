@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/models/reminder.dart';
-import 'package:mane/services/reminder_planner.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/models/reminder.dart';
+import 'package:sundial/services/reminder_planner.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 void main() {
   setUpAll(initializeTimeZones);

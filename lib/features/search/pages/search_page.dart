@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -10,12 +10,16 @@ import '../../../models/home_item.dart';
 import '../../../models/search_results.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../../../widgets/entry_widgets.dart';
 import '../../home_inventory/pages/home_inventory_page.dart';
+import '../../home_inventory/widgets/home_art.dart';
 
 class SearchPage extends ConsumerStatefulWidget {
-  const SearchPage({super.key});
+  const SearchPage({super.key, this.initialQuery});
+
+  final String? initialQuery;
 
   @override
   ConsumerState<SearchPage> createState() => _SearchPageState();
@@ -27,6 +31,16 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   Timer? _debounce;
   Future<SearchResults>? _results;
   String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initialQuery?.trim() ?? '';
+    if (initial.isEmpty) return;
+    _controller.text = initial;
+    _query = initial;
+    _results = ref.read(repositoryProvider).search(initial);
+  }
 
   @override
   void dispose() {
@@ -56,11 +70,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return ManePage(
+    return SundialPage(
       title: l10n.search,
       child: Column(
         children: [
-          ManeSearchField(
+          SundialSearchField(
             controller: _controller,
             focusNode: _focus,
             autofocus: true,
@@ -181,6 +195,7 @@ class _HomeTile extends StatelessWidget {
     final details = [
       if (item.category.isNotEmpty) item.category,
       if (item.location.isNotEmpty) item.location,
+      if (item.packSize.isNotEmpty) item.packSize,
       '${_quantity(item.quantity)}${item.unit.isEmpty ? '' : ' ${item.unit}'}',
     ];
     return Padding(
@@ -197,7 +212,10 @@ class _HomeTile extends StatelessWidget {
                   Container(
                     width: 36,
                     height: 36,
-                    decoration: BoxDecoration(color: c.homeSoft, borderRadius: BorderRadius.circular(11)),
+                    decoration: BoxDecoration(
+                      color: c.homeSoft,
+                      borderRadius: BorderRadius.circular(SundialRadii.sm),
+                    ),
                     child: Icon(Icons.inventory_2_outlined, size: 19, color: c.home),
                   ),
                   const SizedBox(width: 12),
@@ -208,16 +226,16 @@ class _HomeTile extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            item.name,
+                            homeItemDisplayName(item, Localizations.localeOf(context)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: ManeType.body(14, weight: FontWeight.w700, color: c.text),
+                            style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                           ),
                           Text(
                             details.join(' · '),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: ManeType.body(11.5, color: c.textSecondary),
+                            style: SundialType.body(11.5, color: c.textSecondary),
                           ),
                         ],
                       ),
@@ -231,8 +249,11 @@ class _HomeTile extends StatelessWidget {
             Container(
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: c.dangerSoft, borderRadius: BorderRadius.circular(8)),
-              child: Text(context.l10n.lowStock, style: ManeType.label(10, color: c.danger)),
+              decoration: BoxDecoration(
+                color: c.dangerSoft,
+                borderRadius: BorderRadius.circular(SundialRadii.xs),
+              ),
+              child: Text(context.l10n.lowStock, style: SundialType.label(10, color: c.danger)),
             ),
         ],
       ),

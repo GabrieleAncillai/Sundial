@@ -455,6 +455,2445 @@ class SpaceRecordsCompanion extends UpdateCompanion<SpaceRow> {
   }
 }
 
+class $ContextRecordsTable extends ContextRecords
+    with TableInfo<$ContextRecordsTable, ContextRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContextRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES space_records (id)',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+    'color',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('folder'),
+  );
+  static const VerificationMeta _imagePathMeta = const VerificationMeta(
+    'imagePath',
+  );
+  @override
+  late final GeneratedColumn<String> imagePath = GeneratedColumn<String>(
+    'image_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    spaceId,
+    name,
+    description,
+    color,
+    icon,
+    imagePath,
+    position,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'context_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContextRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_spaceIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_colorMeta);
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    }
+    if (data.containsKey('image_path')) {
+      context.handle(
+        _imagePathMeta,
+        imagePath.isAcceptableOrUnknown(data['image_path']!, _imagePathMeta),
+      );
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ContextRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContextRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color'],
+      )!,
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      )!,
+      imagePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}image_path'],
+      ),
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $ContextRecordsTable createAlias(String alias) {
+    return $ContextRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class ContextRow extends DataClass implements Insertable<ContextRow> {
+  final String id;
+  final String spaceId;
+  final String name;
+  final String description;
+  final int color;
+  final String icon;
+  final String? imagePath;
+  final int position;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const ContextRow({
+    required this.id,
+    required this.spaceId,
+    required this.name,
+    required this.description,
+    required this.color,
+    required this.icon,
+    this.imagePath,
+    required this.position,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['space_id'] = Variable<String>(spaceId);
+    map['name'] = Variable<String>(name);
+    map['description'] = Variable<String>(description);
+    map['color'] = Variable<int>(color);
+    map['icon'] = Variable<String>(icon);
+    if (!nullToAbsent || imagePath != null) {
+      map['image_path'] = Variable<String>(imagePath);
+    }
+    map['position'] = Variable<int>(position);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  ContextRecordsCompanion toCompanion(bool nullToAbsent) {
+    return ContextRecordsCompanion(
+      id: Value(id),
+      spaceId: Value(spaceId),
+      name: Value(name),
+      description: Value(description),
+      color: Value(color),
+      icon: Value(icon),
+      imagePath: imagePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imagePath),
+      position: Value(position),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory ContextRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContextRow(
+      id: serializer.fromJson<String>(json['id']),
+      spaceId: serializer.fromJson<String>(json['spaceId']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String>(json['description']),
+      color: serializer.fromJson<int>(json['color']),
+      icon: serializer.fromJson<String>(json['icon']),
+      imagePath: serializer.fromJson<String?>(json['imagePath']),
+      position: serializer.fromJson<int>(json['position']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'spaceId': serializer.toJson<String>(spaceId),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String>(description),
+      'color': serializer.toJson<int>(color),
+      'icon': serializer.toJson<String>(icon),
+      'imagePath': serializer.toJson<String?>(imagePath),
+      'position': serializer.toJson<int>(position),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  ContextRow copyWith({
+    String? id,
+    String? spaceId,
+    String? name,
+    String? description,
+    int? color,
+    String? icon,
+    Value<String?> imagePath = const Value.absent(),
+    int? position,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => ContextRow(
+    id: id ?? this.id,
+    spaceId: spaceId ?? this.spaceId,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    color: color ?? this.color,
+    icon: icon ?? this.icon,
+    imagePath: imagePath.present ? imagePath.value : this.imagePath,
+    position: position ?? this.position,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  ContextRow copyWithCompanion(ContextRecordsCompanion data) {
+    return ContextRow(
+      id: data.id.present ? data.id.value : this.id,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      name: data.name.present ? data.name.value : this.name,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      color: data.color.present ? data.color.value : this.color,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
+      position: data.position.present ? data.position.value : this.position,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContextRow(')
+          ..write('id: $id, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('color: $color, ')
+          ..write('icon: $icon, ')
+          ..write('imagePath: $imagePath, ')
+          ..write('position: $position, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    spaceId,
+    name,
+    description,
+    color,
+    icon,
+    imagePath,
+    position,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContextRow &&
+          other.id == this.id &&
+          other.spaceId == this.spaceId &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.color == this.color &&
+          other.icon == this.icon &&
+          other.imagePath == this.imagePath &&
+          other.position == this.position &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class ContextRecordsCompanion extends UpdateCompanion<ContextRow> {
+  final Value<String> id;
+  final Value<String> spaceId;
+  final Value<String> name;
+  final Value<String> description;
+  final Value<int> color;
+  final Value<String> icon;
+  final Value<String?> imagePath;
+  final Value<int> position;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const ContextRecordsCompanion({
+    this.id = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.color = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.imagePath = const Value.absent(),
+    this.position = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ContextRecordsCompanion.insert({
+    required String id,
+    required String spaceId,
+    required String name,
+    this.description = const Value.absent(),
+    required int color,
+    this.icon = const Value.absent(),
+    this.imagePath = const Value.absent(),
+    this.position = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       spaceId = Value(spaceId),
+       name = Value(name),
+       color = Value(color),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ContextRow> custom({
+    Expression<String>? id,
+    Expression<String>? spaceId,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<int>? color,
+    Expression<String>? icon,
+    Expression<String>? imagePath,
+    Expression<int>? position,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (spaceId != null) 'space_id': spaceId,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (color != null) 'color': color,
+      if (icon != null) 'icon': icon,
+      if (imagePath != null) 'image_path': imagePath,
+      if (position != null) 'position': position,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ContextRecordsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? spaceId,
+    Value<String>? name,
+    Value<String>? description,
+    Value<int>? color,
+    Value<String>? icon,
+    Value<String?>? imagePath,
+    Value<int>? position,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return ContextRecordsCompanion(
+      id: id ?? this.id,
+      spaceId: spaceId ?? this.spaceId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      color: color ?? this.color,
+      icon: icon ?? this.icon,
+      imagePath: imagePath ?? this.imagePath,
+      position: position ?? this.position,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<int>(color.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
+    if (imagePath.present) {
+      map['image_path'] = Variable<String>(imagePath.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContextRecordsCompanion(')
+          ..write('id: $id, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('color: $color, ')
+          ..write('icon: $icon, ')
+          ..write('imagePath: $imagePath, ')
+          ..write('position: $position, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ProjectRecordsTable extends ProjectRecords
+    with TableInfo<$ProjectRecordsTable, ProjectRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProjectRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES space_records (id)',
+    ),
+  );
+  static const VerificationMeta _contextIdMeta = const VerificationMeta(
+    'contextId',
+  );
+  @override
+  late final GeneratedColumn<String> contextId = GeneratedColumn<String>(
+    'context_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES context_records (id)',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+    'color',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('folder'),
+  );
+  static const VerificationMeta _imagePathMeta = const VerificationMeta(
+    'imagePath',
+  );
+  @override
+  late final GeneratedColumn<String> imagePath = GeneratedColumn<String>(
+    'image_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    spaceId,
+    contextId,
+    name,
+    description,
+    color,
+    icon,
+    imagePath,
+    position,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'project_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ProjectRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_spaceIdMeta);
+    }
+    if (data.containsKey('context_id')) {
+      context.handle(
+        _contextIdMeta,
+        contextId.isAcceptableOrUnknown(data['context_id']!, _contextIdMeta),
+      );
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_colorMeta);
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    }
+    if (data.containsKey('image_path')) {
+      context.handle(
+        _imagePathMeta,
+        imagePath.isAcceptableOrUnknown(data['image_path']!, _imagePathMeta),
+      );
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ProjectRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProjectRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      )!,
+      contextId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}context_id'],
+      ),
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color'],
+      )!,
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      )!,
+      imagePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}image_path'],
+      ),
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $ProjectRecordsTable createAlias(String alias) {
+    return $ProjectRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class ProjectRow extends DataClass implements Insertable<ProjectRow> {
+  final String id;
+  final String spaceId;
+  final String? contextId;
+  final String name;
+  final String description;
+  final int color;
+  final String icon;
+  final String? imagePath;
+  final int position;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const ProjectRow({
+    required this.id,
+    required this.spaceId,
+    this.contextId,
+    required this.name,
+    required this.description,
+    required this.color,
+    required this.icon,
+    this.imagePath,
+    required this.position,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['space_id'] = Variable<String>(spaceId);
+    if (!nullToAbsent || contextId != null) {
+      map['context_id'] = Variable<String>(contextId);
+    }
+    map['name'] = Variable<String>(name);
+    map['description'] = Variable<String>(description);
+    map['color'] = Variable<int>(color);
+    map['icon'] = Variable<String>(icon);
+    if (!nullToAbsent || imagePath != null) {
+      map['image_path'] = Variable<String>(imagePath);
+    }
+    map['position'] = Variable<int>(position);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  ProjectRecordsCompanion toCompanion(bool nullToAbsent) {
+    return ProjectRecordsCompanion(
+      id: Value(id),
+      spaceId: Value(spaceId),
+      contextId: contextId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contextId),
+      name: Value(name),
+      description: Value(description),
+      color: Value(color),
+      icon: Value(icon),
+      imagePath: imagePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imagePath),
+      position: Value(position),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory ProjectRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProjectRow(
+      id: serializer.fromJson<String>(json['id']),
+      spaceId: serializer.fromJson<String>(json['spaceId']),
+      contextId: serializer.fromJson<String?>(json['contextId']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String>(json['description']),
+      color: serializer.fromJson<int>(json['color']),
+      icon: serializer.fromJson<String>(json['icon']),
+      imagePath: serializer.fromJson<String?>(json['imagePath']),
+      position: serializer.fromJson<int>(json['position']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'spaceId': serializer.toJson<String>(spaceId),
+      'contextId': serializer.toJson<String?>(contextId),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String>(description),
+      'color': serializer.toJson<int>(color),
+      'icon': serializer.toJson<String>(icon),
+      'imagePath': serializer.toJson<String?>(imagePath),
+      'position': serializer.toJson<int>(position),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  ProjectRow copyWith({
+    String? id,
+    String? spaceId,
+    Value<String?> contextId = const Value.absent(),
+    String? name,
+    String? description,
+    int? color,
+    String? icon,
+    Value<String?> imagePath = const Value.absent(),
+    int? position,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => ProjectRow(
+    id: id ?? this.id,
+    spaceId: spaceId ?? this.spaceId,
+    contextId: contextId.present ? contextId.value : this.contextId,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    color: color ?? this.color,
+    icon: icon ?? this.icon,
+    imagePath: imagePath.present ? imagePath.value : this.imagePath,
+    position: position ?? this.position,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  ProjectRow copyWithCompanion(ProjectRecordsCompanion data) {
+    return ProjectRow(
+      id: data.id.present ? data.id.value : this.id,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      contextId: data.contextId.present ? data.contextId.value : this.contextId,
+      name: data.name.present ? data.name.value : this.name,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      color: data.color.present ? data.color.value : this.color,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
+      position: data.position.present ? data.position.value : this.position,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProjectRow(')
+          ..write('id: $id, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('contextId: $contextId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('color: $color, ')
+          ..write('icon: $icon, ')
+          ..write('imagePath: $imagePath, ')
+          ..write('position: $position, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    spaceId,
+    contextId,
+    name,
+    description,
+    color,
+    icon,
+    imagePath,
+    position,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProjectRow &&
+          other.id == this.id &&
+          other.spaceId == this.spaceId &&
+          other.contextId == this.contextId &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.color == this.color &&
+          other.icon == this.icon &&
+          other.imagePath == this.imagePath &&
+          other.position == this.position &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class ProjectRecordsCompanion extends UpdateCompanion<ProjectRow> {
+  final Value<String> id;
+  final Value<String> spaceId;
+  final Value<String?> contextId;
+  final Value<String> name;
+  final Value<String> description;
+  final Value<int> color;
+  final Value<String> icon;
+  final Value<String?> imagePath;
+  final Value<int> position;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const ProjectRecordsCompanion({
+    this.id = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.contextId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.color = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.imagePath = const Value.absent(),
+    this.position = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProjectRecordsCompanion.insert({
+    required String id,
+    required String spaceId,
+    this.contextId = const Value.absent(),
+    required String name,
+    this.description = const Value.absent(),
+    required int color,
+    this.icon = const Value.absent(),
+    this.imagePath = const Value.absent(),
+    this.position = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       spaceId = Value(spaceId),
+       name = Value(name),
+       color = Value(color),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ProjectRow> custom({
+    Expression<String>? id,
+    Expression<String>? spaceId,
+    Expression<String>? contextId,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<int>? color,
+    Expression<String>? icon,
+    Expression<String>? imagePath,
+    Expression<int>? position,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (spaceId != null) 'space_id': spaceId,
+      if (contextId != null) 'context_id': contextId,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (color != null) 'color': color,
+      if (icon != null) 'icon': icon,
+      if (imagePath != null) 'image_path': imagePath,
+      if (position != null) 'position': position,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProjectRecordsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? spaceId,
+    Value<String?>? contextId,
+    Value<String>? name,
+    Value<String>? description,
+    Value<int>? color,
+    Value<String>? icon,
+    Value<String?>? imagePath,
+    Value<int>? position,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return ProjectRecordsCompanion(
+      id: id ?? this.id,
+      spaceId: spaceId ?? this.spaceId,
+      contextId: contextId ?? this.contextId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      color: color ?? this.color,
+      icon: icon ?? this.icon,
+      imagePath: imagePath ?? this.imagePath,
+      position: position ?? this.position,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (contextId.present) {
+      map['context_id'] = Variable<String>(contextId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<int>(color.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
+    if (imagePath.present) {
+      map['image_path'] = Variable<String>(imagePath.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProjectRecordsCompanion(')
+          ..write('id: $id, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('contextId: $contextId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('color: $color, ')
+          ..write('icon: $icon, ')
+          ..write('imagePath: $imagePath, ')
+          ..write('position: $position, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HabitRecordsTable extends HabitRecords
+    with TableInfo<$HabitRecordsTable, HabitRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HabitRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES space_records (id)',
+    ),
+  );
+  static const VerificationMeta _contextIdMeta = const VerificationMeta(
+    'contextId',
+  );
+  @override
+  late final GeneratedColumn<String> contextId = GeneratedColumn<String>(
+    'context_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES context_records (id)',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+    'color',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('star'),
+  );
+  static const VerificationMeta _targetPerWeekMeta = const VerificationMeta(
+    'targetPerWeek',
+  );
+  @override
+  late final GeneratedColumn<int> targetPerWeek = GeneratedColumn<int>(
+    'target_per_week',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(7),
+  );
+  static const VerificationMeta _weekdaysMeta = const VerificationMeta(
+    'weekdays',
+  );
+  @override
+  late final GeneratedColumn<String> weekdays = GeneratedColumn<String>(
+    'weekdays',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('1,2,3,4,5,6,7'),
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _archivedMeta = const VerificationMeta(
+    'archived',
+  );
+  @override
+  late final GeneratedColumn<bool> archived = GeneratedColumn<bool>(
+    'archived',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("archived" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    spaceId,
+    contextId,
+    name,
+    description,
+    color,
+    icon,
+    targetPerWeek,
+    weekdays,
+    position,
+    archived,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'habit_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HabitRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_spaceIdMeta);
+    }
+    if (data.containsKey('context_id')) {
+      context.handle(
+        _contextIdMeta,
+        contextId.isAcceptableOrUnknown(data['context_id']!, _contextIdMeta),
+      );
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_colorMeta);
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    }
+    if (data.containsKey('target_per_week')) {
+      context.handle(
+        _targetPerWeekMeta,
+        targetPerWeek.isAcceptableOrUnknown(
+          data['target_per_week']!,
+          _targetPerWeekMeta,
+        ),
+      );
+    }
+    if (data.containsKey('weekdays')) {
+      context.handle(
+        _weekdaysMeta,
+        weekdays.isAcceptableOrUnknown(data['weekdays']!, _weekdaysMeta),
+      );
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    if (data.containsKey('archived')) {
+      context.handle(
+        _archivedMeta,
+        archived.isAcceptableOrUnknown(data['archived']!, _archivedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HabitRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HabitRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      )!,
+      contextId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}context_id'],
+      ),
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color'],
+      )!,
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      )!,
+      targetPerWeek: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target_per_week'],
+      )!,
+      weekdays: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}weekdays'],
+      )!,
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+      archived: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}archived'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $HabitRecordsTable createAlias(String alias) {
+    return $HabitRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class HabitRow extends DataClass implements Insertable<HabitRow> {
+  final String id;
+  final String spaceId;
+  final String? contextId;
+  final String name;
+  final String description;
+  final int color;
+  final String icon;
+  final int targetPerWeek;
+
+  /// Scheduled weekdays, 1 = Monday through 7 = Sunday, comma separated.
+  final String weekdays;
+  final int position;
+  final bool archived;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const HabitRow({
+    required this.id,
+    required this.spaceId,
+    this.contextId,
+    required this.name,
+    required this.description,
+    required this.color,
+    required this.icon,
+    required this.targetPerWeek,
+    required this.weekdays,
+    required this.position,
+    required this.archived,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['space_id'] = Variable<String>(spaceId);
+    if (!nullToAbsent || contextId != null) {
+      map['context_id'] = Variable<String>(contextId);
+    }
+    map['name'] = Variable<String>(name);
+    map['description'] = Variable<String>(description);
+    map['color'] = Variable<int>(color);
+    map['icon'] = Variable<String>(icon);
+    map['target_per_week'] = Variable<int>(targetPerWeek);
+    map['weekdays'] = Variable<String>(weekdays);
+    map['position'] = Variable<int>(position);
+    map['archived'] = Variable<bool>(archived);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  HabitRecordsCompanion toCompanion(bool nullToAbsent) {
+    return HabitRecordsCompanion(
+      id: Value(id),
+      spaceId: Value(spaceId),
+      contextId: contextId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contextId),
+      name: Value(name),
+      description: Value(description),
+      color: Value(color),
+      icon: Value(icon),
+      targetPerWeek: Value(targetPerWeek),
+      weekdays: Value(weekdays),
+      position: Value(position),
+      archived: Value(archived),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory HabitRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HabitRow(
+      id: serializer.fromJson<String>(json['id']),
+      spaceId: serializer.fromJson<String>(json['spaceId']),
+      contextId: serializer.fromJson<String?>(json['contextId']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String>(json['description']),
+      color: serializer.fromJson<int>(json['color']),
+      icon: serializer.fromJson<String>(json['icon']),
+      targetPerWeek: serializer.fromJson<int>(json['targetPerWeek']),
+      weekdays: serializer.fromJson<String>(json['weekdays']),
+      position: serializer.fromJson<int>(json['position']),
+      archived: serializer.fromJson<bool>(json['archived']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'spaceId': serializer.toJson<String>(spaceId),
+      'contextId': serializer.toJson<String?>(contextId),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String>(description),
+      'color': serializer.toJson<int>(color),
+      'icon': serializer.toJson<String>(icon),
+      'targetPerWeek': serializer.toJson<int>(targetPerWeek),
+      'weekdays': serializer.toJson<String>(weekdays),
+      'position': serializer.toJson<int>(position),
+      'archived': serializer.toJson<bool>(archived),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  HabitRow copyWith({
+    String? id,
+    String? spaceId,
+    Value<String?> contextId = const Value.absent(),
+    String? name,
+    String? description,
+    int? color,
+    String? icon,
+    int? targetPerWeek,
+    String? weekdays,
+    int? position,
+    bool? archived,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => HabitRow(
+    id: id ?? this.id,
+    spaceId: spaceId ?? this.spaceId,
+    contextId: contextId.present ? contextId.value : this.contextId,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    color: color ?? this.color,
+    icon: icon ?? this.icon,
+    targetPerWeek: targetPerWeek ?? this.targetPerWeek,
+    weekdays: weekdays ?? this.weekdays,
+    position: position ?? this.position,
+    archived: archived ?? this.archived,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  HabitRow copyWithCompanion(HabitRecordsCompanion data) {
+    return HabitRow(
+      id: data.id.present ? data.id.value : this.id,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      contextId: data.contextId.present ? data.contextId.value : this.contextId,
+      name: data.name.present ? data.name.value : this.name,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      color: data.color.present ? data.color.value : this.color,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      targetPerWeek: data.targetPerWeek.present
+          ? data.targetPerWeek.value
+          : this.targetPerWeek,
+      weekdays: data.weekdays.present ? data.weekdays.value : this.weekdays,
+      position: data.position.present ? data.position.value : this.position,
+      archived: data.archived.present ? data.archived.value : this.archived,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HabitRow(')
+          ..write('id: $id, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('contextId: $contextId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('color: $color, ')
+          ..write('icon: $icon, ')
+          ..write('targetPerWeek: $targetPerWeek, ')
+          ..write('weekdays: $weekdays, ')
+          ..write('position: $position, ')
+          ..write('archived: $archived, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    spaceId,
+    contextId,
+    name,
+    description,
+    color,
+    icon,
+    targetPerWeek,
+    weekdays,
+    position,
+    archived,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HabitRow &&
+          other.id == this.id &&
+          other.spaceId == this.spaceId &&
+          other.contextId == this.contextId &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.color == this.color &&
+          other.icon == this.icon &&
+          other.targetPerWeek == this.targetPerWeek &&
+          other.weekdays == this.weekdays &&
+          other.position == this.position &&
+          other.archived == this.archived &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class HabitRecordsCompanion extends UpdateCompanion<HabitRow> {
+  final Value<String> id;
+  final Value<String> spaceId;
+  final Value<String?> contextId;
+  final Value<String> name;
+  final Value<String> description;
+  final Value<int> color;
+  final Value<String> icon;
+  final Value<int> targetPerWeek;
+  final Value<String> weekdays;
+  final Value<int> position;
+  final Value<bool> archived;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const HabitRecordsCompanion({
+    this.id = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.contextId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.color = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.targetPerWeek = const Value.absent(),
+    this.weekdays = const Value.absent(),
+    this.position = const Value.absent(),
+    this.archived = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HabitRecordsCompanion.insert({
+    required String id,
+    required String spaceId,
+    this.contextId = const Value.absent(),
+    required String name,
+    this.description = const Value.absent(),
+    required int color,
+    this.icon = const Value.absent(),
+    this.targetPerWeek = const Value.absent(),
+    this.weekdays = const Value.absent(),
+    this.position = const Value.absent(),
+    this.archived = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       spaceId = Value(spaceId),
+       name = Value(name),
+       color = Value(color),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<HabitRow> custom({
+    Expression<String>? id,
+    Expression<String>? spaceId,
+    Expression<String>? contextId,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<int>? color,
+    Expression<String>? icon,
+    Expression<int>? targetPerWeek,
+    Expression<String>? weekdays,
+    Expression<int>? position,
+    Expression<bool>? archived,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (spaceId != null) 'space_id': spaceId,
+      if (contextId != null) 'context_id': contextId,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (color != null) 'color': color,
+      if (icon != null) 'icon': icon,
+      if (targetPerWeek != null) 'target_per_week': targetPerWeek,
+      if (weekdays != null) 'weekdays': weekdays,
+      if (position != null) 'position': position,
+      if (archived != null) 'archived': archived,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HabitRecordsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? spaceId,
+    Value<String?>? contextId,
+    Value<String>? name,
+    Value<String>? description,
+    Value<int>? color,
+    Value<String>? icon,
+    Value<int>? targetPerWeek,
+    Value<String>? weekdays,
+    Value<int>? position,
+    Value<bool>? archived,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return HabitRecordsCompanion(
+      id: id ?? this.id,
+      spaceId: spaceId ?? this.spaceId,
+      contextId: contextId ?? this.contextId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      color: color ?? this.color,
+      icon: icon ?? this.icon,
+      targetPerWeek: targetPerWeek ?? this.targetPerWeek,
+      weekdays: weekdays ?? this.weekdays,
+      position: position ?? this.position,
+      archived: archived ?? this.archived,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (contextId.present) {
+      map['context_id'] = Variable<String>(contextId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<int>(color.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
+    if (targetPerWeek.present) {
+      map['target_per_week'] = Variable<int>(targetPerWeek.value);
+    }
+    if (weekdays.present) {
+      map['weekdays'] = Variable<String>(weekdays.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (archived.present) {
+      map['archived'] = Variable<bool>(archived.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HabitRecordsCompanion(')
+          ..write('id: $id, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('contextId: $contextId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('color: $color, ')
+          ..write('icon: $icon, ')
+          ..write('targetPerWeek: $targetPerWeek, ')
+          ..write('weekdays: $weekdays, ')
+          ..write('position: $position, ')
+          ..write('archived: $archived, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HabitCompletionRecordsTable extends HabitCompletionRecords
+    with TableInfo<$HabitCompletionRecordsTable, HabitCompletionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HabitCompletionRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _habitIdMeta = const VerificationMeta(
+    'habitId',
+  );
+  @override
+  late final GeneratedColumn<String> habitId = GeneratedColumn<String>(
+    'habit_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES habit_records (id)',
+    ),
+  );
+  static const VerificationMeta _dateKeyMeta = const VerificationMeta(
+    'dateKey',
+  );
+  @override
+  late final GeneratedColumn<int> dateKey = GeneratedColumn<int>(
+    'date_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [habitId, dateKey, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'habit_completion_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HabitCompletionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('habit_id')) {
+      context.handle(
+        _habitIdMeta,
+        habitId.isAcceptableOrUnknown(data['habit_id']!, _habitIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_habitIdMeta);
+    }
+    if (data.containsKey('date_key')) {
+      context.handle(
+        _dateKeyMeta,
+        dateKey.isAcceptableOrUnknown(data['date_key']!, _dateKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateKeyMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {habitId, dateKey};
+  @override
+  HabitCompletionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HabitCompletionRow(
+      habitId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}habit_id'],
+      )!,
+      dateKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}date_key'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $HabitCompletionRecordsTable createAlias(String alias) {
+    return $HabitCompletionRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class HabitCompletionRow extends DataClass
+    implements Insertable<HabitCompletionRow> {
+  final String habitId;
+  final int dateKey;
+  final DateTime createdAt;
+  const HabitCompletionRow({
+    required this.habitId,
+    required this.dateKey,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['habit_id'] = Variable<String>(habitId);
+    map['date_key'] = Variable<int>(dateKey);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  HabitCompletionRecordsCompanion toCompanion(bool nullToAbsent) {
+    return HabitCompletionRecordsCompanion(
+      habitId: Value(habitId),
+      dateKey: Value(dateKey),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory HabitCompletionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HabitCompletionRow(
+      habitId: serializer.fromJson<String>(json['habitId']),
+      dateKey: serializer.fromJson<int>(json['dateKey']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'habitId': serializer.toJson<String>(habitId),
+      'dateKey': serializer.toJson<int>(dateKey),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  HabitCompletionRow copyWith({
+    String? habitId,
+    int? dateKey,
+    DateTime? createdAt,
+  }) => HabitCompletionRow(
+    habitId: habitId ?? this.habitId,
+    dateKey: dateKey ?? this.dateKey,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  HabitCompletionRow copyWithCompanion(HabitCompletionRecordsCompanion data) {
+    return HabitCompletionRow(
+      habitId: data.habitId.present ? data.habitId.value : this.habitId,
+      dateKey: data.dateKey.present ? data.dateKey.value : this.dateKey,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HabitCompletionRow(')
+          ..write('habitId: $habitId, ')
+          ..write('dateKey: $dateKey, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(habitId, dateKey, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HabitCompletionRow &&
+          other.habitId == this.habitId &&
+          other.dateKey == this.dateKey &&
+          other.createdAt == this.createdAt);
+}
+
+class HabitCompletionRecordsCompanion
+    extends UpdateCompanion<HabitCompletionRow> {
+  final Value<String> habitId;
+  final Value<int> dateKey;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const HabitCompletionRecordsCompanion({
+    this.habitId = const Value.absent(),
+    this.dateKey = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HabitCompletionRecordsCompanion.insert({
+    required String habitId,
+    required int dateKey,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : habitId = Value(habitId),
+       dateKey = Value(dateKey),
+       createdAt = Value(createdAt);
+  static Insertable<HabitCompletionRow> custom({
+    Expression<String>? habitId,
+    Expression<int>? dateKey,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (habitId != null) 'habit_id': habitId,
+      if (dateKey != null) 'date_key': dateKey,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HabitCompletionRecordsCompanion copyWith({
+    Value<String>? habitId,
+    Value<int>? dateKey,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return HabitCompletionRecordsCompanion(
+      habitId: habitId ?? this.habitId,
+      dateKey: dateKey ?? this.dateKey,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (habitId.present) {
+      map['habit_id'] = Variable<String>(habitId.value);
+    }
+    if (dateKey.present) {
+      map['date_key'] = Variable<int>(dateKey.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HabitCompletionRecordsCompanion(')
+          ..write('habitId: $habitId, ')
+          ..write('dateKey: $dateKey, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $EntryRecordsTable extends EntryRecords
     with TableInfo<$EntryRecordsTable, EntryRow> {
   @override
@@ -567,6 +3006,56 @@ class $EntryRecordsTable extends EntryRecords
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _contextIdMeta = const VerificationMeta(
+    'contextId',
+  );
+  @override
+  late final GeneratedColumn<String> contextId = GeneratedColumn<String>(
+    'context_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES context_records (id)',
+    ),
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+    'project_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES project_records (id)',
+    ),
+  );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<String> priority = GeneratedColumn<String>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('none'),
+  );
   static const VerificationMeta _startAtMeta = const VerificationMeta(
     'startAt',
   );
@@ -678,6 +3167,17 @@ class $EntryRecordsTable extends EntryRecords
         type: DriftSqlType.int,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -723,6 +3223,10 @@ class $EntryRecordsTable extends EntryRecords
     startMinute,
     endMinute,
     timeZone,
+    contextId,
+    projectId,
+    icon,
+    priority,
     startAt,
     endAt,
     allDay,
@@ -733,6 +3237,7 @@ class $EntryRecordsTable extends EntryRecords
     readOnly,
     lastCompletedAt,
     repeatAfterCompletionDays,
+    completedAt,
     createdAt,
     updatedAt,
     deletedAt,
@@ -820,6 +3325,30 @@ class $EntryRecordsTable extends EntryRecords
         timeZone.isAcceptableOrUnknown(data['time_zone']!, _timeZoneMeta),
       );
     }
+    if (data.containsKey('context_id')) {
+      context.handle(
+        _contextIdMeta,
+        contextId.isAcceptableOrUnknown(data['context_id']!, _contextIdMeta),
+      );
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
     if (data.containsKey('start_at')) {
       context.handle(
         _startAtMeta,
@@ -888,6 +3417,15 @@ class $EntryRecordsTable extends EntryRecords
         repeatAfterCompletionDays.isAcceptableOrUnknown(
           data['repeat_after_completion_days']!,
           _repeatAfterCompletionDaysMeta,
+        ),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
         ),
       );
     }
@@ -962,6 +3500,22 @@ class $EntryRecordsTable extends EntryRecords
         DriftSqlType.string,
         data['${effectivePrefix}time_zone'],
       ),
+      contextId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}context_id'],
+      ),
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}project_id'],
+      ),
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      )!,
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}priority'],
+      )!,
       startAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}start_at'],
@@ -1001,6 +3555,10 @@ class $EntryRecordsTable extends EntryRecords
       repeatAfterCompletionDays: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}repeat_after_completion_days'],
+      ),
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}completed_at'],
       ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -1046,6 +3604,16 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
   /// IANA timezone for the wall-clock fields, null for all-day entries.
   final String? timeZone;
 
+  /// Job, home or person/group inside [spaceId].
+  final String? contextId;
+  final String? projectId;
+
+  /// Optional icon name for home gadgets.
+  final String icon;
+
+  /// One of [EntryPriority].
+  final String priority;
+
   /// Resolved anchor instants in UTC, null for all-day entries.
   final DateTime? startAt;
   final DateTime? endAt;
@@ -1063,6 +3631,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
   final bool readOnly;
   final DateTime? lastCompletedAt;
   final int? repeatAfterCompletionDays;
+  final DateTime? completedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
@@ -1077,6 +3646,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     this.startMinute,
     this.endMinute,
     this.timeZone,
+    this.contextId,
+    this.projectId,
+    required this.icon,
+    required this.priority,
     this.startAt,
     this.endAt,
     required this.allDay,
@@ -1087,6 +3660,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     required this.readOnly,
     this.lastCompletedAt,
     this.repeatAfterCompletionDays,
+    this.completedAt,
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
@@ -1114,6 +3688,14 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     if (!nullToAbsent || timeZone != null) {
       map['time_zone'] = Variable<String>(timeZone);
     }
+    if (!nullToAbsent || contextId != null) {
+      map['context_id'] = Variable<String>(contextId);
+    }
+    if (!nullToAbsent || projectId != null) {
+      map['project_id'] = Variable<String>(projectId);
+    }
+    map['icon'] = Variable<String>(icon);
+    map['priority'] = Variable<String>(priority);
     if (!nullToAbsent || startAt != null) {
       map['start_at'] = Variable<DateTime>(startAt);
     }
@@ -1139,6 +3721,9 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       map['repeat_after_completion_days'] = Variable<int>(
         repeatAfterCompletionDays,
       );
+    }
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -1170,6 +3755,14 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       timeZone: timeZone == null && nullToAbsent
           ? const Value.absent()
           : Value(timeZone),
+      contextId: contextId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contextId),
+      projectId: projectId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(projectId),
+      icon: Value(icon),
+      priority: Value(priority),
       startAt: startAt == null && nullToAbsent
           ? const Value.absent()
           : Value(startAt),
@@ -1195,6 +3788,9 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
           repeatAfterCompletionDays == null && nullToAbsent
           ? const Value.absent()
           : Value(repeatAfterCompletionDays),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       deletedAt: deletedAt == null && nullToAbsent
@@ -1219,6 +3815,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       startMinute: serializer.fromJson<int?>(json['startMinute']),
       endMinute: serializer.fromJson<int?>(json['endMinute']),
       timeZone: serializer.fromJson<String?>(json['timeZone']),
+      contextId: serializer.fromJson<String?>(json['contextId']),
+      projectId: serializer.fromJson<String?>(json['projectId']),
+      icon: serializer.fromJson<String>(json['icon']),
+      priority: serializer.fromJson<String>(json['priority']),
       startAt: serializer.fromJson<DateTime?>(json['startAt']),
       endAt: serializer.fromJson<DateTime?>(json['endAt']),
       allDay: serializer.fromJson<bool>(json['allDay']),
@@ -1231,6 +3831,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       repeatAfterCompletionDays: serializer.fromJson<int?>(
         json['repeatAfterCompletionDays'],
       ),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
@@ -1250,6 +3851,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       'startMinute': serializer.toJson<int?>(startMinute),
       'endMinute': serializer.toJson<int?>(endMinute),
       'timeZone': serializer.toJson<String?>(timeZone),
+      'contextId': serializer.toJson<String?>(contextId),
+      'projectId': serializer.toJson<String?>(projectId),
+      'icon': serializer.toJson<String>(icon),
+      'priority': serializer.toJson<String>(priority),
       'startAt': serializer.toJson<DateTime?>(startAt),
       'endAt': serializer.toJson<DateTime?>(endAt),
       'allDay': serializer.toJson<bool>(allDay),
@@ -1262,6 +3867,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       'repeatAfterCompletionDays': serializer.toJson<int?>(
         repeatAfterCompletionDays,
       ),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
@@ -1279,6 +3885,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     Value<int?> startMinute = const Value.absent(),
     Value<int?> endMinute = const Value.absent(),
     Value<String?> timeZone = const Value.absent(),
+    Value<String?> contextId = const Value.absent(),
+    Value<String?> projectId = const Value.absent(),
+    String? icon,
+    String? priority,
     Value<DateTime?> startAt = const Value.absent(),
     Value<DateTime?> endAt = const Value.absent(),
     bool? allDay,
@@ -1289,6 +3899,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     bool? readOnly,
     Value<DateTime?> lastCompletedAt = const Value.absent(),
     Value<int?> repeatAfterCompletionDays = const Value.absent(),
+    Value<DateTime?> completedAt = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<DateTime?> deletedAt = const Value.absent(),
@@ -1303,6 +3914,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     startMinute: startMinute.present ? startMinute.value : this.startMinute,
     endMinute: endMinute.present ? endMinute.value : this.endMinute,
     timeZone: timeZone.present ? timeZone.value : this.timeZone,
+    contextId: contextId.present ? contextId.value : this.contextId,
+    projectId: projectId.present ? projectId.value : this.projectId,
+    icon: icon ?? this.icon,
+    priority: priority ?? this.priority,
     startAt: startAt.present ? startAt.value : this.startAt,
     endAt: endAt.present ? endAt.value : this.endAt,
     allDay: allDay ?? this.allDay,
@@ -1319,6 +3934,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     repeatAfterCompletionDays: repeatAfterCompletionDays.present
         ? repeatAfterCompletionDays.value
         : this.repeatAfterCompletionDays,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
@@ -1339,6 +3955,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
           : this.startMinute,
       endMinute: data.endMinute.present ? data.endMinute.value : this.endMinute,
       timeZone: data.timeZone.present ? data.timeZone.value : this.timeZone,
+      contextId: data.contextId.present ? data.contextId.value : this.contextId,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      priority: data.priority.present ? data.priority.value : this.priority,
       startAt: data.startAt.present ? data.startAt.value : this.startAt,
       endAt: data.endAt.present ? data.endAt.value : this.endAt,
       allDay: data.allDay.present ? data.allDay.value : this.allDay,
@@ -1357,6 +3977,9 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       repeatAfterCompletionDays: data.repeatAfterCompletionDays.present
           ? data.repeatAfterCompletionDays.value
           : this.repeatAfterCompletionDays,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
@@ -1376,6 +3999,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
           ..write('startMinute: $startMinute, ')
           ..write('endMinute: $endMinute, ')
           ..write('timeZone: $timeZone, ')
+          ..write('contextId: $contextId, ')
+          ..write('projectId: $projectId, ')
+          ..write('icon: $icon, ')
+          ..write('priority: $priority, ')
           ..write('startAt: $startAt, ')
           ..write('endAt: $endAt, ')
           ..write('allDay: $allDay, ')
@@ -1386,6 +4013,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
           ..write('readOnly: $readOnly, ')
           ..write('lastCompletedAt: $lastCompletedAt, ')
           ..write('repeatAfterCompletionDays: $repeatAfterCompletionDays, ')
+          ..write('completedAt: $completedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt')
@@ -1405,6 +4033,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     startMinute,
     endMinute,
     timeZone,
+    contextId,
+    projectId,
+    icon,
+    priority,
     startAt,
     endAt,
     allDay,
@@ -1415,6 +4047,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     readOnly,
     lastCompletedAt,
     repeatAfterCompletionDays,
+    completedAt,
     createdAt,
     updatedAt,
     deletedAt,
@@ -1433,6 +4066,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
           other.startMinute == this.startMinute &&
           other.endMinute == this.endMinute &&
           other.timeZone == this.timeZone &&
+          other.contextId == this.contextId &&
+          other.projectId == this.projectId &&
+          other.icon == this.icon &&
+          other.priority == this.priority &&
           other.startAt == this.startAt &&
           other.endAt == this.endAt &&
           other.allDay == this.allDay &&
@@ -1443,6 +4080,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
           other.readOnly == this.readOnly &&
           other.lastCompletedAt == this.lastCompletedAt &&
           other.repeatAfterCompletionDays == this.repeatAfterCompletionDays &&
+          other.completedAt == this.completedAt &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt);
@@ -1459,6 +4097,10 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
   final Value<int?> startMinute;
   final Value<int?> endMinute;
   final Value<String?> timeZone;
+  final Value<String?> contextId;
+  final Value<String?> projectId;
+  final Value<String> icon;
+  final Value<String> priority;
   final Value<DateTime?> startAt;
   final Value<DateTime?> endAt;
   final Value<bool> allDay;
@@ -1469,6 +4111,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
   final Value<bool> readOnly;
   final Value<DateTime?> lastCompletedAt;
   final Value<int?> repeatAfterCompletionDays;
+  final Value<DateTime?> completedAt;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
@@ -1484,6 +4127,10 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     this.startMinute = const Value.absent(),
     this.endMinute = const Value.absent(),
     this.timeZone = const Value.absent(),
+    this.contextId = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.priority = const Value.absent(),
     this.startAt = const Value.absent(),
     this.endAt = const Value.absent(),
     this.allDay = const Value.absent(),
@@ -1494,6 +4141,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     this.readOnly = const Value.absent(),
     this.lastCompletedAt = const Value.absent(),
     this.repeatAfterCompletionDays = const Value.absent(),
+    this.completedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
@@ -1510,6 +4158,10 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     this.startMinute = const Value.absent(),
     this.endMinute = const Value.absent(),
     this.timeZone = const Value.absent(),
+    this.contextId = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.priority = const Value.absent(),
     this.startAt = const Value.absent(),
     this.endAt = const Value.absent(),
     this.allDay = const Value.absent(),
@@ -1520,6 +4172,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     this.readOnly = const Value.absent(),
     this.lastCompletedAt = const Value.absent(),
     this.repeatAfterCompletionDays = const Value.absent(),
+    this.completedAt = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
@@ -1542,6 +4195,10 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     Expression<int>? startMinute,
     Expression<int>? endMinute,
     Expression<String>? timeZone,
+    Expression<String>? contextId,
+    Expression<String>? projectId,
+    Expression<String>? icon,
+    Expression<String>? priority,
     Expression<DateTime>? startAt,
     Expression<DateTime>? endAt,
     Expression<bool>? allDay,
@@ -1552,6 +4209,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     Expression<bool>? readOnly,
     Expression<DateTime>? lastCompletedAt,
     Expression<int>? repeatAfterCompletionDays,
+    Expression<DateTime>? completedAt,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
@@ -1568,6 +4226,10 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
       if (startMinute != null) 'start_minute': startMinute,
       if (endMinute != null) 'end_minute': endMinute,
       if (timeZone != null) 'time_zone': timeZone,
+      if (contextId != null) 'context_id': contextId,
+      if (projectId != null) 'project_id': projectId,
+      if (icon != null) 'icon': icon,
+      if (priority != null) 'priority': priority,
       if (startAt != null) 'start_at': startAt,
       if (endAt != null) 'end_at': endAt,
       if (allDay != null) 'all_day': allDay,
@@ -1579,6 +4241,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
       if (lastCompletedAt != null) 'last_completed_at': lastCompletedAt,
       if (repeatAfterCompletionDays != null)
         'repeat_after_completion_days': repeatAfterCompletionDays,
+      if (completedAt != null) 'completed_at': completedAt,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
@@ -1597,6 +4260,10 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     Value<int?>? startMinute,
     Value<int?>? endMinute,
     Value<String?>? timeZone,
+    Value<String?>? contextId,
+    Value<String?>? projectId,
+    Value<String>? icon,
+    Value<String>? priority,
     Value<DateTime?>? startAt,
     Value<DateTime?>? endAt,
     Value<bool>? allDay,
@@ -1607,6 +4274,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     Value<bool>? readOnly,
     Value<DateTime?>? lastCompletedAt,
     Value<int?>? repeatAfterCompletionDays,
+    Value<DateTime?>? completedAt,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? deletedAt,
@@ -1623,6 +4291,10 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
       startMinute: startMinute ?? this.startMinute,
       endMinute: endMinute ?? this.endMinute,
       timeZone: timeZone ?? this.timeZone,
+      contextId: contextId ?? this.contextId,
+      projectId: projectId ?? this.projectId,
+      icon: icon ?? this.icon,
+      priority: priority ?? this.priority,
       startAt: startAt ?? this.startAt,
       endAt: endAt ?? this.endAt,
       allDay: allDay ?? this.allDay,
@@ -1634,6 +4306,7 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
       lastCompletedAt: lastCompletedAt ?? this.lastCompletedAt,
       repeatAfterCompletionDays:
           repeatAfterCompletionDays ?? this.repeatAfterCompletionDays,
+      completedAt: completedAt ?? this.completedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -1674,6 +4347,18 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
     if (timeZone.present) {
       map['time_zone'] = Variable<String>(timeZone.value);
     }
+    if (contextId.present) {
+      map['context_id'] = Variable<String>(contextId.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<String>(priority.value);
+    }
     if (startAt.present) {
       map['start_at'] = Variable<DateTime>(startAt.value);
     }
@@ -1706,6 +4391,9 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
         repeatAfterCompletionDays.value,
       );
     }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1734,6 +4422,10 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
           ..write('startMinute: $startMinute, ')
           ..write('endMinute: $endMinute, ')
           ..write('timeZone: $timeZone, ')
+          ..write('contextId: $contextId, ')
+          ..write('projectId: $projectId, ')
+          ..write('icon: $icon, ')
+          ..write('priority: $priority, ')
           ..write('startAt: $startAt, ')
           ..write('endAt: $endAt, ')
           ..write('allDay: $allDay, ')
@@ -1744,9 +4436,484 @@ class EntryRecordsCompanion extends UpdateCompanion<EntryRow> {
           ..write('readOnly: $readOnly, ')
           ..write('lastCompletedAt: $lastCompletedAt, ')
           ..write('repeatAfterCompletionDays: $repeatAfterCompletionDays, ')
+          ..write('completedAt: $completedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TimeEntryRecordsTable extends TimeEntryRecords
+    with TableInfo<$TimeEntryRecordsTable, TimeEntryRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TimeEntryRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entryIdMeta = const VerificationMeta(
+    'entryId',
+  );
+  @override
+  late final GeneratedColumn<String> entryId = GeneratedColumn<String>(
+    'entry_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES entry_records (id)',
+    ),
+  );
+  static const VerificationMeta _occurrenceDateKeyMeta = const VerificationMeta(
+    'occurrenceDateKey',
+  );
+  @override
+  late final GeneratedColumn<int> occurrenceDateKey = GeneratedColumn<int>(
+    'occurrence_date_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endedAtMeta = const VerificationMeta(
+    'endedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endedAt = GeneratedColumn<DateTime>(
+    'ended_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    entryId,
+    occurrenceDateKey,
+    startedAt,
+    endedAt,
+    note,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'time_entry_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TimeEntryRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('entry_id')) {
+      context.handle(
+        _entryIdMeta,
+        entryId.isAcceptableOrUnknown(data['entry_id']!, _entryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entryIdMeta);
+    }
+    if (data.containsKey('occurrence_date_key')) {
+      context.handle(
+        _occurrenceDateKeyMeta,
+        occurrenceDateKey.isAcceptableOrUnknown(
+          data['occurrence_date_key']!,
+          _occurrenceDateKeyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(
+        _endedAtMeta,
+        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TimeEntryRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TimeEntryRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      entryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entry_id'],
+      )!,
+      occurrenceDateKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}occurrence_date_key'],
+      ),
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      endedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ended_at'],
+      ),
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TimeEntryRecordsTable createAlias(String alias) {
+    return $TimeEntryRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class TimeEntryRow extends DataClass implements Insertable<TimeEntryRow> {
+  final String id;
+  final String entryId;
+
+  /// Occurrence date in the entry's stored timezone. Null for one-off tasks.
+  final int? occurrenceDateKey;
+  final DateTime startedAt;
+  final DateTime? endedAt;
+  final String note;
+  final DateTime createdAt;
+  const TimeEntryRow({
+    required this.id,
+    required this.entryId,
+    this.occurrenceDateKey,
+    required this.startedAt,
+    this.endedAt,
+    required this.note,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['entry_id'] = Variable<String>(entryId);
+    if (!nullToAbsent || occurrenceDateKey != null) {
+      map['occurrence_date_key'] = Variable<int>(occurrenceDateKey);
+    }
+    map['started_at'] = Variable<DateTime>(startedAt);
+    if (!nullToAbsent || endedAt != null) {
+      map['ended_at'] = Variable<DateTime>(endedAt);
+    }
+    map['note'] = Variable<String>(note);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  TimeEntryRecordsCompanion toCompanion(bool nullToAbsent) {
+    return TimeEntryRecordsCompanion(
+      id: Value(id),
+      entryId: Value(entryId),
+      occurrenceDateKey: occurrenceDateKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(occurrenceDateKey),
+      startedAt: Value(startedAt),
+      endedAt: endedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endedAt),
+      note: Value(note),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory TimeEntryRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TimeEntryRow(
+      id: serializer.fromJson<String>(json['id']),
+      entryId: serializer.fromJson<String>(json['entryId']),
+      occurrenceDateKey: serializer.fromJson<int?>(json['occurrenceDateKey']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      endedAt: serializer.fromJson<DateTime?>(json['endedAt']),
+      note: serializer.fromJson<String>(json['note']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'entryId': serializer.toJson<String>(entryId),
+      'occurrenceDateKey': serializer.toJson<int?>(occurrenceDateKey),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'endedAt': serializer.toJson<DateTime?>(endedAt),
+      'note': serializer.toJson<String>(note),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  TimeEntryRow copyWith({
+    String? id,
+    String? entryId,
+    Value<int?> occurrenceDateKey = const Value.absent(),
+    DateTime? startedAt,
+    Value<DateTime?> endedAt = const Value.absent(),
+    String? note,
+    DateTime? createdAt,
+  }) => TimeEntryRow(
+    id: id ?? this.id,
+    entryId: entryId ?? this.entryId,
+    occurrenceDateKey: occurrenceDateKey.present
+        ? occurrenceDateKey.value
+        : this.occurrenceDateKey,
+    startedAt: startedAt ?? this.startedAt,
+    endedAt: endedAt.present ? endedAt.value : this.endedAt,
+    note: note ?? this.note,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  TimeEntryRow copyWithCompanion(TimeEntryRecordsCompanion data) {
+    return TimeEntryRow(
+      id: data.id.present ? data.id.value : this.id,
+      entryId: data.entryId.present ? data.entryId.value : this.entryId,
+      occurrenceDateKey: data.occurrenceDateKey.present
+          ? data.occurrenceDateKey.value
+          : this.occurrenceDateKey,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+      note: data.note.present ? data.note.value : this.note,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TimeEntryRow(')
+          ..write('id: $id, ')
+          ..write('entryId: $entryId, ')
+          ..write('occurrenceDateKey: $occurrenceDateKey, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('note: $note, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    entryId,
+    occurrenceDateKey,
+    startedAt,
+    endedAt,
+    note,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TimeEntryRow &&
+          other.id == this.id &&
+          other.entryId == this.entryId &&
+          other.occurrenceDateKey == this.occurrenceDateKey &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt &&
+          other.note == this.note &&
+          other.createdAt == this.createdAt);
+}
+
+class TimeEntryRecordsCompanion extends UpdateCompanion<TimeEntryRow> {
+  final Value<String> id;
+  final Value<String> entryId;
+  final Value<int?> occurrenceDateKey;
+  final Value<DateTime> startedAt;
+  final Value<DateTime?> endedAt;
+  final Value<String> note;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const TimeEntryRecordsCompanion({
+    this.id = const Value.absent(),
+    this.entryId = const Value.absent(),
+    this.occurrenceDateKey = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.note = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TimeEntryRecordsCompanion.insert({
+    required String id,
+    required String entryId,
+    this.occurrenceDateKey = const Value.absent(),
+    required DateTime startedAt,
+    this.endedAt = const Value.absent(),
+    this.note = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       entryId = Value(entryId),
+       startedAt = Value(startedAt),
+       createdAt = Value(createdAt);
+  static Insertable<TimeEntryRow> custom({
+    Expression<String>? id,
+    Expression<String>? entryId,
+    Expression<int>? occurrenceDateKey,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? endedAt,
+    Expression<String>? note,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (entryId != null) 'entry_id': entryId,
+      if (occurrenceDateKey != null) 'occurrence_date_key': occurrenceDateKey,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (note != null) 'note': note,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TimeEntryRecordsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? entryId,
+    Value<int?>? occurrenceDateKey,
+    Value<DateTime>? startedAt,
+    Value<DateTime?>? endedAt,
+    Value<String>? note,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return TimeEntryRecordsCompanion(
+      id: id ?? this.id,
+      entryId: entryId ?? this.entryId,
+      occurrenceDateKey: occurrenceDateKey ?? this.occurrenceDateKey,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      note: note ?? this.note,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (entryId.present) {
+      map['entry_id'] = Variable<String>(entryId.value);
+    }
+    if (occurrenceDateKey.present) {
+      map['occurrence_date_key'] = Variable<int>(occurrenceDateKey.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<DateTime>(endedAt.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TimeEntryRecordsCompanion(')
+          ..write('id: $id, ')
+          ..write('entryId: $entryId, ')
+          ..write('occurrenceDateKey: $occurrenceDateKey, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('note: $note, ')
+          ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1800,6 +4967,16 @@ class $TagRecordsTable extends TagRecords
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('folder'),
+  );
   static const VerificationMeta _positionMeta = const VerificationMeta(
     'position',
   );
@@ -1851,6 +5028,7 @@ class $TagRecordsTable extends TagRecords
     spaceId,
     name,
     color,
+    icon,
     position,
     createdAt,
     updatedAt,
@@ -1894,6 +5072,12 @@ class $TagRecordsTable extends TagRecords
       );
     } else if (isInserting) {
       context.missing(_colorMeta);
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
     }
     if (data.containsKey('position')) {
       context.handle(
@@ -1948,6 +5132,10 @@ class $TagRecordsTable extends TagRecords
         DriftSqlType.int,
         data['${effectivePrefix}color'],
       )!,
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      )!,
       position: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}position'],
@@ -1978,6 +5166,7 @@ class TagRow extends DataClass implements Insertable<TagRow> {
   final String? spaceId;
   final String name;
   final int color;
+  final String icon;
   final int position;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -1987,6 +5176,7 @@ class TagRow extends DataClass implements Insertable<TagRow> {
     this.spaceId,
     required this.name,
     required this.color,
+    required this.icon,
     required this.position,
     required this.createdAt,
     required this.updatedAt,
@@ -2001,6 +5191,7 @@ class TagRow extends DataClass implements Insertable<TagRow> {
     }
     map['name'] = Variable<String>(name);
     map['color'] = Variable<int>(color);
+    map['icon'] = Variable<String>(icon);
     map['position'] = Variable<int>(position);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -2018,6 +5209,7 @@ class TagRow extends DataClass implements Insertable<TagRow> {
           : Value(spaceId),
       name: Value(name),
       color: Value(color),
+      icon: Value(icon),
       position: Value(position),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -2037,6 +5229,7 @@ class TagRow extends DataClass implements Insertable<TagRow> {
       spaceId: serializer.fromJson<String?>(json['spaceId']),
       name: serializer.fromJson<String>(json['name']),
       color: serializer.fromJson<int>(json['color']),
+      icon: serializer.fromJson<String>(json['icon']),
       position: serializer.fromJson<int>(json['position']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -2051,6 +5244,7 @@ class TagRow extends DataClass implements Insertable<TagRow> {
       'spaceId': serializer.toJson<String?>(spaceId),
       'name': serializer.toJson<String>(name),
       'color': serializer.toJson<int>(color),
+      'icon': serializer.toJson<String>(icon),
       'position': serializer.toJson<int>(position),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -2063,6 +5257,7 @@ class TagRow extends DataClass implements Insertable<TagRow> {
     Value<String?> spaceId = const Value.absent(),
     String? name,
     int? color,
+    String? icon,
     int? position,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -2072,6 +5267,7 @@ class TagRow extends DataClass implements Insertable<TagRow> {
     spaceId: spaceId.present ? spaceId.value : this.spaceId,
     name: name ?? this.name,
     color: color ?? this.color,
+    icon: icon ?? this.icon,
     position: position ?? this.position,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -2083,6 +5279,7 @@ class TagRow extends DataClass implements Insertable<TagRow> {
       spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
       name: data.name.present ? data.name.value : this.name,
       color: data.color.present ? data.color.value : this.color,
+      icon: data.icon.present ? data.icon.value : this.icon,
       position: data.position.present ? data.position.value : this.position,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -2097,6 +5294,7 @@ class TagRow extends DataClass implements Insertable<TagRow> {
           ..write('spaceId: $spaceId, ')
           ..write('name: $name, ')
           ..write('color: $color, ')
+          ..write('icon: $icon, ')
           ..write('position: $position, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -2111,6 +5309,7 @@ class TagRow extends DataClass implements Insertable<TagRow> {
     spaceId,
     name,
     color,
+    icon,
     position,
     createdAt,
     updatedAt,
@@ -2124,6 +5323,7 @@ class TagRow extends DataClass implements Insertable<TagRow> {
           other.spaceId == this.spaceId &&
           other.name == this.name &&
           other.color == this.color &&
+          other.icon == this.icon &&
           other.position == this.position &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -2135,6 +5335,7 @@ class TagRecordsCompanion extends UpdateCompanion<TagRow> {
   final Value<String?> spaceId;
   final Value<String> name;
   final Value<int> color;
+  final Value<String> icon;
   final Value<int> position;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -2145,6 +5346,7 @@ class TagRecordsCompanion extends UpdateCompanion<TagRow> {
     this.spaceId = const Value.absent(),
     this.name = const Value.absent(),
     this.color = const Value.absent(),
+    this.icon = const Value.absent(),
     this.position = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -2156,6 +5358,7 @@ class TagRecordsCompanion extends UpdateCompanion<TagRow> {
     this.spaceId = const Value.absent(),
     required String name,
     required int color,
+    this.icon = const Value.absent(),
     this.position = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -2171,6 +5374,7 @@ class TagRecordsCompanion extends UpdateCompanion<TagRow> {
     Expression<String>? spaceId,
     Expression<String>? name,
     Expression<int>? color,
+    Expression<String>? icon,
     Expression<int>? position,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -2182,6 +5386,7 @@ class TagRecordsCompanion extends UpdateCompanion<TagRow> {
       if (spaceId != null) 'space_id': spaceId,
       if (name != null) 'name': name,
       if (color != null) 'color': color,
+      if (icon != null) 'icon': icon,
       if (position != null) 'position': position,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -2195,6 +5400,7 @@ class TagRecordsCompanion extends UpdateCompanion<TagRow> {
     Value<String?>? spaceId,
     Value<String>? name,
     Value<int>? color,
+    Value<String>? icon,
     Value<int>? position,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -2206,6 +5412,7 @@ class TagRecordsCompanion extends UpdateCompanion<TagRow> {
       spaceId: spaceId ?? this.spaceId,
       name: name ?? this.name,
       color: color ?? this.color,
+      icon: icon ?? this.icon,
       position: position ?? this.position,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -2228,6 +5435,9 @@ class TagRecordsCompanion extends UpdateCompanion<TagRow> {
     }
     if (color.present) {
       map['color'] = Variable<int>(color.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
     }
     if (position.present) {
       map['position'] = Variable<int>(position.value);
@@ -2254,6 +5464,7 @@ class TagRecordsCompanion extends UpdateCompanion<TagRow> {
           ..write('spaceId: $spaceId, ')
           ..write('name: $name, ')
           ..write('color: $color, ')
+          ..write('icon: $icon, ')
           ..write('position: $position, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -3170,6 +6381,20 @@ class $ShiftPatternRecordsTable extends ShiftPatternRecords
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _contextIdMeta = const VerificationMeta(
+    'contextId',
+  );
+  @override
+  late final GeneratedColumn<String> contextId = GeneratedColumn<String>(
+    'context_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES context_records (id)',
+    ),
+  );
   static const VerificationMeta _timeZoneMeta = const VerificationMeta(
     'timeZone',
   );
@@ -3279,6 +6504,7 @@ class $ShiftPatternRecordsTable extends ShiftPatternRecords
     id,
     spaceId,
     name,
+    contextId,
     timeZone,
     cycleDays,
     anchorDateKey,
@@ -3321,6 +6547,12 @@ class $ShiftPatternRecordsTable extends ShiftPatternRecords
       );
     } else if (isInserting) {
       context.missing(_nameMeta);
+    }
+    if (data.containsKey('context_id')) {
+      context.handle(
+        _contextIdMeta,
+        contextId.isAcceptableOrUnknown(data['context_id']!, _contextIdMeta),
+      );
     }
     if (data.containsKey('time_zone')) {
       context.handle(
@@ -3414,6 +6646,10 @@ class $ShiftPatternRecordsTable extends ShiftPatternRecords
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
+      contextId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}context_id'],
+      ),
       timeZone: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}time_zone'],
@@ -3464,6 +6700,9 @@ class ShiftPatternRow extends DataClass implements Insertable<ShiftPatternRow> {
   final String spaceId;
   final String name;
 
+  /// Job this shift pattern belongs to.
+  final String? contextId;
+
   /// IANA timezone the slot times are defined in.
   final String timeZone;
   final int cycleDays;
@@ -3480,6 +6719,7 @@ class ShiftPatternRow extends DataClass implements Insertable<ShiftPatternRow> {
     required this.id,
     required this.spaceId,
     required this.name,
+    this.contextId,
     required this.timeZone,
     required this.cycleDays,
     required this.anchorDateKey,
@@ -3496,6 +6736,9 @@ class ShiftPatternRow extends DataClass implements Insertable<ShiftPatternRow> {
     map['id'] = Variable<String>(id);
     map['space_id'] = Variable<String>(spaceId);
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || contextId != null) {
+      map['context_id'] = Variable<String>(contextId);
+    }
     map['time_zone'] = Variable<String>(timeZone);
     map['cycle_days'] = Variable<int>(cycleDays);
     map['anchor_date_key'] = Variable<int>(anchorDateKey);
@@ -3519,6 +6762,9 @@ class ShiftPatternRow extends DataClass implements Insertable<ShiftPatternRow> {
       id: Value(id),
       spaceId: Value(spaceId),
       name: Value(name),
+      contextId: contextId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contextId),
       timeZone: Value(timeZone),
       cycleDays: Value(cycleDays),
       anchorDateKey: Value(anchorDateKey),
@@ -3546,6 +6792,7 @@ class ShiftPatternRow extends DataClass implements Insertable<ShiftPatternRow> {
       id: serializer.fromJson<String>(json['id']),
       spaceId: serializer.fromJson<String>(json['spaceId']),
       name: serializer.fromJson<String>(json['name']),
+      contextId: serializer.fromJson<String?>(json['contextId']),
       timeZone: serializer.fromJson<String>(json['timeZone']),
       cycleDays: serializer.fromJson<int>(json['cycleDays']),
       anchorDateKey: serializer.fromJson<int>(json['anchorDateKey']),
@@ -3564,6 +6811,7 @@ class ShiftPatternRow extends DataClass implements Insertable<ShiftPatternRow> {
       'id': serializer.toJson<String>(id),
       'spaceId': serializer.toJson<String>(spaceId),
       'name': serializer.toJson<String>(name),
+      'contextId': serializer.toJson<String?>(contextId),
       'timeZone': serializer.toJson<String>(timeZone),
       'cycleDays': serializer.toJson<int>(cycleDays),
       'anchorDateKey': serializer.toJson<int>(anchorDateKey),
@@ -3580,6 +6828,7 @@ class ShiftPatternRow extends DataClass implements Insertable<ShiftPatternRow> {
     String? id,
     String? spaceId,
     String? name,
+    Value<String?> contextId = const Value.absent(),
     String? timeZone,
     int? cycleDays,
     int? anchorDateKey,
@@ -3593,6 +6842,7 @@ class ShiftPatternRow extends DataClass implements Insertable<ShiftPatternRow> {
     id: id ?? this.id,
     spaceId: spaceId ?? this.spaceId,
     name: name ?? this.name,
+    contextId: contextId.present ? contextId.value : this.contextId,
     timeZone: timeZone ?? this.timeZone,
     cycleDays: cycleDays ?? this.cycleDays,
     anchorDateKey: anchorDateKey ?? this.anchorDateKey,
@@ -3612,6 +6862,7 @@ class ShiftPatternRow extends DataClass implements Insertable<ShiftPatternRow> {
       id: data.id.present ? data.id.value : this.id,
       spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
       name: data.name.present ? data.name.value : this.name,
+      contextId: data.contextId.present ? data.contextId.value : this.contextId,
       timeZone: data.timeZone.present ? data.timeZone.value : this.timeZone,
       cycleDays: data.cycleDays.present ? data.cycleDays.value : this.cycleDays,
       anchorDateKey: data.anchorDateKey.present
@@ -3636,6 +6887,7 @@ class ShiftPatternRow extends DataClass implements Insertable<ShiftPatternRow> {
           ..write('id: $id, ')
           ..write('spaceId: $spaceId, ')
           ..write('name: $name, ')
+          ..write('contextId: $contextId, ')
           ..write('timeZone: $timeZone, ')
           ..write('cycleDays: $cycleDays, ')
           ..write('anchorDateKey: $anchorDateKey, ')
@@ -3654,6 +6906,7 @@ class ShiftPatternRow extends DataClass implements Insertable<ShiftPatternRow> {
     id,
     spaceId,
     name,
+    contextId,
     timeZone,
     cycleDays,
     anchorDateKey,
@@ -3671,6 +6924,7 @@ class ShiftPatternRow extends DataClass implements Insertable<ShiftPatternRow> {
           other.id == this.id &&
           other.spaceId == this.spaceId &&
           other.name == this.name &&
+          other.contextId == this.contextId &&
           other.timeZone == this.timeZone &&
           other.cycleDays == this.cycleDays &&
           other.anchorDateKey == this.anchorDateKey &&
@@ -3686,6 +6940,7 @@ class ShiftPatternRecordsCompanion extends UpdateCompanion<ShiftPatternRow> {
   final Value<String> id;
   final Value<String> spaceId;
   final Value<String> name;
+  final Value<String?> contextId;
   final Value<String> timeZone;
   final Value<int> cycleDays;
   final Value<int> anchorDateKey;
@@ -3700,6 +6955,7 @@ class ShiftPatternRecordsCompanion extends UpdateCompanion<ShiftPatternRow> {
     this.id = const Value.absent(),
     this.spaceId = const Value.absent(),
     this.name = const Value.absent(),
+    this.contextId = const Value.absent(),
     this.timeZone = const Value.absent(),
     this.cycleDays = const Value.absent(),
     this.anchorDateKey = const Value.absent(),
@@ -3715,6 +6971,7 @@ class ShiftPatternRecordsCompanion extends UpdateCompanion<ShiftPatternRow> {
     required String id,
     required String spaceId,
     required String name,
+    this.contextId = const Value.absent(),
     this.timeZone = const Value.absent(),
     required int cycleDays,
     required int anchorDateKey,
@@ -3736,6 +6993,7 @@ class ShiftPatternRecordsCompanion extends UpdateCompanion<ShiftPatternRow> {
     Expression<String>? id,
     Expression<String>? spaceId,
     Expression<String>? name,
+    Expression<String>? contextId,
     Expression<String>? timeZone,
     Expression<int>? cycleDays,
     Expression<int>? anchorDateKey,
@@ -3751,6 +7009,7 @@ class ShiftPatternRecordsCompanion extends UpdateCompanion<ShiftPatternRow> {
       if (id != null) 'id': id,
       if (spaceId != null) 'space_id': spaceId,
       if (name != null) 'name': name,
+      if (contextId != null) 'context_id': contextId,
       if (timeZone != null) 'time_zone': timeZone,
       if (cycleDays != null) 'cycle_days': cycleDays,
       if (anchorDateKey != null) 'anchor_date_key': anchorDateKey,
@@ -3768,6 +7027,7 @@ class ShiftPatternRecordsCompanion extends UpdateCompanion<ShiftPatternRow> {
     Value<String>? id,
     Value<String>? spaceId,
     Value<String>? name,
+    Value<String?>? contextId,
     Value<String>? timeZone,
     Value<int>? cycleDays,
     Value<int>? anchorDateKey,
@@ -3783,6 +7043,7 @@ class ShiftPatternRecordsCompanion extends UpdateCompanion<ShiftPatternRow> {
       id: id ?? this.id,
       spaceId: spaceId ?? this.spaceId,
       name: name ?? this.name,
+      contextId: contextId ?? this.contextId,
       timeZone: timeZone ?? this.timeZone,
       cycleDays: cycleDays ?? this.cycleDays,
       anchorDateKey: anchorDateKey ?? this.anchorDateKey,
@@ -3807,6 +7068,9 @@ class ShiftPatternRecordsCompanion extends UpdateCompanion<ShiftPatternRow> {
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
+    }
+    if (contextId.present) {
+      map['context_id'] = Variable<String>(contextId.value);
     }
     if (timeZone.present) {
       map['time_zone'] = Variable<String>(timeZone.value);
@@ -3847,6 +7111,7 @@ class ShiftPatternRecordsCompanion extends UpdateCompanion<ShiftPatternRow> {
           ..write('id: $id, ')
           ..write('spaceId: $spaceId, ')
           ..write('name: $name, ')
+          ..write('contextId: $contextId, ')
           ..write('timeZone: $timeZone, ')
           ..write('cycleDays: $cycleDays, ')
           ..write('anchorDateKey: $anchorDateKey, ')
@@ -4983,6 +8248,17 @@ class $ShiftChecklistItemRecordsTable extends ShiftChecklistItemRecords
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _dayIndexMeta = const VerificationMeta(
+    'dayIndex',
+  );
+  @override
+  late final GeneratedColumn<int> dayIndex = GeneratedColumn<int>(
+    'day_index',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _positionMeta = const VerificationMeta(
     'position',
   );
@@ -4996,7 +8272,13 @@ class $ShiftChecklistItemRecordsTable extends ShiftChecklistItemRecords
     defaultValue: const Constant(0),
   );
   @override
-  List<GeneratedColumn> get $columns => [id, patternId, label, position];
+  List<GeneratedColumn> get $columns => [
+    id,
+    patternId,
+    label,
+    dayIndex,
+    position,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -5030,6 +8312,12 @@ class $ShiftChecklistItemRecordsTable extends ShiftChecklistItemRecords
     } else if (isInserting) {
       context.missing(_labelMeta);
     }
+    if (data.containsKey('day_index')) {
+      context.handle(
+        _dayIndexMeta,
+        dayIndex.isAcceptableOrUnknown(data['day_index']!, _dayIndexMeta),
+      );
+    }
     if (data.containsKey('position')) {
       context.handle(
         _positionMeta,
@@ -5057,6 +8345,10 @@ class $ShiftChecklistItemRecordsTable extends ShiftChecklistItemRecords
         DriftSqlType.string,
         data['${effectivePrefix}label'],
       )!,
+      dayIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}day_index'],
+      ),
       position: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}position'],
@@ -5075,11 +8367,16 @@ class ShiftChecklistItemRow extends DataClass
   final String id;
   final String patternId;
   final String label;
+
+  /// Cycle day this checklist item belongs to. Null applies to every day of
+  /// the pattern.
+  final int? dayIndex;
   final int position;
   const ShiftChecklistItemRow({
     required this.id,
     required this.patternId,
     required this.label,
+    this.dayIndex,
     required this.position,
   });
   @override
@@ -5088,6 +8385,9 @@ class ShiftChecklistItemRow extends DataClass
     map['id'] = Variable<String>(id);
     map['pattern_id'] = Variable<String>(patternId);
     map['label'] = Variable<String>(label);
+    if (!nullToAbsent || dayIndex != null) {
+      map['day_index'] = Variable<int>(dayIndex);
+    }
     map['position'] = Variable<int>(position);
     return map;
   }
@@ -5097,6 +8397,9 @@ class ShiftChecklistItemRow extends DataClass
       id: Value(id),
       patternId: Value(patternId),
       label: Value(label),
+      dayIndex: dayIndex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dayIndex),
       position: Value(position),
     );
   }
@@ -5110,6 +8413,7 @@ class ShiftChecklistItemRow extends DataClass
       id: serializer.fromJson<String>(json['id']),
       patternId: serializer.fromJson<String>(json['patternId']),
       label: serializer.fromJson<String>(json['label']),
+      dayIndex: serializer.fromJson<int?>(json['dayIndex']),
       position: serializer.fromJson<int>(json['position']),
     );
   }
@@ -5120,6 +8424,7 @@ class ShiftChecklistItemRow extends DataClass
       'id': serializer.toJson<String>(id),
       'patternId': serializer.toJson<String>(patternId),
       'label': serializer.toJson<String>(label),
+      'dayIndex': serializer.toJson<int?>(dayIndex),
       'position': serializer.toJson<int>(position),
     };
   }
@@ -5128,11 +8433,13 @@ class ShiftChecklistItemRow extends DataClass
     String? id,
     String? patternId,
     String? label,
+    Value<int?> dayIndex = const Value.absent(),
     int? position,
   }) => ShiftChecklistItemRow(
     id: id ?? this.id,
     patternId: patternId ?? this.patternId,
     label: label ?? this.label,
+    dayIndex: dayIndex.present ? dayIndex.value : this.dayIndex,
     position: position ?? this.position,
   );
   ShiftChecklistItemRow copyWithCompanion(
@@ -5142,6 +8449,7 @@ class ShiftChecklistItemRow extends DataClass
       id: data.id.present ? data.id.value : this.id,
       patternId: data.patternId.present ? data.patternId.value : this.patternId,
       label: data.label.present ? data.label.value : this.label,
+      dayIndex: data.dayIndex.present ? data.dayIndex.value : this.dayIndex,
       position: data.position.present ? data.position.value : this.position,
     );
   }
@@ -5152,13 +8460,14 @@ class ShiftChecklistItemRow extends DataClass
           ..write('id: $id, ')
           ..write('patternId: $patternId, ')
           ..write('label: $label, ')
+          ..write('dayIndex: $dayIndex, ')
           ..write('position: $position')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, patternId, label, position);
+  int get hashCode => Object.hash(id, patternId, label, dayIndex, position);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -5166,6 +8475,7 @@ class ShiftChecklistItemRow extends DataClass
           other.id == this.id &&
           other.patternId == this.patternId &&
           other.label == this.label &&
+          other.dayIndex == this.dayIndex &&
           other.position == this.position);
 }
 
@@ -5174,12 +8484,14 @@ class ShiftChecklistItemRecordsCompanion
   final Value<String> id;
   final Value<String> patternId;
   final Value<String> label;
+  final Value<int?> dayIndex;
   final Value<int> position;
   final Value<int> rowid;
   const ShiftChecklistItemRecordsCompanion({
     this.id = const Value.absent(),
     this.patternId = const Value.absent(),
     this.label = const Value.absent(),
+    this.dayIndex = const Value.absent(),
     this.position = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -5187,6 +8499,7 @@ class ShiftChecklistItemRecordsCompanion
     required String id,
     required String patternId,
     required String label,
+    this.dayIndex = const Value.absent(),
     this.position = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -5196,6 +8509,7 @@ class ShiftChecklistItemRecordsCompanion
     Expression<String>? id,
     Expression<String>? patternId,
     Expression<String>? label,
+    Expression<int>? dayIndex,
     Expression<int>? position,
     Expression<int>? rowid,
   }) {
@@ -5203,6 +8517,7 @@ class ShiftChecklistItemRecordsCompanion
       if (id != null) 'id': id,
       if (patternId != null) 'pattern_id': patternId,
       if (label != null) 'label': label,
+      if (dayIndex != null) 'day_index': dayIndex,
       if (position != null) 'position': position,
       if (rowid != null) 'rowid': rowid,
     });
@@ -5212,6 +8527,7 @@ class ShiftChecklistItemRecordsCompanion
     Value<String>? id,
     Value<String>? patternId,
     Value<String>? label,
+    Value<int?>? dayIndex,
     Value<int>? position,
     Value<int>? rowid,
   }) {
@@ -5219,6 +8535,7 @@ class ShiftChecklistItemRecordsCompanion
       id: id ?? this.id,
       patternId: patternId ?? this.patternId,
       label: label ?? this.label,
+      dayIndex: dayIndex ?? this.dayIndex,
       position: position ?? this.position,
       rowid: rowid ?? this.rowid,
     );
@@ -5236,6 +8553,9 @@ class ShiftChecklistItemRecordsCompanion
     if (label.present) {
       map['label'] = Variable<String>(label.value);
     }
+    if (dayIndex.present) {
+      map['day_index'] = Variable<int>(dayIndex.value);
+    }
     if (position.present) {
       map['position'] = Variable<int>(position.value);
     }
@@ -5251,6 +8571,7 @@ class ShiftChecklistItemRecordsCompanion
           ..write('id: $id, ')
           ..write('patternId: $patternId, ')
           ..write('label: $label, ')
+          ..write('dayIndex: $dayIndex, ')
           ..write('position: $position, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -5587,12 +8908,12 @@ class ShiftChecklistCompletionRecordsCompanion
   }
 }
 
-class $HomeItemRecordsTable extends HomeItemRecords
-    with TableInfo<$HomeItemRecordsTable, HomeItemRow> {
+class $HomeCategoryRecordsTable extends HomeCategoryRecords
+    with TableInfo<$HomeCategoryRecordsTable, HomeCategoryRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $HomeItemRecordsTable(this.attachedDatabase, [this._alias]);
+  $HomeCategoryRecordsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -5611,6 +8932,1582 @@ class $HomeItemRecordsTable extends HomeItemRecords
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('category'),
+  );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+    'color',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    icon,
+    color,
+    position,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'home_category_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HomeCategoryRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_colorMeta);
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HomeCategoryRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HomeCategoryRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      )!,
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color'],
+      )!,
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $HomeCategoryRecordsTable createAlias(String alias) {
+    return $HomeCategoryRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class HomeCategoryRow extends DataClass implements Insertable<HomeCategoryRow> {
+  final String id;
+  final String name;
+  final String icon;
+  final int color;
+  final int position;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const HomeCategoryRow({
+    required this.id,
+    required this.name,
+    required this.icon,
+    required this.color,
+    required this.position,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['icon'] = Variable<String>(icon);
+    map['color'] = Variable<int>(color);
+    map['position'] = Variable<int>(position);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  HomeCategoryRecordsCompanion toCompanion(bool nullToAbsent) {
+    return HomeCategoryRecordsCompanion(
+      id: Value(id),
+      name: Value(name),
+      icon: Value(icon),
+      color: Value(color),
+      position: Value(position),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory HomeCategoryRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HomeCategoryRow(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      icon: serializer.fromJson<String>(json['icon']),
+      color: serializer.fromJson<int>(json['color']),
+      position: serializer.fromJson<int>(json['position']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'icon': serializer.toJson<String>(icon),
+      'color': serializer.toJson<int>(color),
+      'position': serializer.toJson<int>(position),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  HomeCategoryRow copyWith({
+    String? id,
+    String? name,
+    String? icon,
+    int? color,
+    int? position,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => HomeCategoryRow(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    icon: icon ?? this.icon,
+    color: color ?? this.color,
+    position: position ?? this.position,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  HomeCategoryRow copyWithCompanion(HomeCategoryRecordsCompanion data) {
+    return HomeCategoryRow(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      color: data.color.present ? data.color.value : this.color,
+      position: data.position.present ? data.position.value : this.position,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HomeCategoryRow(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color, ')
+          ..write('position: $position, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    icon,
+    color,
+    position,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HomeCategoryRow &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.icon == this.icon &&
+          other.color == this.color &&
+          other.position == this.position &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class HomeCategoryRecordsCompanion extends UpdateCompanion<HomeCategoryRow> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> icon;
+  final Value<int> color;
+  final Value<int> position;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const HomeCategoryRecordsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.color = const Value.absent(),
+    this.position = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HomeCategoryRecordsCompanion.insert({
+    required String id,
+    required String name,
+    this.icon = const Value.absent(),
+    required int color,
+    this.position = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       color = Value(color),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<HomeCategoryRow> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? icon,
+    Expression<int>? color,
+    Expression<int>? position,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (icon != null) 'icon': icon,
+      if (color != null) 'color': color,
+      if (position != null) 'position': position,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HomeCategoryRecordsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? icon,
+    Value<int>? color,
+    Value<int>? position,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return HomeCategoryRecordsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      icon: icon ?? this.icon,
+      color: color ?? this.color,
+      position: position ?? this.position,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<int>(color.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HomeCategoryRecordsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color, ')
+          ..write('position: $position, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HomeLocationRecordsTable extends HomeLocationRecords
+    with TableInfo<$HomeLocationRecordsTable, HomeLocationRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HomeLocationRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('place'),
+  );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+    'color',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    icon,
+    color,
+    position,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'home_location_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HomeLocationRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_colorMeta);
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HomeLocationRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HomeLocationRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      )!,
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color'],
+      )!,
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $HomeLocationRecordsTable createAlias(String alias) {
+    return $HomeLocationRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class HomeLocationRow extends DataClass implements Insertable<HomeLocationRow> {
+  final String id;
+  final String name;
+  final String icon;
+  final int color;
+  final int position;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const HomeLocationRow({
+    required this.id,
+    required this.name,
+    required this.icon,
+    required this.color,
+    required this.position,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['icon'] = Variable<String>(icon);
+    map['color'] = Variable<int>(color);
+    map['position'] = Variable<int>(position);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  HomeLocationRecordsCompanion toCompanion(bool nullToAbsent) {
+    return HomeLocationRecordsCompanion(
+      id: Value(id),
+      name: Value(name),
+      icon: Value(icon),
+      color: Value(color),
+      position: Value(position),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory HomeLocationRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HomeLocationRow(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      icon: serializer.fromJson<String>(json['icon']),
+      color: serializer.fromJson<int>(json['color']),
+      position: serializer.fromJson<int>(json['position']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'icon': serializer.toJson<String>(icon),
+      'color': serializer.toJson<int>(color),
+      'position': serializer.toJson<int>(position),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  HomeLocationRow copyWith({
+    String? id,
+    String? name,
+    String? icon,
+    int? color,
+    int? position,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => HomeLocationRow(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    icon: icon ?? this.icon,
+    color: color ?? this.color,
+    position: position ?? this.position,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  HomeLocationRow copyWithCompanion(HomeLocationRecordsCompanion data) {
+    return HomeLocationRow(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      color: data.color.present ? data.color.value : this.color,
+      position: data.position.present ? data.position.value : this.position,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HomeLocationRow(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color, ')
+          ..write('position: $position, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    icon,
+    color,
+    position,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HomeLocationRow &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.icon == this.icon &&
+          other.color == this.color &&
+          other.position == this.position &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class HomeLocationRecordsCompanion extends UpdateCompanion<HomeLocationRow> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> icon;
+  final Value<int> color;
+  final Value<int> position;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const HomeLocationRecordsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.color = const Value.absent(),
+    this.position = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HomeLocationRecordsCompanion.insert({
+    required String id,
+    required String name,
+    this.icon = const Value.absent(),
+    required int color,
+    this.position = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       color = Value(color),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<HomeLocationRow> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? icon,
+    Expression<int>? color,
+    Expression<int>? position,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (icon != null) 'icon': icon,
+      if (color != null) 'color': color,
+      if (position != null) 'position': position,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HomeLocationRecordsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? icon,
+    Value<int>? color,
+    Value<int>? position,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return HomeLocationRecordsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      icon: icon ?? this.icon,
+      color: color ?? this.color,
+      position: position ?? this.position,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<int>(color.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HomeLocationRecordsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color, ')
+          ..write('position: $position, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HomeUnitRecordsTable extends HomeUnitRecords
+    with TableInfo<$HomeUnitRecordsTable, HomeUnitRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HomeUnitRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _symbolMeta = const VerificationMeta('symbol');
+  @override
+  late final GeneratedColumn<String> symbol = GeneratedColumn<String>(
+    'symbol',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('count'),
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    symbol,
+    kind,
+    position,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'home_unit_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HomeUnitRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('symbol')) {
+      context.handle(
+        _symbolMeta,
+        symbol.isAcceptableOrUnknown(data['symbol']!, _symbolMeta),
+      );
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HomeUnitRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HomeUnitRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      symbol: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}symbol'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $HomeUnitRecordsTable createAlias(String alias) {
+    return $HomeUnitRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class HomeUnitRow extends DataClass implements Insertable<HomeUnitRow> {
+  final String id;
+  final String name;
+  final String symbol;
+
+  /// One of [HomeUnitKind], stored as text.
+  final String kind;
+  final int position;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const HomeUnitRow({
+    required this.id,
+    required this.name,
+    required this.symbol,
+    required this.kind,
+    required this.position,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['symbol'] = Variable<String>(symbol);
+    map['kind'] = Variable<String>(kind);
+    map['position'] = Variable<int>(position);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  HomeUnitRecordsCompanion toCompanion(bool nullToAbsent) {
+    return HomeUnitRecordsCompanion(
+      id: Value(id),
+      name: Value(name),
+      symbol: Value(symbol),
+      kind: Value(kind),
+      position: Value(position),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory HomeUnitRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HomeUnitRow(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      symbol: serializer.fromJson<String>(json['symbol']),
+      kind: serializer.fromJson<String>(json['kind']),
+      position: serializer.fromJson<int>(json['position']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'symbol': serializer.toJson<String>(symbol),
+      'kind': serializer.toJson<String>(kind),
+      'position': serializer.toJson<int>(position),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  HomeUnitRow copyWith({
+    String? id,
+    String? name,
+    String? symbol,
+    String? kind,
+    int? position,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => HomeUnitRow(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    symbol: symbol ?? this.symbol,
+    kind: kind ?? this.kind,
+    position: position ?? this.position,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  HomeUnitRow copyWithCompanion(HomeUnitRecordsCompanion data) {
+    return HomeUnitRow(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      symbol: data.symbol.present ? data.symbol.value : this.symbol,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      position: data.position.present ? data.position.value : this.position,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HomeUnitRow(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('symbol: $symbol, ')
+          ..write('kind: $kind, ')
+          ..write('position: $position, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    symbol,
+    kind,
+    position,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HomeUnitRow &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.symbol == this.symbol &&
+          other.kind == this.kind &&
+          other.position == this.position &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class HomeUnitRecordsCompanion extends UpdateCompanion<HomeUnitRow> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> symbol;
+  final Value<String> kind;
+  final Value<int> position;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const HomeUnitRecordsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.symbol = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.position = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HomeUnitRecordsCompanion.insert({
+    required String id,
+    required String name,
+    this.symbol = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.position = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<HomeUnitRow> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? symbol,
+    Expression<String>? kind,
+    Expression<int>? position,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (symbol != null) 'symbol': symbol,
+      if (kind != null) 'kind': kind,
+      if (position != null) 'position': position,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HomeUnitRecordsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? symbol,
+    Value<String>? kind,
+    Value<int>? position,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return HomeUnitRecordsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      symbol: symbol ?? this.symbol,
+      kind: kind ?? this.kind,
+      position: position ?? this.position,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (symbol.present) {
+      map['symbol'] = Variable<String>(symbol.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HomeUnitRecordsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('symbol: $symbol, ')
+          ..write('kind: $kind, ')
+          ..write('position: $position, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HomeItemRecordsTable extends HomeItemRecords
+    with TableInfo<$HomeItemRecordsTable, HomeItemRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HomeItemRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contextIdMeta = const VerificationMeta(
+    'contextId',
+  );
+  @override
+  late final GeneratedColumn<String> contextId = GeneratedColumn<String>(
+    'context_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES context_records (id)',
+    ),
+  );
+  static const VerificationMeta _groupIdMeta = const VerificationMeta(
+    'groupId',
+  );
+  @override
+  late final GeneratedColumn<String> groupId = GeneratedColumn<String>(
+    'group_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('inventory'),
+  );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+    'color',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _catalogIdMeta = const VerificationMeta(
+    'catalogId',
+  );
+  @override
+  late final GeneratedColumn<String> catalogId = GeneratedColumn<String>(
+    'catalog_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _categoryMeta = const VerificationMeta(
     'category',
   );
@@ -5622,6 +10519,20 @@ class $HomeItemRecordsTable extends HomeItemRecords
     type: DriftSqlType.string,
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES home_category_records (id)',
+    ),
   );
   static const VerificationMeta _locationMeta = const VerificationMeta(
     'location',
@@ -5647,6 +10558,17 @@ class $HomeItemRecordsTable extends HomeItemRecords
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _minQuantityMeta = const VerificationMeta(
+    'minQuantity',
+  );
+  @override
+  late final GeneratedColumn<double> minQuantity = GeneratedColumn<double>(
+    'min_quantity',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _reorderLevelMeta = const VerificationMeta(
     'reorderLevel',
   );
@@ -5667,6 +10589,41 @@ class $HomeItemRecordsTable extends HomeItemRecords
     type: DriftSqlType.string,
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _unitIdMeta = const VerificationMeta('unitId');
+  @override
+  late final GeneratedColumn<String> unitId = GeneratedColumn<String>(
+    'unit_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES home_unit_records (id)',
+    ),
+  );
+  static const VerificationMeta _packSizeMeta = const VerificationMeta(
+    'packSize',
+  );
+  @override
+  late final GeneratedColumn<String> packSize = GeneratedColumn<String>(
+    'pack_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _expiresDateKeyMeta = const VerificationMeta(
+    'expiresDateKey',
+  );
+  @override
+  late final GeneratedColumn<int> expiresDateKey = GeneratedColumn<int>(
+    'expires_date_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
@@ -5726,12 +10683,23 @@ class $HomeItemRecordsTable extends HomeItemRecords
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    contextId,
+    groupId,
     name,
+    description,
+    icon,
+    color,
+    catalogId,
     category,
+    categoryId,
     location,
     quantity,
+    minQuantity,
     reorderLevel,
     unit,
+    unitId,
+    packSize,
+    expiresDateKey,
     notes,
     lastPurchasedAt,
     createdAt,
@@ -5755,6 +10723,18 @@ class $HomeItemRecordsTable extends HomeItemRecords
     } else if (isInserting) {
       context.missing(_idMeta);
     }
+    if (data.containsKey('context_id')) {
+      context.handle(
+        _contextIdMeta,
+        contextId.isAcceptableOrUnknown(data['context_id']!, _contextIdMeta),
+      );
+    }
+    if (data.containsKey('group_id')) {
+      context.handle(
+        _groupIdMeta,
+        groupId.isAcceptableOrUnknown(data['group_id']!, _groupIdMeta),
+      );
+    }
     if (data.containsKey('name')) {
       context.handle(
         _nameMeta,
@@ -5763,10 +10743,43 @@ class $HomeItemRecordsTable extends HomeItemRecords
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    }
+    if (data.containsKey('catalog_id')) {
+      context.handle(
+        _catalogIdMeta,
+        catalogId.isAcceptableOrUnknown(data['catalog_id']!, _catalogIdMeta),
+      );
+    }
     if (data.containsKey('category')) {
       context.handle(
         _categoryMeta,
         category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
       );
     }
     if (data.containsKey('location')) {
@@ -5779,6 +10792,15 @@ class $HomeItemRecordsTable extends HomeItemRecords
       context.handle(
         _quantityMeta,
         quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
+      );
+    }
+    if (data.containsKey('min_quantity')) {
+      context.handle(
+        _minQuantityMeta,
+        minQuantity.isAcceptableOrUnknown(
+          data['min_quantity']!,
+          _minQuantityMeta,
+        ),
       );
     }
     if (data.containsKey('reorder_level')) {
@@ -5794,6 +10816,27 @@ class $HomeItemRecordsTable extends HomeItemRecords
       context.handle(
         _unitMeta,
         unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
+      );
+    }
+    if (data.containsKey('unit_id')) {
+      context.handle(
+        _unitIdMeta,
+        unitId.isAcceptableOrUnknown(data['unit_id']!, _unitIdMeta),
+      );
+    }
+    if (data.containsKey('pack_size')) {
+      context.handle(
+        _packSizeMeta,
+        packSize.isAcceptableOrUnknown(data['pack_size']!, _packSizeMeta),
+      );
+    }
+    if (data.containsKey('expires_date_key')) {
+      context.handle(
+        _expiresDateKeyMeta,
+        expiresDateKey.isAcceptableOrUnknown(
+          data['expires_date_key']!,
+          _expiresDateKeyMeta,
+        ),
       );
     }
     if (data.containsKey('notes')) {
@@ -5846,14 +10889,42 @@ class $HomeItemRecordsTable extends HomeItemRecords
         DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
+      contextId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}context_id'],
+      ),
+      groupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}group_id'],
+      ),
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      )!,
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color'],
+      ),
+      catalogId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}catalog_id'],
+      ),
       category: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}category'],
       )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      ),
       location: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}location'],
@@ -5862,6 +10933,10 @@ class $HomeItemRecordsTable extends HomeItemRecords
         DriftSqlType.double,
         data['${effectivePrefix}quantity'],
       )!,
+      minQuantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}min_quantity'],
+      ),
       reorderLevel: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}reorder_level'],
@@ -5870,6 +10945,18 @@ class $HomeItemRecordsTable extends HomeItemRecords
         DriftSqlType.string,
         data['${effectivePrefix}unit'],
       )!,
+      unitId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit_id'],
+      ),
+      packSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pack_size'],
+      )!,
+      expiresDateKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}expires_date_key'],
+      ),
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
@@ -5901,14 +10988,33 @@ class $HomeItemRecordsTable extends HomeItemRecords
 
 class HomeItemRow extends DataClass implements Insertable<HomeItemRow> {
   final String id;
+
+  /// Home this inventory item belongs to.
+  final String? contextId;
+
+  /// Product identity shared by every size/variant of the same product.
+  final String? groupId;
   final String name;
+  final String description;
+  final String icon;
+  final int? color;
+  final String? catalogId;
   final String category;
+  final String? categoryId;
   final String location;
   final double quantity;
 
-  /// Threshold at or below which the item is low stock. Null means no alert.
+  /// Minimum stock at or below which the item is low. Null means no alert.
+  final double? minQuantity;
+
+  /// Legacy reorder threshold kept for older backups and CSV imports.
   final double? reorderLevel;
   final String unit;
+  final String? unitId;
+  final String packSize;
+
+  /// Date-only expiry, stored as `YYYYMMDD`.
+  final int? expiresDateKey;
   final String notes;
   final DateTime? lastPurchasedAt;
   final DateTime createdAt;
@@ -5916,12 +11022,23 @@ class HomeItemRow extends DataClass implements Insertable<HomeItemRow> {
   final DateTime? deletedAt;
   const HomeItemRow({
     required this.id,
+    this.contextId,
+    this.groupId,
     required this.name,
+    required this.description,
+    required this.icon,
+    this.color,
+    this.catalogId,
     required this.category,
+    this.categoryId,
     required this.location,
     required this.quantity,
+    this.minQuantity,
     this.reorderLevel,
     required this.unit,
+    this.unitId,
+    required this.packSize,
+    this.expiresDateKey,
     required this.notes,
     this.lastPurchasedAt,
     required this.createdAt,
@@ -5932,14 +11049,41 @@ class HomeItemRow extends DataClass implements Insertable<HomeItemRow> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
+    if (!nullToAbsent || contextId != null) {
+      map['context_id'] = Variable<String>(contextId);
+    }
+    if (!nullToAbsent || groupId != null) {
+      map['group_id'] = Variable<String>(groupId);
+    }
     map['name'] = Variable<String>(name);
+    map['description'] = Variable<String>(description);
+    map['icon'] = Variable<String>(icon);
+    if (!nullToAbsent || color != null) {
+      map['color'] = Variable<int>(color);
+    }
+    if (!nullToAbsent || catalogId != null) {
+      map['catalog_id'] = Variable<String>(catalogId);
+    }
     map['category'] = Variable<String>(category);
+    if (!nullToAbsent || categoryId != null) {
+      map['category_id'] = Variable<String>(categoryId);
+    }
     map['location'] = Variable<String>(location);
     map['quantity'] = Variable<double>(quantity);
+    if (!nullToAbsent || minQuantity != null) {
+      map['min_quantity'] = Variable<double>(minQuantity);
+    }
     if (!nullToAbsent || reorderLevel != null) {
       map['reorder_level'] = Variable<double>(reorderLevel);
     }
     map['unit'] = Variable<String>(unit);
+    if (!nullToAbsent || unitId != null) {
+      map['unit_id'] = Variable<String>(unitId);
+    }
+    map['pack_size'] = Variable<String>(packSize);
+    if (!nullToAbsent || expiresDateKey != null) {
+      map['expires_date_key'] = Variable<int>(expiresDateKey);
+    }
     map['notes'] = Variable<String>(notes);
     if (!nullToAbsent || lastPurchasedAt != null) {
       map['last_purchased_at'] = Variable<DateTime>(lastPurchasedAt);
@@ -5955,14 +11099,41 @@ class HomeItemRow extends DataClass implements Insertable<HomeItemRow> {
   HomeItemRecordsCompanion toCompanion(bool nullToAbsent) {
     return HomeItemRecordsCompanion(
       id: Value(id),
+      contextId: contextId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contextId),
+      groupId: groupId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(groupId),
       name: Value(name),
+      description: Value(description),
+      icon: Value(icon),
+      color: color == null && nullToAbsent
+          ? const Value.absent()
+          : Value(color),
+      catalogId: catalogId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(catalogId),
       category: Value(category),
+      categoryId: categoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryId),
       location: Value(location),
       quantity: Value(quantity),
+      minQuantity: minQuantity == null && nullToAbsent
+          ? const Value.absent()
+          : Value(minQuantity),
       reorderLevel: reorderLevel == null && nullToAbsent
           ? const Value.absent()
           : Value(reorderLevel),
       unit: Value(unit),
+      unitId: unitId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(unitId),
+      packSize: Value(packSize),
+      expiresDateKey: expiresDateKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expiresDateKey),
       notes: Value(notes),
       lastPurchasedAt: lastPurchasedAt == null && nullToAbsent
           ? const Value.absent()
@@ -5982,12 +11153,23 @@ class HomeItemRow extends DataClass implements Insertable<HomeItemRow> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return HomeItemRow(
       id: serializer.fromJson<String>(json['id']),
+      contextId: serializer.fromJson<String?>(json['contextId']),
+      groupId: serializer.fromJson<String?>(json['groupId']),
       name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String>(json['description']),
+      icon: serializer.fromJson<String>(json['icon']),
+      color: serializer.fromJson<int?>(json['color']),
+      catalogId: serializer.fromJson<String?>(json['catalogId']),
       category: serializer.fromJson<String>(json['category']),
+      categoryId: serializer.fromJson<String?>(json['categoryId']),
       location: serializer.fromJson<String>(json['location']),
       quantity: serializer.fromJson<double>(json['quantity']),
+      minQuantity: serializer.fromJson<double?>(json['minQuantity']),
       reorderLevel: serializer.fromJson<double?>(json['reorderLevel']),
       unit: serializer.fromJson<String>(json['unit']),
+      unitId: serializer.fromJson<String?>(json['unitId']),
+      packSize: serializer.fromJson<String>(json['packSize']),
+      expiresDateKey: serializer.fromJson<int?>(json['expiresDateKey']),
       notes: serializer.fromJson<String>(json['notes']),
       lastPurchasedAt: serializer.fromJson<DateTime?>(json['lastPurchasedAt']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -6000,12 +11182,23 @@ class HomeItemRow extends DataClass implements Insertable<HomeItemRow> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
+      'contextId': serializer.toJson<String?>(contextId),
+      'groupId': serializer.toJson<String?>(groupId),
       'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String>(description),
+      'icon': serializer.toJson<String>(icon),
+      'color': serializer.toJson<int?>(color),
+      'catalogId': serializer.toJson<String?>(catalogId),
       'category': serializer.toJson<String>(category),
+      'categoryId': serializer.toJson<String?>(categoryId),
       'location': serializer.toJson<String>(location),
       'quantity': serializer.toJson<double>(quantity),
+      'minQuantity': serializer.toJson<double?>(minQuantity),
       'reorderLevel': serializer.toJson<double?>(reorderLevel),
       'unit': serializer.toJson<String>(unit),
+      'unitId': serializer.toJson<String?>(unitId),
+      'packSize': serializer.toJson<String>(packSize),
+      'expiresDateKey': serializer.toJson<int?>(expiresDateKey),
       'notes': serializer.toJson<String>(notes),
       'lastPurchasedAt': serializer.toJson<DateTime?>(lastPurchasedAt),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -6016,12 +11209,23 @@ class HomeItemRow extends DataClass implements Insertable<HomeItemRow> {
 
   HomeItemRow copyWith({
     String? id,
+    Value<String?> contextId = const Value.absent(),
+    Value<String?> groupId = const Value.absent(),
     String? name,
+    String? description,
+    String? icon,
+    Value<int?> color = const Value.absent(),
+    Value<String?> catalogId = const Value.absent(),
     String? category,
+    Value<String?> categoryId = const Value.absent(),
     String? location,
     double? quantity,
+    Value<double?> minQuantity = const Value.absent(),
     Value<double?> reorderLevel = const Value.absent(),
     String? unit,
+    Value<String?> unitId = const Value.absent(),
+    String? packSize,
+    Value<int?> expiresDateKey = const Value.absent(),
     String? notes,
     Value<DateTime?> lastPurchasedAt = const Value.absent(),
     DateTime? createdAt,
@@ -6029,12 +11233,25 @@ class HomeItemRow extends DataClass implements Insertable<HomeItemRow> {
     Value<DateTime?> deletedAt = const Value.absent(),
   }) => HomeItemRow(
     id: id ?? this.id,
+    contextId: contextId.present ? contextId.value : this.contextId,
+    groupId: groupId.present ? groupId.value : this.groupId,
     name: name ?? this.name,
+    description: description ?? this.description,
+    icon: icon ?? this.icon,
+    color: color.present ? color.value : this.color,
+    catalogId: catalogId.present ? catalogId.value : this.catalogId,
     category: category ?? this.category,
+    categoryId: categoryId.present ? categoryId.value : this.categoryId,
     location: location ?? this.location,
     quantity: quantity ?? this.quantity,
+    minQuantity: minQuantity.present ? minQuantity.value : this.minQuantity,
     reorderLevel: reorderLevel.present ? reorderLevel.value : this.reorderLevel,
     unit: unit ?? this.unit,
+    unitId: unitId.present ? unitId.value : this.unitId,
+    packSize: packSize ?? this.packSize,
+    expiresDateKey: expiresDateKey.present
+        ? expiresDateKey.value
+        : this.expiresDateKey,
     notes: notes ?? this.notes,
     lastPurchasedAt: lastPurchasedAt.present
         ? lastPurchasedAt.value
@@ -6046,14 +11263,33 @@ class HomeItemRow extends DataClass implements Insertable<HomeItemRow> {
   HomeItemRow copyWithCompanion(HomeItemRecordsCompanion data) {
     return HomeItemRow(
       id: data.id.present ? data.id.value : this.id,
+      contextId: data.contextId.present ? data.contextId.value : this.contextId,
+      groupId: data.groupId.present ? data.groupId.value : this.groupId,
       name: data.name.present ? data.name.value : this.name,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      color: data.color.present ? data.color.value : this.color,
+      catalogId: data.catalogId.present ? data.catalogId.value : this.catalogId,
       category: data.category.present ? data.category.value : this.category,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
       location: data.location.present ? data.location.value : this.location,
       quantity: data.quantity.present ? data.quantity.value : this.quantity,
+      minQuantity: data.minQuantity.present
+          ? data.minQuantity.value
+          : this.minQuantity,
       reorderLevel: data.reorderLevel.present
           ? data.reorderLevel.value
           : this.reorderLevel,
       unit: data.unit.present ? data.unit.value : this.unit,
+      unitId: data.unitId.present ? data.unitId.value : this.unitId,
+      packSize: data.packSize.present ? data.packSize.value : this.packSize,
+      expiresDateKey: data.expiresDateKey.present
+          ? data.expiresDateKey.value
+          : this.expiresDateKey,
       notes: data.notes.present ? data.notes.value : this.notes,
       lastPurchasedAt: data.lastPurchasedAt.present
           ? data.lastPurchasedAt.value
@@ -6068,12 +11304,23 @@ class HomeItemRow extends DataClass implements Insertable<HomeItemRow> {
   String toString() {
     return (StringBuffer('HomeItemRow(')
           ..write('id: $id, ')
+          ..write('contextId: $contextId, ')
+          ..write('groupId: $groupId, ')
           ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color, ')
+          ..write('catalogId: $catalogId, ')
           ..write('category: $category, ')
+          ..write('categoryId: $categoryId, ')
           ..write('location: $location, ')
           ..write('quantity: $quantity, ')
+          ..write('minQuantity: $minQuantity, ')
           ..write('reorderLevel: $reorderLevel, ')
           ..write('unit: $unit, ')
+          ..write('unitId: $unitId, ')
+          ..write('packSize: $packSize, ')
+          ..write('expiresDateKey: $expiresDateKey, ')
           ..write('notes: $notes, ')
           ..write('lastPurchasedAt: $lastPurchasedAt, ')
           ..write('createdAt: $createdAt, ')
@@ -6084,31 +11331,53 @@ class HomeItemRow extends DataClass implements Insertable<HomeItemRow> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
+    contextId,
+    groupId,
     name,
+    description,
+    icon,
+    color,
+    catalogId,
     category,
+    categoryId,
     location,
     quantity,
+    minQuantity,
     reorderLevel,
     unit,
+    unitId,
+    packSize,
+    expiresDateKey,
     notes,
     lastPurchasedAt,
     createdAt,
     updatedAt,
     deletedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is HomeItemRow &&
           other.id == this.id &&
+          other.contextId == this.contextId &&
+          other.groupId == this.groupId &&
           other.name == this.name &&
+          other.description == this.description &&
+          other.icon == this.icon &&
+          other.color == this.color &&
+          other.catalogId == this.catalogId &&
           other.category == this.category &&
+          other.categoryId == this.categoryId &&
           other.location == this.location &&
           other.quantity == this.quantity &&
+          other.minQuantity == this.minQuantity &&
           other.reorderLevel == this.reorderLevel &&
           other.unit == this.unit &&
+          other.unitId == this.unitId &&
+          other.packSize == this.packSize &&
+          other.expiresDateKey == this.expiresDateKey &&
           other.notes == this.notes &&
           other.lastPurchasedAt == this.lastPurchasedAt &&
           other.createdAt == this.createdAt &&
@@ -6118,12 +11387,23 @@ class HomeItemRow extends DataClass implements Insertable<HomeItemRow> {
 
 class HomeItemRecordsCompanion extends UpdateCompanion<HomeItemRow> {
   final Value<String> id;
+  final Value<String?> contextId;
+  final Value<String?> groupId;
   final Value<String> name;
+  final Value<String> description;
+  final Value<String> icon;
+  final Value<int?> color;
+  final Value<String?> catalogId;
   final Value<String> category;
+  final Value<String?> categoryId;
   final Value<String> location;
   final Value<double> quantity;
+  final Value<double?> minQuantity;
   final Value<double?> reorderLevel;
   final Value<String> unit;
+  final Value<String?> unitId;
+  final Value<String> packSize;
+  final Value<int?> expiresDateKey;
   final Value<String> notes;
   final Value<DateTime?> lastPurchasedAt;
   final Value<DateTime> createdAt;
@@ -6132,12 +11412,23 @@ class HomeItemRecordsCompanion extends UpdateCompanion<HomeItemRow> {
   final Value<int> rowid;
   const HomeItemRecordsCompanion({
     this.id = const Value.absent(),
+    this.contextId = const Value.absent(),
+    this.groupId = const Value.absent(),
     this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.color = const Value.absent(),
+    this.catalogId = const Value.absent(),
     this.category = const Value.absent(),
+    this.categoryId = const Value.absent(),
     this.location = const Value.absent(),
     this.quantity = const Value.absent(),
+    this.minQuantity = const Value.absent(),
     this.reorderLevel = const Value.absent(),
     this.unit = const Value.absent(),
+    this.unitId = const Value.absent(),
+    this.packSize = const Value.absent(),
+    this.expiresDateKey = const Value.absent(),
     this.notes = const Value.absent(),
     this.lastPurchasedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -6147,12 +11438,23 @@ class HomeItemRecordsCompanion extends UpdateCompanion<HomeItemRow> {
   });
   HomeItemRecordsCompanion.insert({
     required String id,
+    this.contextId = const Value.absent(),
+    this.groupId = const Value.absent(),
     required String name,
+    this.description = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.color = const Value.absent(),
+    this.catalogId = const Value.absent(),
     this.category = const Value.absent(),
+    this.categoryId = const Value.absent(),
     this.location = const Value.absent(),
     this.quantity = const Value.absent(),
+    this.minQuantity = const Value.absent(),
     this.reorderLevel = const Value.absent(),
     this.unit = const Value.absent(),
+    this.unitId = const Value.absent(),
+    this.packSize = const Value.absent(),
+    this.expiresDateKey = const Value.absent(),
     this.notes = const Value.absent(),
     this.lastPurchasedAt = const Value.absent(),
     required DateTime createdAt,
@@ -6165,12 +11467,23 @@ class HomeItemRecordsCompanion extends UpdateCompanion<HomeItemRow> {
        updatedAt = Value(updatedAt);
   static Insertable<HomeItemRow> custom({
     Expression<String>? id,
+    Expression<String>? contextId,
+    Expression<String>? groupId,
     Expression<String>? name,
+    Expression<String>? description,
+    Expression<String>? icon,
+    Expression<int>? color,
+    Expression<String>? catalogId,
     Expression<String>? category,
+    Expression<String>? categoryId,
     Expression<String>? location,
     Expression<double>? quantity,
+    Expression<double>? minQuantity,
     Expression<double>? reorderLevel,
     Expression<String>? unit,
+    Expression<String>? unitId,
+    Expression<String>? packSize,
+    Expression<int>? expiresDateKey,
     Expression<String>? notes,
     Expression<DateTime>? lastPurchasedAt,
     Expression<DateTime>? createdAt,
@@ -6180,12 +11493,23 @@ class HomeItemRecordsCompanion extends UpdateCompanion<HomeItemRow> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (contextId != null) 'context_id': contextId,
+      if (groupId != null) 'group_id': groupId,
       if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (icon != null) 'icon': icon,
+      if (color != null) 'color': color,
+      if (catalogId != null) 'catalog_id': catalogId,
       if (category != null) 'category': category,
+      if (categoryId != null) 'category_id': categoryId,
       if (location != null) 'location': location,
       if (quantity != null) 'quantity': quantity,
+      if (minQuantity != null) 'min_quantity': minQuantity,
       if (reorderLevel != null) 'reorder_level': reorderLevel,
       if (unit != null) 'unit': unit,
+      if (unitId != null) 'unit_id': unitId,
+      if (packSize != null) 'pack_size': packSize,
+      if (expiresDateKey != null) 'expires_date_key': expiresDateKey,
       if (notes != null) 'notes': notes,
       if (lastPurchasedAt != null) 'last_purchased_at': lastPurchasedAt,
       if (createdAt != null) 'created_at': createdAt,
@@ -6197,12 +11521,23 @@ class HomeItemRecordsCompanion extends UpdateCompanion<HomeItemRow> {
 
   HomeItemRecordsCompanion copyWith({
     Value<String>? id,
+    Value<String?>? contextId,
+    Value<String?>? groupId,
     Value<String>? name,
+    Value<String>? description,
+    Value<String>? icon,
+    Value<int?>? color,
+    Value<String?>? catalogId,
     Value<String>? category,
+    Value<String?>? categoryId,
     Value<String>? location,
     Value<double>? quantity,
+    Value<double?>? minQuantity,
     Value<double?>? reorderLevel,
     Value<String>? unit,
+    Value<String?>? unitId,
+    Value<String>? packSize,
+    Value<int?>? expiresDateKey,
     Value<String>? notes,
     Value<DateTime?>? lastPurchasedAt,
     Value<DateTime>? createdAt,
@@ -6212,12 +11547,23 @@ class HomeItemRecordsCompanion extends UpdateCompanion<HomeItemRow> {
   }) {
     return HomeItemRecordsCompanion(
       id: id ?? this.id,
+      contextId: contextId ?? this.contextId,
+      groupId: groupId ?? this.groupId,
       name: name ?? this.name,
+      description: description ?? this.description,
+      icon: icon ?? this.icon,
+      color: color ?? this.color,
+      catalogId: catalogId ?? this.catalogId,
       category: category ?? this.category,
+      categoryId: categoryId ?? this.categoryId,
       location: location ?? this.location,
       quantity: quantity ?? this.quantity,
+      minQuantity: minQuantity ?? this.minQuantity,
       reorderLevel: reorderLevel ?? this.reorderLevel,
       unit: unit ?? this.unit,
+      unitId: unitId ?? this.unitId,
+      packSize: packSize ?? this.packSize,
+      expiresDateKey: expiresDateKey ?? this.expiresDateKey,
       notes: notes ?? this.notes,
       lastPurchasedAt: lastPurchasedAt ?? this.lastPurchasedAt,
       createdAt: createdAt ?? this.createdAt,
@@ -6233,11 +11579,32 @@ class HomeItemRecordsCompanion extends UpdateCompanion<HomeItemRow> {
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
+    if (contextId.present) {
+      map['context_id'] = Variable<String>(contextId.value);
+    }
+    if (groupId.present) {
+      map['group_id'] = Variable<String>(groupId.value);
+    }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<int>(color.value);
+    }
+    if (catalogId.present) {
+      map['catalog_id'] = Variable<String>(catalogId.value);
+    }
     if (category.present) {
       map['category'] = Variable<String>(category.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
     }
     if (location.present) {
       map['location'] = Variable<String>(location.value);
@@ -6245,11 +11612,23 @@ class HomeItemRecordsCompanion extends UpdateCompanion<HomeItemRow> {
     if (quantity.present) {
       map['quantity'] = Variable<double>(quantity.value);
     }
+    if (minQuantity.present) {
+      map['min_quantity'] = Variable<double>(minQuantity.value);
+    }
     if (reorderLevel.present) {
       map['reorder_level'] = Variable<double>(reorderLevel.value);
     }
     if (unit.present) {
       map['unit'] = Variable<String>(unit.value);
+    }
+    if (unitId.present) {
+      map['unit_id'] = Variable<String>(unitId.value);
+    }
+    if (packSize.present) {
+      map['pack_size'] = Variable<String>(packSize.value);
+    }
+    if (expiresDateKey.present) {
+      map['expires_date_key'] = Variable<int>(expiresDateKey.value);
     }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
@@ -6276,17 +11655,264 @@ class HomeItemRecordsCompanion extends UpdateCompanion<HomeItemRow> {
   String toString() {
     return (StringBuffer('HomeItemRecordsCompanion(')
           ..write('id: $id, ')
+          ..write('contextId: $contextId, ')
+          ..write('groupId: $groupId, ')
           ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color, ')
+          ..write('catalogId: $catalogId, ')
           ..write('category: $category, ')
+          ..write('categoryId: $categoryId, ')
           ..write('location: $location, ')
           ..write('quantity: $quantity, ')
+          ..write('minQuantity: $minQuantity, ')
           ..write('reorderLevel: $reorderLevel, ')
           ..write('unit: $unit, ')
+          ..write('unitId: $unitId, ')
+          ..write('packSize: $packSize, ')
+          ..write('expiresDateKey: $expiresDateKey, ')
           ..write('notes: $notes, ')
           ..write('lastPurchasedAt: $lastPurchasedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HomeItemLocationRecordsTable extends HomeItemLocationRecords
+    with TableInfo<$HomeItemLocationRecordsTable, HomeItemLocationRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HomeItemLocationRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _homeItemIdMeta = const VerificationMeta(
+    'homeItemId',
+  );
+  @override
+  late final GeneratedColumn<String> homeItemId = GeneratedColumn<String>(
+    'home_item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES home_item_records (id)',
+    ),
+  );
+  static const VerificationMeta _locationIdMeta = const VerificationMeta(
+    'locationId',
+  );
+  @override
+  late final GeneratedColumn<String> locationId = GeneratedColumn<String>(
+    'location_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES home_location_records (id)',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [homeItemId, locationId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'home_item_location_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HomeItemLocationRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('home_item_id')) {
+      context.handle(
+        _homeItemIdMeta,
+        homeItemId.isAcceptableOrUnknown(
+          data['home_item_id']!,
+          _homeItemIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_homeItemIdMeta);
+    }
+    if (data.containsKey('location_id')) {
+      context.handle(
+        _locationIdMeta,
+        locationId.isAcceptableOrUnknown(data['location_id']!, _locationIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_locationIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {homeItemId, locationId};
+  @override
+  HomeItemLocationRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HomeItemLocationRow(
+      homeItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}home_item_id'],
+      )!,
+      locationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}location_id'],
+      )!,
+    );
+  }
+
+  @override
+  $HomeItemLocationRecordsTable createAlias(String alias) {
+    return $HomeItemLocationRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class HomeItemLocationRow extends DataClass
+    implements Insertable<HomeItemLocationRow> {
+  final String homeItemId;
+  final String locationId;
+  const HomeItemLocationRow({
+    required this.homeItemId,
+    required this.locationId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['home_item_id'] = Variable<String>(homeItemId);
+    map['location_id'] = Variable<String>(locationId);
+    return map;
+  }
+
+  HomeItemLocationRecordsCompanion toCompanion(bool nullToAbsent) {
+    return HomeItemLocationRecordsCompanion(
+      homeItemId: Value(homeItemId),
+      locationId: Value(locationId),
+    );
+  }
+
+  factory HomeItemLocationRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HomeItemLocationRow(
+      homeItemId: serializer.fromJson<String>(json['homeItemId']),
+      locationId: serializer.fromJson<String>(json['locationId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'homeItemId': serializer.toJson<String>(homeItemId),
+      'locationId': serializer.toJson<String>(locationId),
+    };
+  }
+
+  HomeItemLocationRow copyWith({String? homeItemId, String? locationId}) =>
+      HomeItemLocationRow(
+        homeItemId: homeItemId ?? this.homeItemId,
+        locationId: locationId ?? this.locationId,
+      );
+  HomeItemLocationRow copyWithCompanion(HomeItemLocationRecordsCompanion data) {
+    return HomeItemLocationRow(
+      homeItemId: data.homeItemId.present
+          ? data.homeItemId.value
+          : this.homeItemId,
+      locationId: data.locationId.present
+          ? data.locationId.value
+          : this.locationId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HomeItemLocationRow(')
+          ..write('homeItemId: $homeItemId, ')
+          ..write('locationId: $locationId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(homeItemId, locationId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HomeItemLocationRow &&
+          other.homeItemId == this.homeItemId &&
+          other.locationId == this.locationId);
+}
+
+class HomeItemLocationRecordsCompanion
+    extends UpdateCompanion<HomeItemLocationRow> {
+  final Value<String> homeItemId;
+  final Value<String> locationId;
+  final Value<int> rowid;
+  const HomeItemLocationRecordsCompanion({
+    this.homeItemId = const Value.absent(),
+    this.locationId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HomeItemLocationRecordsCompanion.insert({
+    required String homeItemId,
+    required String locationId,
+    this.rowid = const Value.absent(),
+  }) : homeItemId = Value(homeItemId),
+       locationId = Value(locationId);
+  static Insertable<HomeItemLocationRow> custom({
+    Expression<String>? homeItemId,
+    Expression<String>? locationId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (homeItemId != null) 'home_item_id': homeItemId,
+      if (locationId != null) 'location_id': locationId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HomeItemLocationRecordsCompanion copyWith({
+    Value<String>? homeItemId,
+    Value<String>? locationId,
+    Value<int>? rowid,
+  }) {
+    return HomeItemLocationRecordsCompanion(
+      homeItemId: homeItemId ?? this.homeItemId,
+      locationId: locationId ?? this.locationId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (homeItemId.present) {
+      map['home_item_id'] = Variable<String>(homeItemId.value);
+    }
+    if (locationId.present) {
+      map['location_id'] = Variable<String>(locationId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HomeItemLocationRecordsCompanion(')
+          ..write('homeItemId: $homeItemId, ')
+          ..write('locationId: $locationId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -6339,6 +11965,18 @@ class $ShoppingItemRecordsTable extends ShoppingItemRecords
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _packSizeMeta = const VerificationMeta(
+    'packSize',
+  );
+  @override
+  late final GeneratedColumn<String> packSize = GeneratedColumn<String>(
+    'pack_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _checkedMeta = const VerificationMeta(
     'checked',
   );
@@ -6376,6 +12014,76 @@ class $ShoppingItemRecordsTable extends ShoppingItemRecords
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'REFERENCES home_item_records (id)',
+    ),
+  );
+  static const VerificationMeta _catalogIdMeta = const VerificationMeta(
+    'catalogId',
+  );
+  @override
+  late final GeneratedColumn<String> catalogId = GeneratedColumn<String>(
+    'catalog_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES home_category_records (id)',
+    ),
+  );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('shopping_basket'),
+  );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+    'color',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _contextIdMeta = const VerificationMeta(
+    'contextId',
+  );
+  @override
+  late final GeneratedColumn<String> contextId = GeneratedColumn<String>(
+    'context_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES context_records (id)',
     ),
   );
   static const VerificationMeta _positionMeta = const VerificationMeta(
@@ -6429,9 +12137,16 @@ class $ShoppingItemRecordsTable extends ShoppingItemRecords
     name,
     quantity,
     unit,
+    packSize,
     checked,
     note,
     homeItemId,
+    catalogId,
+    category,
+    categoryId,
+    icon,
+    color,
+    contextId,
     position,
     createdAt,
     updatedAt,
@@ -6474,6 +12189,12 @@ class $ShoppingItemRecordsTable extends ShoppingItemRecords
         unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
       );
     }
+    if (data.containsKey('pack_size')) {
+      context.handle(
+        _packSizeMeta,
+        packSize.isAcceptableOrUnknown(data['pack_size']!, _packSizeMeta),
+      );
+    }
     if (data.containsKey('checked')) {
       context.handle(
         _checkedMeta,
@@ -6493,6 +12214,42 @@ class $ShoppingItemRecordsTable extends ShoppingItemRecords
           data['home_item_id']!,
           _homeItemIdMeta,
         ),
+      );
+    }
+    if (data.containsKey('catalog_id')) {
+      context.handle(
+        _catalogIdMeta,
+        catalogId.isAcceptableOrUnknown(data['catalog_id']!, _catalogIdMeta),
+      );
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    }
+    if (data.containsKey('context_id')) {
+      context.handle(
+        _contextIdMeta,
+        contextId.isAcceptableOrUnknown(data['context_id']!, _contextIdMeta),
       );
     }
     if (data.containsKey('position')) {
@@ -6548,6 +12305,10 @@ class $ShoppingItemRecordsTable extends ShoppingItemRecords
         DriftSqlType.string,
         data['${effectivePrefix}unit'],
       )!,
+      packSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pack_size'],
+      )!,
       checked: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}checked'],
@@ -6559,6 +12320,30 @@ class $ShoppingItemRecordsTable extends ShoppingItemRecords
       homeItemId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}home_item_id'],
+      ),
+      catalogId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}catalog_id'],
+      ),
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      ),
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      )!,
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color'],
+      ),
+      contextId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}context_id'],
       ),
       position: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -6590,9 +12375,18 @@ class ShoppingItemRow extends DataClass implements Insertable<ShoppingItemRow> {
   final String name;
   final double quantity;
   final String unit;
+  final String packSize;
   final bool checked;
   final String note;
   final String? homeItemId;
+  final String? catalogId;
+  final String category;
+  final String? categoryId;
+  final String icon;
+  final int? color;
+
+  /// Home this shopping line belongs to.
+  final String? contextId;
 
   /// Manual order inside the list. Lower values come first.
   final int position;
@@ -6604,9 +12398,16 @@ class ShoppingItemRow extends DataClass implements Insertable<ShoppingItemRow> {
     required this.name,
     required this.quantity,
     required this.unit,
+    required this.packSize,
     required this.checked,
     required this.note,
     this.homeItemId,
+    this.catalogId,
+    required this.category,
+    this.categoryId,
+    required this.icon,
+    this.color,
+    this.contextId,
     required this.position,
     required this.createdAt,
     required this.updatedAt,
@@ -6619,10 +12420,25 @@ class ShoppingItemRow extends DataClass implements Insertable<ShoppingItemRow> {
     map['name'] = Variable<String>(name);
     map['quantity'] = Variable<double>(quantity);
     map['unit'] = Variable<String>(unit);
+    map['pack_size'] = Variable<String>(packSize);
     map['checked'] = Variable<bool>(checked);
     map['note'] = Variable<String>(note);
     if (!nullToAbsent || homeItemId != null) {
       map['home_item_id'] = Variable<String>(homeItemId);
+    }
+    if (!nullToAbsent || catalogId != null) {
+      map['catalog_id'] = Variable<String>(catalogId);
+    }
+    map['category'] = Variable<String>(category);
+    if (!nullToAbsent || categoryId != null) {
+      map['category_id'] = Variable<String>(categoryId);
+    }
+    map['icon'] = Variable<String>(icon);
+    if (!nullToAbsent || color != null) {
+      map['color'] = Variable<int>(color);
+    }
+    if (!nullToAbsent || contextId != null) {
+      map['context_id'] = Variable<String>(contextId);
     }
     map['position'] = Variable<int>(position);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -6639,11 +12455,26 @@ class ShoppingItemRow extends DataClass implements Insertable<ShoppingItemRow> {
       name: Value(name),
       quantity: Value(quantity),
       unit: Value(unit),
+      packSize: Value(packSize),
       checked: Value(checked),
       note: Value(note),
       homeItemId: homeItemId == null && nullToAbsent
           ? const Value.absent()
           : Value(homeItemId),
+      catalogId: catalogId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(catalogId),
+      category: Value(category),
+      categoryId: categoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryId),
+      icon: Value(icon),
+      color: color == null && nullToAbsent
+          ? const Value.absent()
+          : Value(color),
+      contextId: contextId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contextId),
       position: Value(position),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -6663,9 +12494,16 @@ class ShoppingItemRow extends DataClass implements Insertable<ShoppingItemRow> {
       name: serializer.fromJson<String>(json['name']),
       quantity: serializer.fromJson<double>(json['quantity']),
       unit: serializer.fromJson<String>(json['unit']),
+      packSize: serializer.fromJson<String>(json['packSize']),
       checked: serializer.fromJson<bool>(json['checked']),
       note: serializer.fromJson<String>(json['note']),
       homeItemId: serializer.fromJson<String?>(json['homeItemId']),
+      catalogId: serializer.fromJson<String?>(json['catalogId']),
+      category: serializer.fromJson<String>(json['category']),
+      categoryId: serializer.fromJson<String?>(json['categoryId']),
+      icon: serializer.fromJson<String>(json['icon']),
+      color: serializer.fromJson<int?>(json['color']),
+      contextId: serializer.fromJson<String?>(json['contextId']),
       position: serializer.fromJson<int>(json['position']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -6680,9 +12518,16 @@ class ShoppingItemRow extends DataClass implements Insertable<ShoppingItemRow> {
       'name': serializer.toJson<String>(name),
       'quantity': serializer.toJson<double>(quantity),
       'unit': serializer.toJson<String>(unit),
+      'packSize': serializer.toJson<String>(packSize),
       'checked': serializer.toJson<bool>(checked),
       'note': serializer.toJson<String>(note),
       'homeItemId': serializer.toJson<String?>(homeItemId),
+      'catalogId': serializer.toJson<String?>(catalogId),
+      'category': serializer.toJson<String>(category),
+      'categoryId': serializer.toJson<String?>(categoryId),
+      'icon': serializer.toJson<String>(icon),
+      'color': serializer.toJson<int?>(color),
+      'contextId': serializer.toJson<String?>(contextId),
       'position': serializer.toJson<int>(position),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -6695,9 +12540,16 @@ class ShoppingItemRow extends DataClass implements Insertable<ShoppingItemRow> {
     String? name,
     double? quantity,
     String? unit,
+    String? packSize,
     bool? checked,
     String? note,
     Value<String?> homeItemId = const Value.absent(),
+    Value<String?> catalogId = const Value.absent(),
+    String? category,
+    Value<String?> categoryId = const Value.absent(),
+    String? icon,
+    Value<int?> color = const Value.absent(),
+    Value<String?> contextId = const Value.absent(),
     int? position,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -6707,9 +12559,16 @@ class ShoppingItemRow extends DataClass implements Insertable<ShoppingItemRow> {
     name: name ?? this.name,
     quantity: quantity ?? this.quantity,
     unit: unit ?? this.unit,
+    packSize: packSize ?? this.packSize,
     checked: checked ?? this.checked,
     note: note ?? this.note,
     homeItemId: homeItemId.present ? homeItemId.value : this.homeItemId,
+    catalogId: catalogId.present ? catalogId.value : this.catalogId,
+    category: category ?? this.category,
+    categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    icon: icon ?? this.icon,
+    color: color.present ? color.value : this.color,
+    contextId: contextId.present ? contextId.value : this.contextId,
     position: position ?? this.position,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -6721,11 +12580,20 @@ class ShoppingItemRow extends DataClass implements Insertable<ShoppingItemRow> {
       name: data.name.present ? data.name.value : this.name,
       quantity: data.quantity.present ? data.quantity.value : this.quantity,
       unit: data.unit.present ? data.unit.value : this.unit,
+      packSize: data.packSize.present ? data.packSize.value : this.packSize,
       checked: data.checked.present ? data.checked.value : this.checked,
       note: data.note.present ? data.note.value : this.note,
       homeItemId: data.homeItemId.present
           ? data.homeItemId.value
           : this.homeItemId,
+      catalogId: data.catalogId.present ? data.catalogId.value : this.catalogId,
+      category: data.category.present ? data.category.value : this.category,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      color: data.color.present ? data.color.value : this.color,
+      contextId: data.contextId.present ? data.contextId.value : this.contextId,
       position: data.position.present ? data.position.value : this.position,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -6740,9 +12608,16 @@ class ShoppingItemRow extends DataClass implements Insertable<ShoppingItemRow> {
           ..write('name: $name, ')
           ..write('quantity: $quantity, ')
           ..write('unit: $unit, ')
+          ..write('packSize: $packSize, ')
           ..write('checked: $checked, ')
           ..write('note: $note, ')
           ..write('homeItemId: $homeItemId, ')
+          ..write('catalogId: $catalogId, ')
+          ..write('category: $category, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color, ')
+          ..write('contextId: $contextId, ')
           ..write('position: $position, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -6757,9 +12632,16 @@ class ShoppingItemRow extends DataClass implements Insertable<ShoppingItemRow> {
     name,
     quantity,
     unit,
+    packSize,
     checked,
     note,
     homeItemId,
+    catalogId,
+    category,
+    categoryId,
+    icon,
+    color,
+    contextId,
     position,
     createdAt,
     updatedAt,
@@ -6773,9 +12655,16 @@ class ShoppingItemRow extends DataClass implements Insertable<ShoppingItemRow> {
           other.name == this.name &&
           other.quantity == this.quantity &&
           other.unit == this.unit &&
+          other.packSize == this.packSize &&
           other.checked == this.checked &&
           other.note == this.note &&
           other.homeItemId == this.homeItemId &&
+          other.catalogId == this.catalogId &&
+          other.category == this.category &&
+          other.categoryId == this.categoryId &&
+          other.icon == this.icon &&
+          other.color == this.color &&
+          other.contextId == this.contextId &&
           other.position == this.position &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -6787,9 +12676,16 @@ class ShoppingItemRecordsCompanion extends UpdateCompanion<ShoppingItemRow> {
   final Value<String> name;
   final Value<double> quantity;
   final Value<String> unit;
+  final Value<String> packSize;
   final Value<bool> checked;
   final Value<String> note;
   final Value<String?> homeItemId;
+  final Value<String?> catalogId;
+  final Value<String> category;
+  final Value<String?> categoryId;
+  final Value<String> icon;
+  final Value<int?> color;
+  final Value<String?> contextId;
   final Value<int> position;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -6800,9 +12696,16 @@ class ShoppingItemRecordsCompanion extends UpdateCompanion<ShoppingItemRow> {
     this.name = const Value.absent(),
     this.quantity = const Value.absent(),
     this.unit = const Value.absent(),
+    this.packSize = const Value.absent(),
     this.checked = const Value.absent(),
     this.note = const Value.absent(),
     this.homeItemId = const Value.absent(),
+    this.catalogId = const Value.absent(),
+    this.category = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.color = const Value.absent(),
+    this.contextId = const Value.absent(),
     this.position = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -6814,9 +12717,16 @@ class ShoppingItemRecordsCompanion extends UpdateCompanion<ShoppingItemRow> {
     required String name,
     this.quantity = const Value.absent(),
     this.unit = const Value.absent(),
+    this.packSize = const Value.absent(),
     this.checked = const Value.absent(),
     this.note = const Value.absent(),
     this.homeItemId = const Value.absent(),
+    this.catalogId = const Value.absent(),
+    this.category = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.color = const Value.absent(),
+    this.contextId = const Value.absent(),
     this.position = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -6831,9 +12741,16 @@ class ShoppingItemRecordsCompanion extends UpdateCompanion<ShoppingItemRow> {
     Expression<String>? name,
     Expression<double>? quantity,
     Expression<String>? unit,
+    Expression<String>? packSize,
     Expression<bool>? checked,
     Expression<String>? note,
     Expression<String>? homeItemId,
+    Expression<String>? catalogId,
+    Expression<String>? category,
+    Expression<String>? categoryId,
+    Expression<String>? icon,
+    Expression<int>? color,
+    Expression<String>? contextId,
     Expression<int>? position,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -6845,9 +12762,16 @@ class ShoppingItemRecordsCompanion extends UpdateCompanion<ShoppingItemRow> {
       if (name != null) 'name': name,
       if (quantity != null) 'quantity': quantity,
       if (unit != null) 'unit': unit,
+      if (packSize != null) 'pack_size': packSize,
       if (checked != null) 'checked': checked,
       if (note != null) 'note': note,
       if (homeItemId != null) 'home_item_id': homeItemId,
+      if (catalogId != null) 'catalog_id': catalogId,
+      if (category != null) 'category': category,
+      if (categoryId != null) 'category_id': categoryId,
+      if (icon != null) 'icon': icon,
+      if (color != null) 'color': color,
+      if (contextId != null) 'context_id': contextId,
       if (position != null) 'position': position,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -6861,9 +12785,16 @@ class ShoppingItemRecordsCompanion extends UpdateCompanion<ShoppingItemRow> {
     Value<String>? name,
     Value<double>? quantity,
     Value<String>? unit,
+    Value<String>? packSize,
     Value<bool>? checked,
     Value<String>? note,
     Value<String?>? homeItemId,
+    Value<String?>? catalogId,
+    Value<String>? category,
+    Value<String?>? categoryId,
+    Value<String>? icon,
+    Value<int?>? color,
+    Value<String?>? contextId,
     Value<int>? position,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -6875,9 +12806,16 @@ class ShoppingItemRecordsCompanion extends UpdateCompanion<ShoppingItemRow> {
       name: name ?? this.name,
       quantity: quantity ?? this.quantity,
       unit: unit ?? this.unit,
+      packSize: packSize ?? this.packSize,
       checked: checked ?? this.checked,
       note: note ?? this.note,
       homeItemId: homeItemId ?? this.homeItemId,
+      catalogId: catalogId ?? this.catalogId,
+      category: category ?? this.category,
+      categoryId: categoryId ?? this.categoryId,
+      icon: icon ?? this.icon,
+      color: color ?? this.color,
+      contextId: contextId ?? this.contextId,
       position: position ?? this.position,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -6901,6 +12839,9 @@ class ShoppingItemRecordsCompanion extends UpdateCompanion<ShoppingItemRow> {
     if (unit.present) {
       map['unit'] = Variable<String>(unit.value);
     }
+    if (packSize.present) {
+      map['pack_size'] = Variable<String>(packSize.value);
+    }
     if (checked.present) {
       map['checked'] = Variable<bool>(checked.value);
     }
@@ -6909,6 +12850,24 @@ class ShoppingItemRecordsCompanion extends UpdateCompanion<ShoppingItemRow> {
     }
     if (homeItemId.present) {
       map['home_item_id'] = Variable<String>(homeItemId.value);
+    }
+    if (catalogId.present) {
+      map['catalog_id'] = Variable<String>(catalogId.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<int>(color.value);
+    }
+    if (contextId.present) {
+      map['context_id'] = Variable<String>(contextId.value);
     }
     if (position.present) {
       map['position'] = Variable<int>(position.value);
@@ -6935,9 +12894,16 @@ class ShoppingItemRecordsCompanion extends UpdateCompanion<ShoppingItemRow> {
           ..write('name: $name, ')
           ..write('quantity: $quantity, ')
           ..write('unit: $unit, ')
+          ..write('packSize: $packSize, ')
           ..write('checked: $checked, ')
           ..write('note: $note, ')
           ..write('homeItemId: $homeItemId, ')
+          ..write('catalogId: $catalogId, ')
+          ..write('category: $category, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color, ')
+          ..write('contextId: $contextId, ')
           ..write('position: $position, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -8858,6 +14824,489 @@ class HomePurchaseRecordsCompanion extends UpdateCompanion<HomePurchaseRow> {
   }
 }
 
+class $MaintenanceLogRecordsTable extends MaintenanceLogRecords
+    with TableInfo<$MaintenanceLogRecordsTable, MaintenanceLogRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MaintenanceLogRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entryIdMeta = const VerificationMeta(
+    'entryId',
+  );
+  @override
+  late final GeneratedColumn<String> entryId = GeneratedColumn<String>(
+    'entry_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES entry_records (id)',
+    ),
+  );
+  static const VerificationMeta _performedDateKeyMeta = const VerificationMeta(
+    'performedDateKey',
+  );
+  @override
+  late final GeneratedColumn<int> performedDateKey = GeneratedColumn<int>(
+    'performed_date_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nextDueDateKeyMeta = const VerificationMeta(
+    'nextDueDateKey',
+  );
+  @override
+  late final GeneratedColumn<int> nextDueDateKey = GeneratedColumn<int>(
+    'next_due_date_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _durationMinutesMeta = const VerificationMeta(
+    'durationMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> durationMinutes = GeneratedColumn<int>(
+    'duration_minutes',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    entryId,
+    performedDateKey,
+    nextDueDateKey,
+    note,
+    durationMinutes,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'maintenance_log_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MaintenanceLogRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('entry_id')) {
+      context.handle(
+        _entryIdMeta,
+        entryId.isAcceptableOrUnknown(data['entry_id']!, _entryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entryIdMeta);
+    }
+    if (data.containsKey('performed_date_key')) {
+      context.handle(
+        _performedDateKeyMeta,
+        performedDateKey.isAcceptableOrUnknown(
+          data['performed_date_key']!,
+          _performedDateKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_performedDateKeyMeta);
+    }
+    if (data.containsKey('next_due_date_key')) {
+      context.handle(
+        _nextDueDateKeyMeta,
+        nextDueDateKey.isAcceptableOrUnknown(
+          data['next_due_date_key']!,
+          _nextDueDateKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_nextDueDateKeyMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('duration_minutes')) {
+      context.handle(
+        _durationMinutesMeta,
+        durationMinutes.isAcceptableOrUnknown(
+          data['duration_minutes']!,
+          _durationMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MaintenanceLogRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MaintenanceLogRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      entryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entry_id'],
+      )!,
+      performedDateKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}performed_date_key'],
+      )!,
+      nextDueDateKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}next_due_date_key'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      )!,
+      durationMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_minutes'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $MaintenanceLogRecordsTable createAlias(String alias) {
+    return $MaintenanceLogRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class MaintenanceLogRow extends DataClass
+    implements Insertable<MaintenanceLogRow> {
+  final String id;
+  final String entryId;
+  final int performedDateKey;
+  final int nextDueDateKey;
+  final String note;
+  final int? durationMinutes;
+  final DateTime createdAt;
+  const MaintenanceLogRow({
+    required this.id,
+    required this.entryId,
+    required this.performedDateKey,
+    required this.nextDueDateKey,
+    required this.note,
+    this.durationMinutes,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['entry_id'] = Variable<String>(entryId);
+    map['performed_date_key'] = Variable<int>(performedDateKey);
+    map['next_due_date_key'] = Variable<int>(nextDueDateKey);
+    map['note'] = Variable<String>(note);
+    if (!nullToAbsent || durationMinutes != null) {
+      map['duration_minutes'] = Variable<int>(durationMinutes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  MaintenanceLogRecordsCompanion toCompanion(bool nullToAbsent) {
+    return MaintenanceLogRecordsCompanion(
+      id: Value(id),
+      entryId: Value(entryId),
+      performedDateKey: Value(performedDateKey),
+      nextDueDateKey: Value(nextDueDateKey),
+      note: Value(note),
+      durationMinutes: durationMinutes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(durationMinutes),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory MaintenanceLogRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MaintenanceLogRow(
+      id: serializer.fromJson<String>(json['id']),
+      entryId: serializer.fromJson<String>(json['entryId']),
+      performedDateKey: serializer.fromJson<int>(json['performedDateKey']),
+      nextDueDateKey: serializer.fromJson<int>(json['nextDueDateKey']),
+      note: serializer.fromJson<String>(json['note']),
+      durationMinutes: serializer.fromJson<int?>(json['durationMinutes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'entryId': serializer.toJson<String>(entryId),
+      'performedDateKey': serializer.toJson<int>(performedDateKey),
+      'nextDueDateKey': serializer.toJson<int>(nextDueDateKey),
+      'note': serializer.toJson<String>(note),
+      'durationMinutes': serializer.toJson<int?>(durationMinutes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  MaintenanceLogRow copyWith({
+    String? id,
+    String? entryId,
+    int? performedDateKey,
+    int? nextDueDateKey,
+    String? note,
+    Value<int?> durationMinutes = const Value.absent(),
+    DateTime? createdAt,
+  }) => MaintenanceLogRow(
+    id: id ?? this.id,
+    entryId: entryId ?? this.entryId,
+    performedDateKey: performedDateKey ?? this.performedDateKey,
+    nextDueDateKey: nextDueDateKey ?? this.nextDueDateKey,
+    note: note ?? this.note,
+    durationMinutes: durationMinutes.present
+        ? durationMinutes.value
+        : this.durationMinutes,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  MaintenanceLogRow copyWithCompanion(MaintenanceLogRecordsCompanion data) {
+    return MaintenanceLogRow(
+      id: data.id.present ? data.id.value : this.id,
+      entryId: data.entryId.present ? data.entryId.value : this.entryId,
+      performedDateKey: data.performedDateKey.present
+          ? data.performedDateKey.value
+          : this.performedDateKey,
+      nextDueDateKey: data.nextDueDateKey.present
+          ? data.nextDueDateKey.value
+          : this.nextDueDateKey,
+      note: data.note.present ? data.note.value : this.note,
+      durationMinutes: data.durationMinutes.present
+          ? data.durationMinutes.value
+          : this.durationMinutes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MaintenanceLogRow(')
+          ..write('id: $id, ')
+          ..write('entryId: $entryId, ')
+          ..write('performedDateKey: $performedDateKey, ')
+          ..write('nextDueDateKey: $nextDueDateKey, ')
+          ..write('note: $note, ')
+          ..write('durationMinutes: $durationMinutes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    entryId,
+    performedDateKey,
+    nextDueDateKey,
+    note,
+    durationMinutes,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MaintenanceLogRow &&
+          other.id == this.id &&
+          other.entryId == this.entryId &&
+          other.performedDateKey == this.performedDateKey &&
+          other.nextDueDateKey == this.nextDueDateKey &&
+          other.note == this.note &&
+          other.durationMinutes == this.durationMinutes &&
+          other.createdAt == this.createdAt);
+}
+
+class MaintenanceLogRecordsCompanion
+    extends UpdateCompanion<MaintenanceLogRow> {
+  final Value<String> id;
+  final Value<String> entryId;
+  final Value<int> performedDateKey;
+  final Value<int> nextDueDateKey;
+  final Value<String> note;
+  final Value<int?> durationMinutes;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const MaintenanceLogRecordsCompanion({
+    this.id = const Value.absent(),
+    this.entryId = const Value.absent(),
+    this.performedDateKey = const Value.absent(),
+    this.nextDueDateKey = const Value.absent(),
+    this.note = const Value.absent(),
+    this.durationMinutes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MaintenanceLogRecordsCompanion.insert({
+    required String id,
+    required String entryId,
+    required int performedDateKey,
+    required int nextDueDateKey,
+    this.note = const Value.absent(),
+    this.durationMinutes = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       entryId = Value(entryId),
+       performedDateKey = Value(performedDateKey),
+       nextDueDateKey = Value(nextDueDateKey),
+       createdAt = Value(createdAt);
+  static Insertable<MaintenanceLogRow> custom({
+    Expression<String>? id,
+    Expression<String>? entryId,
+    Expression<int>? performedDateKey,
+    Expression<int>? nextDueDateKey,
+    Expression<String>? note,
+    Expression<int>? durationMinutes,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (entryId != null) 'entry_id': entryId,
+      if (performedDateKey != null) 'performed_date_key': performedDateKey,
+      if (nextDueDateKey != null) 'next_due_date_key': nextDueDateKey,
+      if (note != null) 'note': note,
+      if (durationMinutes != null) 'duration_minutes': durationMinutes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MaintenanceLogRecordsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? entryId,
+    Value<int>? performedDateKey,
+    Value<int>? nextDueDateKey,
+    Value<String>? note,
+    Value<int?>? durationMinutes,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return MaintenanceLogRecordsCompanion(
+      id: id ?? this.id,
+      entryId: entryId ?? this.entryId,
+      performedDateKey: performedDateKey ?? this.performedDateKey,
+      nextDueDateKey: nextDueDateKey ?? this.nextDueDateKey,
+      note: note ?? this.note,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (entryId.present) {
+      map['entry_id'] = Variable<String>(entryId.value);
+    }
+    if (performedDateKey.present) {
+      map['performed_date_key'] = Variable<int>(performedDateKey.value);
+    }
+    if (nextDueDateKey.present) {
+      map['next_due_date_key'] = Variable<int>(nextDueDateKey.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (durationMinutes.present) {
+      map['duration_minutes'] = Variable<int>(durationMinutes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MaintenanceLogRecordsCompanion(')
+          ..write('id: $id, ')
+          ..write('entryId: $entryId, ')
+          ..write('performedDateKey: $performedDateKey, ')
+          ..write('nextDueDateKey: $nextDueDateKey, ')
+          ..write('note: $note, ')
+          ..write('durationMinutes: $durationMinutes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $RemoteSnapshotRecordsTable extends RemoteSnapshotRecords
     with TableInfo<$RemoteSnapshotRecordsTable, RemoteSnapshotRow> {
   @override
@@ -9239,7 +15688,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $SpaceRecordsTable spaceRecords = $SpaceRecordsTable(this);
+  late final $ContextRecordsTable contextRecords = $ContextRecordsTable(this);
+  late final $ProjectRecordsTable projectRecords = $ProjectRecordsTable(this);
+  late final $HabitRecordsTable habitRecords = $HabitRecordsTable(this);
+  late final $HabitCompletionRecordsTable habitCompletionRecords =
+      $HabitCompletionRecordsTable(this);
   late final $EntryRecordsTable entryRecords = $EntryRecordsTable(this);
+  late final $TimeEntryRecordsTable timeEntryRecords = $TimeEntryRecordsTable(
+    this,
+  );
   late final $TagRecordsTable tagRecords = $TagRecordsTable(this);
   late final $EntryTagRecordsTable entryTagRecords = $EntryTagRecordsTable(
     this,
@@ -9262,9 +15719,18 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $ShiftChecklistItemRecordsTable(this);
   late final $ShiftChecklistCompletionRecordsTable
   shiftChecklistCompletionRecords = $ShiftChecklistCompletionRecordsTable(this);
+  late final $HomeCategoryRecordsTable homeCategoryRecords =
+      $HomeCategoryRecordsTable(this);
+  late final $HomeLocationRecordsTable homeLocationRecords =
+      $HomeLocationRecordsTable(this);
+  late final $HomeUnitRecordsTable homeUnitRecords = $HomeUnitRecordsTable(
+    this,
+  );
   late final $HomeItemRecordsTable homeItemRecords = $HomeItemRecordsTable(
     this,
   );
+  late final $HomeItemLocationRecordsTable homeItemLocationRecords =
+      $HomeItemLocationRecordsTable(this);
   late final $ShoppingItemRecordsTable shoppingItemRecords =
       $ShoppingItemRecordsTable(this);
   late final $IdentityRecordsTable identityRecords = $IdentityRecordsTable(
@@ -9275,6 +15741,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SettingRecordsTable settingRecords = $SettingRecordsTable(this);
   late final $HomePurchaseRecordsTable homePurchaseRecords =
       $HomePurchaseRecordsTable(this);
+  late final $MaintenanceLogRecordsTable maintenanceLogRecords =
+      $MaintenanceLogRecordsTable(this);
   late final $RemoteSnapshotRecordsTable remoteSnapshotRecords =
       $RemoteSnapshotRecordsTable(this);
   @override
@@ -9283,7 +15751,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     spaceRecords,
+    contextRecords,
+    projectRecords,
+    habitRecords,
+    habitCompletionRecords,
     entryRecords,
+    timeEntryRecords,
     tagRecords,
     entryTagRecords,
     completionRecords,
@@ -9294,12 +15767,17 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     shiftExceptionRecords,
     shiftChecklistItemRecords,
     shiftChecklistCompletionRecords,
+    homeCategoryRecords,
+    homeLocationRecords,
+    homeUnitRecords,
     homeItemRecords,
+    homeItemLocationRecords,
     shoppingItemRecords,
     identityRecords,
     pairedDeviceRecords,
     settingRecords,
     homePurchaseRecords,
+    maintenanceLogRecords,
     remoteSnapshotRecords,
   ];
 }
@@ -9330,6 +15808,69 @@ typedef $$SpaceRecordsTableUpdateCompanionBuilder =
 final class $$SpaceRecordsTableReferences
     extends BaseReferences<_$AppDatabase, $SpaceRecordsTable, SpaceRow> {
   $$SpaceRecordsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$ContextRecordsTable, List<ContextRow>>
+  _contextRecordsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.contextRecords,
+    aliasName: $_aliasNameGenerator(
+      db.spaceRecords.id,
+      db.contextRecords.spaceId,
+    ),
+  );
+
+  $$ContextRecordsTableProcessedTableManager get contextRecordsRefs {
+    final manager = $$ContextRecordsTableTableManager(
+      $_db,
+      $_db.contextRecords,
+    ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_contextRecordsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ProjectRecordsTable, List<ProjectRow>>
+  _projectRecordsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.projectRecords,
+    aliasName: $_aliasNameGenerator(
+      db.spaceRecords.id,
+      db.projectRecords.spaceId,
+    ),
+  );
+
+  $$ProjectRecordsTableProcessedTableManager get projectRecordsRefs {
+    final manager = $$ProjectRecordsTableTableManager(
+      $_db,
+      $_db.projectRecords,
+    ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_projectRecordsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$HabitRecordsTable, List<HabitRow>>
+  _habitRecordsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.habitRecords,
+    aliasName: $_aliasNameGenerator(
+      db.spaceRecords.id,
+      db.habitRecords.spaceId,
+    ),
+  );
+
+  $$HabitRecordsTableProcessedTableManager get habitRecordsRefs {
+    final manager = $$HabitRecordsTableTableManager(
+      $_db,
+      $_db.habitRecords,
+    ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_habitRecordsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$EntryRecordsTable, List<EntryRow>>
   _entryRecordsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
@@ -9438,6 +15979,81 @@ class $$SpaceRecordsTableFilterComposer
     column: $table.deletedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> contextRecordsRefs(
+    Expression<bool> Function($$ContextRecordsTableFilterComposer f) f,
+  ) {
+    final $$ContextRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> projectRecordsRefs(
+    Expression<bool> Function($$ProjectRecordsTableFilterComposer f) f,
+  ) {
+    final $$ProjectRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.projectRecords,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.projectRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> habitRecordsRefs(
+    Expression<bool> Function($$HabitRecordsTableFilterComposer f) f,
+  ) {
+    final $$HabitRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habitRecords,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.habitRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> entryRecordsRefs(
     Expression<bool> Function($$EntryRecordsTableFilterComposer f) f,
@@ -9590,6 +16206,81 @@ class $$SpaceRecordsTableAnnotationComposer
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
+  Expression<T> contextRecordsRefs<T extends Object>(
+    Expression<T> Function($$ContextRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$ContextRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> projectRecordsRefs<T extends Object>(
+    Expression<T> Function($$ProjectRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$ProjectRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.projectRecords,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projectRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> habitRecordsRefs<T extends Object>(
+    Expression<T> Function($$HabitRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$HabitRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habitRecords,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.habitRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> entryRecordsRefs<T extends Object>(
     Expression<T> Function($$EntryRecordsTableAnnotationComposer a) f,
   ) {
@@ -9681,6 +16372,9 @@ class $$SpaceRecordsTableTableManager
           (SpaceRow, $$SpaceRecordsTableReferences),
           SpaceRow,
           PrefetchHooks Function({
+            bool contextRecordsRefs,
+            bool projectRecordsRefs,
+            bool habitRecordsRefs,
             bool entryRecordsRefs,
             bool tagRecordsRefs,
             bool shiftPatternRecordsRefs,
@@ -9747,6 +16441,9 @@ class $$SpaceRecordsTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                contextRecordsRefs = false,
+                projectRecordsRefs = false,
+                habitRecordsRefs = false,
                 entryRecordsRefs = false,
                 tagRecordsRefs = false,
                 shiftPatternRecordsRefs = false,
@@ -9754,6 +16451,9 @@ class $$SpaceRecordsTableTableManager
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (contextRecordsRefs) db.contextRecords,
+                    if (projectRecordsRefs) db.projectRecords,
+                    if (habitRecordsRefs) db.habitRecords,
                     if (entryRecordsRefs) db.entryRecords,
                     if (tagRecordsRefs) db.tagRecords,
                     if (shiftPatternRecordsRefs) db.shiftPatternRecords,
@@ -9761,6 +16461,69 @@ class $$SpaceRecordsTableTableManager
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (contextRecordsRefs)
+                        await $_getPrefetchedData<
+                          SpaceRow,
+                          $SpaceRecordsTable,
+                          ContextRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SpaceRecordsTableReferences
+                              ._contextRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SpaceRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).contextRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.spaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (projectRecordsRefs)
+                        await $_getPrefetchedData<
+                          SpaceRow,
+                          $SpaceRecordsTable,
+                          ProjectRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SpaceRecordsTableReferences
+                              ._projectRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SpaceRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).projectRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.spaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (habitRecordsRefs)
+                        await $_getPrefetchedData<
+                          SpaceRow,
+                          $SpaceRecordsTable,
+                          HabitRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SpaceRecordsTableReferences
+                              ._habitRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SpaceRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).habitRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.spaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (entryRecordsRefs)
                         await $_getPrefetchedData<
                           SpaceRow,
@@ -9845,10 +16608,2716 @@ typedef $$SpaceRecordsTableProcessedTableManager =
       (SpaceRow, $$SpaceRecordsTableReferences),
       SpaceRow,
       PrefetchHooks Function({
+        bool contextRecordsRefs,
+        bool projectRecordsRefs,
+        bool habitRecordsRefs,
         bool entryRecordsRefs,
         bool tagRecordsRefs,
         bool shiftPatternRecordsRefs,
       })
+    >;
+typedef $$ContextRecordsTableCreateCompanionBuilder =
+    ContextRecordsCompanion Function({
+      required String id,
+      required String spaceId,
+      required String name,
+      Value<String> description,
+      required int color,
+      Value<String> icon,
+      Value<String?> imagePath,
+      Value<int> position,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$ContextRecordsTableUpdateCompanionBuilder =
+    ContextRecordsCompanion Function({
+      Value<String> id,
+      Value<String> spaceId,
+      Value<String> name,
+      Value<String> description,
+      Value<int> color,
+      Value<String> icon,
+      Value<String?> imagePath,
+      Value<int> position,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+final class $$ContextRecordsTableReferences
+    extends BaseReferences<_$AppDatabase, $ContextRecordsTable, ContextRow> {
+  $$ContextRecordsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $SpaceRecordsTable _spaceIdTable(_$AppDatabase db) =>
+      db.spaceRecords.createAlias(
+        $_aliasNameGenerator(db.contextRecords.spaceId, db.spaceRecords.id),
+      );
+
+  $$SpaceRecordsTableProcessedTableManager get spaceId {
+    final $_column = $_itemColumn<String>('space_id')!;
+
+    final manager = $$SpaceRecordsTableTableManager(
+      $_db,
+      $_db.spaceRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$ProjectRecordsTable, List<ProjectRow>>
+  _projectRecordsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.projectRecords,
+    aliasName: $_aliasNameGenerator(
+      db.contextRecords.id,
+      db.projectRecords.contextId,
+    ),
+  );
+
+  $$ProjectRecordsTableProcessedTableManager get projectRecordsRefs {
+    final manager = $$ProjectRecordsTableTableManager(
+      $_db,
+      $_db.projectRecords,
+    ).filter((f) => f.contextId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_projectRecordsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$HabitRecordsTable, List<HabitRow>>
+  _habitRecordsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.habitRecords,
+    aliasName: $_aliasNameGenerator(
+      db.contextRecords.id,
+      db.habitRecords.contextId,
+    ),
+  );
+
+  $$HabitRecordsTableProcessedTableManager get habitRecordsRefs {
+    final manager = $$HabitRecordsTableTableManager(
+      $_db,
+      $_db.habitRecords,
+    ).filter((f) => f.contextId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_habitRecordsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$EntryRecordsTable, List<EntryRow>>
+  _entryRecordsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.entryRecords,
+    aliasName: $_aliasNameGenerator(
+      db.contextRecords.id,
+      db.entryRecords.contextId,
+    ),
+  );
+
+  $$EntryRecordsTableProcessedTableManager get entryRecordsRefs {
+    final manager = $$EntryRecordsTableTableManager(
+      $_db,
+      $_db.entryRecords,
+    ).filter((f) => f.contextId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_entryRecordsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ShiftPatternRecordsTable, List<ShiftPatternRow>>
+  _shiftPatternRecordsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.shiftPatternRecords,
+        aliasName: $_aliasNameGenerator(
+          db.contextRecords.id,
+          db.shiftPatternRecords.contextId,
+        ),
+      );
+
+  $$ShiftPatternRecordsTableProcessedTableManager get shiftPatternRecordsRefs {
+    final manager = $$ShiftPatternRecordsTableTableManager(
+      $_db,
+      $_db.shiftPatternRecords,
+    ).filter((f) => f.contextId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _shiftPatternRecordsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$HomeItemRecordsTable, List<HomeItemRow>>
+  _homeItemRecordsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.homeItemRecords,
+    aliasName: $_aliasNameGenerator(
+      db.contextRecords.id,
+      db.homeItemRecords.contextId,
+    ),
+  );
+
+  $$HomeItemRecordsTableProcessedTableManager get homeItemRecordsRefs {
+    final manager = $$HomeItemRecordsTableTableManager(
+      $_db,
+      $_db.homeItemRecords,
+    ).filter((f) => f.contextId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _homeItemRecordsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ShoppingItemRecordsTable, List<ShoppingItemRow>>
+  _shoppingItemRecordsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.shoppingItemRecords,
+        aliasName: $_aliasNameGenerator(
+          db.contextRecords.id,
+          db.shoppingItemRecords.contextId,
+        ),
+      );
+
+  $$ShoppingItemRecordsTableProcessedTableManager get shoppingItemRecordsRefs {
+    final manager = $$ShoppingItemRecordsTableTableManager(
+      $_db,
+      $_db.shoppingItemRecords,
+    ).filter((f) => f.contextId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _shoppingItemRecordsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ContextRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $ContextRecordsTable> {
+  $$ContextRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get imagePath => $composableBuilder(
+    column: $table.imagePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$SpaceRecordsTableFilterComposer get spaceId {
+    final $$SpaceRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaceRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpaceRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.spaceRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> projectRecordsRefs(
+    Expression<bool> Function($$ProjectRecordsTableFilterComposer f) f,
+  ) {
+    final $$ProjectRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.projectRecords,
+      getReferencedColumn: (t) => t.contextId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.projectRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> habitRecordsRefs(
+    Expression<bool> Function($$HabitRecordsTableFilterComposer f) f,
+  ) {
+    final $$HabitRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habitRecords,
+      getReferencedColumn: (t) => t.contextId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.habitRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> entryRecordsRefs(
+    Expression<bool> Function($$EntryRecordsTableFilterComposer f) f,
+  ) {
+    final $$EntryRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.entryRecords,
+      getReferencedColumn: (t) => t.contextId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntryRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.entryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> shiftPatternRecordsRefs(
+    Expression<bool> Function($$ShiftPatternRecordsTableFilterComposer f) f,
+  ) {
+    final $$ShiftPatternRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.shiftPatternRecords,
+      getReferencedColumn: (t) => t.contextId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ShiftPatternRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.shiftPatternRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> homeItemRecordsRefs(
+    Expression<bool> Function($$HomeItemRecordsTableFilterComposer f) f,
+  ) {
+    final $$HomeItemRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.homeItemRecords,
+      getReferencedColumn: (t) => t.contextId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeItemRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.homeItemRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> shoppingItemRecordsRefs(
+    Expression<bool> Function($$ShoppingItemRecordsTableFilterComposer f) f,
+  ) {
+    final $$ShoppingItemRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.shoppingItemRecords,
+      getReferencedColumn: (t) => t.contextId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ShoppingItemRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.shoppingItemRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ContextRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ContextRecordsTable> {
+  $$ContextRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get imagePath => $composableBuilder(
+    column: $table.imagePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$SpaceRecordsTableOrderingComposer get spaceId {
+    final $$SpaceRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaceRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpaceRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaceRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ContextRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ContextRecordsTable> {
+  $$ContextRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<String> get imagePath =>
+      $composableBuilder(column: $table.imagePath, builder: (column) => column);
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$SpaceRecordsTableAnnotationComposer get spaceId {
+    final $$SpaceRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaceRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpaceRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaceRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> projectRecordsRefs<T extends Object>(
+    Expression<T> Function($$ProjectRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$ProjectRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.projectRecords,
+      getReferencedColumn: (t) => t.contextId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projectRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> habitRecordsRefs<T extends Object>(
+    Expression<T> Function($$HabitRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$HabitRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.habitRecords,
+      getReferencedColumn: (t) => t.contextId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.habitRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> entryRecordsRefs<T extends Object>(
+    Expression<T> Function($$EntryRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$EntryRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.entryRecords,
+      getReferencedColumn: (t) => t.contextId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntryRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.entryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> shiftPatternRecordsRefs<T extends Object>(
+    Expression<T> Function($$ShiftPatternRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$ShiftPatternRecordsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.shiftPatternRecords,
+          getReferencedColumn: (t) => t.contextId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ShiftPatternRecordsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.shiftPatternRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> homeItemRecordsRefs<T extends Object>(
+    Expression<T> Function($$HomeItemRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$HomeItemRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.homeItemRecords,
+      getReferencedColumn: (t) => t.contextId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeItemRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.homeItemRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> shoppingItemRecordsRefs<T extends Object>(
+    Expression<T> Function($$ShoppingItemRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$ShoppingItemRecordsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.shoppingItemRecords,
+          getReferencedColumn: (t) => t.contextId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ShoppingItemRecordsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.shoppingItemRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$ContextRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ContextRecordsTable,
+          ContextRow,
+          $$ContextRecordsTableFilterComposer,
+          $$ContextRecordsTableOrderingComposer,
+          $$ContextRecordsTableAnnotationComposer,
+          $$ContextRecordsTableCreateCompanionBuilder,
+          $$ContextRecordsTableUpdateCompanionBuilder,
+          (ContextRow, $$ContextRecordsTableReferences),
+          ContextRow,
+          PrefetchHooks Function({
+            bool spaceId,
+            bool projectRecordsRefs,
+            bool habitRecordsRefs,
+            bool entryRecordsRefs,
+            bool shiftPatternRecordsRefs,
+            bool homeItemRecordsRefs,
+            bool shoppingItemRecordsRefs,
+          })
+        > {
+  $$ContextRecordsTableTableManager(
+    _$AppDatabase db,
+    $ContextRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContextRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContextRecordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContextRecordsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> spaceId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<int> color = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<String?> imagePath = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContextRecordsCompanion(
+                id: id,
+                spaceId: spaceId,
+                name: name,
+                description: description,
+                color: color,
+                icon: icon,
+                imagePath: imagePath,
+                position: position,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String spaceId,
+                required String name,
+                Value<String> description = const Value.absent(),
+                required int color,
+                Value<String> icon = const Value.absent(),
+                Value<String?> imagePath = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContextRecordsCompanion.insert(
+                id: id,
+                spaceId: spaceId,
+                name: name,
+                description: description,
+                color: color,
+                icon: icon,
+                imagePath: imagePath,
+                position: position,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ContextRecordsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                spaceId = false,
+                projectRecordsRefs = false,
+                habitRecordsRefs = false,
+                entryRecordsRefs = false,
+                shiftPatternRecordsRefs = false,
+                homeItemRecordsRefs = false,
+                shoppingItemRecordsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (projectRecordsRefs) db.projectRecords,
+                    if (habitRecordsRefs) db.habitRecords,
+                    if (entryRecordsRefs) db.entryRecords,
+                    if (shiftPatternRecordsRefs) db.shiftPatternRecords,
+                    if (homeItemRecordsRefs) db.homeItemRecords,
+                    if (shoppingItemRecordsRefs) db.shoppingItemRecords,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (spaceId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.spaceId,
+                                    referencedTable:
+                                        $$ContextRecordsTableReferences
+                                            ._spaceIdTable(db),
+                                    referencedColumn:
+                                        $$ContextRecordsTableReferences
+                                            ._spaceIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (projectRecordsRefs)
+                        await $_getPrefetchedData<
+                          ContextRow,
+                          $ContextRecordsTable,
+                          ProjectRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ContextRecordsTableReferences
+                              ._projectRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ContextRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).projectRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.contextId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (habitRecordsRefs)
+                        await $_getPrefetchedData<
+                          ContextRow,
+                          $ContextRecordsTable,
+                          HabitRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ContextRecordsTableReferences
+                              ._habitRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ContextRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).habitRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.contextId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (entryRecordsRefs)
+                        await $_getPrefetchedData<
+                          ContextRow,
+                          $ContextRecordsTable,
+                          EntryRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ContextRecordsTableReferences
+                              ._entryRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ContextRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).entryRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.contextId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (shiftPatternRecordsRefs)
+                        await $_getPrefetchedData<
+                          ContextRow,
+                          $ContextRecordsTable,
+                          ShiftPatternRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ContextRecordsTableReferences
+                              ._shiftPatternRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ContextRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).shiftPatternRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.contextId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (homeItemRecordsRefs)
+                        await $_getPrefetchedData<
+                          ContextRow,
+                          $ContextRecordsTable,
+                          HomeItemRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ContextRecordsTableReferences
+                              ._homeItemRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ContextRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).homeItemRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.contextId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (shoppingItemRecordsRefs)
+                        await $_getPrefetchedData<
+                          ContextRow,
+                          $ContextRecordsTable,
+                          ShoppingItemRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ContextRecordsTableReferences
+                              ._shoppingItemRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ContextRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).shoppingItemRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.contextId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ContextRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ContextRecordsTable,
+      ContextRow,
+      $$ContextRecordsTableFilterComposer,
+      $$ContextRecordsTableOrderingComposer,
+      $$ContextRecordsTableAnnotationComposer,
+      $$ContextRecordsTableCreateCompanionBuilder,
+      $$ContextRecordsTableUpdateCompanionBuilder,
+      (ContextRow, $$ContextRecordsTableReferences),
+      ContextRow,
+      PrefetchHooks Function({
+        bool spaceId,
+        bool projectRecordsRefs,
+        bool habitRecordsRefs,
+        bool entryRecordsRefs,
+        bool shiftPatternRecordsRefs,
+        bool homeItemRecordsRefs,
+        bool shoppingItemRecordsRefs,
+      })
+    >;
+typedef $$ProjectRecordsTableCreateCompanionBuilder =
+    ProjectRecordsCompanion Function({
+      required String id,
+      required String spaceId,
+      Value<String?> contextId,
+      required String name,
+      Value<String> description,
+      required int color,
+      Value<String> icon,
+      Value<String?> imagePath,
+      Value<int> position,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$ProjectRecordsTableUpdateCompanionBuilder =
+    ProjectRecordsCompanion Function({
+      Value<String> id,
+      Value<String> spaceId,
+      Value<String?> contextId,
+      Value<String> name,
+      Value<String> description,
+      Value<int> color,
+      Value<String> icon,
+      Value<String?> imagePath,
+      Value<int> position,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+final class $$ProjectRecordsTableReferences
+    extends BaseReferences<_$AppDatabase, $ProjectRecordsTable, ProjectRow> {
+  $$ProjectRecordsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $SpaceRecordsTable _spaceIdTable(_$AppDatabase db) =>
+      db.spaceRecords.createAlias(
+        $_aliasNameGenerator(db.projectRecords.spaceId, db.spaceRecords.id),
+      );
+
+  $$SpaceRecordsTableProcessedTableManager get spaceId {
+    final $_column = $_itemColumn<String>('space_id')!;
+
+    final manager = $$SpaceRecordsTableTableManager(
+      $_db,
+      $_db.spaceRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ContextRecordsTable _contextIdTable(_$AppDatabase db) =>
+      db.contextRecords.createAlias(
+        $_aliasNameGenerator(db.projectRecords.contextId, db.contextRecords.id),
+      );
+
+  $$ContextRecordsTableProcessedTableManager? get contextId {
+    final $_column = $_itemColumn<String>('context_id');
+    if ($_column == null) return null;
+    final manager = $$ContextRecordsTableTableManager(
+      $_db,
+      $_db.contextRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_contextIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$EntryRecordsTable, List<EntryRow>>
+  _entryRecordsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.entryRecords,
+    aliasName: $_aliasNameGenerator(
+      db.projectRecords.id,
+      db.entryRecords.projectId,
+    ),
+  );
+
+  $$EntryRecordsTableProcessedTableManager get entryRecordsRefs {
+    final manager = $$EntryRecordsTableTableManager(
+      $_db,
+      $_db.entryRecords,
+    ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_entryRecordsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ProjectRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $ProjectRecordsTable> {
+  $$ProjectRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get imagePath => $composableBuilder(
+    column: $table.imagePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$SpaceRecordsTableFilterComposer get spaceId {
+    final $$SpaceRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaceRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpaceRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.spaceRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContextRecordsTableFilterComposer get contextId {
+    final $$ContextRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> entryRecordsRefs(
+    Expression<bool> Function($$EntryRecordsTableFilterComposer f) f,
+  ) {
+    final $$EntryRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.entryRecords,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntryRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.entryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ProjectRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProjectRecordsTable> {
+  $$ProjectRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get imagePath => $composableBuilder(
+    column: $table.imagePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$SpaceRecordsTableOrderingComposer get spaceId {
+    final $$SpaceRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaceRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpaceRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaceRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContextRecordsTableOrderingComposer get contextId {
+    final $$ContextRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ProjectRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProjectRecordsTable> {
+  $$ProjectRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<String> get imagePath =>
+      $composableBuilder(column: $table.imagePath, builder: (column) => column);
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$SpaceRecordsTableAnnotationComposer get spaceId {
+    final $$SpaceRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaceRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpaceRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaceRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContextRecordsTableAnnotationComposer get contextId {
+    final $$ContextRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> entryRecordsRefs<T extends Object>(
+    Expression<T> Function($$EntryRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$EntryRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.entryRecords,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntryRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.entryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ProjectRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ProjectRecordsTable,
+          ProjectRow,
+          $$ProjectRecordsTableFilterComposer,
+          $$ProjectRecordsTableOrderingComposer,
+          $$ProjectRecordsTableAnnotationComposer,
+          $$ProjectRecordsTableCreateCompanionBuilder,
+          $$ProjectRecordsTableUpdateCompanionBuilder,
+          (ProjectRow, $$ProjectRecordsTableReferences),
+          ProjectRow,
+          PrefetchHooks Function({
+            bool spaceId,
+            bool contextId,
+            bool entryRecordsRefs,
+          })
+        > {
+  $$ProjectRecordsTableTableManager(
+    _$AppDatabase db,
+    $ProjectRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProjectRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProjectRecordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProjectRecordsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> spaceId = const Value.absent(),
+                Value<String?> contextId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<int> color = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<String?> imagePath = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ProjectRecordsCompanion(
+                id: id,
+                spaceId: spaceId,
+                contextId: contextId,
+                name: name,
+                description: description,
+                color: color,
+                icon: icon,
+                imagePath: imagePath,
+                position: position,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String spaceId,
+                Value<String?> contextId = const Value.absent(),
+                required String name,
+                Value<String> description = const Value.absent(),
+                required int color,
+                Value<String> icon = const Value.absent(),
+                Value<String?> imagePath = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ProjectRecordsCompanion.insert(
+                id: id,
+                spaceId: spaceId,
+                contextId: contextId,
+                name: name,
+                description: description,
+                color: color,
+                icon: icon,
+                imagePath: imagePath,
+                position: position,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ProjectRecordsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({spaceId = false, contextId = false, entryRecordsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (entryRecordsRefs) db.entryRecords,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (spaceId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.spaceId,
+                                    referencedTable:
+                                        $$ProjectRecordsTableReferences
+                                            ._spaceIdTable(db),
+                                    referencedColumn:
+                                        $$ProjectRecordsTableReferences
+                                            ._spaceIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (contextId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.contextId,
+                                    referencedTable:
+                                        $$ProjectRecordsTableReferences
+                                            ._contextIdTable(db),
+                                    referencedColumn:
+                                        $$ProjectRecordsTableReferences
+                                            ._contextIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (entryRecordsRefs)
+                        await $_getPrefetchedData<
+                          ProjectRow,
+                          $ProjectRecordsTable,
+                          EntryRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProjectRecordsTableReferences
+                              ._entryRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProjectRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).entryRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.projectId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ProjectRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ProjectRecordsTable,
+      ProjectRow,
+      $$ProjectRecordsTableFilterComposer,
+      $$ProjectRecordsTableOrderingComposer,
+      $$ProjectRecordsTableAnnotationComposer,
+      $$ProjectRecordsTableCreateCompanionBuilder,
+      $$ProjectRecordsTableUpdateCompanionBuilder,
+      (ProjectRow, $$ProjectRecordsTableReferences),
+      ProjectRow,
+      PrefetchHooks Function({
+        bool spaceId,
+        bool contextId,
+        bool entryRecordsRefs,
+      })
+    >;
+typedef $$HabitRecordsTableCreateCompanionBuilder =
+    HabitRecordsCompanion Function({
+      required String id,
+      required String spaceId,
+      Value<String?> contextId,
+      required String name,
+      Value<String> description,
+      required int color,
+      Value<String> icon,
+      Value<int> targetPerWeek,
+      Value<String> weekdays,
+      Value<int> position,
+      Value<bool> archived,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$HabitRecordsTableUpdateCompanionBuilder =
+    HabitRecordsCompanion Function({
+      Value<String> id,
+      Value<String> spaceId,
+      Value<String?> contextId,
+      Value<String> name,
+      Value<String> description,
+      Value<int> color,
+      Value<String> icon,
+      Value<int> targetPerWeek,
+      Value<String> weekdays,
+      Value<int> position,
+      Value<bool> archived,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+final class $$HabitRecordsTableReferences
+    extends BaseReferences<_$AppDatabase, $HabitRecordsTable, HabitRow> {
+  $$HabitRecordsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $SpaceRecordsTable _spaceIdTable(_$AppDatabase db) =>
+      db.spaceRecords.createAlias(
+        $_aliasNameGenerator(db.habitRecords.spaceId, db.spaceRecords.id),
+      );
+
+  $$SpaceRecordsTableProcessedTableManager get spaceId {
+    final $_column = $_itemColumn<String>('space_id')!;
+
+    final manager = $$SpaceRecordsTableTableManager(
+      $_db,
+      $_db.spaceRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ContextRecordsTable _contextIdTable(_$AppDatabase db) =>
+      db.contextRecords.createAlias(
+        $_aliasNameGenerator(db.habitRecords.contextId, db.contextRecords.id),
+      );
+
+  $$ContextRecordsTableProcessedTableManager? get contextId {
+    final $_column = $_itemColumn<String>('context_id');
+    if ($_column == null) return null;
+    final manager = $$ContextRecordsTableTableManager(
+      $_db,
+      $_db.contextRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_contextIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $HabitCompletionRecordsTable,
+    List<HabitCompletionRow>
+  >
+  _habitCompletionRecordsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.habitCompletionRecords,
+        aliasName: $_aliasNameGenerator(
+          db.habitRecords.id,
+          db.habitCompletionRecords.habitId,
+        ),
+      );
+
+  $$HabitCompletionRecordsTableProcessedTableManager
+  get habitCompletionRecordsRefs {
+    final manager = $$HabitCompletionRecordsTableTableManager(
+      $_db,
+      $_db.habitCompletionRecords,
+    ).filter((f) => f.habitId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _habitCompletionRecordsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$HabitRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $HabitRecordsTable> {
+  $$HabitRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get targetPerWeek => $composableBuilder(
+    column: $table.targetPerWeek,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get weekdays => $composableBuilder(
+    column: $table.weekdays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get archived => $composableBuilder(
+    column: $table.archived,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$SpaceRecordsTableFilterComposer get spaceId {
+    final $$SpaceRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaceRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpaceRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.spaceRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContextRecordsTableFilterComposer get contextId {
+    final $$ContextRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> habitCompletionRecordsRefs(
+    Expression<bool> Function($$HabitCompletionRecordsTableFilterComposer f) f,
+  ) {
+    final $$HabitCompletionRecordsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.habitCompletionRecords,
+          getReferencedColumn: (t) => t.habitId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$HabitCompletionRecordsTableFilterComposer(
+                $db: $db,
+                $table: $db.habitCompletionRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$HabitRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HabitRecordsTable> {
+  $$HabitRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get targetPerWeek => $composableBuilder(
+    column: $table.targetPerWeek,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get weekdays => $composableBuilder(
+    column: $table.weekdays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get archived => $composableBuilder(
+    column: $table.archived,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$SpaceRecordsTableOrderingComposer get spaceId {
+    final $$SpaceRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaceRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpaceRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaceRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContextRecordsTableOrderingComposer get contextId {
+    final $$ContextRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HabitRecordsTable> {
+  $$HabitRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<int> get targetPerWeek => $composableBuilder(
+    column: $table.targetPerWeek,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get weekdays =>
+      $composableBuilder(column: $table.weekdays, builder: (column) => column);
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<bool> get archived =>
+      $composableBuilder(column: $table.archived, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$SpaceRecordsTableAnnotationComposer get spaceId {
+    final $$SpaceRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaceRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpaceRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaceRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContextRecordsTableAnnotationComposer get contextId {
+    final $$ContextRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> habitCompletionRecordsRefs<T extends Object>(
+    Expression<T> Function($$HabitCompletionRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$HabitCompletionRecordsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.habitCompletionRecords,
+          getReferencedColumn: (t) => t.habitId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$HabitCompletionRecordsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.habitCompletionRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$HabitRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HabitRecordsTable,
+          HabitRow,
+          $$HabitRecordsTableFilterComposer,
+          $$HabitRecordsTableOrderingComposer,
+          $$HabitRecordsTableAnnotationComposer,
+          $$HabitRecordsTableCreateCompanionBuilder,
+          $$HabitRecordsTableUpdateCompanionBuilder,
+          (HabitRow, $$HabitRecordsTableReferences),
+          HabitRow,
+          PrefetchHooks Function({
+            bool spaceId,
+            bool contextId,
+            bool habitCompletionRecordsRefs,
+          })
+        > {
+  $$HabitRecordsTableTableManager(_$AppDatabase db, $HabitRecordsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HabitRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HabitRecordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HabitRecordsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> spaceId = const Value.absent(),
+                Value<String?> contextId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<int> color = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<int> targetPerWeek = const Value.absent(),
+                Value<String> weekdays = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<bool> archived = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HabitRecordsCompanion(
+                id: id,
+                spaceId: spaceId,
+                contextId: contextId,
+                name: name,
+                description: description,
+                color: color,
+                icon: icon,
+                targetPerWeek: targetPerWeek,
+                weekdays: weekdays,
+                position: position,
+                archived: archived,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String spaceId,
+                Value<String?> contextId = const Value.absent(),
+                required String name,
+                Value<String> description = const Value.absent(),
+                required int color,
+                Value<String> icon = const Value.absent(),
+                Value<int> targetPerWeek = const Value.absent(),
+                Value<String> weekdays = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<bool> archived = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HabitRecordsCompanion.insert(
+                id: id,
+                spaceId: spaceId,
+                contextId: contextId,
+                name: name,
+                description: description,
+                color: color,
+                icon: icon,
+                targetPerWeek: targetPerWeek,
+                weekdays: weekdays,
+                position: position,
+                archived: archived,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$HabitRecordsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                spaceId = false,
+                contextId = false,
+                habitCompletionRecordsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (habitCompletionRecordsRefs) db.habitCompletionRecords,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (spaceId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.spaceId,
+                                    referencedTable:
+                                        $$HabitRecordsTableReferences
+                                            ._spaceIdTable(db),
+                                    referencedColumn:
+                                        $$HabitRecordsTableReferences
+                                            ._spaceIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (contextId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.contextId,
+                                    referencedTable:
+                                        $$HabitRecordsTableReferences
+                                            ._contextIdTable(db),
+                                    referencedColumn:
+                                        $$HabitRecordsTableReferences
+                                            ._contextIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (habitCompletionRecordsRefs)
+                        await $_getPrefetchedData<
+                          HabitRow,
+                          $HabitRecordsTable,
+                          HabitCompletionRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$HabitRecordsTableReferences
+                              ._habitCompletionRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$HabitRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).habitCompletionRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.habitId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$HabitRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HabitRecordsTable,
+      HabitRow,
+      $$HabitRecordsTableFilterComposer,
+      $$HabitRecordsTableOrderingComposer,
+      $$HabitRecordsTableAnnotationComposer,
+      $$HabitRecordsTableCreateCompanionBuilder,
+      $$HabitRecordsTableUpdateCompanionBuilder,
+      (HabitRow, $$HabitRecordsTableReferences),
+      HabitRow,
+      PrefetchHooks Function({
+        bool spaceId,
+        bool contextId,
+        bool habitCompletionRecordsRefs,
+      })
+    >;
+typedef $$HabitCompletionRecordsTableCreateCompanionBuilder =
+    HabitCompletionRecordsCompanion Function({
+      required String habitId,
+      required int dateKey,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$HabitCompletionRecordsTableUpdateCompanionBuilder =
+    HabitCompletionRecordsCompanion Function({
+      Value<String> habitId,
+      Value<int> dateKey,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$HabitCompletionRecordsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $HabitCompletionRecordsTable,
+          HabitCompletionRow
+        > {
+  $$HabitCompletionRecordsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $HabitRecordsTable _habitIdTable(_$AppDatabase db) =>
+      db.habitRecords.createAlias(
+        $_aliasNameGenerator(
+          db.habitCompletionRecords.habitId,
+          db.habitRecords.id,
+        ),
+      );
+
+  $$HabitRecordsTableProcessedTableManager get habitId {
+    final $_column = $_itemColumn<String>('habit_id')!;
+
+    final manager = $$HabitRecordsTableTableManager(
+      $_db,
+      $_db.habitRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_habitIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$HabitCompletionRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $HabitCompletionRecordsTable> {
+  $$HabitCompletionRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get dateKey => $composableBuilder(
+    column: $table.dateKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$HabitRecordsTableFilterComposer get habitId {
+    final $$HabitRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.habitId,
+      referencedTable: $db.habitRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.habitRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitCompletionRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HabitCompletionRecordsTable> {
+  $$HabitCompletionRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get dateKey => $composableBuilder(
+    column: $table.dateKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$HabitRecordsTableOrderingComposer get habitId {
+    final $$HabitRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.habitId,
+      referencedTable: $db.habitRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.habitRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitCompletionRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HabitCompletionRecordsTable> {
+  $$HabitCompletionRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get dateKey =>
+      $composableBuilder(column: $table.dateKey, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$HabitRecordsTableAnnotationComposer get habitId {
+    final $$HabitRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.habitId,
+      referencedTable: $db.habitRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HabitRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.habitRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HabitCompletionRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HabitCompletionRecordsTable,
+          HabitCompletionRow,
+          $$HabitCompletionRecordsTableFilterComposer,
+          $$HabitCompletionRecordsTableOrderingComposer,
+          $$HabitCompletionRecordsTableAnnotationComposer,
+          $$HabitCompletionRecordsTableCreateCompanionBuilder,
+          $$HabitCompletionRecordsTableUpdateCompanionBuilder,
+          (HabitCompletionRow, $$HabitCompletionRecordsTableReferences),
+          HabitCompletionRow,
+          PrefetchHooks Function({bool habitId})
+        > {
+  $$HabitCompletionRecordsTableTableManager(
+    _$AppDatabase db,
+    $HabitCompletionRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HabitCompletionRecordsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$HabitCompletionRecordsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$HabitCompletionRecordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> habitId = const Value.absent(),
+                Value<int> dateKey = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HabitCompletionRecordsCompanion(
+                habitId: habitId,
+                dateKey: dateKey,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String habitId,
+                required int dateKey,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => HabitCompletionRecordsCompanion.insert(
+                habitId: habitId,
+                dateKey: dateKey,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$HabitCompletionRecordsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({habitId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (habitId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.habitId,
+                                referencedTable:
+                                    $$HabitCompletionRecordsTableReferences
+                                        ._habitIdTable(db),
+                                referencedColumn:
+                                    $$HabitCompletionRecordsTableReferences
+                                        ._habitIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$HabitCompletionRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HabitCompletionRecordsTable,
+      HabitCompletionRow,
+      $$HabitCompletionRecordsTableFilterComposer,
+      $$HabitCompletionRecordsTableOrderingComposer,
+      $$HabitCompletionRecordsTableAnnotationComposer,
+      $$HabitCompletionRecordsTableCreateCompanionBuilder,
+      $$HabitCompletionRecordsTableUpdateCompanionBuilder,
+      (HabitCompletionRow, $$HabitCompletionRecordsTableReferences),
+      HabitCompletionRow,
+      PrefetchHooks Function({bool habitId})
     >;
 typedef $$EntryRecordsTableCreateCompanionBuilder =
     EntryRecordsCompanion Function({
@@ -9862,6 +19331,10 @@ typedef $$EntryRecordsTableCreateCompanionBuilder =
       Value<int?> startMinute,
       Value<int?> endMinute,
       Value<String?> timeZone,
+      Value<String?> contextId,
+      Value<String?> projectId,
+      Value<String> icon,
+      Value<String> priority,
       Value<DateTime?> startAt,
       Value<DateTime?> endAt,
       Value<bool> allDay,
@@ -9872,6 +19345,7 @@ typedef $$EntryRecordsTableCreateCompanionBuilder =
       Value<bool> readOnly,
       Value<DateTime?> lastCompletedAt,
       Value<int?> repeatAfterCompletionDays,
+      Value<DateTime?> completedAt,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<DateTime?> deletedAt,
@@ -9889,6 +19363,10 @@ typedef $$EntryRecordsTableUpdateCompanionBuilder =
       Value<int?> startMinute,
       Value<int?> endMinute,
       Value<String?> timeZone,
+      Value<String?> contextId,
+      Value<String?> projectId,
+      Value<String> icon,
+      Value<String> priority,
       Value<DateTime?> startAt,
       Value<DateTime?> endAt,
       Value<bool> allDay,
@@ -9899,6 +19377,7 @@ typedef $$EntryRecordsTableUpdateCompanionBuilder =
       Value<bool> readOnly,
       Value<DateTime?> lastCompletedAt,
       Value<int?> repeatAfterCompletionDays,
+      Value<DateTime?> completedAt,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> deletedAt,
@@ -9925,6 +19404,67 @@ final class $$EntryRecordsTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ContextRecordsTable _contextIdTable(_$AppDatabase db) =>
+      db.contextRecords.createAlias(
+        $_aliasNameGenerator(db.entryRecords.contextId, db.contextRecords.id),
+      );
+
+  $$ContextRecordsTableProcessedTableManager? get contextId {
+    final $_column = $_itemColumn<String>('context_id');
+    if ($_column == null) return null;
+    final manager = $$ContextRecordsTableTableManager(
+      $_db,
+      $_db.contextRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_contextIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ProjectRecordsTable _projectIdTable(_$AppDatabase db) =>
+      db.projectRecords.createAlias(
+        $_aliasNameGenerator(db.entryRecords.projectId, db.projectRecords.id),
+      );
+
+  $$ProjectRecordsTableProcessedTableManager? get projectId {
+    final $_column = $_itemColumn<String>('project_id');
+    if ($_column == null) return null;
+    final manager = $$ProjectRecordsTableTableManager(
+      $_db,
+      $_db.projectRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$TimeEntryRecordsTable, List<TimeEntryRow>>
+  _timeEntryRecordsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.timeEntryRecords,
+    aliasName: $_aliasNameGenerator(
+      db.entryRecords.id,
+      db.timeEntryRecords.entryId,
+    ),
+  );
+
+  $$TimeEntryRecordsTableProcessedTableManager get timeEntryRecordsRefs {
+    final manager = $$TimeEntryRecordsTableTableManager(
+      $_db,
+      $_db.timeEntryRecords,
+    ).filter((f) => f.entryId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _timeEntryRecordsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 
@@ -9997,6 +19537,34 @@ final class $$EntryRecordsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<
+    $MaintenanceLogRecordsTable,
+    List<MaintenanceLogRow>
+  >
+  _maintenanceLogRecordsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.maintenanceLogRecords,
+        aliasName: $_aliasNameGenerator(
+          db.entryRecords.id,
+          db.maintenanceLogRecords.entryId,
+        ),
+      );
+
+  $$MaintenanceLogRecordsTableProcessedTableManager
+  get maintenanceLogRecordsRefs {
+    final manager = $$MaintenanceLogRecordsTableTableManager(
+      $_db,
+      $_db.maintenanceLogRecords,
+    ).filter((f) => f.entryId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _maintenanceLogRecordsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$EntryRecordsTableFilterComposer
@@ -10053,6 +19621,16 @@ class $$EntryRecordsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get startAt => $composableBuilder(
     column: $table.startAt,
     builder: (column) => ColumnFilters(column),
@@ -10103,6 +19681,11 @@ class $$EntryRecordsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
@@ -10139,6 +19722,77 @@ class $$EntryRecordsTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  $$ContextRecordsTableFilterComposer get contextId {
+    final $$ContextRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ProjectRecordsTableFilterComposer get projectId {
+    final $$ProjectRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projectRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.projectRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> timeEntryRecordsRefs(
+    Expression<bool> Function($$TimeEntryRecordsTableFilterComposer f) f,
+  ) {
+    final $$TimeEntryRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.timeEntryRecords,
+      getReferencedColumn: (t) => t.entryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TimeEntryRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.timeEntryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 
   Expression<bool> entryTagRecordsRefs(
@@ -10215,6 +19869,32 @@ class $$EntryRecordsTableFilterComposer
     );
     return f(composer);
   }
+
+  Expression<bool> maintenanceLogRecordsRefs(
+    Expression<bool> Function($$MaintenanceLogRecordsTableFilterComposer f) f,
+  ) {
+    final $$MaintenanceLogRecordsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.maintenanceLogRecords,
+          getReferencedColumn: (t) => t.entryId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$MaintenanceLogRecordsTableFilterComposer(
+                $db: $db,
+                $table: $db.maintenanceLogRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$EntryRecordsTableOrderingComposer
@@ -10271,6 +19951,16 @@ class $$EntryRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get startAt => $composableBuilder(
     column: $table.startAt,
     builder: (column) => ColumnOrderings(column),
@@ -10321,6 +20011,11 @@ class $$EntryRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -10350,6 +20045,52 @@ class $$EntryRecordsTableOrderingComposer
           }) => $$SpaceRecordsTableOrderingComposer(
             $db: $db,
             $table: $db.spaceRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContextRecordsTableOrderingComposer get contextId {
+    final $$ContextRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ProjectRecordsTableOrderingComposer get projectId {
+    final $$ProjectRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projectRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.projectRecords,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -10400,6 +20141,12 @@ class $$EntryRecordsTableAnnotationComposer
   GeneratedColumn<String> get timeZone =>
       $composableBuilder(column: $table.timeZone, builder: (column) => column);
 
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<String> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+
   GeneratedColumn<DateTime> get startAt =>
       $composableBuilder(column: $table.startAt, builder: (column) => column);
 
@@ -10438,6 +20185,11 @@ class $$EntryRecordsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -10468,6 +20220,77 @@ class $$EntryRecordsTableAnnotationComposer
           ),
     );
     return composer;
+  }
+
+  $$ContextRecordsTableAnnotationComposer get contextId {
+    final $$ContextRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ProjectRecordsTableAnnotationComposer get projectId {
+    final $$ProjectRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projectRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projectRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> timeEntryRecordsRefs<T extends Object>(
+    Expression<T> Function($$TimeEntryRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$TimeEntryRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.timeEntryRecords,
+      getReferencedColumn: (t) => t.entryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TimeEntryRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.timeEntryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 
   Expression<T> entryTagRecordsRefs<T extends Object>(
@@ -10545,6 +20368,32 @@ class $$EntryRecordsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> maintenanceLogRecordsRefs<T extends Object>(
+    Expression<T> Function($$MaintenanceLogRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$MaintenanceLogRecordsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.maintenanceLogRecords,
+          getReferencedColumn: (t) => t.entryId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$MaintenanceLogRecordsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.maintenanceLogRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$EntryRecordsTableTableManager
@@ -10562,9 +20411,13 @@ class $$EntryRecordsTableTableManager
           EntryRow,
           PrefetchHooks Function({
             bool spaceId,
+            bool contextId,
+            bool projectId,
+            bool timeEntryRecordsRefs,
             bool entryTagRecordsRefs,
             bool completionRecordsRefs,
             bool reminderRecordsRefs,
+            bool maintenanceLogRecordsRefs,
           })
         > {
   $$EntryRecordsTableTableManager(_$AppDatabase db, $EntryRecordsTable table)
@@ -10590,6 +20443,10 @@ class $$EntryRecordsTableTableManager
                 Value<int?> startMinute = const Value.absent(),
                 Value<int?> endMinute = const Value.absent(),
                 Value<String?> timeZone = const Value.absent(),
+                Value<String?> contextId = const Value.absent(),
+                Value<String?> projectId = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<String> priority = const Value.absent(),
                 Value<DateTime?> startAt = const Value.absent(),
                 Value<DateTime?> endAt = const Value.absent(),
                 Value<bool> allDay = const Value.absent(),
@@ -10600,6 +20457,7 @@ class $$EntryRecordsTableTableManager
                 Value<bool> readOnly = const Value.absent(),
                 Value<DateTime?> lastCompletedAt = const Value.absent(),
                 Value<int?> repeatAfterCompletionDays = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -10615,6 +20473,10 @@ class $$EntryRecordsTableTableManager
                 startMinute: startMinute,
                 endMinute: endMinute,
                 timeZone: timeZone,
+                contextId: contextId,
+                projectId: projectId,
+                icon: icon,
+                priority: priority,
                 startAt: startAt,
                 endAt: endAt,
                 allDay: allDay,
@@ -10625,6 +20487,7 @@ class $$EntryRecordsTableTableManager
                 readOnly: readOnly,
                 lastCompletedAt: lastCompletedAt,
                 repeatAfterCompletionDays: repeatAfterCompletionDays,
+                completedAt: completedAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
@@ -10642,6 +20505,10 @@ class $$EntryRecordsTableTableManager
                 Value<int?> startMinute = const Value.absent(),
                 Value<int?> endMinute = const Value.absent(),
                 Value<String?> timeZone = const Value.absent(),
+                Value<String?> contextId = const Value.absent(),
+                Value<String?> projectId = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<String> priority = const Value.absent(),
                 Value<DateTime?> startAt = const Value.absent(),
                 Value<DateTime?> endAt = const Value.absent(),
                 Value<bool> allDay = const Value.absent(),
@@ -10652,6 +20519,7 @@ class $$EntryRecordsTableTableManager
                 Value<bool> readOnly = const Value.absent(),
                 Value<DateTime?> lastCompletedAt = const Value.absent(),
                 Value<int?> repeatAfterCompletionDays = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -10667,6 +20535,10 @@ class $$EntryRecordsTableTableManager
                 startMinute: startMinute,
                 endMinute: endMinute,
                 timeZone: timeZone,
+                contextId: contextId,
+                projectId: projectId,
+                icon: icon,
+                priority: priority,
                 startAt: startAt,
                 endAt: endAt,
                 allDay: allDay,
@@ -10677,6 +20549,7 @@ class $$EntryRecordsTableTableManager
                 readOnly: readOnly,
                 lastCompletedAt: lastCompletedAt,
                 repeatAfterCompletionDays: repeatAfterCompletionDays,
+                completedAt: completedAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
@@ -10693,16 +20566,22 @@ class $$EntryRecordsTableTableManager
           prefetchHooksCallback:
               ({
                 spaceId = false,
+                contextId = false,
+                projectId = false,
+                timeEntryRecordsRefs = false,
                 entryTagRecordsRefs = false,
                 completionRecordsRefs = false,
                 reminderRecordsRefs = false,
+                maintenanceLogRecordsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (timeEntryRecordsRefs) db.timeEntryRecords,
                     if (entryTagRecordsRefs) db.entryTagRecords,
                     if (completionRecordsRefs) db.completionRecords,
                     if (reminderRecordsRefs) db.reminderRecords,
+                    if (maintenanceLogRecordsRefs) db.maintenanceLogRecords,
                   ],
                   addJoins:
                       <
@@ -10735,11 +20614,62 @@ class $$EntryRecordsTableTableManager
                                   )
                                   as T;
                         }
+                        if (contextId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.contextId,
+                                    referencedTable:
+                                        $$EntryRecordsTableReferences
+                                            ._contextIdTable(db),
+                                    referencedColumn:
+                                        $$EntryRecordsTableReferences
+                                            ._contextIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (projectId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.projectId,
+                                    referencedTable:
+                                        $$EntryRecordsTableReferences
+                                            ._projectIdTable(db),
+                                    referencedColumn:
+                                        $$EntryRecordsTableReferences
+                                            ._projectIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
 
                         return state;
                       },
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (timeEntryRecordsRefs)
+                        await $_getPrefetchedData<
+                          EntryRow,
+                          $EntryRecordsTable,
+                          TimeEntryRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$EntryRecordsTableReferences
+                              ._timeEntryRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$EntryRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).timeEntryRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.entryId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (entryTagRecordsRefs)
                         await $_getPrefetchedData<
                           EntryRow,
@@ -10803,6 +20733,27 @@ class $$EntryRecordsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (maintenanceLogRecordsRefs)
+                        await $_getPrefetchedData<
+                          EntryRow,
+                          $EntryRecordsTable,
+                          MaintenanceLogRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$EntryRecordsTableReferences
+                              ._maintenanceLogRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$EntryRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).maintenanceLogRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.entryId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -10825,10 +20776,382 @@ typedef $$EntryRecordsTableProcessedTableManager =
       EntryRow,
       PrefetchHooks Function({
         bool spaceId,
+        bool contextId,
+        bool projectId,
+        bool timeEntryRecordsRefs,
         bool entryTagRecordsRefs,
         bool completionRecordsRefs,
         bool reminderRecordsRefs,
+        bool maintenanceLogRecordsRefs,
       })
+    >;
+typedef $$TimeEntryRecordsTableCreateCompanionBuilder =
+    TimeEntryRecordsCompanion Function({
+      required String id,
+      required String entryId,
+      Value<int?> occurrenceDateKey,
+      required DateTime startedAt,
+      Value<DateTime?> endedAt,
+      Value<String> note,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$TimeEntryRecordsTableUpdateCompanionBuilder =
+    TimeEntryRecordsCompanion Function({
+      Value<String> id,
+      Value<String> entryId,
+      Value<int?> occurrenceDateKey,
+      Value<DateTime> startedAt,
+      Value<DateTime?> endedAt,
+      Value<String> note,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$TimeEntryRecordsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $TimeEntryRecordsTable, TimeEntryRow> {
+  $$TimeEntryRecordsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $EntryRecordsTable _entryIdTable(_$AppDatabase db) =>
+      db.entryRecords.createAlias(
+        $_aliasNameGenerator(db.timeEntryRecords.entryId, db.entryRecords.id),
+      );
+
+  $$EntryRecordsTableProcessedTableManager get entryId {
+    final $_column = $_itemColumn<String>('entry_id')!;
+
+    final manager = $$EntryRecordsTableTableManager(
+      $_db,
+      $_db.entryRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_entryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TimeEntryRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $TimeEntryRecordsTable> {
+  $$TimeEntryRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get occurrenceDateKey => $composableBuilder(
+    column: $table.occurrenceDateKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$EntryRecordsTableFilterComposer get entryId {
+    final $$EntryRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.entryId,
+      referencedTable: $db.entryRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntryRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.entryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TimeEntryRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TimeEntryRecordsTable> {
+  $$TimeEntryRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get occurrenceDateKey => $composableBuilder(
+    column: $table.occurrenceDateKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$EntryRecordsTableOrderingComposer get entryId {
+    final $$EntryRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.entryId,
+      referencedTable: $db.entryRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntryRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.entryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TimeEntryRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TimeEntryRecordsTable> {
+  $$TimeEntryRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get occurrenceDateKey => $composableBuilder(
+    column: $table.occurrenceDateKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$EntryRecordsTableAnnotationComposer get entryId {
+    final $$EntryRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.entryId,
+      referencedTable: $db.entryRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntryRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.entryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TimeEntryRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TimeEntryRecordsTable,
+          TimeEntryRow,
+          $$TimeEntryRecordsTableFilterComposer,
+          $$TimeEntryRecordsTableOrderingComposer,
+          $$TimeEntryRecordsTableAnnotationComposer,
+          $$TimeEntryRecordsTableCreateCompanionBuilder,
+          $$TimeEntryRecordsTableUpdateCompanionBuilder,
+          (TimeEntryRow, $$TimeEntryRecordsTableReferences),
+          TimeEntryRow,
+          PrefetchHooks Function({bool entryId})
+        > {
+  $$TimeEntryRecordsTableTableManager(
+    _$AppDatabase db,
+    $TimeEntryRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TimeEntryRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TimeEntryRecordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TimeEntryRecordsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> entryId = const Value.absent(),
+                Value<int?> occurrenceDateKey = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TimeEntryRecordsCompanion(
+                id: id,
+                entryId: entryId,
+                occurrenceDateKey: occurrenceDateKey,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                note: note,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String entryId,
+                Value<int?> occurrenceDateKey = const Value.absent(),
+                required DateTime startedAt,
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => TimeEntryRecordsCompanion.insert(
+                id: id,
+                entryId: entryId,
+                occurrenceDateKey: occurrenceDateKey,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                note: note,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TimeEntryRecordsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({entryId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (entryId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.entryId,
+                                referencedTable:
+                                    $$TimeEntryRecordsTableReferences
+                                        ._entryIdTable(db),
+                                referencedColumn:
+                                    $$TimeEntryRecordsTableReferences
+                                        ._entryIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TimeEntryRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TimeEntryRecordsTable,
+      TimeEntryRow,
+      $$TimeEntryRecordsTableFilterComposer,
+      $$TimeEntryRecordsTableOrderingComposer,
+      $$TimeEntryRecordsTableAnnotationComposer,
+      $$TimeEntryRecordsTableCreateCompanionBuilder,
+      $$TimeEntryRecordsTableUpdateCompanionBuilder,
+      (TimeEntryRow, $$TimeEntryRecordsTableReferences),
+      TimeEntryRow,
+      PrefetchHooks Function({bool entryId})
     >;
 typedef $$TagRecordsTableCreateCompanionBuilder =
     TagRecordsCompanion Function({
@@ -10836,6 +21159,7 @@ typedef $$TagRecordsTableCreateCompanionBuilder =
       Value<String?> spaceId,
       required String name,
       required int color,
+      Value<String> icon,
       Value<int> position,
       required DateTime createdAt,
       required DateTime updatedAt,
@@ -10848,6 +21172,7 @@ typedef $$TagRecordsTableUpdateCompanionBuilder =
       Value<String?> spaceId,
       Value<String> name,
       Value<int> color,
+      Value<String> icon,
       Value<int> position,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -10948,6 +21273,11 @@ class $$TagRecordsTableFilterComposer
 
   ColumnFilters<int> get color => $composableBuilder(
     column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11070,6 +21400,11 @@ class $$TagRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get position => $composableBuilder(
     column: $table.position,
     builder: (column) => ColumnOrderings(column),
@@ -11131,6 +21466,9 @@ class $$TagRecordsTableAnnotationComposer
 
   GeneratedColumn<int> get color =>
       $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
 
   GeneratedColumn<int> get position =>
       $composableBuilder(column: $table.position, builder: (column) => column);
@@ -11255,6 +21593,7 @@ class $$TagRecordsTableTableManager
                 Value<String?> spaceId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<int> color = const Value.absent(),
+                Value<String> icon = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -11265,6 +21604,7 @@ class $$TagRecordsTableTableManager
                 spaceId: spaceId,
                 name: name,
                 color: color,
+                icon: icon,
                 position: position,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -11277,6 +21617,7 @@ class $$TagRecordsTableTableManager
                 Value<String?> spaceId = const Value.absent(),
                 required String name,
                 required int color,
+                Value<String> icon = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -11287,6 +21628,7 @@ class $$TagRecordsTableTableManager
                 spaceId: spaceId,
                 name: name,
                 color: color,
+                icon: icon,
                 position: position,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -12405,6 +22747,7 @@ typedef $$ShiftPatternRecordsTableCreateCompanionBuilder =
       required String id,
       required String spaceId,
       required String name,
+      Value<String?> contextId,
       Value<String> timeZone,
       required int cycleDays,
       required int anchorDateKey,
@@ -12421,6 +22764,7 @@ typedef $$ShiftPatternRecordsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> spaceId,
       Value<String> name,
+      Value<String?> contextId,
       Value<String> timeZone,
       Value<int> cycleDays,
       Value<int> anchorDateKey,
@@ -12462,6 +22806,28 @@ final class $$ShiftPatternRecordsTableReferences
       $_db.spaceRecords,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ContextRecordsTable _contextIdTable(_$AppDatabase db) =>
+      db.contextRecords.createAlias(
+        $_aliasNameGenerator(
+          db.shiftPatternRecords.contextId,
+          db.contextRecords.id,
+        ),
+      );
+
+  $$ContextRecordsTableProcessedTableManager? get contextId {
+    final $_column = $_itemColumn<String>('context_id');
+    if ($_column == null) return null;
+    final manager = $$ContextRecordsTableTableManager(
+      $_db,
+      $_db.contextRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_contextIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -12663,6 +23029,29 @@ class $$ShiftPatternRecordsTableFilterComposer
     return composer;
   }
 
+  $$ContextRecordsTableFilterComposer get contextId {
+    final $$ContextRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
   Expression<bool> shiftSlotRecordsRefs(
     Expression<bool> Function($$ShiftSlotRecordsTableFilterComposer f) f,
   ) {
@@ -12854,6 +23243,29 @@ class $$ShiftPatternRecordsTableOrderingComposer
     );
     return composer;
   }
+
+  $$ContextRecordsTableOrderingComposer get contextId {
+    final $$ContextRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$ShiftPatternRecordsTableAnnotationComposer
@@ -12918,6 +23330,29 @@ class $$ShiftPatternRecordsTableAnnotationComposer
           }) => $$SpaceRecordsTableAnnotationComposer(
             $db: $db,
             $table: $db.spaceRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContextRecordsTableAnnotationComposer get contextId {
+    final $$ContextRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.contextRecords,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -13047,6 +23482,7 @@ class $$ShiftPatternRecordsTableTableManager
           ShiftPatternRow,
           PrefetchHooks Function({
             bool spaceId,
+            bool contextId,
             bool shiftSlotRecordsRefs,
             bool shiftPatternTagRecordsRefs,
             bool shiftExceptionRecordsRefs,
@@ -13077,6 +23513,7 @@ class $$ShiftPatternRecordsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> spaceId = const Value.absent(),
                 Value<String> name = const Value.absent(),
+                Value<String?> contextId = const Value.absent(),
                 Value<String> timeZone = const Value.absent(),
                 Value<int> cycleDays = const Value.absent(),
                 Value<int> anchorDateKey = const Value.absent(),
@@ -13091,6 +23528,7 @@ class $$ShiftPatternRecordsTableTableManager
                 id: id,
                 spaceId: spaceId,
                 name: name,
+                contextId: contextId,
                 timeZone: timeZone,
                 cycleDays: cycleDays,
                 anchorDateKey: anchorDateKey,
@@ -13107,6 +23545,7 @@ class $$ShiftPatternRecordsTableTableManager
                 required String id,
                 required String spaceId,
                 required String name,
+                Value<String?> contextId = const Value.absent(),
                 Value<String> timeZone = const Value.absent(),
                 required int cycleDays,
                 required int anchorDateKey,
@@ -13121,6 +23560,7 @@ class $$ShiftPatternRecordsTableTableManager
                 id: id,
                 spaceId: spaceId,
                 name: name,
+                contextId: contextId,
                 timeZone: timeZone,
                 cycleDays: cycleDays,
                 anchorDateKey: anchorDateKey,
@@ -13143,6 +23583,7 @@ class $$ShiftPatternRecordsTableTableManager
           prefetchHooksCallback:
               ({
                 spaceId = false,
+                contextId = false,
                 shiftSlotRecordsRefs = false,
                 shiftPatternTagRecordsRefs = false,
                 shiftExceptionRecordsRefs = false,
@@ -13184,6 +23625,21 @@ class $$ShiftPatternRecordsTableTableManager
                                     referencedColumn:
                                         $$ShiftPatternRecordsTableReferences
                                             ._spaceIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (contextId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.contextId,
+                                    referencedTable:
+                                        $$ShiftPatternRecordsTableReferences
+                                            ._contextIdTable(db),
+                                    referencedColumn:
+                                        $$ShiftPatternRecordsTableReferences
+                                            ._contextIdTable(db)
                                             .id,
                                   )
                                   as T;
@@ -13299,6 +23755,7 @@ typedef $$ShiftPatternRecordsTableProcessedTableManager =
       ShiftPatternRow,
       PrefetchHooks Function({
         bool spaceId,
+        bool contextId,
         bool shiftSlotRecordsRefs,
         bool shiftPatternTagRecordsRefs,
         bool shiftExceptionRecordsRefs,
@@ -14417,6 +24874,7 @@ typedef $$ShiftChecklistItemRecordsTableCreateCompanionBuilder =
       required String id,
       required String patternId,
       required String label,
+      Value<int?> dayIndex,
       Value<int> position,
       Value<int> rowid,
     });
@@ -14425,6 +24883,7 @@ typedef $$ShiftChecklistItemRecordsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> patternId,
       Value<String> label,
+      Value<int?> dayIndex,
       Value<int> position,
       Value<int> rowid,
     });
@@ -14512,6 +24971,11 @@ class $$ShiftChecklistItemRecordsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get dayIndex => $composableBuilder(
+    column: $table.dayIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get position => $composableBuilder(
     column: $table.position,
     builder: (column) => ColumnFilters(column),
@@ -14589,6 +25053,11 @@ class $$ShiftChecklistItemRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get dayIndex => $composableBuilder(
+    column: $table.dayIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get position => $composableBuilder(
     column: $table.position,
     builder: (column) => ColumnOrderings(column),
@@ -14633,6 +25102,9 @@ class $$ShiftChecklistItemRecordsTableAnnotationComposer
 
   GeneratedColumn<String> get label =>
       $composableBuilder(column: $table.label, builder: (column) => column);
+
+  GeneratedColumn<int> get dayIndex =>
+      $composableBuilder(column: $table.dayIndex, builder: (column) => column);
 
   GeneratedColumn<int> get position =>
       $composableBuilder(column: $table.position, builder: (column) => column);
@@ -14736,12 +25208,14 @@ class $$ShiftChecklistItemRecordsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> patternId = const Value.absent(),
                 Value<String> label = const Value.absent(),
+                Value<int?> dayIndex = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ShiftChecklistItemRecordsCompanion(
                 id: id,
                 patternId: patternId,
                 label: label,
+                dayIndex: dayIndex,
                 position: position,
                 rowid: rowid,
               ),
@@ -14750,12 +25224,14 @@ class $$ShiftChecklistItemRecordsTableTableManager
                 required String id,
                 required String patternId,
                 required String label,
+                Value<int?> dayIndex = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ShiftChecklistItemRecordsCompanion.insert(
                 id: id,
                 patternId: patternId,
                 label: label,
+                dayIndex: dayIndex,
                 position: position,
                 rowid: rowid,
               ),
@@ -15201,15 +25677,1275 @@ typedef $$ShiftChecklistCompletionRecordsTableProcessedTableManager =
       ShiftChecklistCompletionRow,
       PrefetchHooks Function({bool itemId})
     >;
+typedef $$HomeCategoryRecordsTableCreateCompanionBuilder =
+    HomeCategoryRecordsCompanion Function({
+      required String id,
+      required String name,
+      Value<String> icon,
+      required int color,
+      Value<int> position,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$HomeCategoryRecordsTableUpdateCompanionBuilder =
+    HomeCategoryRecordsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> icon,
+      Value<int> color,
+      Value<int> position,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+final class $$HomeCategoryRecordsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $HomeCategoryRecordsTable,
+          HomeCategoryRow
+        > {
+  $$HomeCategoryRecordsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<$HomeItemRecordsTable, List<HomeItemRow>>
+  _homeItemRecordsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.homeItemRecords,
+    aliasName: $_aliasNameGenerator(
+      db.homeCategoryRecords.id,
+      db.homeItemRecords.categoryId,
+    ),
+  );
+
+  $$HomeItemRecordsTableProcessedTableManager get homeItemRecordsRefs {
+    final manager = $$HomeItemRecordsTableTableManager(
+      $_db,
+      $_db.homeItemRecords,
+    ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _homeItemRecordsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ShoppingItemRecordsTable, List<ShoppingItemRow>>
+  _shoppingItemRecordsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.shoppingItemRecords,
+        aliasName: $_aliasNameGenerator(
+          db.homeCategoryRecords.id,
+          db.shoppingItemRecords.categoryId,
+        ),
+      );
+
+  $$ShoppingItemRecordsTableProcessedTableManager get shoppingItemRecordsRefs {
+    final manager = $$ShoppingItemRecordsTableTableManager(
+      $_db,
+      $_db.shoppingItemRecords,
+    ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _shoppingItemRecordsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$HomeCategoryRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $HomeCategoryRecordsTable> {
+  $$HomeCategoryRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> homeItemRecordsRefs(
+    Expression<bool> Function($$HomeItemRecordsTableFilterComposer f) f,
+  ) {
+    final $$HomeItemRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.homeItemRecords,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeItemRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.homeItemRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> shoppingItemRecordsRefs(
+    Expression<bool> Function($$ShoppingItemRecordsTableFilterComposer f) f,
+  ) {
+    final $$ShoppingItemRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.shoppingItemRecords,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ShoppingItemRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.shoppingItemRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$HomeCategoryRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HomeCategoryRecordsTable> {
+  $$HomeCategoryRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$HomeCategoryRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HomeCategoryRecordsTable> {
+  $$HomeCategoryRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  Expression<T> homeItemRecordsRefs<T extends Object>(
+    Expression<T> Function($$HomeItemRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$HomeItemRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.homeItemRecords,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeItemRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.homeItemRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> shoppingItemRecordsRefs<T extends Object>(
+    Expression<T> Function($$ShoppingItemRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$ShoppingItemRecordsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.shoppingItemRecords,
+          getReferencedColumn: (t) => t.categoryId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ShoppingItemRecordsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.shoppingItemRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$HomeCategoryRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HomeCategoryRecordsTable,
+          HomeCategoryRow,
+          $$HomeCategoryRecordsTableFilterComposer,
+          $$HomeCategoryRecordsTableOrderingComposer,
+          $$HomeCategoryRecordsTableAnnotationComposer,
+          $$HomeCategoryRecordsTableCreateCompanionBuilder,
+          $$HomeCategoryRecordsTableUpdateCompanionBuilder,
+          (HomeCategoryRow, $$HomeCategoryRecordsTableReferences),
+          HomeCategoryRow,
+          PrefetchHooks Function({
+            bool homeItemRecordsRefs,
+            bool shoppingItemRecordsRefs,
+          })
+        > {
+  $$HomeCategoryRecordsTableTableManager(
+    _$AppDatabase db,
+    $HomeCategoryRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HomeCategoryRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HomeCategoryRecordsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$HomeCategoryRecordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<int> color = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HomeCategoryRecordsCompanion(
+                id: id,
+                name: name,
+                icon: icon,
+                color: color,
+                position: position,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<String> icon = const Value.absent(),
+                required int color,
+                Value<int> position = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HomeCategoryRecordsCompanion.insert(
+                id: id,
+                name: name,
+                icon: icon,
+                color: color,
+                position: position,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$HomeCategoryRecordsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({homeItemRecordsRefs = false, shoppingItemRecordsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (homeItemRecordsRefs) db.homeItemRecords,
+                    if (shoppingItemRecordsRefs) db.shoppingItemRecords,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (homeItemRecordsRefs)
+                        await $_getPrefetchedData<
+                          HomeCategoryRow,
+                          $HomeCategoryRecordsTable,
+                          HomeItemRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$HomeCategoryRecordsTableReferences
+                              ._homeItemRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$HomeCategoryRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).homeItemRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.categoryId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (shoppingItemRecordsRefs)
+                        await $_getPrefetchedData<
+                          HomeCategoryRow,
+                          $HomeCategoryRecordsTable,
+                          ShoppingItemRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$HomeCategoryRecordsTableReferences
+                              ._shoppingItemRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$HomeCategoryRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).shoppingItemRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.categoryId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$HomeCategoryRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HomeCategoryRecordsTable,
+      HomeCategoryRow,
+      $$HomeCategoryRecordsTableFilterComposer,
+      $$HomeCategoryRecordsTableOrderingComposer,
+      $$HomeCategoryRecordsTableAnnotationComposer,
+      $$HomeCategoryRecordsTableCreateCompanionBuilder,
+      $$HomeCategoryRecordsTableUpdateCompanionBuilder,
+      (HomeCategoryRow, $$HomeCategoryRecordsTableReferences),
+      HomeCategoryRow,
+      PrefetchHooks Function({
+        bool homeItemRecordsRefs,
+        bool shoppingItemRecordsRefs,
+      })
+    >;
+typedef $$HomeLocationRecordsTableCreateCompanionBuilder =
+    HomeLocationRecordsCompanion Function({
+      required String id,
+      required String name,
+      Value<String> icon,
+      required int color,
+      Value<int> position,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$HomeLocationRecordsTableUpdateCompanionBuilder =
+    HomeLocationRecordsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> icon,
+      Value<int> color,
+      Value<int> position,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+final class $$HomeLocationRecordsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $HomeLocationRecordsTable,
+          HomeLocationRow
+        > {
+  $$HomeLocationRecordsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<
+    $HomeItemLocationRecordsTable,
+    List<HomeItemLocationRow>
+  >
+  _homeItemLocationRecordsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.homeItemLocationRecords,
+        aliasName: $_aliasNameGenerator(
+          db.homeLocationRecords.id,
+          db.homeItemLocationRecords.locationId,
+        ),
+      );
+
+  $$HomeItemLocationRecordsTableProcessedTableManager
+  get homeItemLocationRecordsRefs {
+    final manager = $$HomeItemLocationRecordsTableTableManager(
+      $_db,
+      $_db.homeItemLocationRecords,
+    ).filter((f) => f.locationId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _homeItemLocationRecordsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$HomeLocationRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $HomeLocationRecordsTable> {
+  $$HomeLocationRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> homeItemLocationRecordsRefs(
+    Expression<bool> Function($$HomeItemLocationRecordsTableFilterComposer f) f,
+  ) {
+    final $$HomeItemLocationRecordsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.homeItemLocationRecords,
+          getReferencedColumn: (t) => t.locationId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$HomeItemLocationRecordsTableFilterComposer(
+                $db: $db,
+                $table: $db.homeItemLocationRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$HomeLocationRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HomeLocationRecordsTable> {
+  $$HomeLocationRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$HomeLocationRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HomeLocationRecordsTable> {
+  $$HomeLocationRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  Expression<T> homeItemLocationRecordsRefs<T extends Object>(
+    Expression<T> Function($$HomeItemLocationRecordsTableAnnotationComposer a)
+    f,
+  ) {
+    final $$HomeItemLocationRecordsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.homeItemLocationRecords,
+          getReferencedColumn: (t) => t.locationId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$HomeItemLocationRecordsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.homeItemLocationRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$HomeLocationRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HomeLocationRecordsTable,
+          HomeLocationRow,
+          $$HomeLocationRecordsTableFilterComposer,
+          $$HomeLocationRecordsTableOrderingComposer,
+          $$HomeLocationRecordsTableAnnotationComposer,
+          $$HomeLocationRecordsTableCreateCompanionBuilder,
+          $$HomeLocationRecordsTableUpdateCompanionBuilder,
+          (HomeLocationRow, $$HomeLocationRecordsTableReferences),
+          HomeLocationRow,
+          PrefetchHooks Function({bool homeItemLocationRecordsRefs})
+        > {
+  $$HomeLocationRecordsTableTableManager(
+    _$AppDatabase db,
+    $HomeLocationRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HomeLocationRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HomeLocationRecordsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$HomeLocationRecordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<int> color = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HomeLocationRecordsCompanion(
+                id: id,
+                name: name,
+                icon: icon,
+                color: color,
+                position: position,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<String> icon = const Value.absent(),
+                required int color,
+                Value<int> position = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HomeLocationRecordsCompanion.insert(
+                id: id,
+                name: name,
+                icon: icon,
+                color: color,
+                position: position,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$HomeLocationRecordsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({homeItemLocationRecordsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (homeItemLocationRecordsRefs) db.homeItemLocationRecords,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (homeItemLocationRecordsRefs)
+                    await $_getPrefetchedData<
+                      HomeLocationRow,
+                      $HomeLocationRecordsTable,
+                      HomeItemLocationRow
+                    >(
+                      currentTable: table,
+                      referencedTable: $$HomeLocationRecordsTableReferences
+                          ._homeItemLocationRecordsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$HomeLocationRecordsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).homeItemLocationRecordsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.locationId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$HomeLocationRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HomeLocationRecordsTable,
+      HomeLocationRow,
+      $$HomeLocationRecordsTableFilterComposer,
+      $$HomeLocationRecordsTableOrderingComposer,
+      $$HomeLocationRecordsTableAnnotationComposer,
+      $$HomeLocationRecordsTableCreateCompanionBuilder,
+      $$HomeLocationRecordsTableUpdateCompanionBuilder,
+      (HomeLocationRow, $$HomeLocationRecordsTableReferences),
+      HomeLocationRow,
+      PrefetchHooks Function({bool homeItemLocationRecordsRefs})
+    >;
+typedef $$HomeUnitRecordsTableCreateCompanionBuilder =
+    HomeUnitRecordsCompanion Function({
+      required String id,
+      required String name,
+      Value<String> symbol,
+      Value<String> kind,
+      Value<int> position,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$HomeUnitRecordsTableUpdateCompanionBuilder =
+    HomeUnitRecordsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> symbol,
+      Value<String> kind,
+      Value<int> position,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+final class $$HomeUnitRecordsTableReferences
+    extends BaseReferences<_$AppDatabase, $HomeUnitRecordsTable, HomeUnitRow> {
+  $$HomeUnitRecordsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<$HomeItemRecordsTable, List<HomeItemRow>>
+  _homeItemRecordsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.homeItemRecords,
+    aliasName: $_aliasNameGenerator(
+      db.homeUnitRecords.id,
+      db.homeItemRecords.unitId,
+    ),
+  );
+
+  $$HomeItemRecordsTableProcessedTableManager get homeItemRecordsRefs {
+    final manager = $$HomeItemRecordsTableTableManager(
+      $_db,
+      $_db.homeItemRecords,
+    ).filter((f) => f.unitId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _homeItemRecordsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$HomeUnitRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $HomeUnitRecordsTable> {
+  $$HomeUnitRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get symbol => $composableBuilder(
+    column: $table.symbol,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> homeItemRecordsRefs(
+    Expression<bool> Function($$HomeItemRecordsTableFilterComposer f) f,
+  ) {
+    final $$HomeItemRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.homeItemRecords,
+      getReferencedColumn: (t) => t.unitId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeItemRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.homeItemRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$HomeUnitRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HomeUnitRecordsTable> {
+  $$HomeUnitRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get symbol => $composableBuilder(
+    column: $table.symbol,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$HomeUnitRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HomeUnitRecordsTable> {
+  $$HomeUnitRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get symbol =>
+      $composableBuilder(column: $table.symbol, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  Expression<T> homeItemRecordsRefs<T extends Object>(
+    Expression<T> Function($$HomeItemRecordsTableAnnotationComposer a) f,
+  ) {
+    final $$HomeItemRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.homeItemRecords,
+      getReferencedColumn: (t) => t.unitId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeItemRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.homeItemRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$HomeUnitRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HomeUnitRecordsTable,
+          HomeUnitRow,
+          $$HomeUnitRecordsTableFilterComposer,
+          $$HomeUnitRecordsTableOrderingComposer,
+          $$HomeUnitRecordsTableAnnotationComposer,
+          $$HomeUnitRecordsTableCreateCompanionBuilder,
+          $$HomeUnitRecordsTableUpdateCompanionBuilder,
+          (HomeUnitRow, $$HomeUnitRecordsTableReferences),
+          HomeUnitRow,
+          PrefetchHooks Function({bool homeItemRecordsRefs})
+        > {
+  $$HomeUnitRecordsTableTableManager(
+    _$AppDatabase db,
+    $HomeUnitRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HomeUnitRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HomeUnitRecordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HomeUnitRecordsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> symbol = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HomeUnitRecordsCompanion(
+                id: id,
+                name: name,
+                symbol: symbol,
+                kind: kind,
+                position: position,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<String> symbol = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HomeUnitRecordsCompanion.insert(
+                id: id,
+                name: name,
+                symbol: symbol,
+                kind: kind,
+                position: position,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$HomeUnitRecordsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({homeItemRecordsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (homeItemRecordsRefs) db.homeItemRecords,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (homeItemRecordsRefs)
+                    await $_getPrefetchedData<
+                      HomeUnitRow,
+                      $HomeUnitRecordsTable,
+                      HomeItemRow
+                    >(
+                      currentTable: table,
+                      referencedTable: $$HomeUnitRecordsTableReferences
+                          ._homeItemRecordsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$HomeUnitRecordsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).homeItemRecordsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.unitId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$HomeUnitRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HomeUnitRecordsTable,
+      HomeUnitRow,
+      $$HomeUnitRecordsTableFilterComposer,
+      $$HomeUnitRecordsTableOrderingComposer,
+      $$HomeUnitRecordsTableAnnotationComposer,
+      $$HomeUnitRecordsTableCreateCompanionBuilder,
+      $$HomeUnitRecordsTableUpdateCompanionBuilder,
+      (HomeUnitRow, $$HomeUnitRecordsTableReferences),
+      HomeUnitRow,
+      PrefetchHooks Function({bool homeItemRecordsRefs})
+    >;
 typedef $$HomeItemRecordsTableCreateCompanionBuilder =
     HomeItemRecordsCompanion Function({
       required String id,
+      Value<String?> contextId,
+      Value<String?> groupId,
       required String name,
+      Value<String> description,
+      Value<String> icon,
+      Value<int?> color,
+      Value<String?> catalogId,
       Value<String> category,
+      Value<String?> categoryId,
       Value<String> location,
       Value<double> quantity,
+      Value<double?> minQuantity,
       Value<double?> reorderLevel,
       Value<String> unit,
+      Value<String?> unitId,
+      Value<String> packSize,
+      Value<int?> expiresDateKey,
       Value<String> notes,
       Value<DateTime?> lastPurchasedAt,
       required DateTime createdAt,
@@ -15220,12 +26956,23 @@ typedef $$HomeItemRecordsTableCreateCompanionBuilder =
 typedef $$HomeItemRecordsTableUpdateCompanionBuilder =
     HomeItemRecordsCompanion Function({
       Value<String> id,
+      Value<String?> contextId,
+      Value<String?> groupId,
       Value<String> name,
+      Value<String> description,
+      Value<String> icon,
+      Value<int?> color,
+      Value<String?> catalogId,
       Value<String> category,
+      Value<String?> categoryId,
       Value<String> location,
       Value<double> quantity,
+      Value<double?> minQuantity,
       Value<double?> reorderLevel,
       Value<String> unit,
+      Value<String?> unitId,
+      Value<String> packSize,
+      Value<int?> expiresDateKey,
       Value<String> notes,
       Value<DateTime?> lastPurchasedAt,
       Value<DateTime> createdAt,
@@ -15241,6 +26988,97 @@ final class $$HomeItemRecordsTableReferences
     super.$_table,
     super.$_typedResult,
   );
+
+  static $ContextRecordsTable _contextIdTable(_$AppDatabase db) =>
+      db.contextRecords.createAlias(
+        $_aliasNameGenerator(
+          db.homeItemRecords.contextId,
+          db.contextRecords.id,
+        ),
+      );
+
+  $$ContextRecordsTableProcessedTableManager? get contextId {
+    final $_column = $_itemColumn<String>('context_id');
+    if ($_column == null) return null;
+    final manager = $$ContextRecordsTableTableManager(
+      $_db,
+      $_db.contextRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_contextIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $HomeCategoryRecordsTable _categoryIdTable(_$AppDatabase db) =>
+      db.homeCategoryRecords.createAlias(
+        $_aliasNameGenerator(
+          db.homeItemRecords.categoryId,
+          db.homeCategoryRecords.id,
+        ),
+      );
+
+  $$HomeCategoryRecordsTableProcessedTableManager? get categoryId {
+    final $_column = $_itemColumn<String>('category_id');
+    if ($_column == null) return null;
+    final manager = $$HomeCategoryRecordsTableTableManager(
+      $_db,
+      $_db.homeCategoryRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $HomeUnitRecordsTable _unitIdTable(_$AppDatabase db) =>
+      db.homeUnitRecords.createAlias(
+        $_aliasNameGenerator(db.homeItemRecords.unitId, db.homeUnitRecords.id),
+      );
+
+  $$HomeUnitRecordsTableProcessedTableManager? get unitId {
+    final $_column = $_itemColumn<String>('unit_id');
+    if ($_column == null) return null;
+    final manager = $$HomeUnitRecordsTableTableManager(
+      $_db,
+      $_db.homeUnitRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_unitIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $HomeItemLocationRecordsTable,
+    List<HomeItemLocationRow>
+  >
+  _homeItemLocationRecordsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.homeItemLocationRecords,
+        aliasName: $_aliasNameGenerator(
+          db.homeItemRecords.id,
+          db.homeItemLocationRecords.homeItemId,
+        ),
+      );
+
+  $$HomeItemLocationRecordsTableProcessedTableManager
+  get homeItemLocationRecordsRefs {
+    final manager = $$HomeItemLocationRecordsTableTableManager(
+      $_db,
+      $_db.homeItemLocationRecords,
+    ).filter((f) => f.homeItemId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _homeItemLocationRecordsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$ShoppingItemRecordsTable, List<ShoppingItemRow>>
   _shoppingItemRecordsRefsTable(_$AppDatabase db) =>
@@ -15305,8 +27143,33 @@ class $$HomeItemRecordsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get groupId => $composableBuilder(
+    column: $table.groupId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get catalogId => $composableBuilder(
+    column: $table.catalogId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15325,6 +27188,11 @@ class $$HomeItemRecordsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<double> get minQuantity => $composableBuilder(
+    column: $table.minQuantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<double> get reorderLevel => $composableBuilder(
     column: $table.reorderLevel,
     builder: (column) => ColumnFilters(column),
@@ -15332,6 +27200,16 @@ class $$HomeItemRecordsTableFilterComposer
 
   ColumnFilters<String> get unit => $composableBuilder(
     column: $table.unit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get packSize => $composableBuilder(
+    column: $table.packSize,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get expiresDateKey => $composableBuilder(
+    column: $table.expiresDateKey,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15359,6 +27237,101 @@ class $$HomeItemRecordsTableFilterComposer
     column: $table.deletedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$ContextRecordsTableFilterComposer get contextId {
+    final $$ContextRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$HomeCategoryRecordsTableFilterComposer get categoryId {
+    final $$HomeCategoryRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.homeCategoryRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeCategoryRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.homeCategoryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$HomeUnitRecordsTableFilterComposer get unitId {
+    final $$HomeUnitRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.unitId,
+      referencedTable: $db.homeUnitRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeUnitRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.homeUnitRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> homeItemLocationRecordsRefs(
+    Expression<bool> Function($$HomeItemLocationRecordsTableFilterComposer f) f,
+  ) {
+    final $$HomeItemLocationRecordsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.homeItemLocationRecords,
+          getReferencedColumn: (t) => t.homeItemId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$HomeItemLocationRecordsTableFilterComposer(
+                $db: $db,
+                $table: $db.homeItemLocationRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 
   Expression<bool> shoppingItemRecordsRefs(
     Expression<bool> Function($$ShoppingItemRecordsTableFilterComposer f) f,
@@ -15425,8 +27398,33 @@ class $$HomeItemRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get groupId => $composableBuilder(
+    column: $table.groupId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get catalogId => $composableBuilder(
+    column: $table.catalogId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -15445,6 +27443,11 @@ class $$HomeItemRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get minQuantity => $composableBuilder(
+    column: $table.minQuantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get reorderLevel => $composableBuilder(
     column: $table.reorderLevel,
     builder: (column) => ColumnOrderings(column),
@@ -15452,6 +27455,16 @@ class $$HomeItemRecordsTableOrderingComposer
 
   ColumnOrderings<String> get unit => $composableBuilder(
     column: $table.unit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get packSize => $composableBuilder(
+    column: $table.packSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get expiresDateKey => $composableBuilder(
+    column: $table.expiresDateKey,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -15479,6 +27492,76 @@ class $$HomeItemRecordsTableOrderingComposer
     column: $table.deletedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  $$ContextRecordsTableOrderingComposer get contextId {
+    final $$ContextRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$HomeCategoryRecordsTableOrderingComposer get categoryId {
+    final $$HomeCategoryRecordsTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.categoryId,
+          referencedTable: $db.homeCategoryRecords,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$HomeCategoryRecordsTableOrderingComposer(
+                $db: $db,
+                $table: $db.homeCategoryRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  $$HomeUnitRecordsTableOrderingComposer get unitId {
+    final $$HomeUnitRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.unitId,
+      referencedTable: $db.homeUnitRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeUnitRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.homeUnitRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$HomeItemRecordsTableAnnotationComposer
@@ -15493,8 +27576,25 @@ class $$HomeItemRecordsTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<String> get groupId =>
+      $composableBuilder(column: $table.groupId, builder: (column) => column);
+
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<String> get catalogId =>
+      $composableBuilder(column: $table.catalogId, builder: (column) => column);
 
   GeneratedColumn<String> get category =>
       $composableBuilder(column: $table.category, builder: (column) => column);
@@ -15505,6 +27605,11 @@ class $$HomeItemRecordsTableAnnotationComposer
   GeneratedColumn<double> get quantity =>
       $composableBuilder(column: $table.quantity, builder: (column) => column);
 
+  GeneratedColumn<double> get minQuantity => $composableBuilder(
+    column: $table.minQuantity,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<double> get reorderLevel => $composableBuilder(
     column: $table.reorderLevel,
     builder: (column) => column,
@@ -15512,6 +27617,14 @@ class $$HomeItemRecordsTableAnnotationComposer
 
   GeneratedColumn<String> get unit =>
       $composableBuilder(column: $table.unit, builder: (column) => column);
+
+  GeneratedColumn<String> get packSize =>
+      $composableBuilder(column: $table.packSize, builder: (column) => column);
+
+  GeneratedColumn<int> get expiresDateKey => $composableBuilder(
+    column: $table.expiresDateKey,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
@@ -15529,6 +27642,103 @@ class $$HomeItemRecordsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$ContextRecordsTableAnnotationComposer get contextId {
+    final $$ContextRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$HomeCategoryRecordsTableAnnotationComposer get categoryId {
+    final $$HomeCategoryRecordsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.categoryId,
+          referencedTable: $db.homeCategoryRecords,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$HomeCategoryRecordsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.homeCategoryRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  $$HomeUnitRecordsTableAnnotationComposer get unitId {
+    final $$HomeUnitRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.unitId,
+      referencedTable: $db.homeUnitRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeUnitRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.homeUnitRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> homeItemLocationRecordsRefs<T extends Object>(
+    Expression<T> Function($$HomeItemLocationRecordsTableAnnotationComposer a)
+    f,
+  ) {
+    final $$HomeItemLocationRecordsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.homeItemLocationRecords,
+          getReferencedColumn: (t) => t.homeItemId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$HomeItemLocationRecordsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.homeItemLocationRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 
   Expression<T> shoppingItemRecordsRefs<T extends Object>(
     Expression<T> Function($$ShoppingItemRecordsTableAnnotationComposer a) f,
@@ -15597,6 +27807,10 @@ class $$HomeItemRecordsTableTableManager
           (HomeItemRow, $$HomeItemRecordsTableReferences),
           HomeItemRow,
           PrefetchHooks Function({
+            bool contextId,
+            bool categoryId,
+            bool unitId,
+            bool homeItemLocationRecordsRefs,
             bool shoppingItemRecordsRefs,
             bool homePurchaseRecordsRefs,
           })
@@ -15617,12 +27831,23 @@ class $$HomeItemRecordsTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
+                Value<String?> contextId = const Value.absent(),
+                Value<String?> groupId = const Value.absent(),
                 Value<String> name = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<int?> color = const Value.absent(),
+                Value<String?> catalogId = const Value.absent(),
                 Value<String> category = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
                 Value<String> location = const Value.absent(),
                 Value<double> quantity = const Value.absent(),
+                Value<double?> minQuantity = const Value.absent(),
                 Value<double?> reorderLevel = const Value.absent(),
                 Value<String> unit = const Value.absent(),
+                Value<String?> unitId = const Value.absent(),
+                Value<String> packSize = const Value.absent(),
+                Value<int?> expiresDateKey = const Value.absent(),
                 Value<String> notes = const Value.absent(),
                 Value<DateTime?> lastPurchasedAt = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -15631,12 +27856,23 @@ class $$HomeItemRecordsTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => HomeItemRecordsCompanion(
                 id: id,
+                contextId: contextId,
+                groupId: groupId,
                 name: name,
+                description: description,
+                icon: icon,
+                color: color,
+                catalogId: catalogId,
                 category: category,
+                categoryId: categoryId,
                 location: location,
                 quantity: quantity,
+                minQuantity: minQuantity,
                 reorderLevel: reorderLevel,
                 unit: unit,
+                unitId: unitId,
+                packSize: packSize,
+                expiresDateKey: expiresDateKey,
                 notes: notes,
                 lastPurchasedAt: lastPurchasedAt,
                 createdAt: createdAt,
@@ -15647,12 +27883,23 @@ class $$HomeItemRecordsTableTableManager
           createCompanionCallback:
               ({
                 required String id,
+                Value<String?> contextId = const Value.absent(),
+                Value<String?> groupId = const Value.absent(),
                 required String name,
+                Value<String> description = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<int?> color = const Value.absent(),
+                Value<String?> catalogId = const Value.absent(),
                 Value<String> category = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
                 Value<String> location = const Value.absent(),
                 Value<double> quantity = const Value.absent(),
+                Value<double?> minQuantity = const Value.absent(),
                 Value<double?> reorderLevel = const Value.absent(),
                 Value<String> unit = const Value.absent(),
+                Value<String?> unitId = const Value.absent(),
+                Value<String> packSize = const Value.absent(),
+                Value<int?> expiresDateKey = const Value.absent(),
                 Value<String> notes = const Value.absent(),
                 Value<DateTime?> lastPurchasedAt = const Value.absent(),
                 required DateTime createdAt,
@@ -15661,12 +27908,23 @@ class $$HomeItemRecordsTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => HomeItemRecordsCompanion.insert(
                 id: id,
+                contextId: contextId,
+                groupId: groupId,
                 name: name,
+                description: description,
+                icon: icon,
+                color: color,
+                catalogId: catalogId,
                 category: category,
+                categoryId: categoryId,
                 location: location,
                 quantity: quantity,
+                minQuantity: minQuantity,
                 reorderLevel: reorderLevel,
                 unit: unit,
+                unitId: unitId,
+                packSize: packSize,
+                expiresDateKey: expiresDateKey,
                 notes: notes,
                 lastPurchasedAt: lastPurchasedAt,
                 createdAt: createdAt,
@@ -15684,18 +27942,107 @@ class $$HomeItemRecordsTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                contextId = false,
+                categoryId = false,
+                unitId = false,
+                homeItemLocationRecordsRefs = false,
                 shoppingItemRecordsRefs = false,
                 homePurchaseRecordsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (homeItemLocationRecordsRefs) db.homeItemLocationRecords,
                     if (shoppingItemRecordsRefs) db.shoppingItemRecords,
                     if (homePurchaseRecordsRefs) db.homePurchaseRecords,
                   ],
-                  addJoins: null,
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (contextId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.contextId,
+                                    referencedTable:
+                                        $$HomeItemRecordsTableReferences
+                                            ._contextIdTable(db),
+                                    referencedColumn:
+                                        $$HomeItemRecordsTableReferences
+                                            ._contextIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (categoryId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.categoryId,
+                                    referencedTable:
+                                        $$HomeItemRecordsTableReferences
+                                            ._categoryIdTable(db),
+                                    referencedColumn:
+                                        $$HomeItemRecordsTableReferences
+                                            ._categoryIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (unitId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.unitId,
+                                    referencedTable:
+                                        $$HomeItemRecordsTableReferences
+                                            ._unitIdTable(db),
+                                    referencedColumn:
+                                        $$HomeItemRecordsTableReferences
+                                            ._unitIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (homeItemLocationRecordsRefs)
+                        await $_getPrefetchedData<
+                          HomeItemRow,
+                          $HomeItemRecordsTable,
+                          HomeItemLocationRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$HomeItemRecordsTableReferences
+                              ._homeItemLocationRecordsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$HomeItemRecordsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).homeItemLocationRecordsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.homeItemId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (shoppingItemRecordsRefs)
                         await $_getPrefetchedData<
                           HomeItemRow,
@@ -15759,9 +28106,395 @@ typedef $$HomeItemRecordsTableProcessedTableManager =
       (HomeItemRow, $$HomeItemRecordsTableReferences),
       HomeItemRow,
       PrefetchHooks Function({
+        bool contextId,
+        bool categoryId,
+        bool unitId,
+        bool homeItemLocationRecordsRefs,
         bool shoppingItemRecordsRefs,
         bool homePurchaseRecordsRefs,
       })
+    >;
+typedef $$HomeItemLocationRecordsTableCreateCompanionBuilder =
+    HomeItemLocationRecordsCompanion Function({
+      required String homeItemId,
+      required String locationId,
+      Value<int> rowid,
+    });
+typedef $$HomeItemLocationRecordsTableUpdateCompanionBuilder =
+    HomeItemLocationRecordsCompanion Function({
+      Value<String> homeItemId,
+      Value<String> locationId,
+      Value<int> rowid,
+    });
+
+final class $$HomeItemLocationRecordsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $HomeItemLocationRecordsTable,
+          HomeItemLocationRow
+        > {
+  $$HomeItemLocationRecordsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $HomeItemRecordsTable _homeItemIdTable(_$AppDatabase db) =>
+      db.homeItemRecords.createAlias(
+        $_aliasNameGenerator(
+          db.homeItemLocationRecords.homeItemId,
+          db.homeItemRecords.id,
+        ),
+      );
+
+  $$HomeItemRecordsTableProcessedTableManager get homeItemId {
+    final $_column = $_itemColumn<String>('home_item_id')!;
+
+    final manager = $$HomeItemRecordsTableTableManager(
+      $_db,
+      $_db.homeItemRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_homeItemIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $HomeLocationRecordsTable _locationIdTable(_$AppDatabase db) =>
+      db.homeLocationRecords.createAlias(
+        $_aliasNameGenerator(
+          db.homeItemLocationRecords.locationId,
+          db.homeLocationRecords.id,
+        ),
+      );
+
+  $$HomeLocationRecordsTableProcessedTableManager get locationId {
+    final $_column = $_itemColumn<String>('location_id')!;
+
+    final manager = $$HomeLocationRecordsTableTableManager(
+      $_db,
+      $_db.homeLocationRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_locationIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$HomeItemLocationRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $HomeItemLocationRecordsTable> {
+  $$HomeItemLocationRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$HomeItemRecordsTableFilterComposer get homeItemId {
+    final $$HomeItemRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.homeItemId,
+      referencedTable: $db.homeItemRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeItemRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.homeItemRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$HomeLocationRecordsTableFilterComposer get locationId {
+    final $$HomeLocationRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.locationId,
+      referencedTable: $db.homeLocationRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeLocationRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.homeLocationRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HomeItemLocationRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HomeItemLocationRecordsTable> {
+  $$HomeItemLocationRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$HomeItemRecordsTableOrderingComposer get homeItemId {
+    final $$HomeItemRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.homeItemId,
+      referencedTable: $db.homeItemRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeItemRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.homeItemRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$HomeLocationRecordsTableOrderingComposer get locationId {
+    final $$HomeLocationRecordsTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.locationId,
+          referencedTable: $db.homeLocationRecords,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$HomeLocationRecordsTableOrderingComposer(
+                $db: $db,
+                $table: $db.homeLocationRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$HomeItemLocationRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HomeItemLocationRecordsTable> {
+  $$HomeItemLocationRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$HomeItemRecordsTableAnnotationComposer get homeItemId {
+    final $$HomeItemRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.homeItemId,
+      referencedTable: $db.homeItemRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeItemRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.homeItemRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$HomeLocationRecordsTableAnnotationComposer get locationId {
+    final $$HomeLocationRecordsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.locationId,
+          referencedTable: $db.homeLocationRecords,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$HomeLocationRecordsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.homeLocationRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$HomeItemLocationRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HomeItemLocationRecordsTable,
+          HomeItemLocationRow,
+          $$HomeItemLocationRecordsTableFilterComposer,
+          $$HomeItemLocationRecordsTableOrderingComposer,
+          $$HomeItemLocationRecordsTableAnnotationComposer,
+          $$HomeItemLocationRecordsTableCreateCompanionBuilder,
+          $$HomeItemLocationRecordsTableUpdateCompanionBuilder,
+          (HomeItemLocationRow, $$HomeItemLocationRecordsTableReferences),
+          HomeItemLocationRow,
+          PrefetchHooks Function({bool homeItemId, bool locationId})
+        > {
+  $$HomeItemLocationRecordsTableTableManager(
+    _$AppDatabase db,
+    $HomeItemLocationRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HomeItemLocationRecordsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$HomeItemLocationRecordsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$HomeItemLocationRecordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> homeItemId = const Value.absent(),
+                Value<String> locationId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HomeItemLocationRecordsCompanion(
+                homeItemId: homeItemId,
+                locationId: locationId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String homeItemId,
+                required String locationId,
+                Value<int> rowid = const Value.absent(),
+              }) => HomeItemLocationRecordsCompanion.insert(
+                homeItemId: homeItemId,
+                locationId: locationId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$HomeItemLocationRecordsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({homeItemId = false, locationId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (homeItemId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.homeItemId,
+                                referencedTable:
+                                    $$HomeItemLocationRecordsTableReferences
+                                        ._homeItemIdTable(db),
+                                referencedColumn:
+                                    $$HomeItemLocationRecordsTableReferences
+                                        ._homeItemIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+                    if (locationId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.locationId,
+                                referencedTable:
+                                    $$HomeItemLocationRecordsTableReferences
+                                        ._locationIdTable(db),
+                                referencedColumn:
+                                    $$HomeItemLocationRecordsTableReferences
+                                        ._locationIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$HomeItemLocationRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HomeItemLocationRecordsTable,
+      HomeItemLocationRow,
+      $$HomeItemLocationRecordsTableFilterComposer,
+      $$HomeItemLocationRecordsTableOrderingComposer,
+      $$HomeItemLocationRecordsTableAnnotationComposer,
+      $$HomeItemLocationRecordsTableCreateCompanionBuilder,
+      $$HomeItemLocationRecordsTableUpdateCompanionBuilder,
+      (HomeItemLocationRow, $$HomeItemLocationRecordsTableReferences),
+      HomeItemLocationRow,
+      PrefetchHooks Function({bool homeItemId, bool locationId})
     >;
 typedef $$ShoppingItemRecordsTableCreateCompanionBuilder =
     ShoppingItemRecordsCompanion Function({
@@ -15769,9 +28502,16 @@ typedef $$ShoppingItemRecordsTableCreateCompanionBuilder =
       required String name,
       Value<double> quantity,
       Value<String> unit,
+      Value<String> packSize,
       Value<bool> checked,
       Value<String> note,
       Value<String?> homeItemId,
+      Value<String?> catalogId,
+      Value<String> category,
+      Value<String?> categoryId,
+      Value<String> icon,
+      Value<int?> color,
+      Value<String?> contextId,
       Value<int> position,
       required DateTime createdAt,
       required DateTime updatedAt,
@@ -15784,9 +28524,16 @@ typedef $$ShoppingItemRecordsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<double> quantity,
       Value<String> unit,
+      Value<String> packSize,
       Value<bool> checked,
       Value<String> note,
       Value<String?> homeItemId,
+      Value<String?> catalogId,
+      Value<String> category,
+      Value<String?> categoryId,
+      Value<String> icon,
+      Value<int?> color,
+      Value<String?> contextId,
       Value<int> position,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -15823,6 +28570,50 @@ final class $$ShoppingItemRecordsTableReferences
       $_db.homeItemRecords,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_homeItemIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $HomeCategoryRecordsTable _categoryIdTable(_$AppDatabase db) =>
+      db.homeCategoryRecords.createAlias(
+        $_aliasNameGenerator(
+          db.shoppingItemRecords.categoryId,
+          db.homeCategoryRecords.id,
+        ),
+      );
+
+  $$HomeCategoryRecordsTableProcessedTableManager? get categoryId {
+    final $_column = $_itemColumn<String>('category_id');
+    if ($_column == null) return null;
+    final manager = $$HomeCategoryRecordsTableTableManager(
+      $_db,
+      $_db.homeCategoryRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ContextRecordsTable _contextIdTable(_$AppDatabase db) =>
+      db.contextRecords.createAlias(
+        $_aliasNameGenerator(
+          db.shoppingItemRecords.contextId,
+          db.contextRecords.id,
+        ),
+      );
+
+  $$ContextRecordsTableProcessedTableManager? get contextId {
+    final $_column = $_itemColumn<String>('context_id');
+    if ($_column == null) return null;
+    final manager = $$ContextRecordsTableTableManager(
+      $_db,
+      $_db.contextRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_contextIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -15883,6 +28674,11 @@ class $$ShoppingItemRecordsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get packSize => $composableBuilder(
+    column: $table.packSize,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<bool> get checked => $composableBuilder(
     column: $table.checked,
     builder: (column) => ColumnFilters(column),
@@ -15890,6 +28686,26 @@ class $$ShoppingItemRecordsTableFilterComposer
 
   ColumnFilters<String> get note => $composableBuilder(
     column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get catalogId => $composableBuilder(
+    column: $table.catalogId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get color => $composableBuilder(
+    column: $table.color,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15927,6 +28743,52 @@ class $$ShoppingItemRecordsTableFilterComposer
           }) => $$HomeItemRecordsTableFilterComposer(
             $db: $db,
             $table: $db.homeItemRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$HomeCategoryRecordsTableFilterComposer get categoryId {
+    final $$HomeCategoryRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.homeCategoryRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HomeCategoryRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.homeCategoryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContextRecordsTableFilterComposer get contextId {
+    final $$ContextRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.contextRecords,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -15991,6 +28853,11 @@ class $$ShoppingItemRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get packSize => $composableBuilder(
+    column: $table.packSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get checked => $composableBuilder(
     column: $table.checked,
     builder: (column) => ColumnOrderings(column),
@@ -15998,6 +28865,26 @@ class $$ShoppingItemRecordsTableOrderingComposer
 
   ColumnOrderings<String> get note => $composableBuilder(
     column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get catalogId => $composableBuilder(
+    column: $table.catalogId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get color => $composableBuilder(
+    column: $table.color,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -16043,6 +28930,53 @@ class $$ShoppingItemRecordsTableOrderingComposer
     );
     return composer;
   }
+
+  $$HomeCategoryRecordsTableOrderingComposer get categoryId {
+    final $$HomeCategoryRecordsTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.categoryId,
+          referencedTable: $db.homeCategoryRecords,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$HomeCategoryRecordsTableOrderingComposer(
+                $db: $db,
+                $table: $db.homeCategoryRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  $$ContextRecordsTableOrderingComposer get contextId {
+    final $$ContextRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.contextRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$ShoppingItemRecordsTableAnnotationComposer
@@ -16066,11 +29000,26 @@ class $$ShoppingItemRecordsTableAnnotationComposer
   GeneratedColumn<String> get unit =>
       $composableBuilder(column: $table.unit, builder: (column) => column);
 
+  GeneratedColumn<String> get packSize =>
+      $composableBuilder(column: $table.packSize, builder: (column) => column);
+
   GeneratedColumn<bool> get checked =>
       $composableBuilder(column: $table.checked, builder: (column) => column);
 
   GeneratedColumn<String> get note =>
       $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get catalogId =>
+      $composableBuilder(column: $table.catalogId, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
 
   GeneratedColumn<int> get position =>
       $composableBuilder(column: $table.position, builder: (column) => column);
@@ -16098,6 +29047,53 @@ class $$ShoppingItemRecordsTableAnnotationComposer
           }) => $$HomeItemRecordsTableAnnotationComposer(
             $db: $db,
             $table: $db.homeItemRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$HomeCategoryRecordsTableAnnotationComposer get categoryId {
+    final $$HomeCategoryRecordsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.categoryId,
+          referencedTable: $db.homeCategoryRecords,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$HomeCategoryRecordsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.homeCategoryRecords,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  $$ContextRecordsTableAnnotationComposer get contextId {
+    final $$ContextRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contextId,
+      referencedTable: $db.contextRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContextRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.contextRecords,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -16149,6 +29145,8 @@ class $$ShoppingItemRecordsTableTableManager
           ShoppingItemRow,
           PrefetchHooks Function({
             bool homeItemId,
+            bool categoryId,
+            bool contextId,
             bool homePurchaseRecordsRefs,
           })
         > {
@@ -16177,9 +29175,16 @@ class $$ShoppingItemRecordsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<double> quantity = const Value.absent(),
                 Value<String> unit = const Value.absent(),
+                Value<String> packSize = const Value.absent(),
                 Value<bool> checked = const Value.absent(),
                 Value<String> note = const Value.absent(),
                 Value<String?> homeItemId = const Value.absent(),
+                Value<String?> catalogId = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<int?> color = const Value.absent(),
+                Value<String?> contextId = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -16190,9 +29195,16 @@ class $$ShoppingItemRecordsTableTableManager
                 name: name,
                 quantity: quantity,
                 unit: unit,
+                packSize: packSize,
                 checked: checked,
                 note: note,
                 homeItemId: homeItemId,
+                catalogId: catalogId,
+                category: category,
+                categoryId: categoryId,
+                icon: icon,
+                color: color,
+                contextId: contextId,
                 position: position,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -16205,9 +29217,16 @@ class $$ShoppingItemRecordsTableTableManager
                 required String name,
                 Value<double> quantity = const Value.absent(),
                 Value<String> unit = const Value.absent(),
+                Value<String> packSize = const Value.absent(),
                 Value<bool> checked = const Value.absent(),
                 Value<String> note = const Value.absent(),
                 Value<String?> homeItemId = const Value.absent(),
+                Value<String?> catalogId = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<int?> color = const Value.absent(),
+                Value<String?> contextId = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -16218,9 +29237,16 @@ class $$ShoppingItemRecordsTableTableManager
                 name: name,
                 quantity: quantity,
                 unit: unit,
+                packSize: packSize,
                 checked: checked,
                 note: note,
                 homeItemId: homeItemId,
+                catalogId: catalogId,
+                category: category,
+                categoryId: categoryId,
+                icon: icon,
+                color: color,
+                contextId: contextId,
                 position: position,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -16236,7 +29262,12 @@ class $$ShoppingItemRecordsTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({homeItemId = false, homePurchaseRecordsRefs = false}) {
+              ({
+                homeItemId = false,
+                categoryId = false,
+                contextId = false,
+                homePurchaseRecordsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
@@ -16269,6 +29300,36 @@ class $$ShoppingItemRecordsTableTableManager
                                     referencedColumn:
                                         $$ShoppingItemRecordsTableReferences
                                             ._homeItemIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (categoryId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.categoryId,
+                                    referencedTable:
+                                        $$ShoppingItemRecordsTableReferences
+                                            ._categoryIdTable(db),
+                                    referencedColumn:
+                                        $$ShoppingItemRecordsTableReferences
+                                            ._categoryIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (contextId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.contextId,
+                                    referencedTable:
+                                        $$ShoppingItemRecordsTableReferences
+                                            ._contextIdTable(db),
+                                    referencedColumn:
+                                        $$ShoppingItemRecordsTableReferences
+                                            ._contextIdTable(db)
                                             .id,
                                   )
                                   as T;
@@ -16319,7 +29380,12 @@ typedef $$ShoppingItemRecordsTableProcessedTableManager =
       $$ShoppingItemRecordsTableUpdateCompanionBuilder,
       (ShoppingItemRow, $$ShoppingItemRecordsTableReferences),
       ShoppingItemRow,
-      PrefetchHooks Function({bool homeItemId, bool homePurchaseRecordsRefs})
+      PrefetchHooks Function({
+        bool homeItemId,
+        bool categoryId,
+        bool contextId,
+        bool homePurchaseRecordsRefs,
+      })
     >;
 typedef $$IdentityRecordsTableCreateCompanionBuilder =
     IdentityRecordsCompanion Function({
@@ -17552,6 +30618,394 @@ typedef $$HomePurchaseRecordsTableProcessedTableManager =
       HomePurchaseRow,
       PrefetchHooks Function({bool homeItemId, bool shoppingItemId})
     >;
+typedef $$MaintenanceLogRecordsTableCreateCompanionBuilder =
+    MaintenanceLogRecordsCompanion Function({
+      required String id,
+      required String entryId,
+      required int performedDateKey,
+      required int nextDueDateKey,
+      Value<String> note,
+      Value<int?> durationMinutes,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$MaintenanceLogRecordsTableUpdateCompanionBuilder =
+    MaintenanceLogRecordsCompanion Function({
+      Value<String> id,
+      Value<String> entryId,
+      Value<int> performedDateKey,
+      Value<int> nextDueDateKey,
+      Value<String> note,
+      Value<int?> durationMinutes,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$MaintenanceLogRecordsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $MaintenanceLogRecordsTable,
+          MaintenanceLogRow
+        > {
+  $$MaintenanceLogRecordsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $EntryRecordsTable _entryIdTable(_$AppDatabase db) =>
+      db.entryRecords.createAlias(
+        $_aliasNameGenerator(
+          db.maintenanceLogRecords.entryId,
+          db.entryRecords.id,
+        ),
+      );
+
+  $$EntryRecordsTableProcessedTableManager get entryId {
+    final $_column = $_itemColumn<String>('entry_id')!;
+
+    final manager = $$EntryRecordsTableTableManager(
+      $_db,
+      $_db.entryRecords,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_entryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$MaintenanceLogRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $MaintenanceLogRecordsTable> {
+  $$MaintenanceLogRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get performedDateKey => $composableBuilder(
+    column: $table.performedDateKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get nextDueDateKey => $composableBuilder(
+    column: $table.nextDueDateKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationMinutes => $composableBuilder(
+    column: $table.durationMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$EntryRecordsTableFilterComposer get entryId {
+    final $$EntryRecordsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.entryId,
+      referencedTable: $db.entryRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntryRecordsTableFilterComposer(
+            $db: $db,
+            $table: $db.entryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MaintenanceLogRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MaintenanceLogRecordsTable> {
+  $$MaintenanceLogRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get performedDateKey => $composableBuilder(
+    column: $table.performedDateKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get nextDueDateKey => $composableBuilder(
+    column: $table.nextDueDateKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get durationMinutes => $composableBuilder(
+    column: $table.durationMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$EntryRecordsTableOrderingComposer get entryId {
+    final $$EntryRecordsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.entryId,
+      referencedTable: $db.entryRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntryRecordsTableOrderingComposer(
+            $db: $db,
+            $table: $db.entryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MaintenanceLogRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MaintenanceLogRecordsTable> {
+  $$MaintenanceLogRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get performedDateKey => $composableBuilder(
+    column: $table.performedDateKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get nextDueDateKey => $composableBuilder(
+    column: $table.nextDueDateKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<int> get durationMinutes => $composableBuilder(
+    column: $table.durationMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$EntryRecordsTableAnnotationComposer get entryId {
+    final $$EntryRecordsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.entryId,
+      referencedTable: $db.entryRecords,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntryRecordsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.entryRecords,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MaintenanceLogRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MaintenanceLogRecordsTable,
+          MaintenanceLogRow,
+          $$MaintenanceLogRecordsTableFilterComposer,
+          $$MaintenanceLogRecordsTableOrderingComposer,
+          $$MaintenanceLogRecordsTableAnnotationComposer,
+          $$MaintenanceLogRecordsTableCreateCompanionBuilder,
+          $$MaintenanceLogRecordsTableUpdateCompanionBuilder,
+          (MaintenanceLogRow, $$MaintenanceLogRecordsTableReferences),
+          MaintenanceLogRow,
+          PrefetchHooks Function({bool entryId})
+        > {
+  $$MaintenanceLogRecordsTableTableManager(
+    _$AppDatabase db,
+    $MaintenanceLogRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MaintenanceLogRecordsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$MaintenanceLogRecordsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$MaintenanceLogRecordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> entryId = const Value.absent(),
+                Value<int> performedDateKey = const Value.absent(),
+                Value<int> nextDueDateKey = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<int?> durationMinutes = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MaintenanceLogRecordsCompanion(
+                id: id,
+                entryId: entryId,
+                performedDateKey: performedDateKey,
+                nextDueDateKey: nextDueDateKey,
+                note: note,
+                durationMinutes: durationMinutes,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String entryId,
+                required int performedDateKey,
+                required int nextDueDateKey,
+                Value<String> note = const Value.absent(),
+                Value<int?> durationMinutes = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => MaintenanceLogRecordsCompanion.insert(
+                id: id,
+                entryId: entryId,
+                performedDateKey: performedDateKey,
+                nextDueDateKey: nextDueDateKey,
+                note: note,
+                durationMinutes: durationMinutes,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$MaintenanceLogRecordsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({entryId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (entryId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.entryId,
+                                referencedTable:
+                                    $$MaintenanceLogRecordsTableReferences
+                                        ._entryIdTable(db),
+                                referencedColumn:
+                                    $$MaintenanceLogRecordsTableReferences
+                                        ._entryIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$MaintenanceLogRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MaintenanceLogRecordsTable,
+      MaintenanceLogRow,
+      $$MaintenanceLogRecordsTableFilterComposer,
+      $$MaintenanceLogRecordsTableOrderingComposer,
+      $$MaintenanceLogRecordsTableAnnotationComposer,
+      $$MaintenanceLogRecordsTableCreateCompanionBuilder,
+      $$MaintenanceLogRecordsTableUpdateCompanionBuilder,
+      (MaintenanceLogRow, $$MaintenanceLogRecordsTableReferences),
+      MaintenanceLogRow,
+      PrefetchHooks Function({bool entryId})
+    >;
 typedef $$RemoteSnapshotRecordsTableCreateCompanionBuilder =
     RemoteSnapshotRecordsCompanion Function({
       required String deviceId,
@@ -17781,8 +31235,21 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$SpaceRecordsTableTableManager get spaceRecords =>
       $$SpaceRecordsTableTableManager(_db, _db.spaceRecords);
+  $$ContextRecordsTableTableManager get contextRecords =>
+      $$ContextRecordsTableTableManager(_db, _db.contextRecords);
+  $$ProjectRecordsTableTableManager get projectRecords =>
+      $$ProjectRecordsTableTableManager(_db, _db.projectRecords);
+  $$HabitRecordsTableTableManager get habitRecords =>
+      $$HabitRecordsTableTableManager(_db, _db.habitRecords);
+  $$HabitCompletionRecordsTableTableManager get habitCompletionRecords =>
+      $$HabitCompletionRecordsTableTableManager(
+        _db,
+        _db.habitCompletionRecords,
+      );
   $$EntryRecordsTableTableManager get entryRecords =>
       $$EntryRecordsTableTableManager(_db, _db.entryRecords);
+  $$TimeEntryRecordsTableTableManager get timeEntryRecords =>
+      $$TimeEntryRecordsTableTableManager(_db, _db.timeEntryRecords);
   $$TagRecordsTableTableManager get tagRecords =>
       $$TagRecordsTableTableManager(_db, _db.tagRecords);
   $$EntryTagRecordsTableTableManager get entryTagRecords =>
@@ -17813,8 +31280,19 @@ class $AppDatabaseManager {
         _db,
         _db.shiftChecklistCompletionRecords,
       );
+  $$HomeCategoryRecordsTableTableManager get homeCategoryRecords =>
+      $$HomeCategoryRecordsTableTableManager(_db, _db.homeCategoryRecords);
+  $$HomeLocationRecordsTableTableManager get homeLocationRecords =>
+      $$HomeLocationRecordsTableTableManager(_db, _db.homeLocationRecords);
+  $$HomeUnitRecordsTableTableManager get homeUnitRecords =>
+      $$HomeUnitRecordsTableTableManager(_db, _db.homeUnitRecords);
   $$HomeItemRecordsTableTableManager get homeItemRecords =>
       $$HomeItemRecordsTableTableManager(_db, _db.homeItemRecords);
+  $$HomeItemLocationRecordsTableTableManager get homeItemLocationRecords =>
+      $$HomeItemLocationRecordsTableTableManager(
+        _db,
+        _db.homeItemLocationRecords,
+      );
   $$ShoppingItemRecordsTableTableManager get shoppingItemRecords =>
       $$ShoppingItemRecordsTableTableManager(_db, _db.shoppingItemRecords);
   $$IdentityRecordsTableTableManager get identityRecords =>
@@ -17825,6 +31303,8 @@ class $AppDatabaseManager {
       $$SettingRecordsTableTableManager(_db, _db.settingRecords);
   $$HomePurchaseRecordsTableTableManager get homePurchaseRecords =>
       $$HomePurchaseRecordsTableTableManager(_db, _db.homePurchaseRecords);
+  $$MaintenanceLogRecordsTableTableManager get maintenanceLogRecords =>
+      $$MaintenanceLogRecordsTableTableManager(_db, _db.maintenanceLogRecords);
   $$RemoteSnapshotRecordsTableTableManager get remoteSnapshotRecords =>
       $$RemoteSnapshotRecordsTableTableManager(_db, _db.remoteSnapshotRecords);
 }

@@ -1,4 +1,4 @@
-# Mane: kickoff brief for a coding agent
+# Sundial: kickoff brief for a coding agent
 
 > This file is both the project guide and a self-contained prompt. Paste it as
 > the first message to a new coding agent, or point the agent at this file.
@@ -6,7 +6,7 @@
 
 ## 0. Your role
 
-You are the engineer responsible for taking Mane from its current foundation to
+You are the engineer responsible for taking Sundial from its current foundation to
 a daily-usable, offline-first v1.0.
 
 Work in small, verifiable increments. Do not attempt the whole roadmap in one
@@ -24,7 +24,7 @@ Read these files before changing code:
 5. `CONTRIBUTING.md`
 6. `CREDITS.md` and `ADDITIONAL_TERMS.md`
 7. `.zed/tasks.json`
-8. `packages/mane_core/lib/mane_core.dart`
+8. `packages/sundial_core/lib/sundial_core.dart`
 9. `lib/services/app_database.dart`
 10. `lib/services/planner_repository.dart`
 11. `lib/state/providers.dart`
@@ -41,7 +41,7 @@ prompts or screenshots.
 ## 2. Reference-first rule (non-negotiable)
 
 GymMane and Streak by InlitX are the primary reference implementations for
-Mane. They already solve most of the problems this app has, and they are the
+Sundial. They already solve most of the problems this app has, and they are the
 default answer for every blocker.
 
 - GymMane: https://github.com/InlitX/GymMane
@@ -82,9 +82,9 @@ reference stores cannot express cleanly). Otherwise migrate to the reference
 pattern. Do not run two state-management systems, and do not add features on
 top of a stack that has not passed this audit.
 
-## 3. What Mane is
+## 3. What Sundial is
 
-Mane is a local-first planner for commitments that recur across personal life,
+Sundial is a local-first planner for commitments that recur across personal life,
 work and home. One app, three spaces: **Personal**, **Work** and **Home**.
 
 It keeps shifts, tasks, deadlines, household inventory and maintenance,
@@ -105,7 +105,7 @@ Treat this as the baseline. Verify it before changing anything.
 
 **Done (v0.1 through v0.9):**
 
-- Pure Dart domain package in `packages/mane_core` with:
+- Pure Dart domain package in `packages/sundial_core` with:
   - `LocalDate` (date-only values for all-day items)
   - `Entry` and entry kinds/status, source, read-only and maintenance fields
   - `RecurrenceRule` for daily, weekly, monthly and yearly rules, with
@@ -241,7 +241,7 @@ flutter pub get
 dart run build_runner build --force-jit
 flutter analyze --no-fatal-infos
 flutter test
-(cd packages/mane_core && dart test)
+(cd packages/sundial_core && dart test)
 flutter build linux --debug
 flutter build apk --debug
 ```
@@ -314,13 +314,13 @@ lib/
 │   ├── backup/
 │   ├── sync/
 │   └── mcp/
-├── models/       plain data classes that are not in mane_core
+├── models/       plain data classes that are not in sundial_core
 ├── services/     database, repository, platform side effects
 ├── state/        shared app state
-├── theme/        ManeColors, light/dark ThemeData
+├── theme/        SundialColors, light/dark ThemeData
 └── l10n/         ARB files and generated strings
 packages/
-└── mane_core/    pure Dart domain model, recurrence and shift rules
+└── sundial_core/    pure Dart domain model, recurrence and shift rules
 ```
 
 The current flat layout (`lib/screens`, `lib/widgets`) is a starting point.
@@ -330,12 +330,12 @@ new flat screen if it belongs to a feature.
 
 Rules:
 
-- Domain rules belong in `packages/mane_core`, with no Flutter imports.
+- Domain rules belong in `packages/sundial_core`, with no Flutter imports.
 - Screens call `PlannerRepository`, never Drift directly.
 - The future LAN server and MCP adapter must call the same repository/service
   layer as the UI.
 - One screen per file. Prefer small widgets and pure functions.
-- Use `ManeColors` from `lib/theme/app_colors.dart`; do not scatter raw colors.
+- Use `SundialColors` from `lib/theme/app_colors.dart`; do not scatter raw colors.
 - Comments explain why, not what. Most code should need none.
 - Format with `dart format --line-length 110`. Single quotes. Keep
   `flutter analyze --no-fatal-infos` clean.
@@ -425,7 +425,7 @@ hundreds of one-off entries.
 - Shopping and grocery lists, checked off as bought.
 - Periodic maintenance and interval-after-completion tasks.
 - Household obligations and one-off repairs.
-- Keep it lightweight. Mane is not a full inventory-management or accounting
+- Keep it lightweight. Sundial is not a full inventory-management or accounting
   system.
 
 ### 9.3 Personal
@@ -463,7 +463,7 @@ shared key. Use a standard pairing pattern; do not invent cryptography.
 
 Each app owns its data. The planner owns time. A companion app owns its domain.
 
-The first version of sync is a query: Mane asks a companion app for the data it
+The first version of sync is a query: Sundial asks a companion app for the data it
 needs over the LAN and shows it. No merge, no conflicts, no CRDT. If the same
 data is later edited on two devices, then real sync with per-record timestamps,
 tombstones and a conflict rule. The schema is already sync-ready: UUIDs,
@@ -490,14 +490,14 @@ default. It can read and, behind a setting, write. Tools are namespaced by
 space, for example `personal.today`, `work.next_shifts`, `home.shopping`,
 `plan.create`.
 
-No internet, no external server, no account. The agent is outside the app. Mane
+No internet, no external server, no account. The agent is outside the app. Sundial
 is not a chatbot host.
 
 ### 10.5 Companion apps
 
 When another app already owns a domain, the integration is read-only and local.
 On Android, a ContentProvider or a small export is a better fit than a network
-listener: no internet permission, no port, no server. Mane must work without the
+listener: no internet permission, no port, no server. Sundial must work without the
 companion app; manual entry is always available.
 
 ## 11. Screens
@@ -625,7 +625,7 @@ expands correctly; all tests and both builds pass.
 - [x] Default reminder lead times.
 - [x] Data/backup location and export entry point.
 - [x] Sync and MCP switches, both off by default.
-- [x] About screen with GPL-3.0 and upstream attribution.
+- [x] About screen with GPL-3.0 and upstream inspiration credit.
 
 **Backup**
 
@@ -674,7 +674,7 @@ app resume, but a dedicated `TIMEZONE_CHANGED` receiver is not implemented.
 **Interval after completion**
 
 - [x] Add `lastCompletedAt` and `repeatAfterCompletionDays` with a migration.
-- [x] Compute the next due date in `mane_core`, with tests.
+- [x] Compute the next due date in `sundial_core`, with tests.
 - [x] Completing the task updates `lastCompletedAt` and schedules the next one.
 - [x] Show overdue/soon states without turning the app into a notification storm.
 
@@ -685,7 +685,7 @@ app resume, but a dedicated `TIMEZONE_CHANGED` receiver is not implemented.
   last commitment.
 - [x] Show it as a background block, not a task.
 - [x] Warn when a plan eats into it.
-- [x] Pure calculation in `mane_core` with tests.
+- [x] Pure calculation in `sundial_core` with tests.
 
 **Shift checklist**
 
@@ -719,7 +719,7 @@ app resume, but a dedicated `TIMEZONE_CHANGED` receiver is not implemented.
 
 - [x] Read-only integration through a documented local JSON export, with a
   space choice and dedupe.
-- [x] Mane works without the companion app; manual entry is the fallback.
+- [x] Sundial works without the companion app; manual entry is the fallback.
 - [x] No network server is required from the companion app.
 
 **MCP**
@@ -763,7 +763,7 @@ scanners; an O(1) count-rule ordinal; `.github/workflows/release.yml` and
 ### v0.6 Visual foundation and truth pass (done)
 
 - [x] Bundle the reference font family and a real type scale.
-- [x] Apply `ManeColors` through `context.mc` and add component themes.
+- [x] Apply `SundialColors` through `context.mc` and add component themes.
 - [x] Port the shared UI kit (cards, sheets, section labels, pressables, glass,
   empty state, page motion).
 - [x] Replace the stock app bar/nav bar/FAB shell with the reference-style shell.
@@ -803,7 +803,7 @@ scanners; an O(1) count-rule ordinal; `.github/workflows/release.yml` and
 
 ### v1.0 finish line
 
-Mane is v1.0 when:
+Sundial is v1.0 when:
 
 - v0.1.5 through v0.9 are complete and documented, with the acceptance criteria
   in `docs/completion-plan.md`.
@@ -825,7 +825,7 @@ Mane is v1.0 when:
 - There are no known P0/P1 data-loss, notification or security bugs.
 - Release signing is documented as a user-provided step. Do not call a
   debug-signed build a production release.
-- The About screen shows GPL-3.0 and the upstream InlitX attribution.
+- The About screen shows GPL-3.0 and the upstream InlitX inspiration credit.
 
 **Status:** v0.5 is shipped and tested; v0.6 through v1.0 are the active
 completion program. The old "only the device checklist remains" statement was
@@ -859,12 +859,12 @@ to the next milestone.
 
 ### Definition of done for a change
 
-- [ ] Domain rules have tests in `packages/mane_core`.
+- [ ] Domain rules have tests in `packages/sundial_core`.
 - [ ] Schema changes have a Drift migration and a migration test.
 - [ ] Timezone behavior has DST/travel tests.
 - [ ] Critical UI flows have a widget test, or documented manual steps.
 - [ ] `flutter analyze --no-fatal-infos` is clean.
-- [ ] `flutter test` and `(cd packages/mane_core && dart test)` pass.
+- [ ] `flutter test` and `(cd packages/sundial_core && dart test)` pass.
 - [ ] The format check in the Zed tasks or CI passes.
 - [ ] Linux debug and Android debug builds pass.
 - [ ] Visual changes show the reference style or document the deviation, with a
@@ -939,8 +939,8 @@ These are settled. Do not reopen them without the user asking.
 7. **Real-device testing:** the user has an Android device and will test
    reminders, notifications, reboot and timezone behavior.
 8. **Visual language:** GymMane for the shell, settings and type; Streak for the
-   calendar, sheets and motion. There is no separate Mane visual identity until
-   the user explicitly defines one. "Mane style" means the adapted reference
+   calendar, sheets and motion. There is no separate Sundial visual identity until
+   the user explicitly defines one. "Sundial style" means the adapted reference
    language, not stock Material defaults.
 
 Remaining implementation choices (decide, document, keep moving): default week

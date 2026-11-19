@@ -3,10 +3,10 @@ import 'dart:ffi';
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/import/gymmane_import.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/services/planner_repository.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/features/import/gymmane_import.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/services/planner_repository.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 
 void main() {

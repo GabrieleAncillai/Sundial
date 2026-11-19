@@ -11,7 +11,7 @@ import 'package:file_picker/file_picker.dart';
 Future<String?> saveBackupFile(String json, {required String dialogTitle}) async {
   final now = DateTime.now().toUtc();
   final name =
-      'mane-backup-${now.year.toString().padLeft(4, '0')}'
+      'sundial-backup-${now.year.toString().padLeft(4, '0')}'
       '${now.month.toString().padLeft(2, '0')}'
       '${now.day.toString().padLeft(2, '0')}.json';
   try {

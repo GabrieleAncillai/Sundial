@@ -1,6 +1,6 @@
 {
   "@@locale": "es",
-  "appName": "Mane",
+  "appName": "Sundial",
   "today": "Hoy",
   "week": "Semana",
   "calendar": "Calendario",
@@ -11,6 +11,7 @@
   "close": "Cerrar",
   "cancel": "Cancelar",
   "delete": "Eliminar",
+  "remove": "Quitar",
   "save": "Guardar",
   "add": "Añadir",
   "edit": "Editar",
@@ -22,9 +23,21 @@
   "nothingPlanned": "Nada previsto",
   "shiftsSection": "Turnos",
   "couldNotLoadDay": "No se pudo cargar tu día: {error}",
-  "@couldNotLoadDay": {"placeholders": {"error": {"type": "String"}}},
+  "@couldNotLoadDay": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "couldNotLoadShifts": "No se pudieron cargar los turnos: {error}",
-  "@couldNotLoadShifts": {"placeholders": {"error": {"type": "String"}}},
+  "@couldNotLoadShifts": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "allDay": "Todo el día",
   "overnightSuffix": "(+1 día)",
   "importedEvent": "Evento de calendario importado",
@@ -48,58 +61,159 @@
   "repeatAfterCompletionSubtitle": "Programa la siguiente desde el día que termines.",
   "daysRequired": "Usa un número de días mayor que cero.",
   "daysValue": "{count} días",
-  "@daysValue": {"placeholders": {"count": {"type": "int"}}},
+  "@daysValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "repeatAfterDaysLabel": "Días entre tareas",
   "couldNotComplete": "No se pudo completar: {error}",
-  "@couldNotComplete": {"placeholders": {"error": {"type": "String"}}},
+  "@couldNotComplete": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "notesOptional": "Notas (opcional)",
   "saveChanges": "Guardar cambios",
   "deleteEntryQuestion": "¿Eliminar esta entrada?",
   "deleteEntryBody": "Desaparecerá de tu plan.",
   "endAfterStartError": "La hora de fin tiene que ser posterior a la de inicio.",
   "couldNotSave": "No se pudo guardar: {error}",
-  "@couldNotSave": {"placeholders": {"error": {"type": "String"}}},
+  "@couldNotSave": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "couldNotDelete": "No se pudo eliminar: {error}",
-  "@couldNotDelete": {"placeholders": {"error": {"type": "String"}}},
+  "@couldNotDelete": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "timesDefinedIn": "Las horas se definen en {timeZone}",
-  "@timesDefinedIn": {"placeholders": {"timeZone": {"type": "String"}}},
+  "@timesDefinedIn": {
+    "placeholders": {
+      "timeZone": {
+        "type": "String"
+      }
+    }
+  },
   "markAsDone": "Marcar {title} como hecho",
-  "@markAsDone": {"placeholders": {"title": {"type": "String"}}},
+  "@markAsDone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "entryKindTask": "Tarea",
   "entryKindEvent": "Evento",
   "entryKindObligation": "Obligación",
   "entryKindDeadline": "Plazo",
   "recurrenceEveryDay": "Cada día",
   "recurrenceEveryNDays": "Cada {count} días",
-  "@recurrenceEveryNDays": {"placeholders": {"count": {"type": "int"}}},
+  "@recurrenceEveryNDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "recurrenceEveryWeek": "Cada semana",
   "recurrenceEveryNWeeks": "Cada {count} semanas",
-  "@recurrenceEveryNWeeks": {"placeholders": {"count": {"type": "int"}}},
+  "@recurrenceEveryNWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "recurrenceOnDays": "Cada semana los {days}",
-  "@recurrenceOnDays": {"placeholders": {"days": {"type": "String"}}},
+  "@recurrenceOnDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "recurrenceEveryNWeeksOnDays": "Cada {count} semanas los {days}",
-  "@recurrenceEveryNWeeksOnDays": {"placeholders": {"count": {"type": "int"}, "days": {"type": "String"}}},
+  "@recurrenceEveryNWeeksOnDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
   "recurrenceEveryMonth": "Cada mes",
   "recurrenceEveryNMonths": "Cada {count} meses",
-  "@recurrenceEveryNMonths": {"placeholders": {"count": {"type": "int"}}},
+  "@recurrenceEveryNMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "recurrenceEveryNMonthsOnDay": "Cada {count} meses el día {day}",
-  "@recurrenceEveryNMonthsOnDay": {"placeholders": {"count": {"type": "int"}, "day": {"type": "int"}}},
+  "@recurrenceEveryNMonthsOnDay": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
+    }
+  },
   "recurrenceOnDayOfMonth": "Cada mes el día {day}",
-  "@recurrenceOnDayOfMonth": {"placeholders": {"day": {"type": "int"}}},
+  "@recurrenceOnDayOfMonth": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
   "recurrenceEveryYear": "Cada año",
   "recurrenceEveryNYears": "Cada {count} años",
-  "@recurrenceEveryNYears": {"placeholders": {"count": {"type": "int"}}},
+  "@recurrenceEveryNYears": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "previousMonth": "Mes anterior",
   "nextMonth": "Mes siguiente",
   "previousWeek": "Semana anterior",
   "nextWeek": "Semana siguiente",
+  "previousDay": "Día anterior",
+  "nextDay": "Día siguiente",
   "jumpToToday": "Ir a hoy",
   "monthView": "Mes",
   "weekView": "Semana",
   "selectedDay": "Día seleccionado",
   "noEntriesOnDay": "No hay nada previsto este día.",
   "calendarDaySemantics": "{date}, {count} elementos",
-  "@calendarDaySemantics": {"placeholders": {"date": {"type": "String"}, "count": {"type": "int"}}},
+  "@calendarDaySemantics": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "theme": "Tema",
   "themeSystem": "Sistema",
   "themeLight": "Claro",
@@ -118,18 +232,43 @@
   "defaultRemindersSubtitle": "Se marcan al añadir una entrada.",
   "reminderAtTime": "A la hora de inicio",
   "reminderMinutesBefore": "{count} minutos antes",
-  "@reminderMinutesBefore": {"placeholders": {"count": {"type": "int"}}},
+  "@reminderMinutesBefore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "reminderHoursBefore": "{count} horas antes",
-  "@reminderHoursBefore": {"placeholders": {"count": {"type": "int"}}},
+  "@reminderHoursBefore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "reminderDaysBefore": "{count} días antes",
-  "@reminderDaysBefore": {"placeholders": {"count": {"type": "int"}}},
+  "@reminderDaysBefore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "reminders": "Recordatorios",
   "addReminder": "Añadir un recordatorio",
   "removeReminder": "Quitar recordatorio",
   "remindersOff": "Sin recordatorios",
   "notificationPermissionDenied": "Las notificaciones están desactivadas. Actívalas en los ajustes del sistema para que te lleguen los recordatorios.",
   "couldNotLoadReminders": "No se pudieron cargar los recordatorios: {error}",
-  "@couldNotLoadReminders": {"placeholders": {"error": {"type": "String"}}},
+  "remindersUnavailable": "No se pudieron leer los recordatorios, así que se dejaron sin cambios.",
+  "@couldNotLoadReminders": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "dataAndBackup": "Datos y copia de seguridad",
   "exportBackup": "Exportar una copia",
   "exportBackupSubtitle": "Guarda un archivo JSON con todos tus datos.",
@@ -139,24 +278,69 @@
   "importCalendarSubtitle": "Lee un archivo .ics local. Los eventos importados son de solo lectura.",
   "importCalendarSpace": "Importar en",
   "importCalendarDone": "{imported} importados, {updated} actualizados y {skipped} duplicados o no compatibles omitidos.",
-  "@importCalendarDone": {"placeholders": {"imported": {"type": "int"}, "updated": {"type": "int"}, "skipped": {"type": "int"}}},
+  "@importCalendarDone": {
+    "placeholders": {
+      "imported": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
   "importCalendarEmpty": "No se han encontrado eventos en este archivo.",
   "importCalendarFailed": "La importación del calendario ha fallado: {error}",
-  "@importCalendarFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@importCalendarFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "importCompanion": "Importar una exportación de una app compañera",
   "importCompanionSubtitle": "Lee un horario JSON local exportado por otra app.",
   "importCompanionDone": "{imported} eventos importados. {skipped} duplicados o filas no válidas omitidos.",
-  "@importCompanionDone": {"placeholders": {"imported": {"type": "int"}, "skipped": {"type": "int"}}},
+  "@importCompanionDone": {
+    "placeholders": {
+      "imported": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
   "importCompanionEmpty": "No se han encontrado eventos en este archivo.",
   "importCompanionFailed": "La importación de la app compañera ha fallado: {error}",
-  "@importCompanionFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@importCompanionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "backupExported": "Copia guardada en {path}",
-  "@backupExported": {"placeholders": {"path": {"type": "String"}}},
+  "@backupExported": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "backupImported": "Copia restaurada.",
   "backupFailed": "Error de copia: {error}",
-  "@backupFailed": {"placeholders": {"error": {"type": "String"}}},
-  "backupInvalid": "Este archivo no es una copia válida de Mane.",
-  "backupFuture": "Esta copia viene de una versión más reciente de Mane.",
+  "@backupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "backupInvalid": "Este archivo no es una copia válida de Sundial.",
+  "backupFuture": "Esta copia viene de una versión más reciente de Sundial.",
   "importConfirmTitle": "¿Sustituir tus datos?",
   "importConfirmBody": "La copia sustituye todas las entradas, turnos, etiquetas y ajustes de este dispositivo.",
   "syncAndAgent": "Sincronización y agente local",
@@ -173,21 +357,32 @@
   "privacySection": "Privacidad",
   "notSet": "Ninguno",
   "selectedCount": "{count} seleccionados",
-  "@selectedCount": {"placeholders": {"count": {"type": "int"}}},
-  "basedOnGymMane": "Basado en GymMane de InlitX",
-  "basedOnStreak": "Basado en Streak de InlitX",
-  "basedOnMane": "Basado en Mane por los colaboradores de Mane",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "basedOnSundial": "Basado en Sundial por Gabriele Ancillai",
+  "inspiredBy": "Inspirado en GymMane y Streak de InlitX",
   "version": "Versión {version}",
-  "@version": {"placeholders": {"version": {"type": "String"}}},
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "license": "Licencia",
-  "licenseBody": "Mane es software libre bajo GPL-3.0-only. Se ofrece sin garantía. Consulta LICENSE y ADDITIONAL_TERMS.md en el repositorio.",
+  "licenseBody": "Sundial es software libre bajo GPL-3.0-only. Se ofrece sin garantía. Consulta LICENSE y ADDITIONAL_TERMS.md en el repositorio.",
   "credits": "Créditos",
-  "creditsBody": "Creado tomando como referencia GymMane y Streak de InlitX. Basado en Mane por los colaboradores de Mane.",
+  "creditsBody": "Un proyecto independiente de Gabriele Ancillai.",
   "tagsManager": "Etiquetas",
   "homeInventory": "Inventario del hogar",
-  "homeInventorySubtitle": "Cantidades, lugares y niveles de reposición.",
+  "homeInventorySubtitle": "Todo lo que guardas en casa, con niveles de stock útiles.",
   "shoppingList": "Lista de la compra",
-  "shoppingListSubtitle": "Comida y productos para la casa.",
+  "shoppingListSubtitle": "Repón lo que necesita la casa y añade compras puntuales.",
   "addHomeItem": "Añadir un artículo",
   "editHomeItem": "Editar artículo",
   "itemName": "Artículo",
@@ -200,7 +395,7 @@
   "inStock": "Hay existencias",
   "addToShoppingList": "Añadir a la compra",
   "addLowStockItems": "Añadir artículos bajos",
-  "noLowStock": "Nada está por debajo de su nivel de reposición.",
+  "noLowStock": "Nada está por debajo de su stock mínimo.",
   "homeInventoryEmpty": "Todavía no hay artículos en casa.",
   "shoppingListEmpty": "La lista de la compra está vacía.",
   "addShoppingItem": "Añadir a la lista",
@@ -211,23 +406,62 @@
   "archiveItemQuestion": "¿Archivar este artículo?",
   "archiveItemBody": "Desaparece del inventario pero se conserva en las copias.",
   "shoppingProgress": "{done} de {total} comprados",
-  "@shoppingProgress": {"placeholders": {"done": {"type": "int"}, "total": {"type": "int"}}},
+  "@shoppingProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "sleepWindow": "Ventana de sueño",
   "sleepWindowSubtitle": "Un bloque suave desde el último compromiso de hoy hasta el primero de mañana.",
   "sleepBuffers": "Márgenes de sueño",
   "sleepBuffersSummary": "{commute} desplazamiento · {windDown} relax · {wake} despertar",
-  "@sleepBuffersSummary": {"placeholders": {"commute": {"type": "int"}, "windDown": {"type": "int"}, "wake": {"type": "int"}}},
+  "@sleepBuffersSummary": {
+    "placeholders": {
+      "commute": {
+        "type": "int"
+      },
+      "windDown": {
+        "type": "int"
+      },
+      "wake": {
+        "type": "int"
+      }
+    }
+  },
   "commute": "Desplazamiento (minutos)",
   "windDown": "Relax (minutos)",
   "wakeBuffer": "Margen al despertar (minutos)",
   "sleepBedtime": "Acostarse sobre las {time}",
-  "@sleepBedtime": {"placeholders": {"time": {"type": "String"}}},
+  "@sleepBedtime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "sleepWake": "Despertar sobre las {time}",
-  "@sleepWake": {"placeholders": {"time": {"type": "String"}}},
+  "@sleepWake": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "sleepWarning": "Este plan deja poco margen para dormir.",
   "sleepNoEarlyStart": "Mañana no hay un inicio temprano.",
   "minutesValue": "{count} min",
-  "@minutesValue": {"placeholders": {"count": {"type": "int"}}},
+  "@minutesValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "tagsManagerSubtitle": "Separa trabajos en Trabajo y personas o grupos en Personal.",
   "shiftPatterns": "Patrones de turnos",
   "shiftPatternsSubtitle": "Ciclos, tramos por día y excepciones de fecha.",
@@ -249,16 +483,28 @@
   "patternName": "Nombre del patrón",
   "cycleLength": "Duración del ciclo",
   "cycleLengthValue": "{count} días",
-  "@cycleLengthValue": {"placeholders": {"count": {"type": "int"}}},
+  "@cycleLengthValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "anchorDate": "Fecha de inicio",
   "timeZone": "Zona horaria",
   "cycleDay": "Día {index}",
-  "@cycleDay": {"placeholders": {"index": {"type": "int"}}},
+  "@cycleDay": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
   "addSlot": "Añadir un tramo",
   "removeSlot": "Quitar tramo",
   "slotLabel": "Etiqueta",
-  "startTime": "Inicio",
-  "endTime": "Fin",
+  "startTime": "Hora de inicio",
+  "endTime": "Hora de fin",
   "exceptions": "Excepciones de fecha",
   "addException": "Añadir excepción",
   "exceptionFree": "Día libre",
@@ -272,6 +518,10 @@
   "savePattern": "Guardar patrón",
   "deletePatternQuestion": "¿Eliminar este patrón de turnos?",
   "deletePatternBody": "Sus turnos desaparecerán del calendario.",
+  "discardChangesQuestion": "¿Descartar los cambios?",
+  "discardChangesBody": "Este patrón de turnos tiene cambios sin guardar. Si sales ahora, no se guardarán.",
+  "keepEditing": "Seguir editando",
+  "discardChanges": "Descartar",
   "invalidTimeZone": "Usa una zona IANA como Europe/Madrid.",
   "patternNameRequired": "Ponle un nombre al patrón.",
   "noShiftPatterns": "Todavía no hay patrones de turnos.",
@@ -279,11 +529,20 @@
   "noExceptions": "Sin excepciones.",
   "shiftChecklist": "Lista del turno",
   "shiftChecklistSubtitle": "Tareas para marcar en cada turno de este patrón.",
-  "addChecklistItem": "Añadir tarea",
+  "addChecklistItem": "Añadir elemento",
   "checklistItemLabel": "Tarea de la lista",
   "noChecklistItems": "Todavía no hay tareas.",
   "checklistDone": "{done} de {total} hechas",
-  "@checklistDone": {"placeholders": {"done": {"type": "int"}, "total": {"type": "int"}}},
+  "@checklistDone": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "devices": "Dispositivos",
   "devicesSubtitle": "Empareja tus propios dispositivos por la red local.",
   "thisDevice": "Este dispositivo",
@@ -308,11 +567,23 @@
   "pairingExpires": "Válido durante cinco minutos.",
   "newCode": "Código nuevo",
   "pairingSucceeded": "Emparejado con {name}.",
-  "@pairingSucceeded": {"placeholders": {"name": {"type": "String"}}},
+  "@pairingSucceeded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "pairingFailed": "El emparejamiento ha fallado: {error}",
-  "@pairingFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@pairingFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "discoveredOnNetwork": "Encontrados en esta red",
-  "noDiscoveredDevices": "Todavía no se han encontrado otros dispositivos Mane.",
+  "noDiscoveredDevices": "Todavía no se han encontrado otros dispositivos Sundial.",
   "address": "Dirección",
   "port": "Puerto",
   "code": "Código",
@@ -323,17 +594,50 @@
   "unpairQuestion": "¿Desemparejar este dispositivo?",
   "unpairBody": "Desaparece de este dispositivo. El otro conserva su propia copia.",
   "lastSeen": "Visto por última vez {time}",
-  "@lastSeen": {"placeholders": {"time": {"type": "String"}}},
+  "@lastSeen": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "neverReached": "Todavía sin conexión",
-  "refreshDevices": "Actualizar",
+  "refreshDevices": "Actualizar dispositivos",
   "remoteToday": "{entries} entradas y {shifts} turnos hoy",
-  "@remoteToday": {"placeholders": {"entries": {"type": "int"}, "shifts": {"type": "int"}}},
+  "@remoteToday": {
+    "placeholders": {
+      "entries": {
+        "type": "int"
+      },
+      "shifts": {
+        "type": "int"
+      }
+    }
+  },
   "remoteNextShift": "Próximo turno: {label}",
-  "@remoteNextShift": {"placeholders": {"label": {"type": "String"}}},
+  "@remoteNextShift": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "remoteShopping": "{count} artículos de compra pendientes",
-  "@remoteShopping": {"placeholders": {"count": {"type": "int"}}},
+  "@remoteShopping": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "serverOnPort": "Servidor en el puerto {port}",
-  "@serverOnPort": {"placeholders": {"port": {"type": "int"}}},
+  "@serverOnPort": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
   "serverOff": "Servidor apagado",
   "discoveryUnavailable": "El descubrimiento en red no está disponible. Usa la dirección manualmente.",
   "identityFingerprint": "Huella del certificado",
@@ -341,6 +645,14 @@
   "hostHint": "192.168.1.20",
   "mcpEndpoint": "Endpoint MCP local",
   "mcpEndpointSubtitle": "Solo lectura por defecto, solo loopback y apagado salvo que lo actives.",
+  "mcpStartFailed": "No se pudo iniciar el servidor MCP: {error}",
+  "@mcpStartFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "mcpWriteTools": "Permitir herramientas de escritura",
   "mcpWriteToolsSubtitle": "Deja que el agente local cree y complete entradas.",
   "mcpToken": "Token de acceso",
@@ -350,13 +662,25 @@
   "copied": "Copiado.",
   "mcpLoopbackHint": "Escucha solo en 127.0.0.1. El agente debe ejecutarse en esta máquina.",
   "mcpRunning": "Escuchando en 127.0.0.1:{port}",
-  "@mcpRunning": {"placeholders": {"port": {"type": "int"}}},
+  "@mcpRunning": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
   "mcpStopped": "El endpoint MCP está apagado.",
   "search": "Buscar",
   "searchHint": "Busca entradas, etiquetas y artículos del hogar",
   "searchPrompt": "Escribe un título, una nota, una etiqueta o un artículo del hogar.",
   "searchNoResults": "Nada coincide con «{query}».",
-  "@searchNoResults": {"placeholders": {"query": {"type": "String"}}},
+  "@searchNoResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "searchEntries": "Entradas",
   "searchHomeItems": "Artículos del hogar",
   "nextShiftPrefix": "Próximo: ",
@@ -374,11 +698,29 @@
   "exportCalendar": "Exportar calendario (.ics)",
   "exportCalendarSubtitle": "Comparte un archivo de solo lectura. Sin cuenta ni red.",
   "calendarExported": "Calendario exportado a {path}",
-  "@calendarExported": {"placeholders": {"path": {"type": "String"}}},
+  "@calendarExported": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "calendarExportFailed": "No se pudo exportar el calendario: {error}",
-  "@calendarExportFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@calendarExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "icsUpdated": "{count} actualizadas",
-  "@icsUpdated": {"placeholders": {"count": {"type": "int"}}},
+  "@icsUpdated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "onlyThisOccurrence": "Solo esta repetición",
   "onlyThisOccurrenceSubtitle": "Mantén la serie y cambia solo esta fecha.",
   "singleDay": "Un solo día",
@@ -393,45 +735,89 @@
   "csvShopping": "Compras",
   "csvInventory": "Inventario",
   "csvExported": "CSV exportado a {path}",
-  "@csvExported": {"placeholders": {"path": {"type": "String"}}},
+  "@csvExported": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "csvExportFailed": "No se pudo exportar el CSV: {error}",
-  "@csvExportFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@csvExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "csvImportDone": "{imported} importadas, {duplicates} duplicadas, {skipped} omitidas",
-  "@csvImportDone": {"placeholders": {"imported": {"type": "int"}, "duplicates": {"type": "int"}, "skipped": {"type": "int"}}},
+  "@csvImportDone": {
+    "placeholders": {
+      "imported": {
+        "type": "int"
+      },
+      "duplicates": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
   "csvImportEmpty": "No hay filas que importar.",
   "gymmaneImport": "Horario de GymMane",
   "gymmaneImportSubtitle": "Bloques semanales de gimnasio de solo lectura desde un respaldo JSON de GymMane.",
   "gymmaneImportDone": "{imported} bloques importados ({timed} con hora, {allDay} de todo el día), {skipped} omitidos.",
-  "@gymmaneImportDone": {"placeholders": {"imported": {"type": "int"}, "timed": {"type": "int"}, "allDay": {"type": "int"}, "skipped": {"type": "int"}}},
+  "@gymmaneImportDone": {
+    "placeholders": {
+      "imported": {
+        "type": "int"
+      },
+      "timed": {
+        "type": "int"
+      },
+      "allDay": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
   "gymmaneImportFailed": "No se pudo importar GymMane: {error}",
-  "@gymmaneImportFailed": {"placeholders": {"error": {"type": "String"}}},
+  "@gymmaneImportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "gymmaneImportEmpty": "El respaldo no contiene un plan semanal.",
-  "appLock": "Bloqueo de la app",
-  "appLockSubtitle": "Pide un PIN al abrir la app.",
-  "appLockPinTitle": "Elige un PIN",
-  "appLockPinRepeat": "Repite el PIN",
-  "appLockPinMismatch": "Los PIN no coinciden.",
-  "appLockUnlockTitle": "Introduce tu PIN",
-  "appLockUnlockSubtitle": "Desbloquea Mane",
-  "appLockWrong": "PIN incorrecto. Inténtalo de nuevo.",
-  "appLockLockedOut": "Demasiados intentos. Espera {seconds} s.",
-  "@appLockLockedOut": {"placeholders": {"seconds": {"type": "int"}}},
-  "appLockEnabled": "Bloqueo activado.",
-  "appLockDisabled": "Bloqueo desactivado.",
-  "appLockPinLength": "Usa de 4 a 8 dígitos.",
   "purchaseHistory": "Historial de compras",
   "purchaseHistoryEmpty": "Aún no hay compras registradas.",
   "increaseQuantity": "Aumentar cantidad",
   "decreaseQuantity": "Reducir cantidad",
-  "lowStockCount": "{count} productos bajo el umbral",
-  "@lowStockCount": {"placeholders": {"count": {"type": "int"}}},
-  "maintenance": "Mantenimiento",
-  "maintenanceSubtitle": "Tareas que vencen después del último servicio.",
+  "lowStockCount": "{count} artículos por debajo de su stock mínimo",
+  "@lowStockCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "maintenance": "Aparatos",
+  "maintenanceSubtitle": "Mantenimientos de electrodomésticos, filtros y vehículos.",
   "maintenanceDue": "Vence ahora",
   "maintenanceUpcoming": "Próximas",
   "maintenanceNone": "No hay tareas de mantenimiento.",
   "maintenanceDone": "Hecho. Próxima fecha: {date}.",
-  "@maintenanceDone": {"placeholders": {"date": {"type": "String"}}},
+  "@maintenanceDone": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "clearChecked": "Vaciar comprados",
   "clearCheckedBody": "¿Eliminar todas las líneas compradas? No se puede deshacer.",
   "shoppingToBuy": "Por comprar",
@@ -450,5 +836,675 @@
   "quietHoursSubtitle": "Pausa las notificaciones durante esta franja.",
   "mcpTools": "Herramientas MCP",
   "mcpToolsHint": "Solo loopback. Initialize devuelve una cabecera Mcp-Session-Id; los clientes que aceptan text/event-stream reciben un mensaje SSE por llamada. Las escrituras siguen limitadas por el interruptor de arriba.",
-  "hoursWindow": "Configurar franja"
+  "hoursWindow": "Configurar franja",
+  "todayTab": "Hoy",
+  "planTab": "Plan",
+  "statsTab": "Estadísticas",
+  "workTab": "Trabajo",
+  "homeTab": "Casa",
+  "personalTab": "Personal",
+  "workSpace": "Trabajo",
+  "homeSpace": "Casa",
+  "personalSpace": "Personal",
+  "jobs": "Trabajos",
+  "homes": "Casas",
+  "chooseHome": "Elige una casa",
+  "peopleAndGroups": "Personas y grupos",
+  "projectsSection": "Proyectos",
+  "householdSection": "Hogar",
+  "tasksSection": "Tareas",
+  "habitsSection": "Hábitos",
+  "gadgetsSection": "Aparatos",
+  "inventorySection": "Inventario",
+  "shoppingSection": "Compra",
+  "newJob": "Nuevo trabajo",
+  "editJob": "Editar trabajo",
+  "newHome": "Nueva casa",
+  "editHome": "Editar casa",
+  "newPerson": "Nueva persona o grupo",
+  "editPerson": "Editar persona o grupo",
+  "newProject": "Nuevo proyecto",
+  "editProject": "Editar proyecto",
+  "jobName": "Nombre del trabajo",
+  "homeName": "Nombre de la casa",
+  "personName": "Nombre",
+  "projectName": "Nombre del proyecto",
+  "projectDescription": "Descripción (opcional)",
+  "name": "Nombre",
+  "descriptionOptional": "Descripción (opcional)",
+  "icon": "Icono",
+  "color": "Color",
+  "image": "Imagen",
+  "chooseIcon": "Elegir un icono",
+  "searchIcons": "Buscar iconos",
+  "noIconsFound": "Ningún icono coincide con la búsqueda.",
+  "recommendedIcons": "Sugeridos",
+  "allIcons": "Todos los iconos",
+  "chooseImage": "Elegir imagen",
+  "changeImage": "Cambiar imagen",
+  "removeImage": "Quitar imagen",
+  "imageHintEmpty": "Añade una foto o mantén el icono.",
+  "imageHintSet": "Cambia la foto o quítala.",
+  "createJob": "Crear trabajo",
+  "createHome": "Crear casa",
+  "createPerson": "Crear persona o grupo",
+  "createProject": "Crear proyecto",
+  "noJobs": "Todavía no hay trabajos.",
+  "noJobsHint": "Añade un trabajo para agrupar sus turnos, proyectos y tareas.",
+  "noHomes": "Todavía no hay casas.",
+  "noHomesHint": "Añade una casa para organizar inventario, aparatos y proyectos.",
+  "noPeople": "Todavía no hay personas o grupos.",
+  "noPeopleHint": "Usa proyectos para separar el tiempo con cada persona.",
+  "noProjects": "Todavía no hay proyectos.",
+  "noProjectsHint": "Los proyectos agrupan tareas afines sin crear otro espacio.",
+  "noHabits": "Todavía no hay hábitos.",
+  "noHabitsHint": "Añade un hábito para seguir una rutina personal.",
+  "noTasks": "Aquí todavía no hay nada.",
+  "noTasksHint": "Añade una tarea desde esta pantalla o desde Hoy.",
+  "upcomingTasks": "Próximas",
+  "openTasks": "Tareas abiertas",
+  "overdueTasks": "Atrasadas",
+  "unscheduledTasks": "Cuando quieras",
+  "taskCount": "{count, plural, =0 {Sin tareas} =1 {1 tarea} other {{count} tareas}}",
+  "@taskCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "projectCount": "{count, plural, =0 {Sin proyectos} =1 {1 proyecto} other {{count} proyectos}}",
+  "@projectCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "habitCount": "{count, plural, =0 {Sin hábitos} =1 {1 hábito} other {{count} hábitos}}",
+  "@habitCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addTaskFor": "Añadir una tarea para {name}",
+  "@addTaskFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "jobSummary": "Turnos, listas y proyectos de trabajo",
+  "homeSummary": "Inventario, aparatos y proyectos del hogar",
+  "personalSummary": "Proyectos, hábitos y gestiones personales",
+  "manageJobs": "Gestionar trabajos",
+  "manageHomes": "Gestionar casas",
+  "managePeople": "Gestionar personas y grupos",
+  "noContextsYet": "Crea uno para empezar.",
+  "addFirstContext": "Crear el primero",
+  "shiftChecklists": "Listas de turno",
+  "checklistForDay": "Lista del día {day}",
+  "@checklistForDay": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "allDays": "Todos los días",
+  "checklistItemHint": "¿Qué hay que hacer?",
+  "reorderChecklistHint": "Arrastra para ordenar. Cada día puede tener una lista distinta.",
+  "addProject": "Añadir proyecto",
+  "addHabit": "Añadir hábito",
+  "editHabit": "Editar hábito",
+  "habitName": "Nombre del hábito",
+  "targetPerWeek": "Objetivo semanal",
+  "timesPerWeek": "{count}× por semana",
+  "@timesPerWeek": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakDays": "Racha de {count} días",
+  "@streakDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakWeeks": "Racha de {count} semanas",
+  "@streakWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "thisWeek": "Esta semana",
+  "habitHistory": "Historial",
+  "habitActiveDays": "Días activos",
+  "habitCheckIns": "Registros",
+  "habitHistoryHint": "Los días rellenos están hechos. Los días con borde están programados.",
+  "markHabitDone": "Marcar hecho",
+  "habitDone": "Hecho hoy",
+  "addGadget": "Añadir aparato",
+  "gadgetEdit": "Editar aparato",
+  "gadgetIcon": "Icono",
+  "gadgetIntervalDays": "Intervalo (días)",
+  "gadgetLastServiced": "Último mantenimiento",
+  "gadgetNeverServiced": "Sin mantenimientos",
+  "gadgetLastServicedOn": "Último mantenimiento: {date}",
+  "@gadgetLastServicedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "gadgetNextDue": "Próximo vencimiento: {date}",
+  "@gadgetNextDue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "clearDate": "Quitar la fecha",
+  "clearText": "Borrar texto",
+  "gadgetName": "Nombre del aparato",
+  "maintenanceIntervalDays": "Días entre revisiones",
+  "nextDue": "Próxima: {date}",
+  "@nextDue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteContextQuestion": "¿Eliminar {name}?",
+  "@deleteContextQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteContextBody": "Sus tareas siguen en tu plan pero pierden esta agrupación. Sus turnos, hábitos y vínculos del hogar se eliminan.",
+  "deleteProjectQuestion": "¿Eliminar este proyecto?",
+  "deleteProjectBody": "Las tareas pierden este proyecto pero conservan su espacio y contexto.",
+  "listView": "Lista",
+  "timelineView": "Horario",
+  "progressToday": "Progreso de hoy",
+  "doneOfTotal": "{done} de {total} hechas",
+  "@doneOfTotal": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "allDone": "Todo lo de hoy está hecho.",
+  "tasksLeft": "Quedan {count} para hoy",
+  "@tasksLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clockIn": "Fichar entrada",
+  "clockOut": "Fichar salida",
+  "clockedIn": "En marcha",
+  "trackedTime": "Registrado",
+  "trackedTimeValue": "{duration} registrado",
+  "@trackedTimeValue": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "deadline": "Fecha límite",
+  "dueIn": "Vence en {time}",
+  "@dueIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "overdue": "Atrasada",
+  "anytime": "Cuando sea",
+  "priority": "Prioridad",
+  "priorityNone": "Sin prioridad",
+  "priorityLow": "Baja",
+  "priorityMedium": "Media",
+  "priorityHigh": "Alta",
+  "completeTask": "Completar tarea",
+  "reopenTask": "Reabrir tarea",
+  "plan": "Plan",
+  "month": "Mes",
+  "day": "Día",
+  "collapseCalendar": "Contraer calendario",
+  "expandCalendar": "Expandir calendario",
+  "desktopWeekHint": "Arrastra los bloques para moverlos, el borde inferior para cambiar la duración o un hueco vacío para crear.",
+  "createEntryAt": "Crear a las {time}",
+  "@createEntryAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "entryMoved": "Entrada movida.",
+  "couldNotMoveEntry": "No se pudo mover la entrada: {error}",
+  "@couldNotMoveEntry": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "stats": "Estadísticas",
+  "overview": "Resumen",
+  "completionRate": "Tasa de finalización",
+  "tasksCompleted": "Tareas completadas",
+  "overdueDeadlines": "Fechas límite atrasadas",
+  "bySpace": "Por espacio",
+  "byProject": "Por proyecto",
+  "byDay": "Por día",
+  "habitConsistency": "Constancia de hábitos",
+  "rangeWeek": "Semana",
+  "rangeMonth": "Mes",
+  "rangeQuarter": "Trimestre",
+  "rangeYear": "Año",
+  "exportReport": "Exportar informe",
+  "exportSummaryReport": "Informe resumido (PDF)",
+  "exportSummaryCsv": "Resumen (CSV)",
+  "exportDetailedCsv": "Detalle (CSV)",
+  "exportDetailedReport": "Informe detallado (PDF)",
+  "exportReportCsv": "Informe (CSV)",
+  "reportExported": "Informe guardado.",
+  "reportFailed": "No se pudo exportar el informe: {error}",
+  "@reportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "totalTracked": "Total registrado",
+  "shiftHours": "Horas de turno",
+  "shiftHoursHint": "Turnos programados en este rango. No cuentan como tiempo registrado.",
+  "shareOfTotal": "Porcentaje",
+  "noTrackedTime": "No hay tiempo registrado en este rango.",
+  "completed": "Completadas",
+  "openLabel": "Abiertas",
+  "deadlineLoad": "Fechas límite",
+  "settingsSearch": "Buscar ajustes",
+  "generalSection": "General",
+  "noSettingsFound": "Ningún ajuste coincide con la búsqueda.",
+  "appearanceSubtitle": "Tema, color, fondo y tamaño del texto",
+  "preferencesSubtitle": "Idioma, fechas, horarios y recordatorios",
+  "dataSubtitle": "Copias, calendarios, CSV y datos locales",
+  "onlineSubtitle": "Emparejar dispositivos y ejecutar el MCP local",
+  "themeAero": "Aero",
+  "colorScheme": "Esquema de color",
+  "schemeSage": "Salvia",
+  "schemeOcean": "Océano",
+  "schemeSunset": "Atardecer",
+  "schemeViolet": "Violeta",
+  "schemeMono": "Monocromo",
+  "background": "Fondo",
+  "backgroundDots": "Puntos",
+  "backgroundGrid": "Cuadrícula",
+  "backgroundOled": "Negro OLED",
+  "backgroundPlain": "Liso",
+  "backgroundCustom": "Personalizado",
+  "customBackgroundColor": "Color personalizado",
+  "textSize": "Tamaño del texto",
+  "textSmall": "Pequeño",
+  "textDefault": "Predeterminado",
+  "textLarge": "Grande",
+  "textExtraLarge": "Muy grande",
+  "navigationSide": "Lado de la navegación",
+  "navLeft": "Izquierda",
+  "navRight": "Derecha",
+  "dateFormatLabel": "Formato de fecha",
+  "dateFormatSystem": "Sistema",
+  "dateFormatDmy": "Día / mes / año",
+  "dateFormatMdy": "Mes / día / año",
+  "dateFormatYmd": "Año / mes / día",
+  "performanceMode": "Modo rendimiento",
+  "performanceModeSubtitle": "Reduce desenfoque, sombras y animaciones largas.",
+  "preferencesSection": "Preferencias",
+  "dataSection": "Datos y copias",
+  "onlineSection": "Funciones en línea",
+  "onlineEnable": "Activar funciones en línea",
+  "onlineEnableSubtitle": "Sincronización LAN y MCP local. Desactivado por defecto; el planificador funciona sin ellas.",
+  "devicesAndSync": "Dispositivos y sincronización",
+  "devicesAndSyncSubtitle": "Busca dispositivos en esta red y empareja.",
+  "mcpServer": "Servidor MCP",
+  "mcpPort": "Puerto",
+  "mcpPortHint": "Puerto local entre 1024 y 65535.",
+  "applyPort": "Aplicar puerto",
+  "portSaved": "El endpoint MCP ahora usa el puerto {port}.",
+  "@portSaved": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
+  "mcpPortUnavailable": "No se pudo usar el puerto {port}. Puede que ya esté en uso.",
+  "@mcpPortUnavailable": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteAllData": "Eliminar todos los datos",
+  "deleteAllDataSubtitle": "Quita el plan, dispositivos, enlaces de copia y ajustes de este dispositivo.",
+  "deleteAllDataQuestion": "¿Eliminar todos los datos locales?",
+  "deleteAllDataBody": "No se puede deshacer. Los archivos exportados no se borran.",
+  "dataDeleted": "Datos locales eliminados.",
+  "dataDeleteFailed": "No se pudieron eliminar los datos locales. No se borró nada.",
+  "dataDeleteIncomplete": "Se eliminó el plan, pero algunos archivos multimedia o copias automáticas no se pudieron borrar. Revisa los permisos de almacenamiento y bórralos desde la carpeta de datos de la app.",
+  "nearbyDevices": "Dispositivos cercanos",
+  "scanningDevices": "Buscando dispositivos Sundial en esta red…",
+  "noNearbyDevices": "No se han encontrado dispositivos Sundial. Asegúrate de que el otro dispositivo tiene las funciones en línea activadas.",
+  "pairWithDevice": "Emparejar con {name}",
+  "@pairWithDevice": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pairCode": "Código de emparejamiento",
+  "pairCodeHint": "Introduce el código de seis dígitos del otro dispositivo.",
+  "pairingWith": "Emparejando con {name}",
+  "@pairingWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syncExplainer": "Sundial encuentra tus otros dispositivos en la red local. El emparejamiento guarda una clave compartida una sola vez, así que cambiar de red o de IP no rompe el vínculo. La sincronización es de solo lectura y nunca sustituye tu plan local.",
+  "pairSuccess": "Dispositivo emparejado.",
+  "pairFailed": "No se pudo emparejar: {error}",
+  "@pairFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "timing": "Horario",
+  "timingScheduled": "Programada",
+  "timingClockIn": "Fichar",
+  "timingDeadline": "Fecha límite",
+  "timingAnytime": "Cuando sea",
+  "timingScheduledHint": "Empieza y termina a una hora fija.",
+  "timingClockInHint": "Ficha al empezar; fichar salida pausa y conserva el tiempo registrado.",
+  "timingDeadlineHint": "Puede hacerse en cualquier momento hasta la fecha límite.",
+  "timingAnytimeHint": "Sin hora fija. Complétala cuando esté.",
+  "context": "Trabajo, casa o persona",
+  "noContext": "Sin trabajo, casa o persona",
+  "noProject": "Sin proyecto",
+  "project": "Proyecto",
+  "categories": "Categorías",
+  "addCategory": "Añadir categoría",
+  "editCategory": "Editar categoría",
+  "categoryName": "Nombre de la categoría",
+  "noCategories": "Todavía no hay categorías.",
+  "stickerImage": "Imagen",
+  "pickImage": "Elegir una imagen",
+  "zoomHint": "Pellizca o desplaza para ampliar y arrastra para encuadrar el cuadrado.",
+  "tolerance": "Tolerancia del fondo",
+  "outline": "Borde blanco de pegatina",
+  "outlineWidth": "Grosor del borde",
+  "reset": "Restablecer",
+  "useImage": "Usar imagen",
+  "noImage": "No hay imagen seleccionada.",
+  "imageError": "No se pudo cargar la imagen.",
+  "choosePhotoOrIcon": "Elige una foto o usa un icono",
+  "mediaHint": "Recorta la imagen, quita un fondo liso y añade un borde blanco de pegatina.",
+  "soundSection": "Sonido",
+  "interactionSounds": "Sonidos de interacción",
+  "interactionSoundsSubtitle": "Tonos breves y suaves al tocar, cambiar de pestaña, completar o fichar. Apagados por defecto.",
+  "soundPackLabel": "Paquete de sonidos",
+  "soundPackSoft": "Suave",
+  "soundPackAero": "Aero",
+  "previewSound": "Escuchar",
+  "alarmSounds": "Sonidos de alarma",
+  "alarmSoundsSubtitle": "Se usan en los recordatorios programados.",
+  "alarmSoundSoft": "Suave",
+  "alarmSoundChime": "Campana",
+  "alarmSoundBright": "Brillante",
+  "timezoneSubtitle": "Zona de las nuevas entradas con hora. Se muestra en la del dispositivo.",
+  "timezoneDevice": "Zona del dispositivo",
+  "timezoneSearch": "Buscar ciudad o región",
+  "timezoneUseDevice": "Usar la zona del dispositivo",
+  "planningTimeZone": "Zona de planificación",
+  "repeatEnds": "Termina",
+  "repeatEndsNever": "Nunca",
+  "repeatEndsOnDate": "En una fecha",
+  "repeatEndsAfter": "Después de",
+  "repeatOccurrences": "{count} veces",
+  "@repeatOccurrences": {"placeholders": {"count": {"type": "int"}}},
+  "repeatEvery": "Cada",
+  "repeatUnitDays": "días",
+  "repeatUnitWeeks": "semanas",
+  "repeatUnitMonths": "meses",
+  "repeatUnitYears": "años",
+  "repeatOnDays": "Repetir los días",
+  "repeatMonthlyMode": "Patrón mensual",
+  "repeatMonthlyDay": "Día del mes",
+  "repeatMonthlyOrdinal": "Posición del día",
+  "repeatOrdinalFirst": "Primer",
+  "repeatOrdinalSecond": "Segundo",
+  "repeatOrdinalThird": "Tercer",
+  "repeatOrdinalFourth": "Cuarto",
+  "repeatOrdinalLast": "Último",
+  "repeatEndDate": "Fecha de fin",
+  "repeatSummaryNever": "No se repite",
+  "clearStart": "Quitar la hora de inicio",
+  "clearEnd": "Quitar la hora de fin",
+  "clearTime": "Quitar la hora",
+  "time": "Hora",
+  "setTime": "Establecer",
+  "timeFieldInvalid": "Escribe una hora como 9:30 o 21:30.",
+  "noTime": "Sin hora",
+  "pauseTask": "Pausar",
+  "resumeTask": "Reanudar",
+  "finishTask": "Terminar",
+  "paused": "En pausa",
+  "sessionsTracked": "{count} sesiones",
+  "@sessionsTracked": {"placeholders": {"count": {"type": "int"}}},
+  "sessionsTrackedOne": "1 sesión",
+  "recurrenceUntil": "hasta el {date}",
+  "@recurrenceUntil": {"placeholders": {"date": {} }},
+
+  "homeInventoryEmpty": "Tu inventario del hogar está vacío.",
+  "homeInventoryEmptyBody": "Empieza con el catálogo del hogar o crea algo personalizado.",
+  "addInventoryItem": "Añadir al inventario",
+  "browseHouseholdCatalog": "Ver el catálogo del hogar",
+  "householdCatalog": "Catálogo del hogar",
+  "catalogSubtitle": "Artículos comunes con valores sensatos por defecto.",
+  "catalogSearchHint": "Busca aceite de oliva, papel higiénico, café…",
+  "catalogNoResults": "Ningún artículo del catálogo coincide.",
+  "catalogInInventory": "En el inventario",
+  "catalogAddItem": "Añadir",
+  "createCustomItem": "Crear un artículo personalizado",
+  "createCustomHint": "Algo que no está en el catálogo.",
+  "inventorySearch": "Buscar en el inventario",
+  "inventoryFilterAll": "Todo",
+  "inventoryFilterLow": "Stock bajo",
+  "inventoryFilterExpiring": "Caduca pronto",
+  "inventoryNoMatches": "Ningún artículo coincide con estos filtros.",
+  "uncategorized": "Sin categoría",
+  "productsCount": "{count} productos",
+  "@productsCount": {"placeholders": {"count": {"type": "int"}}},
+  "productsCountOne": "1 producto",
+  "variantsCount": "{count} tamaños",
+  "@variantsCount": {"placeholders": {"count": {"type": "int"}}},
+  "variantsCountOne": "1 tamaño",
+  "lowStockItems": "Stock bajo",
+  "expiringItems": "Caduca pronto",
+  "expiredItems": "Caducado",
+  "expiresOn": "Caduca el {date}",
+  "@expiresOn": {"placeholders": {"date": {"type": "String"}}},
+  "expiresAtLabel": "Fecha de caducidad",
+  "noExpiry": "Sin caducidad",
+  "expiresToday": "Caduca hoy",
+  "expiredOn": "Caducó el {date}",
+  "@expiredOn": {"placeholders": {"date": {"type": "String"}}},
+  "minimumStock": "Stock mínimo",
+  "minStockValue": "Mín. {quantity}",
+  "@minStockValue": {"placeholders": {"quantity": {"type": "String"}}},
+  "packSize": "Tamaño / formato",
+  "packSizeHint": "p. ej. botella de 20 L, bolsa de 1 kg",
+  "packSizeRequired": "Dale un formato a este tamaño, por ejemplo 20 L o 1 kg.",
+  "description": "Descripción",
+  "locations": "Ubicaciones",
+  "addAnotherSize": "Añadir otro tamaño",
+  "editProduct": "Editar producto",
+  "variantEditHint": "Los cambios se aplican solo a este tamaño. Abre el producto para renombrar todos los tamaños.",
+  "archiveProductQuestion": "¿Quitar este producto?",
+  "archiveProductBody": "Todos los tamaños salen del inventario, pero siguen en las copias de seguridad.",
+  "archiveVariantQuestion": "¿Quitar este tamaño?",
+  "archiveVariantBody": "Este tamaño sale del inventario. Los demás se quedan.",
+  "inventorySetup": "Configuración del inventario",
+  "inventorySetupSubtitle": "Categorías, ubicaciones y unidades",
+  "manageInventorySetup": "Gestionar categorías, ubicaciones y unidades",
+  "manageCategories": "Categorías",
+  "manageLocations": "Ubicaciones",
+  "manageUnits": "Unidades",
+  "newCategory": "Nueva categoría",
+  "newLocation": "Nueva ubicación",
+  "editLocation": "Editar ubicación",
+  "newUnit": "Nueva unidad",
+  "editUnit": "Editar unidad",
+  "noLocations": "Todavía no hay ubicaciones.",
+  "noUnits": "Todavía no hay unidades.",
+  "duplicateName": "Ese nombre ya está en uso.",
+  "categoryManagerSubtitle": "Dale a cada tipo de artículo un color y un icono.",
+  "locationManagerSubtitle": "Dónde viven las cosas dentro y fuera de casa.",
+  "unitManagerSubtitle": "Cómo cuentas, pesas o mides el stock.",
+  "categoryNameLabel": "Nombre de la categoría",
+  "locationName": "Nombre de la ubicación",
+  "unitName": "Nombre de la unidad",
+  "unitSymbol": "Forma corta",
+  "unitKind": "Tipo de unidad",
+  "unitKindCount": "Cuenta",
+  "unitKindWeight": "Peso",
+  "unitKindVolume": "Volumen",
+  "unitKindLength": "Longitud",
+  "unitKindOther": "Otro",
+  "deleteCategoryQuestion": "¿Eliminar esta categoría?",
+  "deleteCategoryBody": "Los artículos conservan su categoría de texto hasta que los edites.",
+  "deleteLocationQuestion": "¿Eliminar esta ubicación?",
+  "deleteLocationBody": "Se quita de todos los artículos que la usan.",
+  "deleteUnitQuestion": "¿Eliminar esta unidad?",
+  "deleteUnitBody": "Los artículos conservan el texto de la unidad hasta que los edites.",
+  "inStockCount": "{count} en stock",
+  "@inStockCount": {"placeholders": {"count": {"type": "String"}}},
+  "shoppingListEmpty": "Todavía no hay nada que comprar.",
+  "shoppingListEmptyBody": "Añade un artículo o deja que el inventario sugiera lo que falta.",
+  "couldNotLoadHome": "No se pudieron cargar los datos del hogar: {error}",
+  "@couldNotLoadHome": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "stockSuggestions": "Sugerencias de stock",
+  "stockSuggestionsBody": "Desde tu inventario, listas para añadir.",
+  "addAllSuggestions": "Añadir todo",
+  "suggestionLowStock": "Stock bajo · comprar {quantity}",
+  "@suggestionLowStock": {"placeholders": {"quantity": {"type": "String"}}},
+  "suggestionOutOfStock": "Sin stock",
+  "suggestionExpired": "Caducado · reponer",
+  "suggestionAlreadyListed": "En la lista",
+  "addSuggestion": "Añadir",
+  "shoppingSearch": "Buscar en la lista",
+  "shoppingOneOff": "Compra puntual",
+  "shoppingOneOffHint": "Algo que no guardas en el inventario.",
+  "shoppingAddHint": "¿Qué necesitas comprar?",
+  "linkedInventory": "Inventario",
+  "linkedTo": "Vinculado a {name}",
+  "restocksInventory": "Repone inventario",
+  "@linkedTo": {"placeholders": {"name": {"type": "String"}}},
+  "addedToInventory": "Se añadieron {quantity} a {name}.",
+  "@addedToInventory": {"placeholders": {"quantity": {"type": "String"}, "name": {"type": "String"}}},
+  "shoppingItemCategory": "Categoría",
+  "shoppingItemQuantity": "Cantidad",
+  "shoppingItemUnit": "Unidad",
+  "shoppingItemPack": "Tamaño / formato",
+  "shoppingItemsCount": "{count} artículos",
+  "@shoppingItemsCount": {"placeholders": {"count": {"type": "int"}}},
+  "shoppingItemsCountOne": "1 artículo",
+  "noShoppingSuggestions": "No hay nada que reponer.",
+  "markBought": "Marcar comprado",
+  "markNotBought": "Marcar no comprado",
+  "gadgetsEmpty": "Todavía no hay aparatos.",
+  "gadgetsEmptyBody": "Controla el aire acondicionado, el depósito de agua, la caldera, el coche y todo lo que necesite servicio.",
+  "gadgetAll": "Todos los aparatos",
+  "gadgetEveryDays": "Cada {count} días",
+  "@gadgetEveryDays": {"placeholders": {"count": {"type": "int"}}},
+  "gadgetDueToday": "Toca hoy",
+  "gadgetDueIn": "Toca en {count} días",
+  "@gadgetDueIn": {"placeholders": {"count": {"type": "int"}}},
+  "gadgetOverdueBy": "Atrasado {count} días",
+  "@gadgetOverdueBy": {"placeholders": {"count": {"type": "int"}}},
+  "gadgetNoTime": "Todo el día",
+  "gadgetTimeRange": "{start}–{end}",
+  "@gadgetTimeRange": {"placeholders": {"start": {"type": "String"}, "end": {"type": "String"}}},
+  "logService": "Registrar servicio",
+  "logServiceTitle": "Registrar servicio",
+  "serviceDate": "Fecha del servicio",
+  "serviceNote": "¿Qué se hizo?",
+  "serviceNoteHint": "Notas opcionales para el historial",
+  "serviceLogged": "Servicio registrado. Próximo: {date}.",
+  "@serviceLogged": {"placeholders": {"date": {"type": "String"}}},
+  "couldNotLogService": "No se pudo registrar el servicio. Revisa el aparato e inténtalo de nuevo.",
+  "couldNotReschedule": "No se pudo reprogramar. Puede que el aparato haya cambiado.",
+  "serviceHistory": "Historial de servicios",
+  "serviceHistoryEmpty": "Todavía no hay servicios registrados.",
+  "serviceHistoryNext": "Próximo: {date}",
+  "@serviceHistoryNext": {"placeholders": {"date": {"type": "String"}}},
+  "reschedule": "Reprogramar",
+  "rescheduleMaintenance": "Reprogramar mantenimiento",
+  "rescheduleBody": "Mueve la próxima fecha sin registrar un servicio.",
+  "newDueDate": "Nueva fecha",
+  "rescheduled": "Próximo: {date}.",
+  "@rescheduled": {"placeholders": {"date": {"type": "String"}}},
+  "addCalendarEvent": "Añadir al calendario",
+  "addCalendarEventBody": "Registra el servicio como un evento completado con un bloque de tiempo.",
+  "serviceAt": "Hora del servicio",
+  "duration": "Duración",
+  "durationMinutes": "{count} min",
+  "@durationMinutes": {"placeholders": {"count": {"type": "int"}}},
+  "durationHours": "{count} h",
+  "@durationHours": {"placeholders": {"count": {"type": "int"}}},
+  "durationCustom": "Personalizada",
+  "durationMinutesLabel": "Minutos",
+  "blockCalendar": "Mostrar en el calendario",
+  "blockCalendarBody": "Reserva un bloque de tiempo en la fecha de vencimiento.",
+  "serviceEventTitle": "Servicio de {name}",
+  "@serviceEventTitle": {"placeholders": {"name": {"type": "String"}}},
+  "saveSettings": "Guardar"
 }

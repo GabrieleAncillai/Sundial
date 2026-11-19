@@ -1,4 +1,4 @@
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../models/app_settings.dart';
 import 'notification_service.dart';
@@ -27,6 +27,7 @@ class ReminderCoordinator {
 
   Future<void> reschedule() async {
     try {
+      notifications.setAlarmSound(settings.alarmSound);
       final now = clock().toUtc();
       final today = localDateAt(now, deviceTimeZone);
       final occurrences = await repository.loadEntries(

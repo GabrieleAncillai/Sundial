@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import 'shift_pattern_editor_page.dart';
 
@@ -26,10 +27,10 @@ class ShiftPatternsPage extends ConsumerWidget {
       ).push(MaterialPageRoute<void>(builder: (_) => ShiftPatternEditorPage(pattern: pattern)));
     }
 
-    return ManePage(
+    return SundialPage(
       title: l10n.shiftPatterns,
       subtitle: l10n.shiftPatternsSubtitle,
-      floatingAction: ManeAddButton(tooltip: l10n.newShiftPattern, onTap: () => openEditor()),
+      floatingAction: SundialAddButton(tooltip: l10n.newShiftPattern, onTap: () => openEditor()),
       child: patterns.isEmpty
           ? AppEmptyState(
               icon: Icons.schedule,
@@ -66,7 +67,7 @@ class ShiftPatternsPage extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(l10n.shiftPatternsSubtitle, style: ManeType.body(12, color: c.textTertiary)),
+                  child: Text(l10n.shiftPatternsSubtitle, style: SundialType.body(12, color: c.textTertiary)),
                 ),
               ],
             ),
@@ -121,7 +122,10 @@ class _PatternRow extends StatelessWidget {
                   Container(
                     width: 36,
                     height: 36,
-                    decoration: BoxDecoration(color: c.workSoft, borderRadius: BorderRadius.circular(11)),
+                    decoration: BoxDecoration(
+                      color: c.workSoft,
+                      borderRadius: BorderRadius.circular(SundialRadii.sm),
+                    ),
                     child: Icon(Icons.work_outline, size: 19, color: c.work),
                   ),
                   const SizedBox(width: 12),
@@ -135,14 +139,14 @@ class _PatternRow extends StatelessWidget {
                             pattern.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: ManeType.body(14, weight: FontWeight.w700, color: c.text),
+                            style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                           ),
                           const SizedBox(height: 1),
                           Text(
                             subtitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: ManeType.body(11.5, color: c.textSecondary),
+                            style: SundialType.body(11.5, color: c.textSecondary),
                           ),
                         ],
                       ),

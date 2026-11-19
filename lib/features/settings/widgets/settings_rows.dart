@@ -1,22 +1,97 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 
-class SettingsSection extends StatelessWidget {
-  const SettingsSection({super.key, required this.title, required this.children});
+/// A row that settings search can scroll to by [title].
+abstract interface class SettingsTitledRow {
+  String get title;
+}
+
+class SettingsSection extends StatefulWidget {
+  const SettingsSection({super.key, required this.title, required this.children, this.highlight});
 
   final String title;
   final List<Widget> children;
+
+  /// Row title to scroll to and briefly flash after the first frame. Set by
+  /// settings search so a result lands on the exact row, not just the page.
+  final String? highlight;
+
+  @override
+  State<SettingsSection> createState() => _SettingsSectionState();
+}
+
+class _SettingsSectionState extends State<SettingsSection> {
+  final _keys = <int, GlobalKey>{};
+  Timer? _timer;
+  int? _flashing;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleHighlight();
+  }
+
+  @override
+  void didUpdateWidget(SettingsSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.highlight != widget.highlight) _scheduleHighlight();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _scheduleHighlight() {
+    final query = widget.highlight?.trim().toLowerCase();
+    if (query == null || query.isEmpty) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      for (var index = 0; index < widget.children.length; index++) {
+        final child = widget.children[index];
+        if (child is! SettingsTitledRow) continue;
+        if (!(child as SettingsTitledRow).title.toLowerCase().contains(query)) continue;
+        final context = _keys[index]?.currentContext;
+        if (context != null) {
+          Scrollable.ensureVisible(
+            context,
+            duration: const Duration(milliseconds: 260),
+            curve: Curves.easeOutCubic,
+            alignment: 0.2,
+          );
+        }
+        setState(() => _flashing = index);
+        _timer?.cancel();
+        _timer = Timer(const Duration(milliseconds: 1800), () {
+          if (mounted) setState(() => _flashing = null);
+        });
+        break;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
     final rows = <Widget>[];
-    for (var index = 0; index < children.length; index++) {
+    for (var index = 0; index < widget.children.length; index++) {
       if (index > 0) rows.add(Divider(height: 1, indent: 58, color: c.border));
-      rows.add(children[index]);
+      final key = _keys[index] ??= GlobalKey(debugLabel: 'setting-row-$index');
+      rows.add(
+        AnimatedContainer(
+          key: key,
+          duration: const Duration(milliseconds: 180),
+          color: _flashing == index ? c.accentSoft : Colors.transparent,
+          child: widget.children[index],
+        ),
+      );
     }
 
     return Padding(
@@ -24,11 +99,11 @@ class SettingsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SectionLabel(title),
+          SectionLabel(widget.title),
           SoftCard(
             padding: const EdgeInsets.symmetric(vertical: 2),
             clip: true,
-            radius: 20,
+            radius: SundialRadii.lg,
             child: Column(children: rows),
           ),
         ],
@@ -37,7 +112,7 @@ class SettingsSection extends StatelessWidget {
   }
 }
 
-class SettingsNavRow extends StatelessWidget {
+class SettingsNavRow extends StatelessWidget implements SettingsTitledRow {
   const SettingsNavRow({
     super.key,
     required this.icon,
@@ -48,6 +123,7 @@ class SettingsNavRow extends StatelessWidget {
   });
 
   final IconData icon;
+  @override
   final String title;
   final String? subtitle;
   final String? value;
@@ -70,7 +146,7 @@ class SettingsNavRow extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: ManeType.body(14, weight: FontWeight.w700, color: c.text),
+                    style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 1),
@@ -78,7 +154,7 @@ class SettingsNavRow extends StatelessWidget {
                       subtitle!,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: ManeType.body(11.5, color: c.textSecondary),
+                      style: SundialType.body(11.5, color: c.textSecondary),
                     ),
                   ],
                 ],
@@ -86,7 +162,7 @@ class SettingsNavRow extends StatelessWidget {
             ),
             if (value != null) ...[
               const SizedBox(width: 8),
-              Text(value!, style: ManeType.label(11.5, color: c.textTertiary)),
+              Text(value!, style: SundialType.label(11.5, color: c.textTertiary)),
             ],
             if (onTap != null) ...[
               const SizedBox(width: 4),
@@ -99,7 +175,7 @@ class SettingsNavRow extends StatelessWidget {
   }
 }
 
-class SettingsSwitchRow extends StatelessWidget {
+class SettingsSwitchRow extends StatelessWidget implements SettingsTitledRow {
   const SettingsSwitchRow({
     super.key,
     required this.icon,
@@ -110,6 +186,7 @@ class SettingsSwitchRow extends StatelessWidget {
   });
 
   final IconData icon;
+  @override
   final String title;
   final String? subtitle;
   final bool value;
@@ -132,11 +209,11 @@ class SettingsSwitchRow extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: ManeType.body(14, weight: FontWeight.w700, color: c.text),
+                    style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 1),
-                    Text(subtitle!, style: ManeType.body(11.5, color: c.textSecondary)),
+                    Text(subtitle!, style: SundialType.body(11.5, color: c.textSecondary)),
                   ],
                 ],
               ),
@@ -150,7 +227,7 @@ class SettingsSwitchRow extends StatelessWidget {
   }
 }
 
-class SettingsChoiceRow extends StatelessWidget {
+class SettingsChoiceRow extends StatelessWidget implements SettingsTitledRow {
   const SettingsChoiceRow({
     super.key,
     required this.icon,
@@ -160,6 +237,7 @@ class SettingsChoiceRow extends StatelessWidget {
   });
 
   final IconData icon;
+  @override
   final String title;
   final String? subtitle;
   final Widget choice;
@@ -182,9 +260,10 @@ class SettingsChoiceRow extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: ManeType.body(14, weight: FontWeight.w700, color: c.text),
+                      style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                     ),
-                    if (subtitle != null) Text(subtitle!, style: ManeType.body(11.5, color: c.textSecondary)),
+                    if (subtitle != null)
+                      Text(subtitle!, style: SundialType.body(11.5, color: c.textSecondary)),
                   ],
                 ),
               ),
@@ -212,7 +291,7 @@ class _SettingsIcon extends StatelessWidget {
     return Container(
       width: 32,
       height: 32,
-      decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(SundialRadii.xs)),
       child: Icon(icon, size: 17, color: c.accent),
     );
   }

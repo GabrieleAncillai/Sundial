@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/pressable.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 
 /// A six-week month grid with per-day markers.
@@ -17,7 +18,7 @@ class MonthGrid extends StatelessWidget {
     required this.today,
     required this.weekStart,
     required this.markers,
-    required this.shiftDays,
+    required this.shiftColors,
     required this.onSelected,
   });
 
@@ -29,15 +30,15 @@ class MonthGrid extends StatelessWidget {
 
   /// Date key to the space colors present on that day.
   final Map<int, Set<int>> markers;
-  final Set<int> shiftDays;
+
+  /// Date key to the job colors of the shifts on that day.
+  final Map<int, Set<int>> shiftColors;
   final ValueChanged<LocalDate> onSelected;
 
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
     final first = month.startOfWeek(weekStart);
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final dayFormat = DateFormat.MMMd(locale);
     final weekdays = weekdaysFrom(weekStart);
 
     return Column(
@@ -49,7 +50,7 @@ class MonthGrid extends StatelessWidget {
                 child: Center(
                   child: Text(
                     shortWeekday(context, weekday).toUpperCase(),
-                    style: ManeType.label(9.5, color: c.textTertiary),
+                    style: SundialType.label(9.5, color: c.textTertiary),
                   ),
                 ),
               ),
@@ -67,8 +68,8 @@ class MonthGrid extends StatelessWidget {
                     selected: selected,
                     today: today,
                     markerColors: markers[first.addDays(row * 7 + column).key] ?? const <int>{},
-                    hasShift: shiftDays.contains(first.addDays(row * 7 + column).key),
-                    semanticsDate: dayFormat.format(first.addDays(row * 7 + column).toDateTime()),
+                    shiftColors: shiftColors[first.addDays(row * 7 + column).key] ?? const <int>{},
+                    semanticsDate: formatFullDate(context, first.addDays(row * 7 + column).toDateTime()),
                     onTap: () => onSelected(first.addDays(row * 7 + column)),
                   ),
                 ),
@@ -86,7 +87,7 @@ class _DayCell extends StatelessWidget {
     required this.selected,
     required this.today,
     required this.markerColors,
-    required this.hasShift,
+    required this.shiftColors,
     required this.semanticsDate,
     required this.onTap,
   });
@@ -96,7 +97,7 @@ class _DayCell extends StatelessWidget {
   final LocalDate selected;
   final LocalDate today;
   final Set<int> markerColors;
-  final bool hasShift;
+  final Set<int> shiftColors;
   final String semanticsDate;
   final VoidCallback onTap;
 
@@ -112,7 +113,7 @@ class _DayCell extends StatelessWidget {
         : inMonth
         ? c.text
         : c.textTertiary.withValues(alpha: 0.55);
-    final count = markerColors.length + (hasShift ? 1 : 0);
+    final count = markerColors.length + shiftColors.length;
     final height = 48 * MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.45);
 
     return Semantics(
@@ -128,7 +129,7 @@ class _DayCell extends StatelessWidget {
           margin: const EdgeInsets.all(1.5),
           decoration: BoxDecoration(
             color: isSelected ? c.accent : null,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(SundialRadii.sm),
             border: isToday && !isSelected
                 ? Border.all(color: c.accent.withValues(alpha: 0.55), width: 1.3)
                 : null,
@@ -138,7 +139,7 @@ class _DayCell extends StatelessWidget {
             children: [
               Text(
                 '${date.day}',
-                style: ManeType.body(13.5, weight: FontWeight.w600, color: textColor),
+                style: SundialType.body(13.5, weight: FontWeight.w600, color: textColor),
               ),
               const SizedBox(height: 3),
               SizedBox(
@@ -158,16 +159,24 @@ class _DayCell extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                height: 2,
-                child: hasShift && inMonth
-                    ? Container(
-                        width: 14,
-                        decoration: BoxDecoration(
-                          color: isSelected ? selectedInk.withValues(alpha: 0.7) : c.work,
-                          borderRadius: BorderRadius.circular(1),
-                        ),
-                      )
-                    : null,
+                height: 3,
+                child: shiftColors.isEmpty || !inMonth
+                    ? null
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          for (final color in shiftColors.take(3))
+                            Container(
+                              width: 9,
+                              height: 2,
+                              margin: const EdgeInsets.symmetric(horizontal: 1),
+                              decoration: BoxDecoration(
+                                color: isSelected ? selectedInk.withValues(alpha: 0.7) : Color(color),
+                                borderRadius: BorderRadius.circular(1),
+                              ),
+                            ),
+                        ],
+                      ),
               ),
             ],
           ),

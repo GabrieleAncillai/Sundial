@@ -25,7 +25,7 @@ Future<DeviceCertificate> generateDeviceCertificate({required String deviceId, i
   final pair = CryptoUtils.generateRSAKeyPair(keySize: keySize);
   final privateKey = pair.privateKey as RSAPrivateKey;
   final publicKey = pair.publicKey as RSAPublicKey;
-  final csr = X509Utils.generateRsaCsrPem({'CN': 'Mane $deviceId', 'O': 'Mane'}, privateKey, publicKey);
+  final csr = X509Utils.generateRsaCsrPem({'CN': 'Sundial $deviceId', 'O': 'Sundial'}, privateKey, publicKey);
   final certificatePem = X509Utils.generateSelfSignedCertificate(privateKey, csr, 3650);
   final der = CryptoUtils.getBytesFromPEMString(certificatePem);
   final fingerprint = await fingerprintOfDer(der);

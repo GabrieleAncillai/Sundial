@@ -4,15 +4,17 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/core/i18n/l10n.dart';
-import 'package:mane/features/calendar/pages/calendar_page.dart';
-import 'package:mane/features/calendar/widgets/day_timeline.dart';
-import 'package:mane/models/app_settings.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/state/providers.dart';
-import 'package:mane/state/settings_controller.dart';
-import 'package:mane/theme/app_theme.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/core/i18n/l10n.dart';
+import 'package:sundial/features/calendar/pages/calendar_page.dart';
+import 'package:sundial/features/calendar/widgets/day_timeline.dart';
+import 'package:sundial/features/calendar/widgets/open_end_entry_block.dart';
+import 'package:sundial/features/shifts/shift_block_painter.dart';
+import 'package:sundial/models/app_settings.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/state/providers.dart';
+import 'package:sundial/state/settings_controller.dart';
+import 'package:sundial/theme/app_theme.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 
 void main() {
@@ -38,7 +40,7 @@ void main() {
       initialSettingsProvider.overrideWithValue(const AppSettings()),
     ],
     child: MaterialApp(
-      theme: ManeTheme.light,
+      theme: SundialTheme.light,
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -51,7 +53,7 @@ void main() {
     await tester.pumpWidget(host());
     await tester.pump();
 
-    expect(find.bySemanticsLabel(RegExp(r'Nov 9, 0 items')), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp(r'November 9, 2026, 0 items')), findsOneWidget);
     handle.dispose();
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(seconds: 1));
@@ -160,6 +162,90 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
   });
 
+  testWidgets('day mode shows an entry with no end as an open-ended block', (tester) async {
+    tester.view.physicalSize = const Size(500, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await database.saveEntry(
+      Entry(
+        id: 'clock',
+        spaceId: 'personal',
+        title: 'Open task',
+        date: LocalDate.parse('2026-11-09'),
+        startMinute: 9 * 60,
+        timeZone: 'Europe/Madrid',
+        createdAt: DateTime.utc(2026, 11, 1),
+        updatedAt: DateTime.utc(2026, 11, 1),
+      ),
+    );
+
+    await tester.pumpWidget(host());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Day'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(OpenEndEntryBlock), findsOneWidget);
+    expect(find.text('Open task'), findsWidgets);
+    expect(find.text('09:00 –'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('overlapping shifts stay full width and blend in the day timeline', (tester) async {
+    tester.view.physicalSize = const Size(700, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await database.saveShiftPattern(
+      ShiftPattern(
+        id: 'banco',
+        spaceId: 'work',
+        name: 'Banco',
+        timeZone: 'Europe/Madrid',
+        cycleDays: 7,
+        anchorDate: LocalDate.parse('2026-11-09'),
+        slots: const [ShiftSlot(dayIndex: 0, startMinute: 9 * 60, endMinute: 13 * 60)],
+      ),
+    );
+    await database.saveShiftPattern(
+      ShiftPattern(
+        id: 'pizza',
+        spaceId: 'work',
+        name: 'Pizza',
+        timeZone: 'Europe/Madrid',
+        cycleDays: 7,
+        anchorDate: LocalDate.parse('2026-11-09'),
+        slots: const [ShiftSlot(dayIndex: 0, startMinute: 12 * 60, endMinute: 16 * 60)],
+      ),
+    );
+
+    await tester.pumpWidget(host());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Day'));
+    await tester.pumpAndSettle();
+
+    final bankRect = tester.getRect(find.text('Banco'));
+    final pizzaRect = tester.getRect(find.text('Pizza'));
+
+    expect(bankRect.left, pizzaRect.left);
+    expect(bankRect.width, pizzaRect.width);
+    expect(bankRect.width, greaterThan(200));
+
+    final painter = tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((widget) => widget.painter)
+        .whereType<ShiftBlockPainter>()
+        .firstWhere((painter) => painter.blocks.isNotEmpty);
+    expect(painter.blocks, hasLength(2));
+    expect(painter.blocks.every((block) => block.rect.left == painter.blocks.first.rect.left), isTrue);
+    expect(painter.blocks[0].rect.width, painter.blocks[1].rect.width);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
   testWidgets('a Sunday week start rotates the month grid', (tester) async {
     tester.view.physicalSize = const Size(500, 1200);
     tester.view.devicePixelRatio = 1;
@@ -174,7 +260,7 @@ void main() {
           initialSettingsProvider.overrideWithValue(const AppSettings(weekStart: DateTime.sunday)),
         ],
         child: MaterialApp(
-          theme: ManeTheme.light,
+          theme: SundialTheme.light,
           locale: const Locale('en'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,

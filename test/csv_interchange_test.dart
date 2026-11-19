@@ -2,12 +2,12 @@ import 'dart:ffi';
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/export/csv_interchange.dart';
-import 'package:mane/models/home_item.dart';
-import 'package:mane/models/shopping_item.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/services/planner_repository.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/features/export/csv_interchange.dart';
+import 'package:sundial/models/home_item.dart';
+import 'package:sundial/models/shopping_item.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/services/planner_repository.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 
 void main() {
@@ -90,6 +90,53 @@ void main() {
     expect(entry.tagIds, {'job'});
     expect(entry.recurrence, isNotNull);
     expect(entry.source, 'csv');
+  });
+
+  test('CSV round-trip preserves clock-in, deadline and anytime shapes', () async {
+    final now = DateTime.utc(2026, 11, 1, 8);
+    final day = LocalDate.parse('2026-11-09');
+    for (final entry in [
+      Entry(
+        id: 'clock',
+        spaceId: 'work',
+        title: 'Clock in',
+        date: day,
+        startMinute: 9 * 60,
+        timeZone: 'Europe/Madrid',
+        createdAt: now,
+        updatedAt: now,
+      ),
+      Entry(
+        id: 'deadline',
+        spaceId: 'personal',
+        title: 'Deadline',
+        date: day,
+        endMinute: 17 * 60,
+        timeZone: 'Europe/Madrid',
+        createdAt: now,
+        updatedAt: now,
+      ),
+      Entry(id: 'anytime', spaceId: 'home', title: 'Anytime', date: day, createdAt: now, updatedAt: now),
+    ]) {
+      await database.saveEntry(entry);
+    }
+
+    final csv = await CsvInterchangeService(
+      repository,
+    ).exportEntries(start: day, end: day, viewerTimeZone: 'Europe/Madrid');
+    final target = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(target.close);
+    await target.seedDefaults();
+    await CsvInterchangeService(
+      PlannerRepository(target),
+    ).importEntries(csv, defaultTimeZone: 'Europe/Madrid');
+
+    final imported = (await target.watchEntriesBetween(day, day, 'Europe/Madrid').first).map(
+      (item) => item.entry,
+    );
+    expect(imported.firstWhere((entry) => entry.title == 'Clock in').timing, EntryTiming.clockIn);
+    expect(imported.firstWhere((entry) => entry.title == 'Deadline').timing, EntryTiming.deadline);
+    expect(imported.firstWhere((entry) => entry.title == 'Anytime').timing, EntryTiming.anytime);
   });
 
   test('re-importing the same entry CSV deduplicates', () async {
@@ -206,5 +253,78 @@ void main() {
 
     final duplicate = await targetService.importInventory(inventoryCsv);
     expect(duplicate.duplicates, 1);
+  });
+
+  test('inventory CSV keeps product groups and sizes', () async {
+    await database.saveHomeItem(
+      const HomeItem(
+        id: 'water-gallon',
+        groupId: 'water',
+        catalogId: 'catalog-drinking-water',
+        name: 'Drinking water',
+        icon: 'water',
+        colorValue: 0xFF2F7ED8,
+        category: 'Food & pantry',
+        categoryId: 'home-food',
+        unit: 'Bottle',
+        unitId: 'home-unit-bottle',
+        packSize: '5 gal',
+        quantity: 3,
+        minQuantity: 1,
+      ),
+    );
+    await database.saveHomeItem(
+      const HomeItem(
+        id: 'water-litre',
+        groupId: 'water',
+        catalogId: 'catalog-drinking-water',
+        name: 'Drinking water',
+        icon: 'water',
+        colorValue: 0xFF2F7ED8,
+        category: 'Food & pantry',
+        categoryId: 'home-food',
+        unit: 'Bottle',
+        unitId: 'home-unit-bottle',
+        packSize: '5 L',
+        quantity: 4,
+        minQuantity: 2,
+      ),
+    );
+    await database.saveShoppingItem(
+      const ShoppingItem(
+        id: 'buy-litre',
+        name: 'Drinking water',
+        quantity: 2,
+        unit: 'Bottle',
+        packSize: '5 L',
+        homeItemId: 'water-litre',
+      ),
+    );
+    final service = CsvInterchangeService(repository);
+    final inventoryCsv = await service.exportInventory();
+    final shoppingCsv = await service.exportShopping();
+
+    final target = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(target.close);
+    await target.seedDefaults();
+    final targetService = CsvInterchangeService(PlannerRepository(target));
+    expect((await targetService.importInventory(inventoryCsv)).imported, 2);
+    expect((await targetService.importShopping(shoppingCsv)).imported, 1);
+
+    final items = await target.watchHomeItems().first;
+    expect(items, hasLength(2));
+    expect(items.map((item) => item.productGroupId).toSet(), {'water'});
+    expect(items.map((item) => item.packSize).toSet(), {'5 gal', '5 L'});
+    expect(items.every((item) => item.catalogId == 'catalog-drinking-water'), isTrue);
+    expect(items.every((item) => item.icon == 'water'), isTrue);
+    expect(items.every((item) => item.colorValue == 0xFF2F7ED8), isTrue);
+
+    final shopping = (await target.watchShoppingItems().first).single;
+    final linked = items.firstWhere((item) => item.id == shopping.homeItemId);
+    expect(linked.packSize, '5 L');
+    expect(shopping.packSize, '5 L');
+
+    final duplicate = await targetService.importInventory(inventoryCsv);
+    expect(duplicate.duplicates, 2);
   });
 }

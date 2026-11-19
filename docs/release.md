@@ -1,6 +1,6 @@
 # Release
 
-Mane ships from GitHub Releases. Obtainium can follow the repository, and the
+Sundial ships from GitHub Releases. Obtainium can follow the repository, and the
 Linux bundle is published next to the APKs. F-Droid, IzzyOnDroid and OpenAPK are
 optional and only after the GitHub release is stable.
 
@@ -28,8 +28,8 @@ Create the key once and keep it outside the repository:
 
 ```bash
 keytool -genkey -v \
-  -keystore ~/keys/mane-release.jks \
-  -keyalg RSA -keysize 4096 -validity 10000 -alias mane
+  -keystore ~/keys/sundial-release.jks \
+  -keyalg RSA -keysize 4096 -validity 10000 -alias sundial
 ```
 
 `android/key.properties` is gitignored. For a local release build:
@@ -37,8 +37,8 @@ keytool -genkey -v \
 ```properties
 storePassword=...
 keyPassword=...
-keyAlias=mane
-storeFile=/home/you/keys/mane-release.jks
+keyAlias=sundial
+storeFile=/home/you/keys/sundial-release.jks
 ```
 
 The Gradle file uses this file when it exists and falls back to the debug key
@@ -46,7 +46,7 @@ otherwise, so local release builds stay runnable during development.
 
 For CI, add these repository secrets:
 
-- `ANDROID_KEYSTORE_BASE64`: `base64 -w0 ~/keys/mane-release.jks`
+- `ANDROID_KEYSTORE_BASE64`: `base64 -w0 ~/keys/sundial-release.jks`
 - `ANDROID_STORE_PASSWORD`
 - `ANDROID_KEY_ALIAS`
 - `ANDROID_KEY_PASSWORD`
@@ -70,13 +70,13 @@ APK outputs:
 The Linux bundle is `build/linux/x64/release/bundle/`. Archive it with:
 
 ```bash
-tar -czf mane-linux-x64.tar.gz -C build/linux/x64/release/bundle .
+tar -czf sundial-linux-x64.tar.gz -C build/linux/x64/release/bundle .
 ```
 
 ## Tag and publish
 
 ```bash
-git tag -a v0.5.0 -m "Mane 0.5.0"
+git tag -a v0.5.0 -m "Sundial 0.5.0"
 git push origin v0.5.0
 ```
 
@@ -98,12 +98,12 @@ There is no store metadata in the repository yet. If the project is submitted:
 - No accounts, ads, tracking, telemetry or non-free dependencies.
 - F-Droid requires a reproducible build from a tagged source archive and its own
   signing key. Do not reuse the developer keystore for F-Droid.
-- The package id is `io.github.gabrieleancillai.mane` and must not change.
+- The package id is `io.github.sundial` and must not change.
 
 ## Release checklist
 
 - [ ] `flutter analyze --no-fatal-infos` is clean.
-- [ ] `flutter test` and `(cd packages/mane_core && dart test)` pass.
+- [ ] `flutter test` and `(cd packages/sundial_core && dart test)` pass.
 - [ ] Both debug builds pass before the release build.
 - [ ] Version and build number are bumped.
 - [ ] The release APK is signed with the user's key, not the debug key.

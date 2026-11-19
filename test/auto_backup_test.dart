@@ -4,10 +4,10 @@ import 'dart:io';
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/backup/auto_backup_service.dart';
-import 'package:mane/features/backup/backup_service.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/features/backup/auto_backup_service.dart';
+import 'package:sundial/features/backup/backup_service.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 
 void main() {
@@ -23,7 +23,7 @@ void main() {
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
     await database.seedDefaults();
-    directory = await Directory.systemTemp.createTemp('mane-auto-backup');
+    directory = await Directory.systemTemp.createTemp('sundial-auto-backup');
     now = DateTime(2026, 11, 9, 8);
   });
 
@@ -47,8 +47,8 @@ void main() {
     final files = await service.listBackups();
     expect(files, hasLength(2));
     final payload = jsonDecode(await files.first.readAsString()) as Map<String, Object?>;
-    expect(payload['app'], 'mane');
-    expect(payload['schemaVersion'], 8);
+    expect(payload['app'], 'sundial');
+    expect(payload['schemaVersion'], 13);
     final entries = payload['entries']! as List<Object?>;
     expect(entries, isEmpty);
   });

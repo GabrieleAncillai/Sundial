@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../core/i18n/reminder_label.dart';
+import '../../../core/time/time_field.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
@@ -89,7 +90,7 @@ class _ReminderSelectionSheetState extends State<ReminderSelectionSheet> {
           ),
         ),
         const SizedBox(height: 8),
-        Text(l10n.customReminderHint, style: ManeType.body(11.5, color: c.textTertiary)),
+        Text(l10n.customReminderHint, style: SundialType.body(11.5, color: c.textTertiary)),
         const SizedBox(height: 16),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(ReminderSelection(offsets: _offsets, times: _times)),
@@ -100,9 +101,9 @@ class _ReminderSelectionSheetState extends State<ReminderSelectionSheet> {
   }
 
   Future<void> _addTime() async {
-    final picked = await showTimePicker(context: context, initialTime: const TimeOfDay(hour: 9, minute: 0));
+    final picked = await showSundialTimePicker(context, initialMinute: 9 * 60);
     if (picked == null) return;
-    setState(() => _times.add(picked.hour * 60 + picked.minute));
+    setState(() => _times.add(picked % 1440));
   }
 
   static String _timeLabel(BuildContext context, int minute) =>

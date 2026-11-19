@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
 import '../models/app_settings.dart';
@@ -22,8 +23,105 @@ class SettingsController extends Notifier<AppSettings> {
   }
 
   Future<void> setThemeMode(ThemeMode value) async {
-    state = state.copyWith(themeMode: value);
+    final variant = switch (value) {
+      ThemeMode.light => SundialThemeVariant.light,
+      ThemeMode.dark => SundialThemeVariant.dark,
+      ThemeMode.system => SundialThemeVariant.system,
+    };
+    state = state.copyWith(themeMode: value, themeVariant: variant);
     await _repository.writeSetting(SettingsKeys.themeMode, value.name);
+    await _repository.writeSetting(SettingsKeys.themeVariant, variant.name);
+  }
+
+  Future<void> setThemeVariant(SundialThemeVariant value) async {
+    final mode = switch (value) {
+      SundialThemeVariant.light => ThemeMode.light,
+      SundialThemeVariant.dark => ThemeMode.dark,
+      SundialThemeVariant.system => ThemeMode.system,
+      SundialThemeVariant.aero => ThemeMode.light,
+    };
+    state = state.copyWith(
+      themeVariant: value,
+      themeMode: mode,
+      soundPack: value == SundialThemeVariant.aero ? SundialSoundPack.aero : state.soundPack,
+    );
+    await _repository.writeSetting(SettingsKeys.themeVariant, value.name);
+    if (value == SundialThemeVariant.aero) {
+      await _repository.writeSetting(SettingsKeys.soundPack, SundialSoundPack.aero.name);
+    } else {
+      await _repository.writeSetting(SettingsKeys.themeMode, mode.name);
+    }
+  }
+
+  Future<void> setAccentScheme(SundialAccentScheme value) async {
+    state = state.copyWith(accentScheme: value);
+    await _repository.writeSetting(SettingsKeys.colorScheme, value.name);
+  }
+
+  Future<void> setBackgroundStyle(SundialBackgroundStyle value) async {
+    state = state.copyWith(backgroundStyle: value);
+    await _repository.writeSetting(SettingsKeys.backgroundStyle, value.name);
+  }
+
+  Future<void> setBackgroundCustomColor(int value) async {
+    state = state.copyWith(backgroundCustomColor: value);
+    await _repository.writeSetting(SettingsKeys.backgroundCustomColor, '$value');
+  }
+
+  Future<void> setTextScale(double value) async {
+    final scale = value.clamp(0.85, 1.35);
+    state = state.copyWith(textScale: scale);
+    await _repository.writeSetting(SettingsKeys.textScale, '$scale');
+  }
+
+  Future<void> setNavSide(SundialNavSide value) async {
+    state = state.copyWith(navSide: value);
+    await _repository.writeSetting(SettingsKeys.navSide, value.name);
+  }
+
+  Future<void> setDateFormat(SundialDateFormat value) async {
+    state = state.copyWith(dateFormat: value);
+    await _repository.writeSetting(SettingsKeys.dateFormat, value.name);
+  }
+
+  Future<void> setPerformanceMode(bool value) async {
+    state = state.copyWith(performanceMode: value);
+    await _repository.writeSetting(SettingsKeys.performanceMode, '$value');
+  }
+
+  Future<void> setOnlineEnabled(bool value) async {
+    state = state.copyWith(onlineEnabled: value);
+    await _repository.writeSetting(SettingsKeys.onlineEnabled, '$value');
+  }
+
+  Future<void> setMcpPort(int value) async {
+    final port = value.clamp(1024, 65535);
+    state = state.copyWith(mcpPort: port);
+    await _repository.writeSetting(SettingsKeys.mcpPort, '$port');
+  }
+
+  Future<void> setSoundsEnabled(bool value) async {
+    state = state.copyWith(soundsEnabled: value);
+    await _repository.writeSetting(SettingsKeys.soundsEnabled, '$value');
+  }
+
+  Future<void> setSoundPack(SundialSoundPack value) async {
+    state = state.copyWith(soundPack: value);
+    await _repository.writeSetting(SettingsKeys.soundPack, value.name);
+  }
+
+  Future<void> setAlarmSound(SundialAlarmSound value) async {
+    state = state.copyWith(alarmSound: value);
+    await _repository.writeSetting(SettingsKeys.alarmSound, value.name);
+  }
+
+  /// Empty selects the device zone. Unknown zones are ignored so a stale or
+  /// imported value cannot break scheduling.
+  Future<void> setTimezoneOverride(String value) async {
+    final zone = value.trim();
+    if (zone.isNotEmpty && !isKnownTimeZone(zone)) return;
+    state = state.copyWith(timezoneOverride: zone);
+    await _repository.writeSetting(SettingsKeys.timezoneOverride, zone);
   }
 
   Future<void> setLocale(Locale? value) async {

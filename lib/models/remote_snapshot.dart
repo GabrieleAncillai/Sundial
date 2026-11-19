@@ -1,8 +1,8 @@
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 /// A read-only snapshot returned by a paired device.
 ///
-/// It is display data, not a merged copy: Mane keeps every device's plan
+/// It is display data, not a merged copy: Sundial keeps every device's plan
 /// separate and asks the owner over the LAN.
 class RemoteSnapshot {
   const RemoteSnapshot({

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../models/local_identity.dart';
 import '../../models/paired_device.dart';
@@ -11,18 +11,8 @@ import '../../services/planner_repository.dart';
 import 'pairing_crypto.dart';
 
 class RemoteInfo {
-  const RemoteInfo({
-    required this.deviceId,
-    required this.deviceName,
-    required this.username,
-    required this.fingerprint,
-    required this.port,
-    required this.protocol,
-  });
+  const RemoteInfo({required this.fingerprint, required this.port, required this.protocol});
 
-  final String deviceId;
-  final String deviceName;
-  final String username;
   final String fingerprint;
   final int port;
   final int protocol;
@@ -50,20 +40,17 @@ class LanClient {
     final captured = <String>[];
     final client = _client(allowAny: true, captured: captured);
     try {
-      final response = await _get(client, host, port, '/mane/v1/info').timeout(_timeout);
+      final response = await _get(client, host, port, '/sundial/v1/info').timeout(_timeout);
       if (response.statusCode != HttpStatus.ok) {
         throw LanClientException('The device did not answer (${response.statusCode})');
       }
       final body = await utf8.decoder.bind(response).join();
       final json = jsonDecode(body);
-      if (json is! Map<String, dynamic> || json['app'] != 'mane') {
-        throw const LanClientException('That address is not a Mane device');
+      if (json is! Map<String, dynamic> || json['app'] != 'sundial') {
+        throw const LanClientException('That address is not a Sundial device');
       }
       if (captured.isEmpty) throw const LanClientException('No certificate was presented');
       final info = RemoteInfo(
-        deviceId: '${json['deviceId']}',
-        deviceName: '${json['deviceName']}',
-        username: '${json['username']}',
         fingerprint: captured.last,
         port: json['port'] is int ? json['port'] as int : port,
         protocol: json['protocol'] is int ? json['protocol'] as int : 0,
@@ -90,12 +77,6 @@ class LanClient {
     required int myServerPort,
   }) async {
     final info = await fetchInfo(host: host, port: port);
-    if (info.deviceId == identity.deviceId) {
-      throw const LanClientException('That is this device');
-    }
-    if (info.username.trim().toLowerCase() != identity.username.trim().toLowerCase()) {
-      throw const LanClientException('The username does not match this device');
-    }
 
     final pairingKey = await PairingCrypto.derivePairingKey(
       code: code,
@@ -120,7 +101,7 @@ class LanClient {
     final client = _client(allowAny: true, captured: captures);
     try {
       final request = await client
-          .postUrl(Uri(scheme: 'https', host: host, port: port, path: '/mane/v1/pair'))
+          .postUrl(Uri(scheme: 'https', host: host, port: port, path: '/sundial/v1/pair'))
           .timeout(_timeout);
       request.headers.contentType = ContentType.json;
       request.write(
@@ -143,6 +124,15 @@ class LanClient {
       if (json is! Map<String, dynamic> || json['ok'] != true) {
         throw const LanClientException('The code was not accepted');
       }
+      final hostDeviceId = json['deviceId'];
+      final hostDeviceName = json['deviceName'];
+      final hostUsername = json['username'];
+      if (hostDeviceId is! String || hostDeviceName is! String || hostUsername is! String) {
+        throw const LanClientException('The device did not identify itself after pairing');
+      }
+      if (hostDeviceId == identity.deviceId) {
+        throw const LanClientException('That is this device');
+      }
       if (captures.isEmpty || captures.last != info.fingerprint) {
         throw const LanClientException('The device certificate changed during pairing');
       }
@@ -155,9 +145,9 @@ class LanClient {
       }
       final now = _clock().toUtc();
       final paired = PairedDevice(
-        id: info.deviceId,
-        name: info.deviceName,
-        username: info.username,
+        id: hostDeviceId,
+        name: hostDeviceName,
+        username: hostUsername,
         certificateFingerprint: info.fingerprint,
         sharedKey: sharedKey,
         host: host,
@@ -204,7 +194,7 @@ class LanClient {
       if (end != null) 'end': end.iso,
       'timeZone': ?timeZone,
     };
-    final path = Uri(path: '/mane/v1/query', queryParameters: query).toString();
+    final path = Uri(path: '/sundial/v1/query', queryParameters: query).toString();
     final timestamp = _clock().toUtc().millisecondsSinceEpoch ~/ 1000;
     final nonce = PairingCrypto.randomBase64(18);
     final signature = await PairingCrypto.signRequest(
@@ -224,15 +214,15 @@ class LanClient {
               scheme: 'https',
               host: device.host,
               port: device.port,
-              path: '/mane/v1/query',
+              path: '/sundial/v1/query',
               queryParameters: query,
             ),
           )
           .timeout(_timeout);
-      request.headers.set('x-mane-device', localDeviceId);
-      request.headers.set('x-mane-timestamp', '$timestamp');
-      request.headers.set('x-mane-nonce', nonce);
-      request.headers.set('x-mane-signature', signature);
+      request.headers.set('x-sundial-device', localDeviceId);
+      request.headers.set('x-sundial-timestamp', '$timestamp');
+      request.headers.set('x-sundial-nonce', nonce);
+      request.headers.set('x-sundial-signature', signature);
       final response = await request.close().timeout(_timeout);
       final body = await utf8.decoder.bind(response).join();
       if (response.statusCode == HttpStatus.unauthorized) {

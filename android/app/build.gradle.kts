@@ -15,7 +15,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "io.github.gabrieleancillai.mane"
+    namespace = "io.github.sundial"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -32,7 +32,7 @@ android {
     defaultConfig {
         // The package id is part of the shipped identity. Do not change it
         // without explicit approval.
-        applicationId = "io.github.gabrieleancillai.mane"
+        applicationId = "io.github.sundial"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

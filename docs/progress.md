@@ -4,12 +4,307 @@ Keep this file current. A fresh context window should be able to resume from it.
 
 ## Current milestone
 
-v0.9 is complete. The v1.0 program is real-device verification, the
-accessibility/contrast audit, final docs and a signed release. The 2026-11-09
-Huawei run fixed the app-lock bypass, notification actions/snooze and CSV
-import duplication; see `docs/device-run-2026-11-09.md`. The widget and OEM
-battery checks still need the user, and reboot is blocked by EMUI. The
-constraint audit is in `docs/compliance-audit.md`.
+Schema v13 and the Home rework are implemented and green. See the dated entry
+below and section 4.2 of `docs/full-docs.md`.
+
+## 2026-11-17 Home inventory, shopping and gadgets rework
+
+- **Inventory is product + stock variants.** `home_item_records` gained
+  `groupId`; one card groups every size of the same product. Three 5-gallon
+  water bottles and four 5-litre bottles are one product with two variants,
+  each with its own unit, pack size, quantity, minimum, expiry and locations.
+  The editor adds another size without re-entering the product and accepts
+  multiple locations per variant.
+- **Reference data replaces free text.** New `home_category_records`,
+  `home_location_records`, `home_unit_records` and
+  `home_item_location_records` tables, seeded through
+  `homeReferenceSeeded`. Categories and locations carry an icon and colour;
+  units carry a symbol and kind. `HomeReferencePage` creates, renames,
+  recolours and deletes them with duplicate-name and delete guards. Existing
+  rows are backfilled by name, and deleted rows are not resurrected by text.
+- **Household catalog.** `lib/data/household_catalog.dart` ships 124 common
+  household goods across 12 categories with EN/ES names and descriptions,
+  icons, colours and default category/unit/pack/minimum/shelf life.
+  `HouseholdCatalogPage` searches by localized text, shows what is already in
+  inventory, reuses an existing product group for another size and still
+  accepts a custom item. The catalog pattern adapts GymMane's nutrition
+  library; the data and UI are original (see `CREDITS.md`).
+- **Shopping is inventory-aware.** Low, empty and expired stock produces a
+  suggestion card with per-item and add-all actions. Shopping lines can link to
+  an exact variant; checking one restocks that variant, stamps the purchase and
+  writes history. Unchecking reverses the quantity recorded at check time,
+  even if the line was edited or relinked. Removing a variant unlinks its
+  lines. One-off purchases remain a first-class path.
+- **Gadgets support the real maintenance loop.** Interval presets, a next due
+  date that starts after the actual service, manual rescheduling, a service log
+  with note and duration, and an optional completed calendar event with a
+  start/end block. Service dates are read in the entry zone (UTC for all-day
+  rows), so timezone travel cannot shift an all-day service by a day. Delete
+  actions confirm first.
+- **Fixes from the quality review.** Quantity labels read `3 Bottle · 5 gal`
+  instead of multiplying the pack. Clearing a category or unit persists the
+  clear. Linked shopping lines lock the fields the inventory owns. The
+  inventory, shopping and gadget pages show a load-error notice instead of
+  looking empty. Checkboxes and switches carry semantic labels and 48 dp
+  targets. Shopping unit names are localized. Inventory search matches
+  localized catalog names, descriptions, units and categories. Removal dialogs
+  say “Remove” rather than “Delete”.
+- **Schema and data path.** Schema v13 (from v12), with a real v12 fixture
+  migration test. Backup, auto-backup, CSV, LAN payload, MCP shopping add and
+  global search understand the new fields and reference rows. `clearAllData`
+  deletes maintenance logs before entries and reseeds reference data.
+- **Docs and captures.** `docs/full-docs.md` section 4.2 and the data model are
+  updated; `docs/reference-map.md`, `README.md` and `CREDITS.md` describe the
+  rework and the GymMane catalog inspiration. New screenshots:
+  `v1.6-home-inventory-mobile.png`, `v1.6-home-catalog-mobile.png`,
+  `v1.6-home-shopping-mobile.png` and `v1.6-home-gadgets-mobile.png`.
+- **Validation.** `flutter analyze --no-fatal-infos` clean; 271 app tests pass;
+  95 core tests pass; the CI format check is clean; Linux debug and Android
+  debug APK builds pass; the screenshot suite renders 26 captures. New and
+  updated coverage is in `test/home_inventory_v2_test.dart` (19 tests),
+  `test/migration_test.dart`, `test/backup_test.dart`,
+  `test/csv_interchange_test.dart` and `test/home_tracking_test.dart`.
+
+Open follow-ups: expose manual section ordering (positions are stored), use the
+unit kind for purchase rounding, include maintenance logs in the read-only LAN
+snapshot, and add widget tests for the reference manager and the log/reschedule
+sheets.
+
+## Product-polish baseline
+
+The `feat/product-polish` branch reworks the product surface after v0.9. These
+parts are in place and green:
+
+- Responsive shell: bottom navigation on phones, a configurable left/right side
+  rail on desktop.
+- Today list/timeline switch with progress and friendly task cards.
+- Work/Home/Personal space overviews with jobs, homes, people, projects and
+  habits. Context detail screens expose shifts, per-day checklists, inventory,
+  gadgets, projects and habits.
+- Plan page with a full-surface month calendar that folds into the desktop
+  week grid or the phone selected-day timeline; the week grid keeps
+  drag-to-move, resize and drag-to-create.
+- Stats dashboard with PDF summary/detailed reports and CSV export.
+- Sectioned settings with search, Aero/light/dark/system themes, background
+  styles, text size, date format, navigation side and a performance mode. App
+  lock is removed from the product surface.
+- V2 delta: Aero now treats shared surfaces as glossy frosted glass and selects
+  the Aero interaction-sound pack. Preferences add an opt-in Sound section
+  (interaction pack, preview, alarm sound) and a searchable IANA time zone
+  picker for new timed entries.
+- V2 delta: the entry editor infers scheduled / clock-in / deadline / anytime
+  from clearable start and end fields, and uses a Streak-style repeat sheet plus
+  repeat-after-completion. Clocking out pauses; the same entry resumes on a
+  later day with a second session.
+- V2 delta: `showAppSheet` is a bottom sheet on phones and a blurred floating
+  dialog on desktop; a shared searchable selector replaces the stock dropdowns
+  in the main forms.
+- Online master switch gates Devices & Sync and MCP; the MCP port is
+  configurable and pairing is discovery-first.
+- Schema v9 adds contexts, projects, habits, habit completions, time sessions,
+  entry context/project/priority/completedAt and per-day shift checklists,
+  with a v8 migration test and a backup round-trip. Schema v10 repairs
+  databases written by the earlier draft-v9 build (space units, task sessions
+  and integer priorities) and keeps their rows.
+
+Still open: real-device visual pass, Android tablet/desktop layout review,
+weekly-grid interaction polish, manual testing of the sticker editor and
+report save dialogs on both platforms, and a real-device audio check for the
+SoundPool bridge, `aplay` fallback and per-sound notification channels. The old app-lock feature and its tests
+are deleted; legacy settings rows are ignored and still excluded from backups.
+
+## 2026-11-16 shared reading pane
+
+- Wide windows now give page bodies the same centred 760 px column that the
+  Settings master-detail pane already used. Lists, forms and dashboards keep
+  equal gutters instead of stretching cards to the window edge.
+- `SundialContentPane` in `lib/core/widgets/sundial_content_pane.dart` wraps the
+  shell tabs and every `SundialPage`, so pushed screens inherit the treatment
+  without per-page layout code. The settings pane now uses the same widget.
+- The Plan page opts out because the month and week grids are canvases that
+  need the full width. The shared width lives in `kContentMaxWidth`.
+- Updated screenshots: `v1.0-stats-desktop.png` and
+  `v1.5-radii-work-desktop.png`.
+- Validation: analyze clean, 249 app tests, 95 core tests.
+
+## 2026-11-16 plan month surface and fold
+
+- The Plan page opens on a full-surface month calendar: one stretched cell per
+  day, event and shift chips in their space/job colour, a today marker and a
+  "+N" overflow count. The fixed-width month sidebar is gone.
+- The month folds upward with a clipped-height animation into the full-width
+  week time grid on desktop and the selected-day timeline on phones. Phones
+  keep a seven-day strip for the selected week above the day lane, so tapping a
+  day or stepping across a week boundary keeps the week in view. The bottom bar
+  carries the expand/collapse chevrons (a single toggle on phones), Today, and
+  a Month/Week or Month/Day switch. Reduced motion snaps without the animation.
+- `month_calendar.dart` is the full month widget, `week_day_strip.dart` keeps
+  the selected week above the phone day lane, `day_timeline.dart` gains a fill
+  mode for that lane, and `plan_page.dart` owns the fold controller and the
+  separate month/timeline data ranges.
+- The week grid keeps its drag-to-move, resize and drag-to-create gestures and
+  gives the all-day row room for three chips. The phone chips drop the clock
+  label on narrow cells so the title keeps the space.
+- `plan_page_test.dart` covers the month-to-week and month-to-day folds,
+  including a mid-animation height assertion.
+- Screenshots: `v1.4-plan-month-desktop.png`, `v1.4-plan-week-desktop.png`,
+  `v1.4-plan-month-mobile.png`, `v1.4-plan-day-mobile.png` and
+  `v1.4-plan-month-dark-desktop.png`.
+- Validation: analyze clean, 248 app tests, 95 core tests, Linux debug and
+  Android debug APK pass.
+
+## 2026-11-16 appearance palettes and picker
+
+- Space and tag palettes now offer 30+ colours while the original defaults keep
+  their order. The context avatar opens the icon picker directly, so the editor
+  no longer needs a separate icon row.
+- The paper dot pattern is denser and stronger so the background reads on both
+  light and dark surfaces.
+- The desktop rail search uses the shared full-height pill with a short hint,
+  so it no longer clips on the narrow rail.
+- `space_editor_test.dart` covers the palette size and the avatar picker.
+- Validation: analyze clean, 247 app tests, 95 core tests, Linux debug and
+  Android debug APK pass.
+
+## 2026-11-15 overlapping shifts blend
+
+- The desktop week grid and the day timeline no longer split colliding shifts
+  into side-by-side lanes. Each shift keeps the full column width, and a shift
+  that starts later paints its translucent fill over the one beneath it. The
+  shared minutes read as a deeper blended tint with no vertical seam, no step
+  and no danger outline.
+- Labels that would land on the same pixels stack downward instead of being
+  clipped into narrow lanes, so two shifts starting together both stay
+  readable.
+- `shift_block_layout.dart` orders the blocks for painting and places the
+  labels; `shift_block_painter.dart` draws the blend. Unit tests cover the
+  ordering, dropped spans and label stacking, and the week-grid and day-timeline
+  widget tests assert full-width blocks.
+- Entries with a start time and no end render as open-ended blocks in the day
+  timeline and week grid instead of zero-height events.
+- Week-grid drag and resize previews are pointer-device aware: mouse drags move
+  immediately, touch and pen hold first, and trackpad pans scroll without
+  creating or moving an entry.
+- Cross-pattern overlaps stay allowed and intentional; the editor still blocks
+  overlaps inside one pattern.
+- Validation: analyze clean, 245 app tests, 95 core tests, Linux debug and
+  Android debug APK pass. Updated screenshot:
+  `docs/screenshots/v1.0-plan-overlap-desktop.png`.
+
+## 2026-11-13 compliance v2
+
+`feat/compliance-v2` was built from the preserved v1.2 snapshot. The first
+compliance wave fixed the data-integrity defects found by the audit:
+
+- Entry edits preserve the four timing shapes and imported provenance; the
+  editor no longer invents 09:00/10:00 times. Add-from-unit passes space/unit.
+- Read-only imports are guarded in the editor, task cards, repository and
+  database. Re-import uses a separate importer write path.
+- Schema v10 repairs the draft context/time-entry tables in place and moves
+  legacy non-Work shift patterns to Work.
+- The online master switch is authoritative; MCP token rotation and port changes
+  rebind the running endpoint and reject the old token.
+- Completion has one repository path, stops running sessions, scopes recurring
+  occurrences and advances maintenance dates.
+- Backups accept schema 3–12, embed media as base64 and restore over a populated
+  database. Delete-all removes media and automatic backups in a foreign-key-safe
+  order.
+- LAN binds a private IPv4 interface and the unauthenticated info endpoint no
+  longer leaks username/device ID.
+- Per-day checklists refresh on date changes; cycle changes clamp stale day
+  indexes. Plan uses the 1024 px week-grid breakpoint and aligns the all-day
+  gutter. Today's list renders the shift checklist, not only the timeline.
+- Stats resolves tracked sessions outside the selected occurrence range, so
+  totals and breakdowns reconcile.
+- Context/project deletion detaches tasks and hides owned rows; shifts outside
+  Work are rejected. Multi-home shopping keeps its home and clear-bought is
+  scoped. Low-stock lines keep their home.
+- Weekly habit streaks count the current week and consecutive qualifying weeks.
+  Habits now carry a weekday schedule (schema v11) and a 12-week history page;
+  weekly targets are clamped to the scheduled days and off-days never break a
+  day streak.
+- Desktop sidebar search is a persistent field with a filter badge; settings
+  search indexes individual rows and now scrolls to the matching row with a
+  short highlight.
+- Desktop time fields share one typed picker with 15-minute snaps, exact minutes
+  and keyboard submit; phones keep the platform sheet.
+- Reports export a summary CSV as well as the detailed one, both reconciling
+  with the tracked total.
+- Delete-all reports a partial wipe instead of claiming success; backup media is
+  written before the database commit and only media the replaced plan referenced
+  is pruned. Import validates enum names, timezones and recurrence JSON before
+  writing.
+- Draft-v9 gadgets migrate to Home maintenance entries, the v10 repair also runs
+  for files a broken v1.2 build already stamped as v10, and mDNS advertises the
+  certificate fingerprint plus the device name, never the username or device ID.
+- Editing a recurring occurrence writes an override instead of the series, and
+  Plan drag/resize keeps an existing override's text.
+
+Validation: analyze clean, 215 app tests, 95 core tests, Linux debug and Android
+debug APK all pass. `docs/compliance-matrix.md` records the row-by-row status,
+including what is still open.
+
+Aero 2.0 is a stop gate. `docs/aero-2.md` now carries the token candidate in
+`lib/theme/aero_colors.dart`, three rendered concept screens
+(`docs/screenshots/aero2-*.png`, `tool/screenshots/aero_concept_test.dart`) and
+a WCAG contrast table enforced by `test/aero_contrast_test.dart`. The shipped
+Aero surface is frozen until the user approves the direction; nothing in the app
+imports the new tokens yet.
+
+Screenshot evidence is rendered by `tool/screenshots/screenshot_test.dart` into
+`docs/screenshots/v1.0-*.png` plus the v2 captures
+`docs/screenshots/v1.2-today-aero.png` and
+`docs/screenshots/v1.2-preferences-mobile.png`. That pass fixed narrow desktop entry blocks,
+clipped all-day chips, scheduled tasks shown as deadlines, and the day timeline
+opening at midnight; it now self-scrolls near the current hour and draws a
+separate due marker for deadlines.
+
+The v1.0 device/accessibility/release items from the earlier program remain in
+`docs/completion-plan.md`.
+
+## 2026-11-14 shift editor and job colours
+
+- Shift surfaces (Today list, Today/Plan timelines, the desktop week grid and
+  the month/week markers) now use the job context colour of each shift pattern
+  instead of the generic Work blue. Patterns without a context keep the Work
+  colour.
+- The desktop time dialog focuses its text field on open and selects the
+  prefilled value, so typing replaces the time immediately.
+- Leaving the shift editor with unsaved edits asks before discarding them. The
+  prompt is skipped when nothing changed, and saving or deleting still closes
+  the page without a second confirmation.
+- Validation: analyze clean, 219 app tests, 95 core tests, Linux debug and
+  Android debug APK pass. Updated screenshots: `v1.0-today-list-light.png`,
+  `v1.0-today-timeline-light.png` and `v1.0-plan-desktop.png`.
+
+## 2026-11-14 overlapping shift lanes
+
+- The desktop week grid and the day timeline now split overlapping shifts into
+  side-by-side lanes only for the shared slice. The rest of each shift stays
+  full width, so a partially overlapping block steps back to full width when
+  the collision ends.
+- Direct collisions get a single danger outline around the union of their
+  slices, so neither shift can disappear.
+- The slicing helper lives in `shift_lane_layout.dart` and the stepped painter
+  in `shift_lane_painter.dart`, with unit tests and widget coverage for both
+  layouts.
+- Cross-pattern overlaps stay allowed (they can be temporary or intentional),
+  but the calendar now shows the collision rather than silently stacking it.
+- Validation: analyze clean, 231 app tests, 95 core tests. Screenshot:
+  `docs/screenshots/v1.0-plan-overlap-desktop.png`.
+
+## 2026-11-14 desktop settings master-detail
+
+- On windows at the 900 px shell breakpoint and wider, Settings now keeps the
+  section menu and search in a left card and renders the selected panel on the
+  right. Phones keep the existing list-to-subpage flow unchanged.
+- The desktop menu covers Appearance, Preferences, Data and backup, Online
+  functionalities and About. Settings search still indexes individual rows and
+  opens the matching section with the row highlighted.
+- Appearance, Preferences, Data and About reuse the existing page bodies through
+  an embedded mode, so there is one implementation of every setting.
+- Validation: analyze clean, 230 app tests, 95 core tests. Screenshot:
+  `docs/screenshots/v1.3-settings-desktop.png`.
 
 ## Reference notes
 
@@ -23,20 +318,20 @@ constraint audit is in `docs/compliance-audit.md`.
 - Settings shell and row kit: Streak
   `features/settings/pages/settings_page.dart`,
   `features/settings/widgets/settings_rows.dart`, `features/settings/pages/about_page.dart`.
-- Localization: both projects use the same `l10n.yaml`; Mane follows Streak's
+- Localization: both projects use the same `l10n.yaml`; Sundial follows Streak's
   `context.l10n` extension and explicit `en`/`es` supported locales.
 - Calendar: Streak `timeline_week_strip.dart`, `activity_calendar.dart`,
-  `express_month.dart`. Mane keeps the month maths and selection model, but
+  `express_month.dart`. Sundial keeps the month maths and selection model, but
   replaces habit cells with per-space markers and shift bars, and taps navigate
   to a day detail instead of toggling completion.
 - Home inventory, shopping, ICS import, interval maintenance, sleep window and
   shift checklists have no equivalent in GymMane or Streak. They are
-  planner-specific, implemented in `mane_core` and the `home_inventory`,
+  planner-specific, implemented in `sundial_core` and the `home_inventory`,
   `import`, `shifts` and `sleep` feature folders. The settings rows, theme and
   localization still follow the reference patterns.
 - LAN pairing, query and MCP have no equivalent. Streak's `auto_sync.dart` and
   `folder_sync.dart` exchange backup files through a shared folder; they do not
-  discover peers, pin TLS certificates or expose tools. Mane implements the
+  discover peers, pin TLS certificates or expose tools. Sundial implements the
   v0.4 transport in `lib/features/sync` and `lib/features/mcp` with standard
   PBKDF2, HMAC, AES-GCM and TLS pinning.
 
@@ -61,7 +356,7 @@ constraint audit is in `docs/compliance-audit.md`.
   (`entryId:offsetMinutes`). The notification queue is rebuilt on start,
   resume, timezone change, and after entry/reminder edits. The horizon is 90
   days with a 500-notification cap.
-- Backup is a versioned JSON document (`app: mane`, `schemaVersion: 5`) with
+- Backup is a versioned JSON document (`app: sundial`, `schemaVersion: 5`) with
   every user table, timestamps, IANA zones, recurrence JSON and soft deletes.
   Import validates the envelope before the transaction and rolls back on any bad
   row. `identity_records` and `paired_device_records` are deliberately excluded.
@@ -87,7 +382,7 @@ constraint audit is in `docs/compliance-audit.md`.
 - MCP is loopback-only (`127.0.0.1:8765/mcp`), off by default, and requires the
   device bearer token. `initialize`, `ping`, `tools/list` and `tools/call` are
   implemented. Write tools appear only when `mcpWritesEnabled` is on.
-- Snapshots from paired devices are display-only and stay in memory. Mane never
+- Snapshots from paired devices are display-only and stay in memory. Sundial never
   merges a remote plan into the local one.
 - Search reads only non-deleted entries and home items. It matches titles,
   notes, tag names, and home name/category/location/notes; results are grouped
@@ -195,14 +490,14 @@ constraint audit is in `docs/compliance-audit.md`.
   match the code.
 - Bundled Nunito (the GymMane face) with a display/headline/title/body/label
   scale in `lib/theme/app_typography.dart`.
-- Rewrote `ManeColors` as the single palette (space, state, glass, nav and
-  shadow tokens) and rebuilt `ManeTheme` with app bar, card, sheet, dialog,
+- Rewrote `SundialColors` as the single palette (space, state, glass, nav and
+  shadow tokens) and rebuilt `SundialTheme` with app bar, card, sheet, dialog,
   snack bar, navigation bar, button, input, chip, switch, date and time picker
   themes. Screens read `context.mc`, not generated Material roles.
 - Added the shared UI kit under `lib/core/widgets`: `SoftCard`, `AppSheet`,
   `SectionLabel`, `Pressable`, `GlassIconButton`, `GlassPill`, `TinySwitch`,
-  `GlassSurface`, `AppEmptyState`, `ManeNotice`, `FadeThrough`, `ManePage`,
-  `ManeAddButton`, `ManeNavBar`, `ManeSegmented`, `ManeSearchField` and the
+  `GlassSurface`, `AppEmptyState`, `SundialNotice`, `FadeThrough`, `SundialPage`,
+  `SundialAddButton`, `SundialNavBar`, `SundialSegmented`, `SundialSearchField` and the
   dotted `AppBackground`.
 - Replaced the stock shell with a transparent scaffold, paper background, custom
   header, floating nav and companion add button. Ctrl+1..3 and the tag filter
@@ -333,7 +628,7 @@ constraint audit is in `docs/compliance-audit.md`.
   session `DELETE` and linked inventory, JSON backup/import, and app lock.
 - Blocked or failed: the widget needs the user's launcher; OEM battery needs the
   EMUI path; reboot fails because EMUI does not deliver `BOOT_COMPLETED` even
-  with the app whitelisted and auto-launch enabled. Opening Mane rebuilt the
+  with the app whitelisted and auto-launch enabled. Opening Sundial rebuilt the
   queue without duplicates.
 - Tests: 135 app/database/widget tests and 85 core tests.
 - Validation: format check clean (144 files), analyze clean, both suites pass,
@@ -413,7 +708,7 @@ constraint audit is in `docs/compliance-audit.md`.
 
 ## Next three steps
 
-1. Add the Mane widget on the phone and finish the OEM battery path, then record
+1. Add the Sundial widget on the phone and finish the OEM battery path, then record
    both in `docs/device-run-2026-11-09.md`.
 2. Run the accessibility/contrast pass and fix what is fixable.
 3. Tag v1.0 only when every scenario in `docs/completion-plan.md` passes and a
@@ -436,7 +731,7 @@ constraint audit is in `docs/compliance-audit.md`.
   pinning, replay rejection, MCP tools/sessions/SSE, sync orchestration and
   snapshot persistence, search, widget data, notification actions, l10n
   enforcement and widget flows).
-- `(cd packages/mane_core && dart test)` — 85 passed (recurrence including
+- `(cd packages/sundial_core && dart test)` — 85 passed (recurrence including
   constant-time ordinals, expansion, shifts, timezones, local windows, sleep).
 - `flutter build linux --debug` — ok, including the Bonsoir plugin.
 - `flutter build linux --release` — ok.

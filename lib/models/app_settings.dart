@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
 
@@ -24,12 +24,36 @@ abstract final class SettingsKeys {
   static const quietHoursEnabled = 'quietHoursEnabled';
   static const quietHoursStart = 'quietHoursStart';
   static const quietHoursEnd = 'quietHoursEnd';
-  static const appLockEnabled = 'appLockEnabled';
-  static const appLockPinSalt = 'appLockPinSalt';
-  static const appLockPinHash = 'appLockPinHash';
-  static const appLockMisses = 'appLockMisses';
-  static const appLockBlockedUntil = 'appLockBlockedUntil';
+
+  static const themeVariant = 'themeVariant';
+  static const colorScheme = 'colorScheme';
+  static const backgroundStyle = 'backgroundStyle';
+  static const backgroundCustomColor = 'backgroundCustomColor';
+  static const textScale = 'textScale';
+  static const navSide = 'navSide';
+  static const dateFormat = 'dateFormat';
+  static const performanceMode = 'performanceMode';
+  static const onlineEnabled = 'onlineEnabled';
+  static const mcpPort = 'mcpPort';
+  static const soundsEnabled = 'soundsEnabled';
+  static const soundPack = 'soundPack';
+  static const alarmSound = 'alarmSound';
+  static const timezoneOverride = 'timezoneOverride';
 }
+
+enum SundialThemeVariant { system, light, dark, aero }
+
+enum SundialAccentScheme { sage, ocean, sunset, violet, mono }
+
+enum SundialBackgroundStyle { dots, grid, oled, plain, custom }
+
+enum SundialNavSide { left, right }
+
+enum SundialDateFormat { system, dmy, mdy, ymd }
+
+enum SundialSoundPack { soft, aero }
+
+enum SundialAlarmSound { soft, chime, bright }
 
 /// App-wide preferences. Persisted in the `setting_records` table.
 class AppSettings {
@@ -48,14 +72,26 @@ class AppSettings {
     this.sleepWakeBufferMinutes = 30,
     this.autoBackupEnabled = false,
     this.autoBackupKeep = 5,
-    this.appLockEnabled = false,
-    this.hasAppLockPin = false,
     this.workHoursEnabled = false,
     this.workHoursStartMinute = 9 * 60,
     this.workHoursEndMinute = 17 * 60,
     this.quietHoursEnabled = false,
     this.quietHoursStartMinute = 22 * 60,
     this.quietHoursEndMinute = 7 * 60,
+    this.themeVariant = SundialThemeVariant.system,
+    this.accentScheme = SundialAccentScheme.sage,
+    this.backgroundStyle = SundialBackgroundStyle.dots,
+    this.backgroundCustomColor = 0xFFF6F4EF,
+    this.textScale = 1,
+    this.navSide = SundialNavSide.left,
+    this.dateFormat = SundialDateFormat.system,
+    this.performanceMode = false,
+    this.onlineEnabled = false,
+    this.mcpPort = 8765,
+    this.soundsEnabled = false,
+    this.soundPack = SundialSoundPack.aero,
+    this.alarmSound = SundialAlarmSound.chime,
+    this.timezoneOverride = '',
   });
 
   final ThemeMode themeMode;
@@ -84,11 +120,6 @@ class AppSettings {
   final bool autoBackupEnabled;
   final int autoBackupKeep;
 
-  /// A PIN pad before the planner opens. The hash is device-local and never
-  /// travels in a backup.
-  final bool appLockEnabled;
-  final bool hasAppLockPin;
-
   /// When enabled, Work entries leave the aggregate screens outside this
   /// window. Work deadlines stay visible, and search always finds them.
   final bool workHoursEnabled;
@@ -100,9 +131,50 @@ class AppSettings {
   final int quietHoursStartMinute;
   final int quietHoursEndMinute;
 
+  final SundialThemeVariant themeVariant;
+  final SundialAccentScheme accentScheme;
+  final SundialBackgroundStyle backgroundStyle;
+  final int backgroundCustomColor;
+  final double textScale;
+  final SundialNavSide navSide;
+  final SundialDateFormat dateFormat;
+
+  /// Reduces blur, shadows and long animations on low-end devices.
+  final bool performanceMode;
+
+  /// Master switch for LAN sync and the local MCP endpoint.
+  final bool onlineEnabled;
+  final int mcpPort;
+
+  /// Short interaction blips. Off by default so a first launch stays quiet.
+  final bool soundsEnabled;
+  final SundialSoundPack soundPack;
+
+  /// Sound played by scheduled reminders.
+  final SundialAlarmSound alarmSound;
+
+  /// IANA zone used for new timed entries. Empty follows the device zone.
+  final String timezoneOverride;
+
   Duration get commute => Duration(minutes: sleepCommuteMinutes);
   Duration get windDown => Duration(minutes: sleepWindDownMinutes);
   Duration get wakeBuffer => Duration(minutes: sleepWakeBufferMinutes);
+
+  ThemeMode get resolvedThemeMode {
+    // OLED paints black behind the content; a light palette would become
+    // unreadable, so OLED is always a dark surface.
+    if (backgroundStyle == SundialBackgroundStyle.oled) return ThemeMode.dark;
+    return switch (themeVariant) {
+      SundialThemeVariant.light => ThemeMode.light,
+      SundialThemeVariant.dark => ThemeMode.dark,
+      SundialThemeVariant.aero => ThemeMode.light,
+      SundialThemeVariant.system => ThemeMode.system,
+    };
+  }
+
+  bool get isAero => themeVariant == SundialThemeVariant.aero;
+
+  bool get canUseNetwork => onlineEnabled;
 
   bool isWorkTime(DateTime instant, String timeZone) {
     if (!workHoursEnabled) return true;
@@ -133,6 +205,24 @@ class AppSettings {
         'dark' => ThemeMode.dark,
         _ => ThemeMode.system,
       },
+      themeVariant: _themeVariant(values),
+      accentScheme: _accentScheme(values[SettingsKeys.colorScheme]),
+      backgroundStyle: _backgroundStyle(values[SettingsKeys.backgroundStyle]),
+      backgroundCustomColor: int.tryParse(values[SettingsKeys.backgroundCustomColor] ?? '') ?? 0xFFF6F4EF,
+      textScale: _textScale(values[SettingsKeys.textScale]),
+      navSide: values[SettingsKeys.navSide] == 'right' ? SundialNavSide.right : SundialNavSide.left,
+      dateFormat: _dateFormat(values[SettingsKeys.dateFormat]),
+      performanceMode: values[SettingsKeys.performanceMode] == 'true',
+      soundsEnabled: values[SettingsKeys.soundsEnabled] == 'true',
+      soundPack: _soundPack(values[SettingsKeys.soundPack]),
+      alarmSound: _alarmSound(values[SettingsKeys.alarmSound]),
+      timezoneOverride: _timezone(values[SettingsKeys.timezoneOverride]),
+      // The master switch is authoritative once written. Legacy rows without
+      // it keep the old derived behaviour so existing installs stay online.
+      onlineEnabled: values.containsKey(SettingsKeys.onlineEnabled)
+          ? values[SettingsKeys.onlineEnabled] == 'true'
+          : (values[SettingsKeys.syncEnabled] == 'true' || values[SettingsKeys.mcpEnabled] == 'true'),
+      mcpPort: _mcpPort(values[SettingsKeys.mcpPort]),
       locale: localeValue == null || localeValue.isEmpty || localeValue == 'system'
           ? null
           : localeForCode(localeValue),
@@ -148,10 +238,6 @@ class AppSettings {
       sleepWakeBufferMinutes: _minutes(values[SettingsKeys.sleepWakeBufferMinutes], 30),
       autoBackupEnabled: values[SettingsKeys.autoBackupEnabled] == 'true',
       autoBackupKeep: _keep(values[SettingsKeys.autoBackupKeep]),
-      hasAppLockPin: (values[SettingsKeys.appLockPinHash] ?? '').isNotEmpty,
-      appLockEnabled:
-          values[SettingsKeys.appLockEnabled] == 'true' &&
-          (values[SettingsKeys.appLockPinHash] ?? '').isNotEmpty,
       workHoursEnabled: values[SettingsKeys.workHoursEnabled] == 'true',
       workHoursStartMinute: _minutes(values[SettingsKeys.workHoursStart], 9 * 60),
       workHoursEndMinute: _minutes(values[SettingsKeys.workHoursEnd], 17 * 60),
@@ -165,6 +251,72 @@ class AppSettings {
     final parsed = int.tryParse(value ?? '');
     if (parsed == null || parsed < 1) return 5;
     return parsed.clamp(1, 20);
+  }
+
+  static SundialThemeVariant _themeVariant(Map<String, String> values) {
+    final explicit = values[SettingsKeys.themeVariant];
+    if (explicit != null) {
+      for (final variant in SundialThemeVariant.values) {
+        if (variant.name == explicit) return variant;
+      }
+    }
+    return switch (values[SettingsKeys.themeMode]) {
+      'light' => SundialThemeVariant.light,
+      'dark' => SundialThemeVariant.dark,
+      _ => SundialThemeVariant.system,
+    };
+  }
+
+  static SundialAccentScheme _accentScheme(String? value) {
+    for (final scheme in SundialAccentScheme.values) {
+      if (scheme.name == value) return scheme;
+    }
+    return SundialAccentScheme.sage;
+  }
+
+  static SundialBackgroundStyle _backgroundStyle(String? value) {
+    for (final style in SundialBackgroundStyle.values) {
+      if (style.name == value) return style;
+    }
+    return SundialBackgroundStyle.dots;
+  }
+
+  static SundialDateFormat _dateFormat(String? value) {
+    for (final format in SundialDateFormat.values) {
+      if (format.name == value) return format;
+    }
+    return SundialDateFormat.system;
+  }
+
+  static SundialSoundPack _soundPack(String? value) {
+    for (final pack in SundialSoundPack.values) {
+      if (pack.name == value) return pack;
+    }
+    return SundialSoundPack.aero;
+  }
+
+  static SundialAlarmSound _alarmSound(String? value) {
+    for (final sound in SundialAlarmSound.values) {
+      if (sound.name == value) return sound;
+    }
+    return SundialAlarmSound.chime;
+  }
+
+  static String _timezone(String? value) {
+    final zone = value?.trim() ?? '';
+    return zone.isEmpty || !isKnownTimeZone(zone) ? '' : zone;
+  }
+
+  static double _textScale(String? value) {
+    final parsed = double.tryParse(value ?? '');
+    if (parsed == null) return 1;
+    return parsed.clamp(0.85, 1.35);
+  }
+
+  static int _mcpPort(String? value) {
+    final parsed = int.tryParse(value ?? '');
+    if (parsed == null || parsed < 1024 || parsed > 65535) return 8765;
+    return parsed;
   }
 
   static int _minutes(String? value, int fallback) {
@@ -188,14 +340,26 @@ class AppSettings {
     int? sleepWakeBufferMinutes,
     bool? autoBackupEnabled,
     int? autoBackupKeep,
-    bool? appLockEnabled,
-    bool? hasAppLockPin,
     bool? workHoursEnabled,
     int? workHoursStartMinute,
     int? workHoursEndMinute,
     bool? quietHoursEnabled,
     int? quietHoursStartMinute,
     int? quietHoursEndMinute,
+    SundialThemeVariant? themeVariant,
+    SundialAccentScheme? accentScheme,
+    SundialBackgroundStyle? backgroundStyle,
+    int? backgroundCustomColor,
+    double? textScale,
+    SundialNavSide? navSide,
+    SundialDateFormat? dateFormat,
+    bool? performanceMode,
+    bool? onlineEnabled,
+    int? mcpPort,
+    bool? soundsEnabled,
+    SundialSoundPack? soundPack,
+    SundialAlarmSound? alarmSound,
+    String? timezoneOverride,
   }) => AppSettings(
     themeMode: themeMode ?? this.themeMode,
     locale: clearLocale ? null : (locale ?? this.locale),
@@ -211,13 +375,25 @@ class AppSettings {
     sleepWakeBufferMinutes: sleepWakeBufferMinutes ?? this.sleepWakeBufferMinutes,
     autoBackupEnabled: autoBackupEnabled ?? this.autoBackupEnabled,
     autoBackupKeep: autoBackupKeep ?? this.autoBackupKeep,
-    appLockEnabled: appLockEnabled ?? this.appLockEnabled,
-    hasAppLockPin: hasAppLockPin ?? this.hasAppLockPin,
     workHoursEnabled: workHoursEnabled ?? this.workHoursEnabled,
     workHoursStartMinute: workHoursStartMinute ?? this.workHoursStartMinute,
     workHoursEndMinute: workHoursEndMinute ?? this.workHoursEndMinute,
     quietHoursEnabled: quietHoursEnabled ?? this.quietHoursEnabled,
     quietHoursStartMinute: quietHoursStartMinute ?? this.quietHoursStartMinute,
     quietHoursEndMinute: quietHoursEndMinute ?? this.quietHoursEndMinute,
+    themeVariant: themeVariant ?? this.themeVariant,
+    accentScheme: accentScheme ?? this.accentScheme,
+    backgroundStyle: backgroundStyle ?? this.backgroundStyle,
+    backgroundCustomColor: backgroundCustomColor ?? this.backgroundCustomColor,
+    textScale: textScale ?? this.textScale,
+    navSide: navSide ?? this.navSide,
+    dateFormat: dateFormat ?? this.dateFormat,
+    performanceMode: performanceMode ?? this.performanceMode,
+    onlineEnabled: onlineEnabled ?? this.onlineEnabled,
+    mcpPort: mcpPort ?? this.mcpPort,
+    soundsEnabled: soundsEnabled ?? this.soundsEnabled,
+    soundPack: soundPack ?? this.soundPack,
+    alarmSound: alarmSound ?? this.alarmSound,
+    timezoneOverride: timezoneOverride ?? this.timezoneOverride,
   );
 }

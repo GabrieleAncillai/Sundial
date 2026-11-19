@@ -1,26 +1,27 @@
 # Credits
 
-## Code and design references
+## Inspiration and references
 
-Mane is built with reference to two GPL-3.0-only projects by
+Sundial is an independent project inspired by two GPL-3.0-only projects by
 [InlitX](https://github.com/InlitX):
 
 - [GymMane](https://github.com/InlitX/GymMane): offline gym log for Android.
-  Used as the reference for the small-app structure, theme, settings, backup
-  and localisation.
+  A reference for small-app structure, theme, settings, backup and localisation.
 - [Streak](https://github.com/InlitX/streak): offline habit tracker for Android,
-  Windows and Linux. Used as the reference for the calendar, reminders,
-  notifications, motion, sync and feature-first architecture.
+  Windows and Linux. A reference for the calendar, reminders, notifications,
+  motion, sync and feature-first architecture.
 
-Both projects carry Section 7(b) attribution terms. If Mane adapts code from
-either project, the About screen and this file must retain:
+Sundial is not affiliated with or endorsed by InlitX. The upstream projects are
+credited as design and architecture references. If any code is ever adapted from
+them, their GPL-3.0-only notices and Section 7(b) attributions must be retained.
 
-> Based on GymMane by InlitX
+The Home inventory catalog adapts the *concept* of GymMane's nutrition library
+(`lib/services/food_library.dart` and the seeded TSV data): a searchable,
+localized library with defaults and art that the user can extend. The household
+item data, icons and screens are original to Sundial and remain GPL-3.0-only.
+No GymMane code or data files are copied.
 
-> Based on Streak by InlitX
-
-The upstream license texts and additional terms are available in their
-repositories. Mane itself is GPL-3.0-only; see [LICENSE](LICENSE) and
+Sundial itself is GPL-3.0-only; see [LICENSE](LICENSE) and
 [ADDITIONAL_TERMS.md](ADDITIONAL_TERMS.md).
 
 ## Assets

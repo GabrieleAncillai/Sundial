@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../services/planner_repository.dart';
@@ -73,7 +73,7 @@ class IcsImportService {
 
       final existing = await _repository.readImportedEntry(source, externalId);
       if (existing == null) {
-        await _repository.saveEntry(candidate);
+        await _repository.saveImportedEntry(candidate);
         imported++;
         continue;
       }
@@ -82,9 +82,8 @@ class IcsImportService {
         continue;
       }
 
-      await _repository.saveEntry(
-        Entry(
-          id: existing.id,
+      await _repository.saveImportedEntry(
+        existing.copyWith(
           spaceId: spaceId,
           title: candidate.title,
           notes: candidate.notes,
@@ -99,11 +98,7 @@ class IcsImportService {
           externalId: externalId,
           readOnly: true,
           recurrence: candidate.recurrence,
-          status: existing.status,
-          createdAt: existing.createdAt,
           updatedAt: now,
-          startAt: candidate.startAt,
-          endAt: candidate.endAt,
         ),
       );
       updated++;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../settings_scope.dart';
 
 /// A tap target that responds like the reference rows: a small scale on press,
 /// fast in and soft out.
@@ -83,6 +84,9 @@ class GlassIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final settings = AppSettingsScope.maybeOf(context);
+    final aero = settings?.isAero ?? false;
+    final reduced = settings?.performanceMode ?? false;
     final button = Pressable(
       onTap: onTap,
       semanticLabel: tooltip,
@@ -90,15 +94,47 @@ class GlassIconButton extends StatelessWidget {
       child: Container(
         width: size,
         height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: c.surface,
-          border: Border.all(color: c.border),
-          boxShadow: [BoxShadow(color: c.shadow, blurRadius: 12, offset: const Offset(0, 4))],
-        ),
+        decoration: aero
+            ? BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.white, c.surfaceAlt],
+                ),
+                border: Border.all(color: c.accent.withValues(alpha: 0.32)),
+                boxShadow: reduced
+                    ? [BoxShadow(color: c.shadow, blurRadius: 10, offset: const Offset(0, 3))]
+                    : [
+                        BoxShadow(color: c.shadow, blurRadius: 14, offset: const Offset(0, 5)),
+                        BoxShadow(color: c.accent.withValues(alpha: 0.16), blurRadius: 16),
+                      ],
+              )
+            : BoxDecoration(
+                shape: BoxShape.circle,
+                color: c.surface,
+                border: Border.all(color: c.border),
+                boxShadow: [BoxShadow(color: c.shadow, blurRadius: 12, offset: const Offset(0, 4))],
+              ),
         child: Stack(
           alignment: Alignment.center,
           children: [
+            if (aero && !reduced)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.white.withValues(alpha: 0.55), Colors.white.withValues(alpha: 0)],
+                        stops: const [0, 0.55],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             Icon(icon, size: size * 0.46, color: onTap == null ? c.textTertiary : c.text),
             if (badge != null) Positioned(top: 2, right: 2, child: badge!),
           ],

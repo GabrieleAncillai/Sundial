@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
+import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
@@ -16,6 +17,7 @@ class CalendarDayDetail extends StatelessWidget {
     required this.entries,
     required this.shifts,
     required this.spaces,
+    required this.contexts,
     required this.onAdd,
   });
 
@@ -23,13 +25,16 @@ class CalendarDayDetail extends StatelessWidget {
   final List<EntryOccurrence> entries;
   final List<ShiftOccurrence> shifts;
   final List<Space> spaces;
+  final List<PlannerContext> contexts;
   final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final title = DateFormat.yMMMMEEEEd(locale).format(date.toDateTime());
+    final title =
+        '${DateFormat.EEEE(locale).format(date.toDateTime())} · '
+        '${formatFullDate(context, date.toDateTime())}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,14 +42,14 @@ class CalendarDayDetail extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text(title, style: ManeType.title(15, color: c.text)),
+              child: Text(title, style: SundialType.title(15, color: c.text)),
             ),
             GlassIconButton(icon: Icons.add, tooltip: context.l10n.addOnThisDay, size: 34, onTap: onAdd),
           ],
         ),
         if (shifts.isNotEmpty) ...[
           const SizedBox(height: 10),
-          for (final shift in shifts) ShiftTile(occurrence: shift),
+          for (final shift in shifts) ShiftTile(occurrence: shift, contexts: contexts),
           for (final shift in shifts)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -52,6 +57,7 @@ class CalendarDayDetail extends StatelessWidget {
                 patternId: shift.pattern.id,
                 date: shift.date,
                 slotKey: shift.slotKey,
+                dayIndex: shift.pattern.cycleIndexFor(shift.date),
               ),
             ),
         ],

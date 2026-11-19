@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
-import '../features/app_lock/app_lock_service.dart';
 import '../features/backup/auto_backup_service.dart';
 import '../features/backup/backup_service.dart';
 import '../features/home_widget/home_widget_service.dart';
@@ -13,6 +12,9 @@ import '../features/sync/peer_discovery.dart';
 import '../features/sync/sync_service.dart';
 import '../models/date_range.dart';
 import '../models/home_item.dart';
+import '../models/home_reference.dart';
+import '../models/maintenance_log.dart';
+import '../models/time_entry.dart';
 import '../models/local_identity.dart';
 import '../models/paired_device.dart';
 import '../models/shopping_item.dart';
@@ -74,6 +76,49 @@ final repositoryProvider = Provider<PlannerRepository>(
 
 final spacesProvider = StreamProvider<List<Space>>((ref) => ref.watch(repositoryProvider).watchSpaces());
 
+final contextsProvider = StreamProvider.family<List<PlannerContext>, String?>(
+  (ref, spaceId) => ref.watch(repositoryProvider).watchContexts(spaceId: spaceId),
+);
+
+final projectsProvider = StreamProvider.family<List<Project>, String?>(
+  (ref, spaceId) => ref.watch(repositoryProvider).watchProjects(spaceId: spaceId),
+);
+
+final contextProjectsProvider = StreamProvider.family<List<Project>, String>(
+  (ref, contextId) => ref.watch(repositoryProvider).watchProjects(contextId: contextId),
+);
+
+final habitsProvider = StreamProvider.family<List<Habit>, String?>(
+  (ref, spaceId) => ref.watch(repositoryProvider).watchHabits(spaceId: spaceId),
+);
+
+final habitCompletionsProvider = StreamProvider<Map<String, Set<LocalDate>>>(
+  (ref) => ref.watch(repositoryProvider).watchHabitCompletions(),
+);
+
+final openEntriesProvider = StreamProvider.family<List<Entry>, LocalDate>(
+  (ref, until) => ref.watch(repositoryProvider).watchOpenEntries(until),
+);
+
+final entryTimeProvider = StreamProvider.family<List<TimeEntry>, String>(
+  (ref, entryId) => ref.watch(repositoryProvider).watchTimeEntriesForEntry(entryId),
+);
+
+final timeEntriesRangeProvider = FutureProvider.family<List<TimeEntry>, ({DateTime start, DateTime end})>(
+  (ref, range) => ref.watch(repositoryProvider).readTimeEntriesBetween(range.start, range.end),
+);
+
+/// Entries referenced by tracked sessions, even when they are outside the
+/// visible occurrence range. Reports use this so totals always reconcile.
+final trackedEntriesProvider = FutureProvider.family<Map<String, Entry>, ({DateTime start, DateTime end})>((
+  ref,
+  range,
+) async {
+  final sessions = await ref.watch(timeEntriesRangeProvider(range).future);
+  final ids = {for (final session in sessions) session.entryId};
+  return ref.watch(repositoryProvider).readEntriesByIds(ids);
+});
+
 final tagsProvider = StreamProvider<List<Tag>>((ref) => ref.watch(repositoryProvider).watchTags());
 
 final homeItemsProvider = StreamProvider<List<HomeItem>>(
@@ -84,14 +129,37 @@ final shoppingItemsProvider = StreamProvider<List<ShoppingItem>>(
   (ref) => ref.watch(repositoryProvider).watchShoppingItems(),
 );
 
+final homeCategoriesProvider = StreamProvider<List<HomeCategory>>(
+  (ref) => ref.watch(repositoryProvider).watchHomeCategories(),
+);
+
+final homeLocationsProvider = StreamProvider<List<HomeLocation>>(
+  (ref) => ref.watch(repositoryProvider).watchHomeLocations(),
+);
+
+final homeUnitsProvider = StreamProvider<List<HomeUnit>>(
+  (ref) => ref.watch(repositoryProvider).watchHomeUnits(),
+);
+
+final maintenanceLogsProvider = StreamProvider.family<List<MaintenanceLog>, String>(
+  (ref, entryId) => ref.watch(repositoryProvider).watchMaintenanceLogs(entryId),
+);
+
+/// Open home gadgets regardless of how far their next due date is.
+final maintenanceEntriesProvider = StreamProvider<List<Entry>>((ref) {
+  final now = ref.watch(nowProvider);
+  final timeZone = ref.watch(deviceTimeZoneProvider);
+  final today = localDateAt(now, timeZone);
+  return ref
+      .watch(repositoryProvider)
+      .watchOpenEntries(today.addDays(3650))
+      .map((entries) => entries.where((entry) => entry.isMaintenance).toList());
+});
+
 final backupServiceProvider = Provider<BackupService>((ref) => BackupService(ref.watch(databaseProvider)));
 
 final autoBackupServiceProvider = Provider<AutoBackupService>(
   (ref) => AutoBackupService(ref.watch(backupServiceProvider)),
-);
-
-final appLockServiceProvider = Provider<AppLockService>(
-  (ref) => AppLockService(ref.watch(repositoryProvider)),
 );
 
 final homeWidgetServiceProvider = Provider<HomeWidgetService>((ref) => HomeWidgetService());
@@ -210,14 +278,19 @@ class ServiceCoordinator {
   /// Applies the opt-in switches. Failures are surfaced through each service's
   /// own state; the planner keeps working either way.
   Future<void> apply(AppSettings settings) async {
-    if (settings.syncEnabled) {
+    if (settings.onlineEnabled) {
       await sync.start();
     } else {
       await sync.stop();
     }
     final identity = await repository.readIdentity();
-    if (settings.mcpEnabled && identity != null) {
-      await mcp.start(identity: identity, writesEnabled: settings.mcpWritesEnabled, port: McpServer.port);
+    if (settings.onlineEnabled && settings.mcpEnabled && identity != null) {
+      try {
+        await mcp.start(identity: identity, writesEnabled: settings.mcpWritesEnabled, port: settings.mcpPort);
+      } catch (_) {
+        // A busy or invalid port must not take the app down. The switch checks
+        // `mcp.lastError` and reverts with a notice.
+      }
     } else {
       await mcp.stop();
     }

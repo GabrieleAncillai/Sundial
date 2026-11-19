@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
 
+import 'package:sundial_core/sundial_core.dart';
+
+import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../screens/entry_editor.dart';
@@ -10,6 +11,7 @@ import '../../../state/providers.dart';
 import '../../../state/settings_controller.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
+import '../../shifts/shift_palette.dart';
 import '../widgets/day_detail.dart';
 import '../widgets/day_timeline.dart';
 import '../widgets/month_grid.dart';
@@ -41,6 +43,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
+    final contexts = ref.watch(contextsProvider(null)).value ?? const <PlannerContext>[];
     final timeZone = ref.watch(deviceTimeZoneProvider);
     final now = ref.watch(nowProvider);
     final today = localDateAt(now, timeZone);
@@ -76,7 +79,12 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     for (final entry in visibleEntries) {
       (markers[entry.displayDate.key] ??= <int>{}).add(colors[entry.entry.spaceId] ?? 0xFF888888);
     }
-    final shiftDays = {for (final shift in visibleShifts) shift.displayDate.key};
+    final shiftColors = <int, Set<int>>{};
+    for (final shift in visibleShifts) {
+      (shiftColors[shift.displayDate.key] ??= <int>{}).add(
+        shiftColor(context, shift.pattern, contexts).toARGB32(),
+      );
+    }
 
     final selectedEntries = visibleEntries.where((entry) => entry.displayDate == _selected).toList();
     final selectedShifts = visibleShifts.where((shift) => shift.displayDate == _selected).toList();
@@ -96,8 +104,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           }),
         ),
         const SizedBox(height: 14),
-        if (entriesState.hasError) ManeNotice(text: context.l10n.couldNotLoadDay('${entriesState.error}')),
-        if (shiftsState.hasError) ManeNotice(text: context.l10n.couldNotLoadShifts('${shiftsState.error}')),
+        if (entriesState.hasError) SundialNotice(text: context.l10n.couldNotLoadDay('${entriesState.error}')),
+        if (shiftsState.hasError)
+          SundialNotice(text: context.l10n.couldNotLoadShifts('${shiftsState.error}')),
         if (_mode == _CalendarMode.day)
           SoftCard(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
@@ -106,6 +115,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               entries: selectedEntries,
               shifts: selectedShifts,
               spaces: spaces,
+              contexts: contexts,
               onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
             ),
           )
@@ -119,7 +129,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                     today: today,
                     weekStart: weekStart,
                     markers: markers,
-                    shiftDays: shiftDays,
+                    shiftColors: shiftColors,
                     onSelected: _select,
                   )
                 : WeekStrip(
@@ -127,7 +137,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                     today: today,
                     weekStart: weekStart,
                     markers: markers,
-                    shiftDays: shiftDays,
+                    shiftColors: shiftColors,
                     onSelected: _select,
                   ),
           ),
@@ -139,6 +149,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               entries: selectedEntries,
               shifts: selectedShifts,
               spaces: spaces,
+              contexts: contexts,
               onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
             ),
           ),
@@ -148,17 +159,16 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   }
 
   String _title() {
-    final locale = Localizations.localeOf(context).toLanguageTag();
     if (_mode == _CalendarMode.month) {
-      return DateFormat.yMMMM(locale).format(_visibleMonth.toDateTime());
+      return formatMonthYear(context, _visibleMonth.toDateTime());
     }
     if (_mode == _CalendarMode.day) {
-      return DateFormat.yMMMMEEEEd(locale).format(_selected.toDateTime());
+      return formatFullDate(context, _selected.toDateTime());
     }
     final start = _selected.startOfWeek(ref.read(settingsProvider).weekStart);
     final end = start.addDays(6);
-    final format = DateFormat.MMMd(locale);
-    return '${format.format(start.toDateTime())} – ${format.format(end.toDateTime())}';
+    return '${formatShortDate(context, start.toDateTime())} – '
+        '${formatShortDate(context, end.toDateTime())}';
   }
 
   void _select(LocalDate date) {
@@ -228,7 +238,7 @@ class _CalendarHeader extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text(title, style: ManeType.headline(23, color: c.text)),
+              child: Text(title, style: SundialType.headline(23, color: c.text)),
             ),
             GlassIconButton(
               icon: Icons.chevron_left,
@@ -253,11 +263,11 @@ class _CalendarHeader extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 10),
-        ManeSegmented<_CalendarMode>(
+        SundialSegmented<_CalendarMode>(
           segments: [
-            ManeSegment(value: _CalendarMode.month, label: context.l10n.monthView),
-            ManeSegment(value: _CalendarMode.week, label: context.l10n.weekView),
-            ManeSegment(value: _CalendarMode.day, label: context.l10n.dayView),
+            SundialSegment(value: _CalendarMode.month, label: context.l10n.monthView),
+            SundialSegment(value: _CalendarMode.week, label: context.l10n.weekView),
+            SundialSegment(value: _CalendarMode.day, label: context.l10n.dayView),
           ],
           selected: mode,
           onChanged: onModeChanged,

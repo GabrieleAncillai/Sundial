@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
-import 'app/mane_app.dart';
+import 'app/sundial_app.dart';
 import 'models/app_settings.dart';
 import 'services/app_database.dart';
 import 'services/notification_service.dart';
@@ -18,7 +18,7 @@ Future<void> main() async {
   await database.seedDefaults();
   final settings = AppSettings.fromMap(await database.readSettings());
   final notifications = NotificationService();
-  await notifications.initialize(deviceTimeZone: timeZone);
+  await notifications.initialize(deviceTimeZone: timeZone, alarmSound: settings.alarmSound);
   runApp(
     ProviderScope(
       overrides: [
@@ -27,7 +27,7 @@ Future<void> main() async {
         notificationServiceProvider.overrideWithValue(notifications),
         initialSettingsProvider.overrideWithValue(settings),
       ],
-      child: const ManeApp(),
+      child: const SundialApp(),
     ),
   );
 }

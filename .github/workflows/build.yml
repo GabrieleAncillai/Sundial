@@ -46,11 +46,11 @@ jobs:
 
       - name: Test domain package
         run: dart test
-        working-directory: packages/mane_core
+        working-directory: packages/sundial_core
 
       - name: Check formatting
         run: |
-          find lib test packages/mane_core/lib packages/mane_core/test \
+          find lib test packages/sundial_core/lib packages/sundial_core/test \
             -type f -name '*.dart' -not -name '*.g.dart' \
             -not -name 'app_localizations*.dart' -print0 \
             | xargs -0 dart format --line-length 110 --output=none --set-exit-if-changed
@@ -76,6 +76,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: mane-debug-apk
+          name: sundial-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error

@@ -1,1067 +1,825 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
 
 import '../../../core/i18n/l10n.dart';
-import '../../../core/i18n/reminder_label.dart';
+import '../../../core/layout/sundial_layout.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../models/app_settings.dart';
 import '../../../state/providers.dart';
 import '../../../state/settings_controller.dart';
-import '../../app_lock/pages/pin_setup_page.dart';
-import '../../tags/pages/tags_page.dart';
-import '../../backup/backup_files.dart';
-import '../../backup/backup_service.dart';
-import '../../export/csv_interchange.dart';
-import '../../export/export_files.dart';
-import '../../export/ics_export_service.dart';
-import '../../home_inventory/pages/home_inventory_page.dart';
-import '../../home_inventory/pages/maintenance_page.dart';
-import '../../home_inventory/pages/shopping_list_page.dart';
-import '../../import/companion_import.dart';
-import '../../import/gymmane_import.dart';
-import '../../import/ics_import_service.dart';
-import '../../import/import_dialogs.dart';
-import '../../import/import_files.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
+import '../../../theme/app_typography.dart';
 import '../../mcp/pages/mcp_page.dart';
-import '../../shifts/pages/shift_patterns_page.dart';
 import '../../sync/pages/devices_page.dart';
 import '../widgets/settings_rows.dart';
 import 'about_page.dart';
+import 'settings_detail_page.dart';
 
-class SettingsPage extends ConsumerWidget {
+/// Mirrors the shell breakpoint in `lib/app/app_shell.dart`.
+const _desktopBreakpoint = 900.0;
+
+class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
 
-  static const _reminderOffsets = <int>[0, 5, 10, 30, 60, 120, 1440];
+  @override
+  ConsumerState<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends ConsumerState<SettingsPage> {
+  final _search = TextEditingController();
+  String _query = '';
+  _DesktopSettingsSection _desktopSection = _DesktopSettingsSection.appearance;
+  String? _desktopHighlight;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < _desktopBreakpoint) return _mobile(context);
+        return _desktop(context);
+      },
+    );
+  }
+
+  Widget _mobile(BuildContext context) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
-    final controller = ref.read(settingsProvider.notifier);
+    final entries = _entries(l10n);
+    final query = _query.trim().toLowerCase();
+    final matches = query.isEmpty
+        ? const <_SettingLink>[]
+        : entries.where((entry) => entry.matches(query)).toList();
+    final pairedCount = ref.watch(pairedDevicesProvider).value?.length ?? 0;
 
-    return ManePage(
+    return SundialPage(
       title: l10n.settings,
       child: ListView(
         padding: const EdgeInsets.only(bottom: 20),
         children: [
-          SettingsSection(
-            title: l10n.appearanceSection,
-            children: [
-              SettingsChoiceRow(
-                icon: Icons.brightness_6_outlined,
-                title: l10n.theme,
-                choice: ManeSegmented<ThemeMode>(
-                  segments: [
-                    ManeSegment(value: ThemeMode.system, label: l10n.themeSystem),
-                    ManeSegment(value: ThemeMode.light, label: l10n.themeLight),
-                    ManeSegment(value: ThemeMode.dark, label: l10n.themeDark),
-                  ],
-                  selected: settings.themeMode,
-                  onChanged: controller.setThemeMode,
-                  compact: true,
-                ),
-              ),
-              SettingsChoiceRow(
-                icon: Icons.translate,
-                title: l10n.language,
-                choice: ManeSegmented<String>(
-                  segments: [
-                    ManeSegment(value: 'system', label: l10n.languageSystem),
-                    ManeSegment(value: 'en', label: l10n.languageEnglish),
-                    ManeSegment(value: 'es', label: l10n.languageSpanish),
-                  ],
-                  selected: settings.locale?.languageCode ?? 'system',
-                  onChanged: (value) => controller.setLocale(value == 'system' ? null : Locale(value)),
-                  compact: true,
-                ),
-              ),
-              SettingsChoiceRow(
-                icon: Icons.calendar_view_week_outlined,
-                title: l10n.weekStartsOn,
-                choice: ManeSegmented<int>(
-                  segments: [
-                    ManeSegment(value: DateTime.monday, label: l10n.weekStartMonday),
-                    ManeSegment(value: DateTime.saturday, label: l10n.weekStartSaturday),
-                    ManeSegment(value: DateTime.sunday, label: l10n.weekStartSunday),
-                  ],
-                  selected: settings.weekStart,
-                  onChanged: controller.setWeekStart,
-                  compact: true,
-                ),
-              ),
-            ],
+          SundialSearchField(
+            controller: _search,
+            hint: l10n.settingsSearch,
+            onChanged: (value) => setState(() => _query = value),
           ),
-          SettingsSection(
-            title: l10n.plannerSection,
-            children: [
-              SettingsSwitchRow(
-                icon: Icons.work_outline,
-                title: l10n.hideWorkSpace,
-                subtitle: l10n.hideWorkSpaceSubtitle,
-                value: settings.hideWorkSpace,
-                onChanged: controller.setHideWorkSpace,
+          const SizedBox(height: 16),
+          if (query.isNotEmpty) ...[
+            if (matches.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Text(l10n.noSettingsFound, style: TextStyle(color: context.mc.textSecondary)),
+              )
+            else
+              SettingsSection(
+                title: l10n.settingsSearch,
+                children: [
+                  for (final link in matches)
+                    SettingsNavRow(
+                      icon: link.icon,
+                      title: link.title,
+                      subtitle: link.subtitle,
+                      onTap: () => _open(context, link),
+                    ),
+                ],
               ),
-              SettingsSwitchRow(
-                icon: Icons.schedule_outlined,
-                title: l10n.workHours,
-                subtitle: l10n.workHoursSubtitle,
-                value: settings.workHoursEnabled,
-                onChanged: (value) async {
-                  await controller.setWorkHoursEnabled(value);
-                  await ref.read(reminderCoordinatorProvider).reschedule();
-                },
-              ),
-              if (settings.workHoursEnabled)
+          ] else ...[
+            SettingsSection(
+              title: l10n.generalSection,
+              children: [
                 SettingsNavRow(
-                  icon: Icons.timelapse_outlined,
-                  title: l10n.hoursWindow,
-                  value: _windowLabel(context, settings.workHoursStartMinute, settings.workHoursEndMinute),
-                  onTap: () => _showHours(
-                    context,
-                    ref,
-                    title: l10n.workHours,
-                    start: settings.workHoursStartMinute,
-                    end: settings.workHoursEndMinute,
-                    onSave: (start, end) async {
-                      await controller.setWorkHours(startMinute: start, endMinute: end);
-                      await ref.read(reminderCoordinatorProvider).reschedule();
-                    },
-                  ),
+                  icon: Icons.palette_outlined,
+                  title: l10n.appearanceSection,
+                  subtitle: l10n.appearanceSubtitle,
+                  onTap: () => _pushDetail(context, SettingsDetailSection.appearance),
                 ),
-              SettingsSwitchRow(
-                icon: Icons.nightlight_outlined,
-                title: l10n.quietHours,
-                subtitle: l10n.quietHoursSubtitle,
-                value: settings.quietHoursEnabled,
-                onChanged: (value) async {
-                  await controller.setQuietHoursEnabled(value);
-                  await ref.read(reminderCoordinatorProvider).reschedule();
-                },
-              ),
-              if (settings.quietHoursEnabled)
                 SettingsNavRow(
-                  icon: Icons.do_not_disturb_on_outlined,
-                  title: l10n.hoursWindow,
-                  value: _windowLabel(context, settings.quietHoursStartMinute, settings.quietHoursEndMinute),
-                  onTap: () => _showHours(
-                    context,
-                    ref,
-                    title: l10n.quietHours,
-                    start: settings.quietHoursStartMinute,
-                    end: settings.quietHoursEndMinute,
-                    onSave: (start, end) async {
-                      await controller.setQuietHours(startMinute: start, endMinute: end);
-                      await ref.read(reminderCoordinatorProvider).reschedule();
-                    },
-                  ),
+                  icon: Icons.tune,
+                  title: l10n.preferencesSection,
+                  subtitle: l10n.preferencesSubtitle,
+                  onTap: () => _pushDetail(context, SettingsDetailSection.preferences),
                 ),
-              SettingsNavRow(
-                icon: Icons.notifications_outlined,
-                title: l10n.defaultReminders,
-                subtitle: l10n.defaultRemindersSubtitle,
-                value: settings.defaultReminderOffsets.isEmpty
-                    ? l10n.notSet
-                    : l10n.selectedCount(settings.defaultReminderOffsets.length),
-                onTap: () => _showDefaultReminders(context, ref),
-              ),
-            ],
-          ),
-          SettingsSection(
-            title: l10n.sleepWindow,
-            children: [
-              SettingsSwitchRow(
-                icon: Icons.bedtime_outlined,
-                title: l10n.sleepWindow,
-                subtitle: l10n.sleepWindowSubtitle,
-                value: settings.sleepEnabled,
-                onChanged: controller.setSleepEnabled,
-              ),
-              SettingsNavRow(
-                icon: Icons.timer_outlined,
-                title: l10n.sleepBuffers,
-                subtitle: l10n.sleepBuffersSummary(
-                  settings.sleepCommuteMinutes,
-                  settings.sleepWindDownMinutes,
-                  settings.sleepWakeBufferMinutes,
-                ),
-                onTap: () => _showSleepBuffers(context, ref),
-              ),
-            ],
-          ),
-          SettingsSection(
-            title: l10n.librarySection,
-            children: [
-              SettingsNavRow(
-                icon: Icons.sell_outlined,
-                title: l10n.tagsManager,
-                subtitle: l10n.tagsManagerSubtitle,
-                onTap: () =>
-                    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const TagsPage())),
-              ),
-              SettingsNavRow(
-                icon: Icons.schedule,
-                title: l10n.shiftPatterns,
-                subtitle: l10n.shiftPatternsSubtitle,
-                onTap: () => Navigator.of(
-                  context,
-                ).push(MaterialPageRoute<void>(builder: (_) => const ShiftPatternsPage())),
-              ),
-              SettingsNavRow(
-                icon: Icons.inventory_2_outlined,
-                title: l10n.homeInventory,
-                subtitle: l10n.homeInventorySubtitle,
-                onTap: () => Navigator.of(
-                  context,
-                ).push(MaterialPageRoute<void>(builder: (_) => const HomeInventoryPage())),
-              ),
-              SettingsNavRow(
-                icon: Icons.shopping_cart_outlined,
-                title: l10n.shoppingList,
-                subtitle: l10n.shoppingListSubtitle,
-                onTap: () => Navigator.of(
-                  context,
-                ).push(MaterialPageRoute<void>(builder: (_) => const ShoppingListPage())),
-              ),
-              SettingsNavRow(
-                icon: Icons.build_outlined,
-                title: l10n.maintenance,
-                subtitle: l10n.maintenanceSubtitle,
-                onTap: () => Navigator.of(
-                  context,
-                ).push(MaterialPageRoute<void>(builder: (_) => const MaintenancePage())),
-              ),
-            ],
-          ),
-          SettingsSection(
-            title: l10n.dataAndBackup,
-            children: [
-              SettingsSwitchRow(
-                icon: Icons.backup_outlined,
-                title: l10n.automaticBackups,
-                subtitle: l10n.automaticBackupsSubtitle,
-                value: settings.autoBackupEnabled,
-                onChanged: controller.setAutoBackupEnabled,
-              ),
-              if (settings.autoBackupEnabled)
                 SettingsNavRow(
-                  icon: Icons.history,
-                  title: l10n.keepBackups,
-                  value: '${settings.autoBackupKeep}',
-                  onTap: () => _showKeepBackups(context, ref),
+                  icon: Icons.storage_outlined,
+                  title: l10n.dataSection,
+                  subtitle: l10n.dataSubtitle,
+                  onTap: () => _pushDetail(context, SettingsDetailSection.data),
                 ),
-              SettingsNavRow(
-                icon: Icons.upload_file_outlined,
-                title: l10n.exportBackup,
-                subtitle: l10n.exportBackupSubtitle,
-                onTap: () => _exportBackup(context, ref),
-              ),
-              SettingsNavRow(
-                icon: Icons.download_outlined,
-                title: l10n.importBackup,
-                subtitle: l10n.importBackupSubtitle,
-                onTap: () => _importBackup(context, ref),
-              ),
-              SettingsNavRow(
-                icon: Icons.event_available_outlined,
-                title: l10n.importCalendar,
-                subtitle: l10n.importCalendarSubtitle,
-                onTap: () => _importCalendar(context, ref),
-              ),
-              SettingsNavRow(
-                icon: Icons.devices_other_outlined,
-                title: l10n.importCompanion,
-                subtitle: l10n.importCompanionSubtitle,
-                onTap: () => _importCompanion(context, ref),
-              ),
-              SettingsNavRow(
-                icon: Icons.fitness_center,
-                title: l10n.gymmaneImport,
-                subtitle: l10n.gymmaneImportSubtitle,
-                onTap: () => _importGymMane(context, ref),
-              ),
-              SettingsNavRow(
-                icon: Icons.table_view_outlined,
-                title: l10n.exportCsv,
-                subtitle: l10n.exportCsvSubtitle,
-                onTap: () => _exportCsv(context, ref),
-              ),
-              SettingsNavRow(
-                icon: Icons.table_view,
-                title: l10n.importCsv,
-                subtitle: l10n.importCsvSubtitle,
-                onTap: () => _importCsv(context, ref),
-              ),
-              SettingsNavRow(
-                icon: Icons.ios_share_outlined,
-                title: l10n.exportCalendar,
-                subtitle: l10n.exportCalendarSubtitle,
-                onTap: () => _exportCalendar(context, ref),
-              ),
-            ],
-          ),
-          SettingsSection(
-            title: l10n.devices,
-            children: [
-              SettingsNavRow(
-                icon: Icons.devices_other,
-                title: l10n.devices,
-                subtitle: l10n.devicesSubtitle,
-                value: '${ref.watch(pairedDevicesProvider).value?.length ?? 0}',
-                onTap: () =>
-                    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const DevicesPage())),
-              ),
-              SettingsNavRow(
-                icon: Icons.terminal,
-                title: l10n.mcpEndpoint,
-                subtitle: l10n.mcpEndpointSubtitle,
-                value: settings.mcpEnabled ? l10n.on : l10n.off,
-                onTap: () =>
-                    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const McpPage())),
-              ),
-            ],
-          ),
-          SettingsSection(
-            title: l10n.privacySection,
-            children: [
-              SettingsSwitchRow(
-                icon: Icons.lock_outline,
-                title: l10n.appLock,
-                subtitle: l10n.appLockSubtitle,
-                value: settings.appLockEnabled,
-                onChanged: (value) => _setAppLock(context, ref, value),
-              ),
-              SettingsSwitchRow(
-                icon: Icons.lan_outlined,
-                title: l10n.syncEnabled,
-                subtitle: l10n.syncOffInfo,
-                value: settings.syncEnabled,
-                onChanged: (value) async {
-                  await controller.setSyncEnabled(value);
-                  await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
-                  if (value && context.mounted) {
-                    final identity = await ref.read(repositoryProvider).readIdentity();
-                    if (identity == null && context.mounted) {
-                      _showNotice(context, l10n.identityRequired);
-                    }
-                  }
-                },
-              ),
-              SettingsSwitchRow(
-                icon: Icons.terminal,
-                title: l10n.mcpEnabled,
-                subtitle: l10n.mcpOffInfo,
-                value: settings.mcpEnabled,
-                onChanged: (value) async {
-                  await controller.setMcpEnabled(value);
-                  await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
-                  if (value && context.mounted) {
-                    final identity = await ref.read(repositoryProvider).readIdentity();
-                    if (identity == null && context.mounted) {
-                      _showNotice(context, l10n.identityRequired);
-                    }
-                  }
-                },
-              ),
-            ],
-          ),
-          SettingsSection(
-            title: l10n.about,
-            children: [
-              SettingsNavRow(
-                icon: Icons.info_outline,
-                title: l10n.about,
-                subtitle: l10n.aboutSubtitle,
-                onTap: () =>
-                    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AboutPage())),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showNotice(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Future<void> _exportBackup(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      final json = await ref.read(backupServiceProvider).exportJson();
-      final path = await saveBackupFile(json, dialogTitle: l10n.exportBackup);
-      if (path == null) return;
-      messenger.showSnackBar(SnackBar(content: Text(l10n.backupExported(path))));
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.backupFailed('$error'))));
-    }
-  }
-
-  Future<void> _importBackup(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
-    final String? source;
-    try {
-      source = await pickBackupText();
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.backupFailed('$error'))));
-      return;
-    }
-    if (source == null || !context.mounted) return;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.importConfirmTitle),
-        content: Text(l10n.importConfirmBody),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(l10n.cancel)),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.importBackup),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-
-    try {
-      await ref.read(backupServiceProvider).importJson(source);
-      await ref.read(settingsProvider.notifier).reload();
-      await ref.read(reminderCoordinatorProvider).reschedule();
-      await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
-      messenger.showSnackBar(SnackBar(content: Text(l10n.backupImported)));
-    } on BackupVersionException {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.backupFuture)));
-    } on BackupFormatException {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.backupInvalid)));
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.backupFailed('$error'))));
-    }
-  }
-
-  Future<void> _importCalendar(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
-    final String? source;
-    try {
-      source = await pickIcsText();
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.importCalendarFailed('$error'))));
-      return;
-    }
-    if (source == null || !context.mounted) return;
-
-    final spaceId = await pickImportSpace(context, ref, title: l10n.importCalendarSpace);
-    if (spaceId == null) return;
-
-    try {
-      final report = await IcsImportService(ref.read(repositoryProvider)).importText(
-        source,
-        spaceId: spaceId,
-        defaultTimeZone: ref.read(deviceTimeZoneProvider),
-        fallbackTitle: l10n.importedEvent,
-      );
-      final skipped = report.duplicates + report.skipped.length;
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            report.imported == 0 && report.updated == 0 && skipped == 0
-                ? l10n.importCalendarEmpty
-                : l10n.importCalendarDone(report.imported, report.updated, skipped),
-          ),
-        ),
-      );
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.importCalendarFailed('$error'))));
-    }
-  }
-
-  Future<void> _importGymMane(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
-    final String? source;
-    try {
-      source = await pickGymManeText();
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.gymmaneImportFailed('$error'))));
-      return;
-    }
-    if (source == null) return;
-
-    final spaces = await ref.read(repositoryProvider).watchSpaces().first;
-    if (spaces.isEmpty) return;
-    var space = spaces.first;
-    for (final candidate in spaces) {
-      if (candidate.id == 'personal') {
-        space = candidate;
-        break;
-      }
-    }
-    final timeZone = ref.read(deviceTimeZoneProvider);
-    final today = localDateAt(ref.read(nowProvider), timeZone);
-    try {
-      final report = await GymManeImportService(
-        ref.read(repositoryProvider),
-      ).importJson(source, spaceId: space.id, today: today, timeZone: timeZone);
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            report.imported == 0 && report.duplicates == 0 && report.skipped == 0
-                ? l10n.gymmaneImportEmpty
-                : l10n.gymmaneImportDone(report.imported, report.timed, report.allDay, report.skipped),
-          ),
-        ),
-      );
-    } on GymManeImportException catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.gymmaneImportFailed('$error'))));
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.gymmaneImportFailed('$error'))));
-    }
-  }
-
-  Future<void> _exportCsv(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    await showAppSheet<void>(
-      context: context,
-      builder: (sheetContext) => AppSheet(
-        title: l10n.exportCsv,
-        subtitle: l10n.exportCsvSubtitle,
-        children: [
-          SettingsNavRow(
-            icon: Icons.event_note_outlined,
-            title: l10n.csvEntries,
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              _exportCsvEntries(context, ref);
-            },
-          ),
-          SettingsNavRow(
-            icon: Icons.shopping_cart_outlined,
-            title: l10n.csvShopping,
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              _exportCsvShopping(context, ref);
-            },
-          ),
-          SettingsNavRow(
-            icon: Icons.inventory_2_outlined,
-            title: l10n.csvInventory,
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              _exportCsvInventory(context, ref);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _importCsv(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    await showAppSheet<void>(
-      context: context,
-      builder: (sheetContext) => AppSheet(
-        title: l10n.importCsv,
-        subtitle: l10n.importCsvSubtitle,
-        children: [
-          SettingsNavRow(
-            icon: Icons.event_note_outlined,
-            title: l10n.csvEntries,
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              _importCsvEntries(context, ref);
-            },
-          ),
-          SettingsNavRow(
-            icon: Icons.shopping_cart_outlined,
-            title: l10n.csvShopping,
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              _importCsvShopping(context, ref);
-            },
-          ),
-          SettingsNavRow(
-            icon: Icons.inventory_2_outlined,
-            title: l10n.csvInventory,
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              _importCsvInventory(context, ref);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _exportCsvEntries(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      final timeZone = ref.read(deviceTimeZoneProvider);
-      final today = localDateAt(ref.read(nowProvider), timeZone);
-      final csv = await CsvInterchangeService(
-        ref.read(repositoryProvider),
-      ).exportEntries(start: today.addDays(-30), end: today.addDays(365), viewerTimeZone: timeZone);
-      final path = await saveCsvFile(csv, dialogTitle: l10n.exportCsv, fileName: _csvFileName('entries'));
-      if (path == null) return;
-      messenger.showSnackBar(SnackBar(content: Text(l10n.csvExported(path))));
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.csvExportFailed('$error'))));
-    }
-  }
-
-  Future<void> _exportCsvShopping(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      final csv = await CsvInterchangeService(ref.read(repositoryProvider)).exportShopping();
-      final path = await saveCsvFile(csv, dialogTitle: l10n.exportCsv, fileName: _csvFileName('shopping'));
-      if (path == null) return;
-      messenger.showSnackBar(SnackBar(content: Text(l10n.csvExported(path))));
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.csvExportFailed('$error'))));
-    }
-  }
-
-  Future<void> _exportCsvInventory(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      final csv = await CsvInterchangeService(ref.read(repositoryProvider)).exportInventory();
-      final path = await saveCsvFile(csv, dialogTitle: l10n.exportCsv, fileName: _csvFileName('inventory'));
-      if (path == null) return;
-      messenger.showSnackBar(SnackBar(content: Text(l10n.csvExported(path))));
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.csvExportFailed('$error'))));
-    }
-  }
-
-  Future<void> _importCsvEntries(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
-    final String? source;
-    try {
-      source = await pickCsvText();
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.csvExportFailed('$error'))));
-      return;
-    }
-    if (source == null) return;
-    try {
-      final report = await CsvInterchangeService(
-        ref.read(repositoryProvider),
-      ).importEntries(source, defaultTimeZone: ref.read(deviceTimeZoneProvider));
-      await ref.read(reminderCoordinatorProvider).reschedule();
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            report.imported == 0 && report.duplicates == 0 && report.skipped == 0
-                ? l10n.csvImportEmpty
-                : l10n.csvImportDone(report.imported, report.duplicates, report.skipped),
-          ),
-        ),
-      );
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.csvExportFailed('$error'))));
-    }
-  }
-
-  Future<void> _importCsvShopping(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
-    final String? source;
-    try {
-      source = await pickCsvText();
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.csvExportFailed('$error'))));
-      return;
-    }
-    if (source == null) return;
-    try {
-      final report = await CsvInterchangeService(ref.read(repositoryProvider)).importShopping(source);
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            report.imported == 0 && report.duplicates == 0 && report.skipped == 0
-                ? l10n.csvImportEmpty
-                : l10n.csvImportDone(report.imported, report.duplicates, report.skipped),
-          ),
-        ),
-      );
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.csvExportFailed('$error'))));
-    }
-  }
-
-  Future<void> _importCsvInventory(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
-    final String? source;
-    try {
-      source = await pickCsvText();
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.csvExportFailed('$error'))));
-      return;
-    }
-    if (source == null) return;
-    try {
-      final report = await CsvInterchangeService(ref.read(repositoryProvider)).importInventory(source);
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            report.imported == 0 && report.duplicates == 0 && report.skipped == 0
-                ? l10n.csvImportEmpty
-                : l10n.csvImportDone(report.imported, report.duplicates, report.skipped),
-          ),
-        ),
-      );
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.csvExportFailed('$error'))));
-    }
-  }
-
-  Future<void> _setAppLock(BuildContext context, WidgetRef ref, bool value) async {
-    final l10n = context.l10n;
-    if (value) {
-      final result = await Navigator.of(
-        context,
-      ).push<bool>(MaterialPageRoute<bool>(builder: (_) => const PinSetupPage(), fullscreenDialog: true));
-      if (result != true || !context.mounted) return;
-      _showNotice(context, l10n.appLockEnabled);
-      return;
-    }
-    await ref.read(appLockServiceProvider).disable();
-    await ref.read(settingsProvider.notifier).reload();
-    if (context.mounted) _showNotice(context, l10n.appLockDisabled);
-  }
-
-  Future<void> _showKeepBackups(BuildContext context, WidgetRef ref) async {
-    await showAppSheet<void>(
-      context: context,
-      builder: (_) => _KeepBackupsSheet(initial: ref.read(settingsProvider).autoBackupKeep),
-    );
-  }
-
-  Future<void> _showHours(
-    BuildContext context,
-    WidgetRef ref, {
-    required String title,
-    required int start,
-    required int end,
-    required Future<void> Function(int start, int end) onSave,
-  }) async {
-    await showAppSheet<void>(
-      context: context,
-      builder: (_) => _HoursSheet(title: title, start: start, end: end, onSave: onSave),
-    );
-  }
-
-  static String _windowLabel(BuildContext context, int start, int end) {
-    final localizations = MaterialLocalizations.of(context);
-    String label(int minute) =>
-        localizations.formatTimeOfDay(TimeOfDay(hour: minute ~/ 60, minute: minute % 60));
-    return '${label(start)} – ${label(end)}';
-  }
-
-  static String _csvFileName(String kind) {
-    final now = DateTime.now();
-    return 'mane-$kind-${now.year.toString().padLeft(4, '0')}'
-        '${now.month.toString().padLeft(2, '0')}'
-        '${now.day.toString().padLeft(2, '0')}.csv';
-  }
-
-  Future<void> _importCompanion(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
-    final String? source;
-    try {
-      source = await pickCompanionText();
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.importCompanionFailed('$error'))));
-      return;
-    }
-    if (source == null || !context.mounted) return;
-
-    final spaceId = await pickImportSpace(context, ref, title: l10n.importCalendarSpace);
-    if (spaceId == null) return;
-
-    try {
-      final report = await CompanionImportService(
-        ref.read(repositoryProvider),
-      ).importText(source, spaceId: spaceId, defaultTimeZone: ref.read(deviceTimeZoneProvider));
-      final skipped = report.duplicates + report.skipped.length;
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            report.imported == 0 && skipped == 0
-                ? l10n.importCompanionEmpty
-                : l10n.importCompanionDone(report.imported, skipped),
-          ),
-        ),
-      );
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.importCompanionFailed('$error'))));
-    }
-  }
-
-  Future<void> _exportCalendar(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      final timeZone = ref.read(deviceTimeZoneProvider);
-      final today = localDateAt(ref.read(nowProvider), timeZone);
-      final content = await IcsExportService(
-        ref.read(repositoryProvider),
-      ).exportRange(start: today.addDays(-30), end: today.addDays(180), viewerTimeZone: timeZone);
-      final path = await saveIcsFile(content, dialogTitle: l10n.exportCalendar);
-      if (path == null) return;
-      messenger.showSnackBar(SnackBar(content: Text(l10n.calendarExported(path))));
-    } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.calendarExportFailed('$error'))));
-    }
-  }
-
-  Future<void> _showSleepBuffers(BuildContext context, WidgetRef ref) async {
-    await showAppSheet<void>(
-      context: context,
-      builder: (context) => _SleepBuffersSheet(initial: ref.read(settingsProvider)),
-    );
-  }
-
-  Future<void> _showDefaultReminders(BuildContext context, WidgetRef ref) async {
-    await showAppSheet<void>(
-      context: context,
-      builder: (context) => _DefaultRemindersSheet(
-        initial: ref.read(settingsProvider).defaultReminderOffsets,
-        offsets: _reminderOffsets,
-      ),
-    );
-  }
-}
-
-class _SleepBuffersSheet extends ConsumerStatefulWidget {
-  const _SleepBuffersSheet({required this.initial});
-
-  final AppSettings initial;
-
-  @override
-  ConsumerState<_SleepBuffersSheet> createState() => _SleepBuffersSheetState();
-}
-
-class _SleepBuffersSheetState extends ConsumerState<_SleepBuffersSheet> {
-  late final TextEditingController _commute;
-  late final TextEditingController _windDown;
-  late final TextEditingController _wake;
-
-  @override
-  void initState() {
-    super.initState();
-    _commute = TextEditingController(text: '${widget.initial.sleepCommuteMinutes}');
-    _windDown = TextEditingController(text: '${widget.initial.sleepWindDownMinutes}');
-    _wake = TextEditingController(text: '${widget.initial.sleepWakeBufferMinutes}');
-  }
-
-  @override
-  void dispose() {
-    _commute.dispose();
-    _windDown.dispose();
-    _wake.dispose();
-    super.dispose();
-  }
-
-  int _value(TextEditingController controller, int fallback) {
-    final parsed = int.tryParse(controller.text.trim());
-    return parsed == null || parsed < 0 ? fallback : parsed.clamp(0, 24 * 60);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return AppSheet(
-      title: l10n.sleepBuffers,
-      children: [
-        TextField(
-          controller: _commute,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(labelText: l10n.commute),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _windDown,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(labelText: l10n.windDown),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _wake,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(labelText: l10n.wakeBuffer),
-        ),
-        const SizedBox(height: 20),
-        FilledButton(
-          onPressed: () async {
-            final controller = ref.read(settingsProvider.notifier);
-            await controller.setSleepCommuteMinutes(_value(_commute, widget.initial.sleepCommuteMinutes));
-            await controller.setSleepWindDownMinutes(_value(_windDown, widget.initial.sleepWindDownMinutes));
-            await controller.setSleepWakeBufferMinutes(_value(_wake, widget.initial.sleepWakeBufferMinutes));
-            if (context.mounted) Navigator.of(context).pop();
-          },
-          child: Text(l10n.save),
-        ),
-      ],
-    );
-  }
-}
-
-class _DefaultRemindersSheet extends ConsumerStatefulWidget {
-  const _DefaultRemindersSheet({required this.initial, required this.offsets});
-
-  final List<int> initial;
-  final List<int> offsets;
-
-  @override
-  ConsumerState<_DefaultRemindersSheet> createState() => _DefaultRemindersSheetState();
-}
-
-class _DefaultRemindersSheetState extends ConsumerState<_DefaultRemindersSheet> {
-  late Set<int> _selected;
-
-  @override
-  void initState() {
-    super.initState();
-    _selected = {...widget.initial};
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return AppSheet(
-      title: l10n.defaultReminders,
-      children: [
-        for (final offset in widget.offsets)
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            value: _selected.contains(offset),
-            title: Text(reminderOffsetLabel(context, offset)),
-            onChanged: (selected) => setState(() {
-              if (selected == true) {
-                _selected.add(offset);
-              } else {
-                _selected.remove(offset);
-              }
-            }),
-          ),
-        const SizedBox(height: 12),
-        FilledButton(
-          onPressed: () async {
-            await ref.read(settingsProvider.notifier).setDefaultReminderOffsets(_selected.toList());
-            if (context.mounted) Navigator.of(context).pop();
-          },
-          child: Text(l10n.save),
-        ),
-      ],
-    );
-  }
-}
-
-class _KeepBackupsSheet extends ConsumerWidget {
-  const _KeepBackupsSheet({required this.initial});
-
-  final int initial;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    return AppSheet(
-      title: l10n.keepBackups,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 8, bottom: 20),
-          child: ManeSegmented<int>(
-            segments: const [
-              ManeSegment(value: 3, label: '3'),
-              ManeSegment(value: 5, label: '5'),
-              ManeSegment(value: 10, label: '10'),
-              ManeSegment(value: 20, label: '20'),
-            ],
-            selected: initial,
-            onChanged: (value) async {
-              await ref.read(settingsProvider.notifier).setAutoBackupKeep(value);
-              if (context.mounted) Navigator.of(context).pop();
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _HoursSheet extends StatefulWidget {
-  const _HoursSheet({required this.title, required this.start, required this.end, required this.onSave});
-
-  final String title;
-  final int start;
-  final int end;
-  final Future<void> Function(int start, int end) onSave;
-
-  @override
-  State<_HoursSheet> createState() => _HoursSheetState();
-}
-
-class _HoursSheetState extends State<_HoursSheet> {
-  late int _start = widget.start;
-  late int _end = widget.end;
-  bool _saving = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final localizations = MaterialLocalizations.of(context);
-    String label(int minute) =>
-        localizations.formatTimeOfDay(TimeOfDay(hour: minute ~/ 60, minute: minute % 60));
-
-    return AppSheet(
-      title: widget.title,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(onPressed: () => _pick(start: true), child: Text(label(_start))),
+              ],
             ),
-            const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('–')),
-            Expanded(
-              child: OutlinedButton(onPressed: () => _pick(start: false), child: Text(label(_end))),
+            _onlineSection(context, l10n, settings, pairedCount),
+            SettingsSection(
+              title: l10n.about,
+              children: [
+                SettingsNavRow(
+                  icon: Icons.info_outline,
+                  title: l10n.about,
+                  subtitle: l10n.aboutSubtitle,
+                  onTap: () =>
+                      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AboutPage())),
+                ),
+              ],
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _desktop(BuildContext context) {
+    final l10n = context.l10n;
+    final settings = ref.watch(settingsProvider);
+    final entries = _entries(l10n);
+    final query = _query.trim().toLowerCase();
+    final matches = query.isEmpty
+        ? const <_SettingLink>[]
+        : entries.where((entry) => entry.matches(query)).toList();
+    final pairedCount = ref.watch(pairedDevicesProvider).value?.length ?? 0;
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: AppBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _SettingsSidebar(
+                  searchController: _search,
+                  searchHint: l10n.settingsSearch,
+                  onSearchChanged: (value) => setState(() => _query = value),
+                  searching: query.isNotEmpty,
+                  matches: matches,
+                  selected: _desktopSection,
+                  onlineEnabled: settings.onlineEnabled,
+                  onSelected: _selectDesktopSection,
+                  onOpenLink: _openDesktopLink,
+                  onBack: () => Navigator.of(context).maybePop(),
+                ),
+                const SizedBox(width: 22),
+                Expanded(
+                  child: SundialContentPane(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _paneHeader(context, l10n),
+                        Expanded(child: _paneBody(context, l10n, settings, pairedCount)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        const SizedBox(height: 16),
-        FilledButton(onPressed: _saving ? null : _save, child: Text(l10n.save)),
+      ),
+    );
+  }
+
+  Widget _paneHeader(BuildContext context, AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(6, 8, 6, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(_desktopSection.title(l10n), style: SundialType.headline(27, color: context.mc.text)),
+          const SizedBox(height: 3),
+          Text(_desktopSection.subtitle(l10n), style: SundialType.body(13, color: context.mc.textSecondary)),
+        ],
+      ),
+    );
+  }
+
+  Widget _paneBody(BuildContext context, AppLocalizations l10n, AppSettings settings, int pairedCount) {
+    switch (_desktopSection) {
+      case _DesktopSettingsSection.online:
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [_onlineSection(context, l10n, settings, pairedCount, highlight: _desktopHighlight)],
+          ),
+        );
+      case _DesktopSettingsSection.about:
+        return const AboutPage(embedded: true);
+      case _DesktopSettingsSection.appearance:
+      case _DesktopSettingsSection.preferences:
+      case _DesktopSettingsSection.data:
+        return SettingsDetailPage(
+          section: _desktopSection.detail!,
+          highlight: _desktopHighlight,
+          embedded: true,
+        );
+    }
+  }
+
+  Widget _onlineSection(
+    BuildContext context,
+    AppLocalizations l10n,
+    AppSettings settings,
+    int pairedCount, {
+    String? highlight,
+  }) {
+    final controller = ref.read(settingsProvider.notifier);
+    return SettingsSection(
+      highlight: highlight,
+      title: l10n.onlineSection,
+      children: [
+        SettingsSwitchRow(
+          icon: Icons.language,
+          title: l10n.onlineEnable,
+          subtitle: l10n.onlineEnableSubtitle,
+          value: settings.onlineEnabled,
+          onChanged: (value) async {
+            await controller.setOnlineEnabled(value);
+            await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
+            if (value && context.mounted) {
+              final identity = await ref.read(repositoryProvider).readIdentity();
+              if (identity == null && context.mounted) {
+                _notice(context, l10n.identityRequired);
+              }
+            }
+          },
+        ),
+        if (settings.onlineEnabled) ...[
+          SettingsNavRow(
+            icon: Icons.devices_other,
+            title: l10n.devicesAndSync,
+            subtitle: l10n.devicesAndSyncSubtitle,
+            value: '$pairedCount',
+            onTap: () =>
+                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const DevicesPage())),
+          ),
+          SettingsNavRow(
+            icon: Icons.terminal,
+            title: l10n.mcpServer,
+            subtitle: l10n.mcpEndpointSubtitle,
+            value: settings.mcpEnabled ? l10n.on : l10n.off,
+            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const McpPage())),
+          ),
+        ],
       ],
     );
   }
 
-  Future<void> _pick({required bool start}) async {
-    final minute = start ? _start : _end;
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: minute ~/ 60, minute: minute % 60),
-    );
-    if (picked == null || !mounted) return;
+  List<_SettingLink> _entries(AppLocalizations l10n) => [
+    _SettingLink(
+      icon: Icons.palette_outlined,
+      title: l10n.theme,
+      subtitle: l10n.appearanceSection,
+      keywords: 'theme system light dark aero tema',
+      section: SettingsDetailSection.appearance,
+    ),
+    _SettingLink(
+      icon: Icons.wallpaper_outlined,
+      title: l10n.background,
+      subtitle: l10n.appearanceSection,
+      keywords: 'background dots grid oled custom plain fondo',
+      section: SettingsDetailSection.appearance,
+    ),
+    _SettingLink(
+      icon: Icons.format_size,
+      title: l10n.textSize,
+      subtitle: l10n.appearanceSection,
+      keywords: 'text size font scale tamano texto',
+      section: SettingsDetailSection.appearance,
+    ),
+    _SettingLink(
+      icon: Icons.language,
+      title: l10n.language,
+      subtitle: l10n.preferencesSection,
+      keywords: 'language english spanish idioma',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.volume_up_outlined,
+      title: l10n.interactionSounds,
+      subtitle: l10n.preferencesSection,
+      keywords: 'sound interaction tap toggle confirm back error sonido',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.notifications_active_outlined,
+      title: l10n.alarmSounds,
+      subtitle: l10n.preferencesSection,
+      keywords: 'alarm reminder sound alarma recordatorio',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.event_outlined,
+      title: l10n.dateFormatLabel,
+      subtitle: l10n.preferencesSection,
+      keywords: 'date format fecha formato',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.public,
+      title: l10n.timeZone,
+      subtitle: l10n.preferencesSection,
+      keywords: 'time zone iana city offset zona horaria',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.today_outlined,
+      title: l10n.weekStartsOn,
+      subtitle: l10n.preferencesSection,
+      keywords: 'week start monday sunday semana',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.speed,
+      title: l10n.performanceMode,
+      subtitle: l10n.preferencesSection,
+      keywords: 'performance blur motion rendimiento',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.view_sidebar_outlined,
+      title: l10n.navigationSide,
+      subtitle: l10n.preferencesSection,
+      keywords: 'navigation side rail left right navegacion',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.notifications_outlined,
+      title: l10n.defaultReminders,
+      subtitle: l10n.preferencesSection,
+      keywords: 'default reminders lead recordatorios',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.work_outline,
+      title: l10n.workHours,
+      subtitle: l10n.preferencesSection,
+      keywords: 'work hours visibilidad trabajo horario',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.bedtime_outlined,
+      title: l10n.quietHours,
+      subtitle: l10n.preferencesSection,
+      keywords: 'quiet hours silence silencio',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.nightlight_outlined,
+      title: l10n.sleepWindow,
+      subtitle: l10n.preferencesSection,
+      keywords: 'sleep window commute wind down buffers sueno descanso',
+      section: SettingsDetailSection.preferences,
+    ),
+    _SettingLink(
+      icon: Icons.file_upload_outlined,
+      title: l10n.exportBackup,
+      subtitle: l10n.dataSection,
+      keywords: 'export backup copia exportar',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.file_download_outlined,
+      title: l10n.importBackup,
+      subtitle: l10n.dataSection,
+      keywords: 'import restore backup restaurar importar',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.history,
+      title: l10n.automaticBackups,
+      subtitle: l10n.dataSection,
+      keywords: 'automatic backups rotation copias automaticas',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.calendar_month_outlined,
+      title: l10n.importCalendar,
+      subtitle: l10n.dataSection,
+      keywords: 'import calendar ics importar calendario',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.calendar_today_outlined,
+      title: l10n.exportCalendar,
+      subtitle: l10n.dataSection,
+      keywords: 'export calendar ics exportar calendario',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.table_chart_outlined,
+      title: l10n.exportCsv,
+      subtitle: l10n.dataSection,
+      keywords: 'export csv exportar',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.table_view_outlined,
+      title: l10n.importCsv,
+      subtitle: l10n.dataSection,
+      keywords: 'import csv importar',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.delete_forever_outlined,
+      title: l10n.deleteAllData,
+      subtitle: l10n.dataSection,
+      keywords: 'delete all data erase borrar datos',
+      section: SettingsDetailSection.data,
+    ),
+    _SettingLink(
+      icon: Icons.devices_other,
+      title: l10n.devicesAndSync,
+      subtitle: l10n.onlineSection,
+      keywords: 'devices sync lan pair nearby network dispositivos sincronizar red',
+      route: _SettingRoute.devices,
+    ),
+    _SettingLink(
+      icon: Icons.terminal,
+      title: l10n.mcpServer,
+      subtitle: l10n.onlineSection,
+      keywords: 'mcp server port tools servidor puerto',
+      route: _SettingRoute.mcp,
+    ),
+    _SettingLink(
+      icon: Icons.info_outline,
+      title: l10n.about,
+      subtitle: l10n.about,
+      keywords: 'about license version credits acerca licencia',
+      route: _SettingRoute.about,
+    ),
+  ];
+
+  void _selectDesktopSection(_DesktopSettingsSection section) {
+    if (section == _desktopSection) return;
     setState(() {
-      if (start) {
-        _start = picked.hour * 60 + picked.minute;
-      } else {
-        _end = picked.hour * 60 + picked.minute;
-      }
+      _desktopSection = section;
+      _desktopHighlight = null;
     });
   }
 
-  Future<void> _save() async {
-    setState(() => _saving = true);
-    await widget.onSave(_start, _end);
-    if (mounted) Navigator.of(context).pop();
+  void _openDesktopLink(_SettingLink link) {
+    switch (link.route) {
+      case _SettingRoute.devices:
+      case _SettingRoute.mcp:
+        if (!ref.read(settingsProvider).onlineEnabled) {
+          _notice(context, context.l10n.onlineEnableSubtitle);
+          return;
+        }
+        setState(() {
+          _desktopSection = _DesktopSettingsSection.online;
+          _desktopHighlight = link.title;
+        });
+      case _SettingRoute.about:
+        setState(() {
+          _desktopSection = _DesktopSettingsSection.about;
+          _desktopHighlight = null;
+        });
+      case _SettingRoute.detail:
+        setState(() {
+          _desktopSection = _DesktopSettingsSection.fromDetail(link.section!);
+          _desktopHighlight = link.title;
+        });
+    }
+  }
+
+  void _open(BuildContext context, _SettingLink link) {
+    switch (link.route) {
+      case _SettingRoute.devices:
+        if (!ref.read(settingsProvider).onlineEnabled) {
+          _notice(context, context.l10n.onlineEnableSubtitle);
+          return;
+        }
+        Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const DevicesPage()));
+      case _SettingRoute.mcp:
+        if (!ref.read(settingsProvider).onlineEnabled) {
+          _notice(context, context.l10n.onlineEnableSubtitle);
+          return;
+        }
+        Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const McpPage()));
+      case _SettingRoute.about:
+        Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AboutPage()));
+      case _SettingRoute.detail:
+        _pushDetail(context, link.section!, highlight: link.title);
+    }
+  }
+
+  void _pushDetail(BuildContext context, SettingsDetailSection section, {String? highlight}) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SettingsDetailPage(section: section, highlight: highlight),
+      ),
+    );
+  }
+
+  void _notice(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+}
+
+class _SettingsSidebar extends StatelessWidget {
+  const _SettingsSidebar({
+    required this.searchController,
+    required this.searchHint,
+    required this.onSearchChanged,
+    required this.searching,
+    required this.matches,
+    required this.selected,
+    required this.onlineEnabled,
+    required this.onSelected,
+    required this.onOpenLink,
+    required this.onBack,
+  });
+
+  final TextEditingController searchController;
+  final String searchHint;
+  final ValueChanged<String> onSearchChanged;
+  final bool searching;
+  final List<_SettingLink> matches;
+  final _DesktopSettingsSection selected;
+  final bool onlineEnabled;
+  final ValueChanged<_DesktopSettingsSection> onSelected;
+  final ValueChanged<_SettingLink> onOpenLink;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final c = context.mc;
+    return Container(
+      width: kSidebarWidth,
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+      decoration: BoxDecoration(
+        color: c.navBg,
+        borderRadius: BorderRadius.circular(SundialRadii.lg),
+        border: Border.all(color: c.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 14),
+            child: Row(
+              children: [
+                _SidebarBackButton(onTap: onBack),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.settings,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: SundialType.headline(21, color: c.text),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SundialSearchField(controller: searchController, hint: searchHint, onChanged: onSearchChanged),
+          const SizedBox(height: 14),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 8),
+              children: [
+                if (searching) ...[
+                  SectionLabel(l10n.settingsSearch),
+                  if (matches.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+                      child: Text(
+                        l10n.noSettingsFound,
+                        style: SundialType.body(12.5, color: c.textSecondary),
+                      ),
+                    )
+                  else
+                    for (final link in matches)
+                      _SidebarRow(
+                        icon: link.icon,
+                        title: link.title,
+                        subtitle: link.subtitle,
+                        onTap: () => onOpenLink(link),
+                      ),
+                ] else ...[
+                  _SidebarRow(
+                    icon: Icons.palette_outlined,
+                    title: l10n.appearanceSection,
+                    selected: selected == _DesktopSettingsSection.appearance,
+                    onTap: () => onSelected(_DesktopSettingsSection.appearance),
+                  ),
+                  _SidebarRow(
+                    icon: Icons.tune,
+                    title: l10n.preferencesSection,
+                    selected: selected == _DesktopSettingsSection.preferences,
+                    onTap: () => onSelected(_DesktopSettingsSection.preferences),
+                  ),
+                  _SidebarRow(
+                    icon: Icons.storage_outlined,
+                    title: l10n.dataSection,
+                    selected: selected == _DesktopSettingsSection.data,
+                    onTap: () => onSelected(_DesktopSettingsSection.data),
+                  ),
+                  const _SidebarDivider(),
+                  _SidebarRow(
+                    icon: Icons.language,
+                    title: l10n.onlineSection,
+                    value: onlineEnabled ? l10n.on : l10n.off,
+                    selected: selected == _DesktopSettingsSection.online,
+                    onTap: () => onSelected(_DesktopSettingsSection.online),
+                  ),
+                  const _SidebarDivider(),
+                  _SidebarRow(
+                    icon: Icons.info_outline,
+                    title: l10n.about,
+                    selected: selected == _DesktopSettingsSection.about,
+                    onTap: () => onSelected(_DesktopSettingsSection.about),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SidebarBackButton extends StatelessWidget {
+  const _SidebarBackButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.mc;
+    return Pressable(
+      onTap: onTap,
+      semanticButton: true,
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: c.surface,
+          border: Border.all(color: c.border),
+        ),
+        child: Icon(Icons.chevron_left, size: 21, color: c.text),
+      ),
+    );
+  }
+}
+
+class _SidebarDivider extends StatelessWidget {
+  const _SidebarDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      child: Divider(height: 1, color: context.mc.border),
+    );
+  }
+}
+
+class _SidebarRow extends StatelessWidget {
+  const _SidebarRow({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.value,
+    this.selected = false,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final String? value;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.mc;
+    final twoLines = subtitle != null;
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: Pressable(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          margin: const EdgeInsets.symmetric(vertical: 2),
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: twoLines ? 8 : 10),
+          decoration: BoxDecoration(
+            color: selected ? c.accentSoft : Colors.transparent,
+            borderRadius: BorderRadius.circular(SundialRadii.sm),
+            border: Border.all(color: selected ? c.accent.withValues(alpha: 0.30) : Colors.transparent),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 18, color: selected ? c.accent : c.textSecondary),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: SundialType.body(
+                        13.5,
+                        weight: selected ? FontWeight.w800 : FontWeight.w600,
+                        color: selected ? c.accent : c.text,
+                      ),
+                    ),
+                    if (twoLines) ...[
+                      const SizedBox(height: 1),
+                      Text(
+                        subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: SundialType.body(10.5, color: c.textTertiary),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (value != null) ...[
+                const SizedBox(width: 8),
+                Text(value!, style: SundialType.label(10.5, color: c.textTertiary)),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+enum _DesktopSettingsSection {
+  appearance,
+  preferences,
+  data,
+  online,
+  about;
+
+  SettingsDetailSection? get detail => switch (this) {
+    _DesktopSettingsSection.appearance => SettingsDetailSection.appearance,
+    _DesktopSettingsSection.preferences => SettingsDetailSection.preferences,
+    _DesktopSettingsSection.data => SettingsDetailSection.data,
+    _DesktopSettingsSection.online => null,
+    _DesktopSettingsSection.about => null,
+  };
+
+  static _DesktopSettingsSection fromDetail(SettingsDetailSection section) => switch (section) {
+    SettingsDetailSection.appearance => _DesktopSettingsSection.appearance,
+    SettingsDetailSection.preferences => _DesktopSettingsSection.preferences,
+    SettingsDetailSection.data => _DesktopSettingsSection.data,
+    SettingsDetailSection.about => _DesktopSettingsSection.about,
+  };
+
+  String title(AppLocalizations l10n) => switch (this) {
+    _DesktopSettingsSection.appearance => l10n.appearanceSection,
+    _DesktopSettingsSection.preferences => l10n.preferencesSection,
+    _DesktopSettingsSection.data => l10n.dataSection,
+    _DesktopSettingsSection.online => l10n.onlineSection,
+    _DesktopSettingsSection.about => l10n.about,
+  };
+
+  String subtitle(AppLocalizations l10n) => switch (this) {
+    _DesktopSettingsSection.appearance => l10n.appearanceSubtitle,
+    _DesktopSettingsSection.preferences => l10n.preferencesSubtitle,
+    _DesktopSettingsSection.data => l10n.dataSubtitle,
+    _DesktopSettingsSection.online => l10n.onlineSubtitle,
+    _DesktopSettingsSection.about => l10n.aboutSubtitle,
+  };
+}
+
+enum _SettingRoute { devices, mcp, about, detail }
+
+class _SettingLink {
+  const _SettingLink({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.keywords,
+    this.section,
+    this.route = _SettingRoute.detail,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String keywords;
+  final SettingsDetailSection? section;
+  final _SettingRoute route;
+
+  bool matches(String query) {
+    final haystack = '$title $subtitle $keywords'.toLowerCase();
+    final tokens = query.toLowerCase().split(RegExp(r'\s+')).where((token) => token.isNotEmpty);
+    return tokens.every(haystack.contains);
   }
 }

@@ -1,8 +1,9 @@
-# Mane completion plan
+# Sundial completion plan
 
-Status: active. Baseline v0.5. Last updated 2026-11-09.
+Status: active. Baseline v0.9 plus the schema v13 Home rework. Last updated
+2026-11-17.
 
-This is the working plan that takes Mane from the v0.5 release candidate to a
+This is the working plan that takes Sundial from the v0.5 release candidate to a
 daily-usable v1.0. It is deliberately broader than the original v1.0 gate: the
 private brief and the reference projects expose gaps that the v0.5 roadmap did
 not treat as deliverables. Those gaps are tracked here, not hidden in prose.
@@ -13,7 +14,7 @@ in public documentation.
 
 ## 1. Goal
 
-Mane v1.0 is a daily planner for a real week:
+Sundial v1.0 is a daily planner for a real week:
 
 - several concurrent jobs and shift patterns in one Work space;
 - home inventory, shopping and maintenance that is due after the last service;
@@ -30,7 +31,7 @@ every idea in the reference projects is copied.
 
 ## 2. Definition of v1.0
 
-Mane is v1.0 when all of the following are true:
+Sundial is v1.0 when all of the following are true:
 
 - [ ] Every scenario in section 7 passes on Android and Linux, or has a
       documented platform limitation.
@@ -40,7 +41,7 @@ Mane is v1.0 when all of the following are true:
 - [ ] There are no known P0/P1 data-loss, notification, pairing or security bugs.
 - [ ] Schema migrations from every real prior version pass in tests.
 - [ ] `flutter analyze --no-fatal-infos`, `flutter test`,
-      `(cd packages/mane_core && dart test)` and the format check pass.
+      `(cd packages/sundial_core && dart test)` and the format check pass.
 - [ ] Linux debug/release and Android debug/release split-per-ABI builds pass.
 - [ ] The real-device checklist passes, including reboot, battery, timezone,
       widget, LAN and MCP smoke tests.
@@ -73,7 +74,7 @@ Verified 2026-11-09:
 
 - `flutter analyze --no-fatal-infos`: clean.
 - `flutter test`: 85 passed.
-- `(cd packages/mane_core && dart test)`: 71 passed.
+- `(cd packages/sundial_core && dart test)`: 71 passed.
 - `dart format --line-length 110 --output=none --set-exit-if-changed`: clean.
 - v0.1.5 through v0.5 features are implemented as described in
   `docs/full-docs.md`.
@@ -91,7 +92,7 @@ The single biggest product gap. The app used stock Material 3 widgets even
 though the reference-first rule requires the GymMane/Streak visual language.
 
 - [x] Bundle the reference font family and apply a real type scale.
-- [x] Apply `ManeColors` through `context.mc`; stop reading generated Material
+- [x] Apply `SundialColors` through `context.mc`; stop reading generated Material
       roles directly in screens where a token exists.
 - [x] Add component themes for app bar, card, sheet, dialog, snack bar,
       navigation bar, buttons and time picker.
@@ -193,6 +194,42 @@ reminder planner; custom reminder times use `time_minute`; and Android
 notifications carry snooze/complete actions. Tests: 135 app tests and 85 core
 tests.
 
+### Post-v0.9 Home rework (schema v13)
+
+- [x] Model one stock variant per row and group variants under a stable product
+      id, so the same product can have several sizes and units with independent
+      stock, minimums, expiry and locations.
+- [x] Replace free-text categories, locations and units with editable reference
+      rows that carry an icon, colour, symbol and unit kind, and allow multiple
+      locations per variant.
+- [x] Seed a searchable household catalog with localized names and
+      descriptions, art, defaults and conservative shelf life, and reuse the
+      GymMane nutrition-library pattern without copying its data.
+- [x] Tie the shopping list to inventory: low, empty and expired stock produces
+      suggestions; linked lines restock the exact variant; one-off purchases
+      remain possible.
+- [x] Make gadgets support service logging, rescheduling without a service, and
+      optional completed calendar blocks with a start and end time.
+- [x] Add a real v12→v13 migration test and keep backup, CSV, LAN, MCP and
+      search in sync with the new fields.
+
+Acceptance: three 5-gallon bottles and four 5-litre bottles are one product with
+two variants; checking the 5-litre line restocks only that size; unchecking
+restores the recorded purchase; clearing a category persists; a service logged
+from the performed date advances from that date and never drifts an all-day row
+across a timezone; both builds and both test suites pass.
+
+**Shipped in v13:** `home_category_records`, `home_location_records`,
+`home_unit_records`, `home_item_location_records` and
+`maintenance_log_records`; product-group and reference columns on
+`home_item_records`; catalog/art/category metadata on `shopping_items`. The
+`home_inventory` feature gained the grouped inventory page, the household
+catalog, the reference manager, inventory-aware shopping suggestions and the
+gadget service loop. Tests: 271 app tests and 95 core tests, plus the real
+v12→v13 fixture. Screenshots: `v1.6-home-inventory-mobile.png`,
+`v1.6-home-catalog-mobile.png`, `v1.6-home-shopping-mobile.png` and
+`v1.6-home-gadgets-mobile.png`.
+
 ### v1.0 Device verification, polish and release
 
 - [ ] Run the full Android device checklist, including the new v0.7-v0.9 flows.
@@ -230,6 +267,9 @@ the full table are in `docs/device-run-2026-11-09.md`.
 | Home inventory | Core list and low stock | Adjustments, dashboard and history | v0.8 |
 | Shopping | Core list | Grouping, clear checked and reorder | v0.8 |
 | Maintenance | Interval after completion | Dedicated due/overdue view | v0.8 |
+| Home inventory (v13) | One row per item with a reorder level | Product groups, variant sizes, catalog, reference data, expiry/minimum | v13 |
+| Shopping (v13) | Category/location grouping | Inventory suggestions and exact-variant restock | v13 |
+| Gadgets (v13) | Due view and completion | Service log, reschedule, optional calendar block | v13 |
 | App lock | None | Optional local PIN lock | v0.8 |
 | MCP | Four tools, loopback JSON-RPC | Full tool set and streamable sessions | v0.9 |
 | LAN sync | In-memory summary snapshots | Persistent read-only snapshots and richer query | v0.9 |
@@ -296,12 +336,12 @@ Run before reporting any milestone:
 ```bash
 flutter pub get
 dart run build_runner build --force-jit
-find lib test packages/mane_core/lib packages/mane_core/test -type f -name '*.dart' \
+find lib test packages/sundial_core/lib packages/sundial_core/test -type f -name '*.dart' \
   -not -name '*.g.dart' -not -name 'app_localizations*.dart' -print0 \
   | xargs -0 dart format --line-length 110 --output=none --set-exit-if-changed
 flutter analyze --no-fatal-infos
 flutter test
-(cd packages/mane_core && dart test)
+(cd packages/sundial_core && dart test)
 flutter build linux --debug
 flutter build apk --debug
 ```
@@ -317,5 +357,5 @@ need `docs/device-checklist.md` results.
 - Chatbot inside the app.
 - Google/Microsoft OAuth while ICS covers the need.
 - Linear/Plane/Mattermost integrations.
-- Workout logging in Mane; GymMane owns that domain.
+- Workout logging in Sundial; GymMane owns that domain.
 - Full RFC 5545 or full MCP beyond the documented surface.

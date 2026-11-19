@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 /// The strings the Android widget renders. Built outside the platform layer so
 /// the formatting is testable without a device.
@@ -50,15 +50,15 @@ HomeWidgetData buildHomeWidgetData({
 /// This is best effort and Android-only. Desktop and tests have no provider, so
 /// a missing platform channel is not an error for the planner.
 class HomeWidgetService {
-  static const androidProvider = 'ManeTodayWidgetProvider';
+  static const androidProvider = 'SundialTodayWidgetProvider';
 
   Future<void> update(HomeWidgetData data) async {
     if (!Platform.isAndroid) return;
     try {
-      await HomeWidget.saveWidgetData<String>('mane_widget_title', data.title);
-      await HomeWidget.saveWidgetData<String>('mane_widget_plan', data.plan);
-      await HomeWidget.saveWidgetData<String>('mane_widget_next', data.next);
-      await HomeWidget.saveWidgetData<String>('mane_widget_updated', data.updated);
+      await HomeWidget.saveWidgetData<String>('sundial_widget_title', data.title);
+      await HomeWidget.saveWidgetData<String>('sundial_widget_plan', data.plan);
+      await HomeWidget.saveWidgetData<String>('sundial_widget_next', data.next);
+      await HomeWidget.saveWidgetData<String>('sundial_widget_updated', data.updated);
       await HomeWidget.updateWidget(androidName: androidProvider);
     } on MissingPluginException {
       return;

@@ -5,17 +5,20 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/models/app_settings.dart';
-import 'package:mane/models/date_range.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/state/providers.dart';
-import 'package:mane/state/settings_controller.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/models/app_settings.dart';
+import 'package:sundial/models/date_range.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/state/providers.dart';
+import 'package:sundial/state/settings_controller.dart';
+import 'package:sundial/theme/app_theme.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
+import 'package:timezone/data/latest.dart' as tzdata;
 
 void main() {
   setUpAll(() {
     open.overrideFor(OperatingSystem.linux, () => DynamicLibrary.open('libsqlite3.so.0'));
+    tzdata.initializeTimeZones();
   });
 
   test('parses stored settings with safe defaults', () {
@@ -48,6 +51,62 @@ void main() {
     expect(settings.weekStart, DateTime.monday);
   });
 
+  test('parses sound and planning time zone preferences', () {
+    final settings = AppSettings.fromMap({
+      SettingsKeys.soundsEnabled: 'true',
+      SettingsKeys.soundPack: 'soft',
+      SettingsKeys.alarmSound: 'bright',
+      SettingsKeys.timezoneOverride: 'America/New_York',
+    });
+
+    expect(settings.soundsEnabled, isTrue);
+    expect(settings.soundPack, SundialSoundPack.soft);
+    expect(settings.alarmSound, SundialAlarmSound.bright);
+    expect(settings.timezoneOverride, 'America/New_York');
+
+    final fallback = AppSettings.fromMap({
+      SettingsKeys.soundPack: 'neon',
+      SettingsKeys.alarmSound: 'loud',
+      SettingsKeys.timezoneOverride: 'Mars/Olympus',
+    });
+    expect(fallback.soundPack, SundialSoundPack.aero);
+    expect(fallback.alarmSound, SundialAlarmSound.chime);
+    expect(fallback.timezoneOverride, isEmpty);
+  });
+
+  test('the online master switch is authoritative over legacy rows', () {
+    final off = AppSettings.fromMap({
+      SettingsKeys.onlineEnabled: 'false',
+      SettingsKeys.syncEnabled: 'true',
+      SettingsKeys.mcpEnabled: 'true',
+    });
+    expect(off.onlineEnabled, isFalse);
+
+    final legacyOn = AppSettings.fromMap({SettingsKeys.syncEnabled: 'true'});
+    expect(legacyOn.onlineEnabled, isTrue);
+  });
+
+  test('OLED forces a readable dark palette', () {
+    const settings = AppSettings(
+      themeVariant: SundialThemeVariant.light,
+      backgroundStyle: SundialBackgroundStyle.oled,
+    );
+    expect(settings.resolvedThemeMode, ThemeMode.dark);
+    expect(SundialTheme.forSettings(settings, Brightness.dark).brightness, Brightness.dark);
+  });
+
+  test('OLED overrides the Aero light palette', () {
+    const aero = AppSettings(themeVariant: SundialThemeVariant.aero);
+    expect(SundialTheme.forSettings(aero, Brightness.dark).brightness, Brightness.light);
+
+    const aeroOled = AppSettings(
+      themeVariant: SundialThemeVariant.aero,
+      backgroundStyle: SundialBackgroundStyle.oled,
+    );
+    expect(aeroOled.resolvedThemeMode, ThemeMode.dark);
+    expect(SundialTheme.forSettings(aeroOled, Brightness.dark).brightness, Brightness.dark);
+  });
+
   test('work and quiet windows use the device timezone', () {
     const settings = AppSettings(
       workHoursEnabled: true,
@@ -67,24 +126,16 @@ void main() {
     expect(settings.isQuietTime(DateTime.utc(2026, 11, 9, 22, 30), 'Europe/Madrid'), isTrue);
   });
 
-  test('reads automatic backup and app lock settings safely', () {
-    final locked = AppSettings.fromMap({
+  test('reads automatic backup settings safely', () {
+    final settings = AppSettings.fromMap({
       SettingsKeys.autoBackupEnabled: 'true',
       SettingsKeys.autoBackupKeep: '10',
-      SettingsKeys.appLockEnabled: 'true',
-      SettingsKeys.appLockPinHash: 'aGFzaA==',
     });
-    expect(locked.autoBackupEnabled, isTrue);
-    expect(locked.autoBackupKeep, 10);
-    expect(locked.appLockEnabled, isTrue);
-    expect(locked.hasAppLockPin, isTrue);
+    expect(settings.autoBackupEnabled, isTrue);
+    expect(settings.autoBackupKeep, 10);
 
-    final enabledWithoutPin = AppSettings.fromMap({
-      SettingsKeys.appLockEnabled: 'true',
-      SettingsKeys.autoBackupKeep: '999',
-    });
-    expect(enabledWithoutPin.appLockEnabled, isFalse);
-    expect(enabledWithoutPin.autoBackupKeep, 20);
+    final clamped = AppSettings.fromMap({SettingsKeys.autoBackupKeep: '999'});
+    expect(clamped.autoBackupKeep, 20);
   });
 
   test('settings persist through the repository and can be cleared', () async {
@@ -106,6 +157,10 @@ void main() {
     await controller.setWeekStart(DateTime.saturday);
     await controller.setHideWorkSpace(true);
     await controller.setDefaultReminderOffsets([30, 1440, 30]);
+    await controller.setSoundsEnabled(true);
+    await controller.setSoundPack(SundialSoundPack.soft);
+    await controller.setAlarmSound(SundialAlarmSound.bright);
+    await controller.setTimezoneOverride('Europe/Madrid');
 
     final stored = await database.readSettings();
     expect(stored[SettingsKeys.themeMode], 'light');
@@ -113,6 +168,13 @@ void main() {
     expect(stored[SettingsKeys.weekStart], '6');
     expect(stored[SettingsKeys.hideWorkSpace], 'true');
     expect(stored[SettingsKeys.defaultReminderOffsets], '30,1440');
+    expect(stored[SettingsKeys.soundsEnabled], 'true');
+    expect(stored[SettingsKeys.soundPack], 'soft');
+    expect(stored[SettingsKeys.alarmSound], 'bright');
+    expect(stored[SettingsKeys.timezoneOverride], 'Europe/Madrid');
+
+    await controller.setTimezoneOverride('Not/AZone');
+    expect(container.read(settingsProvider).timezoneOverride, 'Europe/Madrid');
 
     await controller.setLocale(null);
     expect(container.read(settingsProvider).locale, isNull);

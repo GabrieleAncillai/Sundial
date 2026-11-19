@@ -47,14 +47,14 @@ class AppEmptyState extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: ManeType.headline(compact ? 16 : 19, color: c.text),
+              style: SundialType.headline(compact ? 16 : 19, color: c.text),
             ),
             if (message != null) ...[
               const SizedBox(height: 8),
               Text(
                 message!,
                 textAlign: TextAlign.center,
-                style: ManeType.body(compact ? 13 : 14, color: c.textSecondary),
+                style: SundialType.body(compact ? 13 : 14, color: c.textSecondary),
               ),
             ],
             if (action != null) ...[SizedBox(height: compact ? 18 : 24), action!],

@@ -3,14 +3,15 @@ import 'dart:io';
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/models/home_item.dart';
-import 'package:mane/models/local_identity.dart';
-import 'package:mane/models/paired_device.dart';
-import 'package:mane/models/remote_snapshot.dart';
-import 'package:mane/models/reminder.dart';
-import 'package:mane/models/shopping_item.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/models/home_item.dart';
+import 'package:sundial/models/local_identity.dart';
+import 'package:sundial/models/paired_device.dart';
+import 'package:sundial/models/remote_snapshot.dart';
+import 'package:sundial/models/reminder.dart';
+import 'package:sundial/models/shopping_item.dart';
+import 'package:sundial_core/sundial_core.dart';
+import 'package:path/path.dart' as p;
 import 'package:sqlite3/open.dart';
 import 'package:sqlite3/sqlite3.dart';
 
@@ -21,8 +22,8 @@ void main() {
   });
 
   test('migrates real v1 data to the current schema without losing anything', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -138,12 +139,12 @@ void main() {
     expect(columns.map((row) => row.data['name']), contains('time_zone'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 13);
   });
 
   test('migrates real v2 data and keeps tags usable', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v2');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v2');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -200,12 +201,12 @@ void main() {
     expect((await database.watchTags().first).single.name, 'Tax');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 13);
   });
 
   test('migrates real v3 data and exposes the v0.3 tables', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v3');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v3');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -254,12 +255,12 @@ void main() {
 
     await database.saveShiftChecklistItems('missing-pattern', const []);
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 13);
   });
 
   test('migrates real v4 data and creates the pairing tables', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v4');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v4');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -408,12 +409,12 @@ void main() {
     expect(paired.port, 8766);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 13);
   });
 
   test('migrates real v5 checklist rows to per-slot keys', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v5');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v5');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -478,12 +479,12 @@ void main() {
     expect(saved.windDownMinutes, 20);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 13);
   });
 
   test('migrates real v6 rows to shopping order and purchase history', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v6');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v6');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -535,12 +536,12 @@ void main() {
     expect(history.single.note, 'Shop run');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 13);
   });
 
   test('migrates real v7 rows to custom reminder times and remote snapshots', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-migration-v7');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v7');
+    final path = '${directory.path}/sundial.sqlite';
     final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
 
     final raw = sqlite3.open(path);
@@ -610,6 +611,467 @@ void main() {
     expect(await database.readRemoteSnapshots(), isEmpty);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 8);
+    expect(version.data.values.single, 13);
+  });
+
+  test('migrates real v8 rows to contexts, projects, habits and tracked tasks', () async {
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v8');
+    final path = '${directory.path}/sundial.sqlite';
+    final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
+
+    final raw = sqlite3.open(path);
+    raw.execute(File('test/fixtures/schema_v8.sql').readAsStringSync());
+    raw.execute(
+      'INSERT INTO space_records (id, name, color, position, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['work', 'Work', 0xFF4A6FA5, 0, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO entry_records '
+      '(id, space_id, title, kind, date_key, all_day, status, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['shift', 'work', 'Shift note', 'task', 20261109, 1, 'open', createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO tag_records (id, name, color, position, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['job', 'Job', 0xFF2F7ED8, 0, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO shift_pattern_records '
+      '(id, space_id, name, time_zone, cycle_days, anchor_date_key, enabled, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['bar', 'work', 'Bar', 'Europe/Madrid', 7, 20261109, 1, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO shift_checklist_item_records (id, pattern_id, label, position) VALUES (?, ?, ?, ?)',
+      ['open', 'bar', 'Open', 0],
+    );
+    raw.dispose();
+
+    final database = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(() async {
+      await database.close();
+      await directory.delete(recursive: true);
+    });
+
+    await database.saveContext(
+      const PlannerContext(id: 'cafe', spaceId: 'work', name: 'Cafe', colorValue: 0xFF2F7ED8),
+    );
+    await database.saveProject(
+      const Project(id: 'reno', spaceId: 'work', contextId: 'cafe', name: 'Reno', colorValue: 0xFF2FA98F),
+    );
+    final entry = await database.readEntry('shift');
+    expect(entry!.priority, EntryPriority.none);
+    expect(entry.contextId, isNull);
+    await database.saveEntry(
+      entry.copyWith(
+        contextId: 'cafe',
+        projectId: 'reno',
+        priority: EntryPriority.high,
+        updatedAt: DateTime.utc(2026, 11, 9),
+      ),
+    );
+    final saved = await database.readEntry('shift');
+    expect(saved!.contextId, 'cafe');
+    expect(saved.projectId, 'reno');
+    expect(saved.priority, EntryPriority.high);
+
+    final tags = await database.watchTags().first;
+    expect(tags.single.icon, 'folder');
+
+    final items = await database.readShiftChecklistItems('bar');
+    expect(items.single.dayIndex, isNull);
+    await database.saveShiftChecklistItems('bar', [items.single.copyWith(dayIndex: 2)]);
+    expect((await database.readShiftChecklistItems('bar')).single.dayIndex, 2);
+
+    final version = await database.customSelect('PRAGMA user_version').getSingle();
+    expect(version.data.values.single, 13);
+  });
+
+  test('repairs a database written by the draft v9 build', () async {
+    final directory = await Directory.systemTemp.createTemp('sundial-migration-v9-draft');
+    final path = '${directory.path}/sundial.sqlite';
+    final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
+
+    final raw = sqlite3.open(path);
+    raw.execute(File('test/fixtures/schema_v9_draft.sql').readAsStringSync());
+    raw.execute(
+      'INSERT INTO space_records (id, name, color, position, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['work', 'Work', 0xFF4A6FA5, 1, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO space_unit_records '
+      '(id, space_id, name, kind, icon, color, position, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['pizza', 'work', 'Pida Pizza', 'job', 'store', 0xFF2F7ED8, 1, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO project_records '
+      '(id, space_id, space_unit_id, name, color, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?)',
+      ['reno', 'work', 'pizza', 'Reno', 0xFF2FA98F, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO entry_records '
+      '(id, space_id, space_unit_id, project_id, title, kind, date_key, all_day, status, priority, '
+      'estimated_minutes, sort_order, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        'shift',
+        'work',
+        'pizza',
+        'reno',
+        'Shift note',
+        'task',
+        20261109,
+        1,
+        'open',
+        2,
+        45,
+        3,
+        createdAt,
+        createdAt,
+      ],
+    );
+    raw.execute(
+      'INSERT INTO habit_records (id, space_unit_id, name, icon, color, weekdays, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      ['open-shop', 'pizza', 'Open shop', 'bolt', 0xFF34C759, '1,3,5', createdAt, createdAt],
+    );
+    raw.execute('INSERT INTO habit_check_records (habit_id, date_key, created_at) VALUES (?, ?, ?)', [
+      'open-shop',
+      20261109,
+      createdAt,
+    ]);
+    raw.execute(
+      'INSERT INTO task_session_records '
+      '(id, entry_id, started_at, ended_at, note, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?)',
+      ['session', 'shift', createdAt, createdAt + 1800, 'Prep', createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO shift_pattern_records '
+      '(id, space_id, space_unit_id, name, time_zone, cycle_days, anchor_date_key, enabled, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['bar', 'work', 'pizza', 'Bar', 'Europe/Madrid', 7, 20261109, 1, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO home_item_records (id, space_unit_id, name, quantity, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['beans', 'pizza', 'Beans', 2, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO shopping_item_records (id, space_unit_id, name, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?)',
+      ['milk', 'pizza', 'Milk', createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO gadget_records (id, space_unit_id, name, interval_days, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['boiler', 'pizza', 'Boiler service', 180, createdAt, createdAt],
+    );
+    raw.dispose();
+
+    final database = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(() async {
+      await database.close();
+      await directory.delete(recursive: true);
+    });
+
+    final contexts = await database.watchContexts().first;
+    expect(contexts.map((context) => context.id), contains('pizza'));
+    expect(contexts.firstWhere((context) => context.id == 'pizza').name, 'Pida Pizza');
+
+    // The repaired tables must accept new rows, not just read old ones.
+    await database.saveContext(
+      const PlannerContext(id: 'delivery', spaceId: 'work', name: 'Delivery', colorValue: 0xFF2F7ED8),
+    );
+    expect(
+      (await database.watchContexts(spaceId: 'work').first).map((context) => context.id),
+      contains('delivery'),
+    );
+    await database.startTimeEntry(entryId: 'shift', at: DateTime.utc(2026, 11, 1, 2));
+    await database.stopTimeEntry('shift', at: DateTime.utc(2026, 11, 1, 2, 15));
+
+    final projects = await database.watchProjects().first;
+    expect(projects.single.contextId, 'pizza');
+
+    final entry = await database.readEntry('shift');
+    expect(entry!.contextId, 'pizza');
+    expect(entry.projectId, 'reno');
+    expect(entry.priority, EntryPriority.medium);
+
+    final habit = (await database.watchHabits().first).single;
+    expect(habit.spaceId, 'work');
+    expect(habit.contextId, 'pizza');
+    expect(habit.weekdays, {1, 3, 5}, reason: 'the draft weekday schedule survives the v10 rebuild');
+    final completions = await database.watchHabitCompletions().first;
+    expect(completions['open-shop'], contains(LocalDate.parse('2026-11-09')));
+
+    final sessions = await database.readTimeEntriesBetween(
+      DateTime.utc(2026, 11, 1),
+      DateTime.utc(2026, 11, 2),
+    );
+    expect(sessions, hasLength(2));
+    expect(sessions.first.note, 'Prep');
+    expect(sessions.first.endedAt, DateTime.utc(2026, 11, 1, 0, 30));
+    expect(sessions.last.endedAt, DateTime.utc(2026, 11, 1, 2, 15));
+
+    final patterns = await database.watchShiftPatterns().first;
+    expect(patterns.single.contextId, 'pizza');
+    expect((await database.watchHomeItems().first).single.contextId, 'pizza');
+    expect((await database.watchShoppingItems().first).single.contextId, 'pizza');
+
+    final entryColumns = await database.customSelect('PRAGMA table_info(entry_records)').get();
+    final entryNames = entryColumns.map((row) => row.read<String>('name')).toSet();
+    expect(entryNames, containsAll(['context_id', 'completed_at', 'icon']));
+    expect(entryNames, isNot(contains('space_unit_id')));
+
+    // The draft gadget table is converted into a Home maintenance entry.
+    final gadget = await database.readEntry('gadget-boiler');
+    expect(gadget, isNotNull);
+    expect(gadget!.spaceId, 'home');
+    expect(gadget.contextId, isNull, reason: 'the draft unit belonged to Work');
+    expect(gadget.repeatAfterCompletionDays, 180);
+    expect(gadget.allDay, isTrue);
+    expect(gadget.timing, EntryTiming.anytime);
+    expect(gadget.date, LocalDate.parse('2027-04-30'));
+    expect(gadget.lastCompletedAt, isNull);
+    final remainingGadgets = await database
+        .customSelect("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'gadget_records'")
+        .get();
+    expect(remainingGadgets, isEmpty);
+
+    // The converted entry must keep working, not just read back.
+    final nextDue = await database.completeMaintenanceEntry('gadget-boiler', LocalDate.parse('2027-05-02'));
+    expect(nextDue, LocalDate.parse('2027-10-29'));
+
+    final version = await database.customSelect('PRAGMA user_version').getSingle();
+    expect(version.data.values.single, 13);
+  });
+
+  test('a v10 database gains habit weekdays and keeps writing', () async {
+    final directory = await Directory.systemTemp.createTemp('sundial-v10');
+    final path = p.join(directory.path, 'sundial.sqlite');
+    addTearDown(() => directory.delete(recursive: true));
+    final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
+
+    final raw = sqlite3.open(path);
+    raw.execute('''
+      CREATE TABLE habit_records (
+        id TEXT NOT NULL,
+        space_id TEXT NOT NULL,
+        context_id TEXT NULL,
+        name TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        color INTEGER NOT NULL,
+        icon TEXT NOT NULL DEFAULT 'star',
+        target_per_week INTEGER NOT NULL DEFAULT 7,
+        position INTEGER NOT NULL DEFAULT 0,
+        archived INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER NULL,
+        PRIMARY KEY (id)
+      )
+    ''');
+    raw.execute(
+      'INSERT INTO habit_records (id, space_id, name, color, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['walk', 'personal', 'Walk', 0xFF00AA00, createdAt, createdAt],
+    );
+    raw.execute('PRAGMA user_version = 10');
+    raw.dispose();
+
+    final database = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(() => database.close());
+
+    final existing = (await database.watchHabits().first).single;
+    expect(existing.weekdays, {1, 2, 3, 4, 5, 6, 7});
+
+    await database.saveHabit(
+      Habit(
+        id: existing.id,
+        spaceId: existing.spaceId,
+        name: existing.name,
+        colorValue: existing.colorValue,
+        targetPerWeek: 3,
+        weekdays: const {1, 3, 5},
+        createdAt: existing.createdAt,
+      ),
+    );
+    final updated = (await database.watchHabits().first).single;
+    expect(updated.weekdays, {1, 3, 5});
+    expect(updated.targetPerWeek, 3);
+
+    final version = await database.customSelect('PRAGMA user_version').getSingle();
+    expect(version.data.values.single, 13);
+  });
+
+  test('repairs the draft leftovers a v1.2 build reported as v10', () async {
+    final directory = await Directory.systemTemp.createTemp('sundial-broken-v10');
+    final path = p.join(directory.path, 'sundial.sqlite');
+    addTearDown(() => directory.delete(recursive: true));
+    final now = DateTime.utc(2026, 11, 9, 10);
+
+    // Start from a healthy file, then reintroduce the draft-only NOT NULL
+    // columns and gadgets exactly as the earlier build left them.
+    final first = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    await first.seedDefaults();
+    await first.saveContext(
+      const PlannerContext(id: 'house', spaceId: 'home', name: 'House', colorValue: 0xFF5B7F6B),
+    );
+    await first.saveEntry(
+      Entry(
+        id: 'boiler-task',
+        spaceId: 'home',
+        title: 'Boiler task',
+        date: LocalDate.parse('2026-11-09'),
+        allDay: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    await first.close();
+
+    final raw = sqlite3.open(path);
+    raw.execute("ALTER TABLE context_records ADD COLUMN kind TEXT NOT NULL DEFAULT 'job'");
+    raw.execute('ALTER TABLE time_entry_records ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0');
+    raw.execute('''
+      CREATE TABLE gadget_records (
+        id TEXT NOT NULL PRIMARY KEY,
+        space_unit_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT '',
+        icon TEXT NOT NULL DEFAULT '',
+        interval_days INTEGER NOT NULL,
+        last_serviced_at INTEGER NULL,
+        notes TEXT NOT NULL DEFAULT '',
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER NULL
+      )
+    ''');
+    raw.execute(
+      'INSERT INTO gadget_records (id, space_unit_id, name, interval_days, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        'wash',
+        'house',
+        'Washing machine',
+        90,
+        now.millisecondsSinceEpoch ~/ 1000,
+        now.millisecondsSinceEpoch ~/ 1000,
+      ],
+    );
+    raw.execute('PRAGMA user_version = 10');
+    raw.dispose();
+
+    final repaired = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(() => repaired.close());
+
+    // The rebuilt tables accept new writes instead of hitting the NOT NULL
+    // columns the shipped model never fills.
+    await repaired.saveContext(
+      const PlannerContext(id: 'flat', spaceId: 'work', name: 'Flat', colorValue: 0xFF2F7ED8),
+    );
+    await repaired.startTimeEntry(entryId: 'boiler-task', at: DateTime.utc(2026, 11, 9, 11));
+    await repaired.stopTimeEntry('boiler-task', at: DateTime.utc(2026, 11, 9, 11, 15));
+
+    // The draft gadget becomes a Home maintenance entry and its table is gone.
+    final gadget = await repaired.readEntry('gadget-wash');
+    expect(gadget, isNotNull);
+    expect(gadget!.spaceId, 'home');
+    expect(gadget.contextId, 'house');
+    expect(gadget.repeatAfterCompletionDays, 90);
+    expect(gadget.title, 'Washing machine');
+    final draftTable = await repaired
+        .customSelect("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'gadget_records'")
+        .get();
+    expect(draftTable, isEmpty);
+
+    final version = await repaired.customSelect('PRAGMA user_version').getSingle();
+    expect(version.data.values.single, 13);
+  });
+
+  test('migrates v12 inventory text into variants and reference rows', () async {
+    final directory = await Directory.systemTemp.createTemp('sundial-v12-home');
+    final path = p.join(directory.path, 'sundial.sqlite');
+    final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
+
+    final raw = sqlite3.open(path);
+    raw.execute('CREATE TABLE setting_records (key TEXT NOT NULL PRIMARY KEY, value TEXT NOT NULL)');
+    raw.execute('CREATE TABLE entry_records (id TEXT NOT NULL PRIMARY KEY)');
+    raw.execute('''
+      CREATE TABLE home_item_records (
+        id TEXT NOT NULL PRIMARY KEY,
+        context_id TEXT NULL,
+        name TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT '',
+        location TEXT NOT NULL DEFAULT '',
+        quantity REAL NOT NULL DEFAULT 0,
+        reorder_level REAL NULL,
+        unit TEXT NOT NULL DEFAULT '',
+        notes TEXT NOT NULL DEFAULT '',
+        last_purchased_at INTEGER NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER NULL
+      )
+    ''');
+    raw.execute('''
+      CREATE TABLE shopping_item_records (
+        id TEXT NOT NULL PRIMARY KEY,
+        name TEXT NOT NULL,
+        quantity REAL NOT NULL DEFAULT 1,
+        unit TEXT NOT NULL DEFAULT '',
+        checked INTEGER NOT NULL DEFAULT 0,
+        note TEXT NOT NULL DEFAULT '',
+        home_item_id TEXT NULL,
+        context_id TEXT NULL,
+        position INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER NULL
+      )
+    ''');
+    raw.execute(
+      'INSERT INTO home_item_records '
+      '(id, name, category, location, quantity, reorder_level, unit, notes, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['rice', 'Rice', 'Food & pantry', 'Kitchen', 2.0, 1.0, 'kg', '', createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO shopping_item_records '
+      '(id, name, quantity, unit, checked, note, home_item_id, position, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['buy-rice', 'Rice', 3.0, 'kg', 0, '', 'rice', 0, createdAt, createdAt],
+    );
+    raw.execute('PRAGMA user_version = 12');
+    raw.dispose();
+
+    final database = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(() async {
+      await database.close();
+      await directory.delete(recursive: true);
+    });
+
+    final item = (await database.watchHomeItems().first).single;
+    expect(item.groupId, 'rice');
+    expect(item.categoryId, 'home-food');
+    expect(item.unitId, 'home-unit-kg');
+    expect(item.locationIds, ['home-loc-kitchen']);
+    expect(item.minimumStock, 1);
+    expect(item.expiresAt, isNull);
+
+    final shopping = (await database.watchShoppingItems().first).single;
+    expect(shopping.categoryId, 'home-food');
+    expect(shopping.icon, 'restaurant');
+    expect((await database.watchHomeCategories().first), isNotEmpty);
+
+    final version = await database.customSelect('PRAGMA user_version').getSingle();
+    expect(version.data.values.single, 13);
   });
 }

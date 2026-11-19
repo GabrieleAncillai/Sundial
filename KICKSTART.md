@@ -6,7 +6,7 @@ does not stop between milestones.
 
 ## Mission
 
-Take Mane from the v0.5 baseline through the v0.6 → v1.0 completion program in
+Take Sundial from the v0.5 baseline through the v0.6 → v1.0 completion program in
 `docs/completion-plan.md`. Do not skip milestones, and do not start the next one
 with a known failure.
 
@@ -27,7 +27,7 @@ issues or prompts.
 - Settled decisions in `AGENTS.md` section 17 stay settled.
 - Offline core, no accounts, no telemetry. LAN sync and MCP are opt-in and local.
 - Data lives in SQLite. Backup and restore are first-class.
-- GPL-3.0-only, with the About screen and `CREDITS.md` attribution intact.
+- GPL-3.0-only, with the About screen and `CREDITS.md` inspiration credit intact.
 - No demo data beyond the three seed spaces. No `TODO`, `FIXME`,
   `UnimplementedError`, dead branches or commented-out code in shipped code.
 - One coherent change at a time. Both Android and Linux keep building.
@@ -62,7 +62,7 @@ round-trip. Every bug gets a regression test.
 
 - Re-read the full diff.
 - Run `flutter analyze --no-fatal-infos`, `flutter test`,
-  `(cd packages/mane_core && dart test)`, `flutter build linux --debug` and
+  `(cd packages/sundial_core && dart test)`, `flutter build linux --debug` and
   `flutter build apk --debug`.
 - Run `dart format --output=none --set-exit-if-changed` on hand-written Dart.
 - Run the visual/reference check: screenshots or golden tests for visual work,

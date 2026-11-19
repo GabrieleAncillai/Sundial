@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
+import '../../../core/icons/sundial_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../tag_colors.dart';
 import '../widgets/tag_editor_sheet.dart';
@@ -21,21 +23,21 @@ class TagsPage extends ConsumerWidget {
     final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
     final spaceNames = {for (final space in spaces) space.id: space.name};
 
-    return ManePage(
-      title: l10n.tagsManager,
-      floatingAction: ManeAddButton(
-        tooltip: l10n.addTag,
+    return SundialPage(
+      title: l10n.categories,
+      floatingAction: SundialAddButton(
+        tooltip: l10n.addCategory,
         onTap: () => showTagEditor(context, spaces: spaces),
       ),
       child: tags.isEmpty
           ? AppEmptyState(
               icon: Icons.sell_outlined,
-              title: l10n.noTags,
+              title: l10n.noCategories,
               message: l10n.tagsManagerSubtitle,
               action: FilledButton.tonalIcon(
                 onPressed: () => showTagEditor(context, spaces: spaces),
                 icon: const Icon(Icons.add, size: 18),
-                label: Text(l10n.addTag),
+                label: Text(l10n.addCategory),
               ),
             )
           : ListView(
@@ -63,7 +65,7 @@ class TagsPage extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(l10n.tagsManagerSubtitle, style: ManeType.body(12, color: c.textTertiary)),
+                  child: Text(l10n.tagsManagerSubtitle, style: SundialType.body(12, color: c.textTertiary)),
                 ),
               ],
             ),
@@ -113,14 +115,10 @@ class _TagRow extends StatelessWidget {
             height: 28,
             decoration: BoxDecoration(
               color: tagColor(tag.colorValue).withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(9),
+              borderRadius: BorderRadius.circular(SundialRadii.xs),
             ),
             child: Center(
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(color: tagColor(tag.colorValue), shape: BoxShape.circle),
-              ),
+              child: Icon(SundialIcons.resolve(tag.icon), size: 16, color: tagColor(tag.colorValue)),
             ),
           ),
           const SizedBox(width: 12),
@@ -134,9 +132,9 @@ class _TagRow extends StatelessWidget {
                   children: [
                     Text(
                       tag.name,
-                      style: ManeType.body(14, weight: FontWeight.w700, color: c.text),
+                      style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                     ),
-                    Text(spaceName, style: ManeType.body(11.5, color: c.textSecondary)),
+                    Text(spaceName, style: SundialType.body(11.5, color: c.textSecondary)),
                   ],
                 ),
               ),

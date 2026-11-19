@@ -1,14 +1,14 @@
 # Overview
 
-Mane is a local-first planner for commitments that recur across personal life,
+Sundial is a local-first planner for commitments that recur across personal life,
 work and home. One app, three spaces: **Personal**, **Work** and **Home**.
 
 Most people keep their obligations in too many places: work calendars, chat,
-task boards, notes apps, messages and their own head. Mane puts the day, week
+task boards, notes apps, messages and their own head. Sundial puts the day, week
 and month back into one calendar, so collisions are visible before they become
 problems.
 
-## What Mane does
+## What Sundial does
 
 - **One calendar** for the day, week and month. Work shifts are background
   blocks; home and personal obligations sit in front of them.
@@ -47,9 +47,13 @@ should follow with little extra work.
 
 ## Status
 
-v0.9 shipped. The 2026-11-09 Huawei device pass closed install,
-notifications on API 29, timezone, LAN, MCP, backup/CSV and app lock; the widget,
-OEM battery, accessibility/contrast audit and signed release remain in
+v0.9 shipped, then `feat/product-polish` rebuilt the product surface and
+`feat/compliance-v2` repaired the data-integrity defects found in that surface.
+The row-by-row status is in [compliance-matrix.md](compliance-matrix.md). The
+2026-11-09 Huawei device pass closed install, notifications on API 29, timezone,
+LAN, MCP and backup/CSV; the app-lock feature was removed from the product, so
+that part of the old note no longer applies. The widget, OEM battery,
+accessibility/contrast audit and signed release remain in
 [completion-plan.md](completion-plan.md). Reboot rescheduling is blocked by
 EMUI. See [device-run-2026-11-09.md](device-run-2026-11-09.md). Today, Week
 and Calendar tabs (with a 24-hour day timeline), tags, flexible shifts with
@@ -60,9 +64,10 @@ companion import, optional LAN pairing with persistent read-only snapshots, a
 local MCP endpoint with streamable sessions and the full tool set, and global
 search exist. An Android home-screen widget shows today's plan, and the app uses
 the adapted GymMane/Streak visual language. Multi-day entries, tagged shifts,
-the optional PIN app lock, work hours and quiet hours are in. English and
-Spanish are covered. The constraint audit is in
-[compliance-audit.md](compliance-audit.md).
+work hours and quiet hours are in. The `feat/product-polish` branch adds the
+responsive shell, space jobs/homes/people, projects, habits, timing modes,
+Stats and sectioned settings, and removes the app lock. English and Spanish are
+covered. The constraint audit is in [compliance-audit.md](compliance-audit.md).
 
 - [Full docs](full-docs.md): architecture, data model, feature areas and roadmap.
 - [Completion plan](completion-plan.md): the active v0.6 → v1.0 milestones and
@@ -73,6 +78,6 @@ Spanish are covered. The constraint audit is in
 - [Contributing](../CONTRIBUTING.md): setup, layout, house style and tests.
 - [Agent brief](../AGENTS.md): self-contained kickoff prompt for a coding agent.
 
-Mane is GPL-3.0-only, the same license as its primary references. See
+Sundial is GPL-3.0-only, the same license as its primary references. See
 [LICENSE](../LICENSE), [ADDITIONAL_TERMS.md](../ADDITIONAL_TERMS.md) and
 [CREDITS.md](../CREDITS.md).

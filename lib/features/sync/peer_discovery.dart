@@ -7,17 +7,16 @@ import 'device_certificate.dart';
 
 class DiscoveredPeer {
   const DiscoveredPeer({
-    required this.deviceId,
     required this.deviceName,
-    required this.username,
     required this.fingerprint,
     required this.host,
     required this.port,
   });
 
-  final String deviceId;
   final String deviceName;
-  final String username;
+
+  /// Pinned certificate fingerprint. This is the only stable peer identifier
+  /// advertised before pairing, so discovery must match on it.
   final String fingerprint;
   final String host;
   final int port;
@@ -39,26 +38,28 @@ abstract class PeerDiscovery {
 /// Linux. Discovery is best effort: manual host and port pairing stays
 /// available when the platform daemon is missing.
 class BonsoirPeerDiscovery implements PeerDiscovery {
-  static const serviceType = '_mane._tcp';
+  static const serviceType = '_sundial._tcp';
 
   final _peers = StreamController<DiscoveredPeer>.broadcast();
   BonsoirBroadcast? _broadcast;
   BonsoirDiscovery? _discovery;
   StreamSubscription<BonsoirDiscoveryEvent>? _subscription;
-  String? _selfId;
+  String? _selfFingerprint;
 
   @override
   Stream<DiscoveredPeer> get peers => _peers.stream;
 
   @override
   Future<void> start({required LocalIdentity identity, required int port}) async {
-    _selfId = identity.deviceId;
     final fingerprint = await fingerprintOfCertificatePem(identity.certificatePem);
+    _selfFingerprint = fingerprint;
+    // Only the public certificate fingerprint is advertised. An unauthenticated
+    // LAN listener must not learn the username or device id before pairing.
     final service = BonsoirService(
       name: identity.deviceName,
       type: serviceType,
       port: port,
-      attributes: {'id': identity.deviceId, 'user': identity.username, 'fp': fingerprint},
+      attributes: {'fp': fingerprint},
     );
 
     final broadcast = BonsoirBroadcast(service: service, printLogs: false);
@@ -82,18 +83,11 @@ class BonsoirPeerDiscovery implements PeerDiscovery {
     }
     if (event is! BonsoirDiscoveryServiceResolvedEvent) return;
     final service = event.service;
-    final deviceId = service.attributes['id'];
+    final fingerprint = service.attributes['fp'];
     final host = service.host;
-    if (deviceId == null || deviceId == _selfId || host == null || host.isEmpty) return;
+    if (fingerprint == null || fingerprint == _selfFingerprint || host == null || host.isEmpty) return;
     _peers.add(
-      DiscoveredPeer(
-        deviceId: deviceId,
-        deviceName: service.attributes['name'] ?? service.name,
-        username: service.attributes['user'] ?? '',
-        fingerprint: service.attributes['fp'] ?? '',
-        host: host,
-        port: service.port,
-      ),
+      DiscoveredPeer(deviceName: service.name, fingerprint: fingerprint, host: host, port: service.port),
     );
   }
 

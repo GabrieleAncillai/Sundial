@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../services/planner_repository.dart';

@@ -5,18 +5,18 @@ import 'dart:io';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/sync/device_certificate.dart';
-import 'package:mane/features/sync/identity_service.dart';
-import 'package:mane/features/sync/lan_client.dart';
-import 'package:mane/features/sync/lan_server.dart';
-import 'package:mane/features/sync/pairing_crypto.dart';
-import 'package:mane/features/sync/peer_discovery.dart';
-import 'package:mane/features/sync/sync_service.dart';
-import 'package:mane/models/local_identity.dart';
-import 'package:mane/models/paired_device.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/services/planner_repository.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/features/sync/device_certificate.dart';
+import 'package:sundial/features/sync/identity_service.dart';
+import 'package:sundial/features/sync/lan_client.dart';
+import 'package:sundial/features/sync/lan_server.dart';
+import 'package:sundial/features/sync/pairing_crypto.dart';
+import 'package:sundial/features/sync/peer_discovery.dart';
+import 'package:sundial/features/sync/sync_service.dart';
+import 'package:sundial/models/local_identity.dart';
+import 'package:sundial/models/paired_device.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/services/planner_repository.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 
 void main() {
@@ -133,16 +133,17 @@ void main() {
 
     discovery.emit(
       DiscoveredPeer(
-        deviceId: hostIdentity.deviceId,
         deviceName: hostIdentity.deviceName,
-        username: hostIdentity.username,
         fingerprint: fingerprintOfPemSync(hostIdentity.certificatePem),
         host: '127.0.0.1',
         port: hostServer.port,
       ),
     );
     await Future<void>.delayed(const Duration(milliseconds: 100));
-    expect(service.state.value.discovered.map((peer) => peer.deviceId), contains(hostIdentity.deviceId));
+    expect(
+      service.state.value.discovered.map((peer) => peer.fingerprint),
+      contains(fingerprintOfPemSync(hostIdentity.certificatePem)),
+    );
 
     await service.stop();
     expect(service.state.value.running, isFalse);

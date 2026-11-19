@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/features/sync/pairing_crypto.dart';
+import 'package:sundial/features/sync/pairing_crypto.dart';
 
 void main() {
   test('hashes and verifies a PIN without keeping the PIN', () async {
@@ -90,7 +90,7 @@ void main() {
 
   test('signs a request and rejects a changed body, path or key', () async {
     final key = PairingCrypto.randomBase64(32);
-    const path = '/mane/v1/query?resource=summary';
+    const path = '/sundial/v1/query?resource=summary';
     final signature = await PairingCrypto.signRequest(
       sharedKeyBase64: key,
       method: 'GET',

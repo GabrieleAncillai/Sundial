@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -73,12 +73,12 @@ class _TagFilterSheet extends ConsumerWidget {
                           children: [
                             Text(
                               tag.name,
-                              style: ManeType.body(14, weight: FontWeight.w700, color: c.text),
+                              style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                             ),
                             if (tag.spaceId != null)
                               Text(
                                 spaceNames[tag.spaceId] ?? tag.spaceId!,
-                                style: ManeType.body(11.5, color: c.textSecondary),
+                                style: SundialType.body(11.5, color: c.textSecondary),
                               ),
                           ],
                         ),
@@ -93,7 +93,7 @@ class _TagFilterSheet extends ConsumerWidget {
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: Icon(Icons.sell_outlined, color: c.accent),
-          title: Text(l10n.manageTags, style: ManeType.body(14, color: c.text)),
+          title: Text(l10n.manageTags, style: SundialType.body(14, color: c.text)),
           trailing: Icon(Icons.chevron_right, color: c.textTertiary),
           onTap: () => Navigator.of(context).pop(true),
         ),

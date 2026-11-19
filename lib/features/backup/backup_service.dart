@@ -1,6 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:drift/drift.dart';
+import 'package:sundial_core/sundial_core.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../../services/app_database.dart';
 
@@ -28,17 +32,18 @@ class BackupVersionException implements Exception {
 /// timestamps, IANA zones, recurrence rules and soft deletes are preserved so
 /// a round trip is lossless.
 class BackupService {
-  BackupService(this._database);
+  BackupService(this._database, {Directory? mediaDirectory}) : _mediaDirectory = mediaDirectory;
 
-  static const appTag = 'mane';
-  static const currentSchemaVersion = 8;
+  static const appTag = 'sundial';
+  static const currentSchemaVersion = 13;
 
   /// The oldest payload this build still upgrades. v1 and v2 are excluded on
   /// purpose: they predate timezone-aware entries and cannot be mapped safely.
   static const minimumSchemaVersion = 3;
 
-  /// Secrets belong to this device. A backup must never carry an app-lock hash
-  /// or pairing material to another install.
+  /// Secrets belong to this device. A backup must never carry pairing
+  /// material to another install. The app-lock keys are legacy: the feature is
+  /// gone, but older databases may still hold its hash, so keep stripping it.
   static const deviceLocalSettingKeys = {
     'appLockEnabled',
     'appLockPinSalt',
@@ -48,9 +53,22 @@ class BackupService {
   };
 
   final AppDatabase _database;
+  final Directory? _mediaDirectory;
+
+  Future<Directory> _mediaDir() async {
+    final override = _mediaDirectory;
+    if (override != null) return override;
+    final support = await getApplicationSupportDirectory();
+    return Directory(p.join(support.path, 'media'));
+  }
 
   Future<String> exportJson() async {
     final spaces = await _database.select(_database.spaceRecords).get();
+    final contexts = await _database.select(_database.contextRecords).get();
+    final projects = await _database.select(_database.projectRecords).get();
+    final habits = await _database.select(_database.habitRecords).get();
+    final habitCompletions = await _database.select(_database.habitCompletionRecords).get();
+    final timeEntries = await _database.select(_database.timeEntryRecords).get();
     final tags = await _database.select(_database.tagRecords).get();
     final entries = await _database.select(_database.entryRecords).get();
     final entryTags = await _database.select(_database.entryTagRecords).get();
@@ -62,15 +80,28 @@ class BackupService {
     final patternTags = await _database.select(_database.shiftPatternTagRecords).get();
     final checklistItems = await _database.select(_database.shiftChecklistItemRecords).get();
     final checklistCompletions = await _database.select(_database.shiftChecklistCompletionRecords).get();
+    final homeCategories = await _database.select(_database.homeCategoryRecords).get();
+    final homeLocations = await _database.select(_database.homeLocationRecords).get();
+    final homeUnits = await _database.select(_database.homeUnitRecords).get();
     final homeItems = await _database.select(_database.homeItemRecords).get();
+    final homeItemLocations = await _database.select(_database.homeItemLocationRecords).get();
     final shoppingItems = await _database.select(_database.shoppingItemRecords).get();
     final homePurchases = await _database.select(_database.homePurchaseRecords).get();
+    final maintenanceLogs = await _database.select(_database.maintenanceLogRecords).get();
     final settings = await _database.select(_database.settingRecords).get();
 
     spaces.sort((a, b) {
       final byPosition = a.position.compareTo(b.position);
       return byPosition != 0 ? byPosition : a.id.compareTo(b.id);
     });
+    contexts.sort((a, b) => a.id.compareTo(b.id));
+    projects.sort((a, b) => a.id.compareTo(b.id));
+    habits.sort((a, b) => a.id.compareTo(b.id));
+    habitCompletions.sort((a, b) {
+      final byHabit = a.habitId.compareTo(b.habitId);
+      return byHabit != 0 ? byHabit : a.dateKey.compareTo(b.dateKey);
+    });
+    timeEntries.sort((a, b) => a.id.compareTo(b.id));
     tags.sort((a, b) => a.id.compareTo(b.id));
     entries.sort((a, b) => a.id.compareTo(b.id));
     entryTags.sort((a, b) {
@@ -98,13 +129,33 @@ class BackupService {
       return byItem != 0 ? byItem : a.dateKey.compareTo(b.dateKey);
     });
     homeItems.sort((a, b) => a.id.compareTo(b.id));
+    homeItemLocations.sort((a, b) {
+      final byItem = a.homeItemId.compareTo(b.homeItemId);
+      return byItem != 0 ? byItem : a.locationId.compareTo(b.locationId);
+    });
+    homeCategories.sort((a, b) => a.id.compareTo(b.id));
+    homeLocations.sort((a, b) => a.id.compareTo(b.id));
+    homeUnits.sort((a, b) => a.id.compareTo(b.id));
     shoppingItems.sort((a, b) => a.id.compareTo(b.id));
     homePurchases.sort((a, b) => a.id.compareTo(b.id));
+    maintenanceLogs.sort((a, b) => a.id.compareTo(b.id));
     settings.sort((a, b) => a.key.compareTo(b.key));
+
+    final media = <String, String>{};
+    for (final path in [
+      for (final row in contexts) row.imagePath,
+      for (final row in projects) row.imagePath,
+    ]) {
+      if (path == null || path.isEmpty || media.containsKey(path)) continue;
+      final file = File(path);
+      if (!await file.exists()) continue;
+      media[path] = base64Encode(await file.readAsBytes());
+    }
 
     final payload = <String, Object?>{
       'app': appTag,
       'schemaVersion': currentSchemaVersion,
+      'media': media,
       'exportedAt': DateTime.now().toUtc().toIso8601String(),
       'spaces': [
         for (final row in spaces)
@@ -125,10 +176,79 @@ class BackupService {
             'spaceId': row.spaceId,
             'name': row.name,
             'color': row.color,
+            'icon': row.icon,
             'position': row.position,
             'createdAt': _date(row.createdAt),
             'updatedAt': _date(row.updatedAt),
             'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
+      'contexts': [
+        for (final row in contexts)
+          {
+            'id': row.id,
+            'spaceId': row.spaceId,
+            'name': row.name,
+            'description': row.description,
+            'color': row.color,
+            'icon': row.icon,
+            'imagePath': row.imagePath,
+            'position': row.position,
+            'createdAt': _date(row.createdAt),
+            'updatedAt': _date(row.updatedAt),
+            'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
+      'projects': [
+        for (final row in projects)
+          {
+            'id': row.id,
+            'spaceId': row.spaceId,
+            'contextId': row.contextId,
+            'name': row.name,
+            'description': row.description,
+            'color': row.color,
+            'icon': row.icon,
+            'imagePath': row.imagePath,
+            'position': row.position,
+            'createdAt': _date(row.createdAt),
+            'updatedAt': _date(row.updatedAt),
+            'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
+      'habits': [
+        for (final row in habits)
+          {
+            'id': row.id,
+            'spaceId': row.spaceId,
+            'contextId': row.contextId,
+            'name': row.name,
+            'description': row.description,
+            'color': row.color,
+            'icon': row.icon,
+            'targetPerWeek': row.targetPerWeek,
+            'weekdays': row.weekdays,
+            'position': row.position,
+            'archived': row.archived,
+            'createdAt': _date(row.createdAt),
+            'updatedAt': _date(row.updatedAt),
+            'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
+      'habitCompletions': [
+        for (final row in habitCompletions)
+          {'habitId': row.habitId, 'dateKey': row.dateKey, 'createdAt': _date(row.createdAt)},
+      ],
+      'timeEntries': [
+        for (final row in timeEntries)
+          {
+            'id': row.id,
+            'entryId': row.entryId,
+            'occurrenceDateKey': row.occurrenceDateKey,
+            'startedAt': _date(row.startedAt),
+            'endedAt': _nullableDate(row.endedAt),
+            'note': row.note,
+            'createdAt': _date(row.createdAt),
           },
       ],
       'entries': [
@@ -144,6 +264,10 @@ class BackupService {
             'startMinute': row.startMinute,
             'endMinute': row.endMinute,
             'timeZone': row.timeZone,
+            'contextId': row.contextId,
+            'projectId': row.projectId,
+            'icon': row.icon,
+            'priority': row.priority,
             'startAt': _nullableDate(row.startAt),
             'endAt': _nullableDate(row.endAt),
             'allDay': row.allDay,
@@ -154,6 +278,7 @@ class BackupService {
             'readOnly': row.readOnly,
             'lastCompletedAt': _nullableDate(row.lastCompletedAt),
             'repeatAfterCompletionDays': row.repeatAfterCompletionDays,
+            'completedAt': _nullableDate(row.completedAt),
             'createdAt': _date(row.createdAt),
             'updatedAt': _date(row.updatedAt),
             'deletedAt': _nullableDate(row.deletedAt),
@@ -182,6 +307,7 @@ class BackupService {
             'id': row.id,
             'spaceId': row.spaceId,
             'name': row.name,
+            'contextId': row.contextId,
             'timeZone': row.timeZone,
             'cycleDays': row.cycleDays,
             'anchorDateKey': row.anchorDateKey,
@@ -221,7 +347,13 @@ class BackupService {
       ],
       'shiftChecklistItems': [
         for (final row in checklistItems)
-          {'id': row.id, 'patternId': row.patternId, 'label': row.label, 'position': row.position},
+          {
+            'id': row.id,
+            'patternId': row.patternId,
+            'label': row.label,
+            'dayIndex': row.dayIndex,
+            'position': row.position,
+          },
       ],
       'shiftChecklistCompletions': [
         for (final row in checklistCompletions)
@@ -232,16 +364,66 @@ class BackupService {
             'createdAt': _date(row.createdAt),
           },
       ],
+      'homeCategories': [
+        for (final row in homeCategories)
+          {
+            'id': row.id,
+            'name': row.name,
+            'icon': row.icon,
+            'color': row.color,
+            'position': row.position,
+            'createdAt': _date(row.createdAt),
+            'updatedAt': _date(row.updatedAt),
+            'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
+      'homeLocations': [
+        for (final row in homeLocations)
+          {
+            'id': row.id,
+            'name': row.name,
+            'icon': row.icon,
+            'color': row.color,
+            'position': row.position,
+            'createdAt': _date(row.createdAt),
+            'updatedAt': _date(row.updatedAt),
+            'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
+      'homeUnits': [
+        for (final row in homeUnits)
+          {
+            'id': row.id,
+            'name': row.name,
+            'symbol': row.symbol,
+            'kind': row.kind,
+            'position': row.position,
+            'createdAt': _date(row.createdAt),
+            'updatedAt': _date(row.updatedAt),
+            'deletedAt': _nullableDate(row.deletedAt),
+          },
+      ],
       'homeItems': [
         for (final row in homeItems)
           {
             'id': row.id,
+            'contextId': row.contextId,
+            'groupId': row.groupId,
             'name': row.name,
+            'description': row.description,
+            'icon': row.icon,
+            'color': row.color,
+            'catalogId': row.catalogId,
             'category': row.category,
+            'categoryId': row.categoryId,
             'location': row.location,
             'quantity': row.quantity,
+            'minQuantity': row.minQuantity,
             'reorderLevel': row.reorderLevel,
             'unit': row.unit,
+            'unitId': row.unitId,
+            'packSize': row.packSize,
+            'expiresAt': row.expiresDateKey == null ? null : LocalDate.fromKey(row.expiresDateKey!).iso,
             'notes': row.notes,
             'lastPurchasedAt': _nullableDate(row.lastPurchasedAt),
             'createdAt': _date(row.createdAt),
@@ -249,16 +431,26 @@ class BackupService {
             'deletedAt': _nullableDate(row.deletedAt),
           },
       ],
+      'homeItemLocations': [
+        for (final row in homeItemLocations) {'homeItemId': row.homeItemId, 'locationId': row.locationId},
+      ],
       'shoppingItems': [
         for (final row in shoppingItems)
           {
             'id': row.id,
+            'contextId': row.contextId,
             'name': row.name,
             'quantity': row.quantity,
             'unit': row.unit,
+            'packSize': row.packSize,
             'checked': row.checked,
             'note': row.note,
             'homeItemId': row.homeItemId,
+            'catalogId': row.catalogId,
+            'category': row.category,
+            'categoryId': row.categoryId,
+            'icon': row.icon,
+            'color': row.color,
             'position': row.position,
             'createdAt': _date(row.createdAt),
             'updatedAt': _date(row.updatedAt),
@@ -274,6 +466,18 @@ class BackupService {
             'quantity': row.quantity,
             'note': row.note,
             'purchasedAt': _date(row.purchasedAt),
+          },
+      ],
+      'maintenanceLogs': [
+        for (final row in maintenanceLogs)
+          {
+            'id': row.id,
+            'entryId': row.entryId,
+            'performedOn': LocalDate.fromKey(row.performedDateKey).iso,
+            'nextDue': LocalDate.fromKey(row.nextDueDateKey).iso,
+            'note': row.note,
+            'durationMinutes': row.durationMinutes,
+            'createdAt': _date(row.createdAt),
           },
       ],
       'settings': {
@@ -295,7 +499,7 @@ class BackupService {
     if (decoded is! Map) throw const BackupFormatException('Root is not an object');
     final payload = Map<String, Object?>.from(decoded);
 
-    if (payload['app'] != appTag) throw const BackupFormatException('Not a Mane backup');
+    if (payload['app'] != appTag) throw const BackupFormatException('Not a Sundial backup');
     final version = payload['schemaVersion'];
     if (version is! int) throw const BackupFormatException('Missing schema version');
     if (version > currentSchemaVersion) throw BackupVersionException(version);
@@ -304,6 +508,11 @@ class BackupService {
     }
 
     final spaces = _requiredMaps(payload, 'spaces');
+    final contexts = _maps(payload, 'contexts');
+    final projects = _maps(payload, 'projects');
+    final habits = _maps(payload, 'habits');
+    final habitCompletions = _maps(payload, 'habitCompletions');
+    final timeEntries = _maps(payload, 'timeEntries');
     final tags = _maps(payload, 'tags');
     final entries = _requiredMaps(payload, 'entries');
     final entryTags = _maps(payload, 'entryTags');
@@ -315,17 +524,69 @@ class BackupService {
     final patternTags = _maps(payload, 'shiftPatternTags');
     final checklistItems = _maps(payload, 'shiftChecklistItems');
     final checklistCompletions = _maps(payload, 'shiftChecklistCompletions');
+    final homeCategories = _maps(payload, 'homeCategories');
+    final homeLocations = _maps(payload, 'homeLocations');
+    final homeUnits = _maps(payload, 'homeUnits');
     final homeItems = _maps(payload, 'homeItems');
+    final homeItemLocations = _maps(payload, 'homeItemLocations');
     final shoppingItems = _maps(payload, 'shoppingItems');
     final homePurchases = _maps(payload, 'homePurchases');
+    final maintenanceLogs = _maps(payload, 'maintenanceLogs');
     final settings = _map(payload, 'settings');
+    final media = _map(payload, 'media');
+
+    // Semantic validation runs before any write. Enum names and recurrence
+    // JSON are read with `byName`/`fromJson` later, so a crafted or stale value
+    // must be rejected here instead of corrupting a readable database.
+    _validateEntries(entries);
+    final mediaTargets = <String, String>{};
+    final mediaBytes = <String, Uint8List>{};
+    var mediaIndex = 0;
+    for (final entry in media.entries) {
+      final encoded = entry.value;
+      if (encoded is! String || encoded.isEmpty) continue;
+      final Uint8List bytes;
+      try {
+        bytes = base64Decode(encoded);
+      } on FormatException {
+        throw BackupFormatException('media contains invalid base64');
+      }
+      final name = p.basename(entry.key).isEmpty
+          ? 'sticker-${mediaIndex++}.png'
+          : 'backup-${mediaIndex++}-${p.basename(entry.key)}';
+      final target = p.join((await _mediaDir()).path, name);
+      mediaTargets[entry.key] = target;
+      mediaBytes[target] = bytes;
+    }
+
+    // Write media before the database transaction. A write failure then leaves
+    // the existing plan untouched, and a later transaction failure only leaves
+    // unreferenced files behind for the prune below.
+    if (mediaBytes.isNotEmpty) {
+      final directory = await _mediaDir();
+      if (!directory.existsSync()) await directory.create(recursive: true);
+      for (final entry in mediaBytes.entries) {
+        await File(entry.key).writeAsBytes(entry.value, flush: true);
+      }
+    }
+
+    // Media the outgoing plan referenced is the only set the restore may
+    // remove. A backup without media must never wipe unrelated local files.
+    final previousMedia = await _referencedMediaPaths();
 
     await _database.transaction(() async {
+      await _database.delete(_database.habitCompletionRecords).go();
+      await _database.delete(_database.timeEntryRecords).go();
       await _database.delete(_database.shiftChecklistCompletionRecords).go();
       await _database.delete(_database.shiftChecklistItemRecords).go();
+      await _database.delete(_database.maintenanceLogRecords).go();
       await _database.delete(_database.homePurchaseRecords).go();
+      await _database.delete(_database.homeItemLocationRecords).go();
       await _database.delete(_database.shoppingItemRecords).go();
       await _database.delete(_database.homeItemRecords).go();
+      await _database.delete(_database.homeCategoryRecords).go();
+      await _database.delete(_database.homeLocationRecords).go();
+      await _database.delete(_database.homeUnitRecords).go();
       await _database.delete(_database.entryTagRecords).go();
       await _database.delete(_database.completionRecords).go();
       await _database.delete(_database.reminderRecords).go();
@@ -334,6 +595,9 @@ class BackupService {
       await _database.delete(_database.shiftExceptionRecords).go();
       await _database.delete(_database.entryRecords).go();
       await _database.delete(_database.shiftPatternRecords).go();
+      await _database.delete(_database.habitRecords).go();
+      await _database.delete(_database.projectRecords).go();
+      await _database.delete(_database.contextRecords).go();
       await _database.delete(_database.tagRecords).go();
       await _database.delete(_database.spaceRecords).go();
       await _database.delete(_database.settingRecords).go();
@@ -354,6 +618,70 @@ class BackupService {
             );
       }
 
+      for (final row in contexts) {
+        await _database
+            .into(_database.contextRecords)
+            .insert(
+              ContextRecordsCompanion(
+                id: Value(_string(row, 'id')),
+                spaceId: Value(_string(row, 'spaceId')),
+                name: Value(_string(row, 'name')),
+                description: Value(_optionalString(row, 'description') ?? ''),
+                color: Value(_integer(row, 'color')),
+                icon: Value(_optionalString(row, 'icon') ?? 'folder'),
+                imagePath: Value(_backupMediaPath(_optionalString(row, 'imagePath'), mediaTargets)),
+                position: Value(_optionalInteger(row, 'position') ?? 0),
+                createdAt: Value(_dateTime(row, 'createdAt')),
+                updatedAt: Value(_dateTime(row, 'updatedAt')),
+                deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
+      for (final row in projects) {
+        await _database
+            .into(_database.projectRecords)
+            .insert(
+              ProjectRecordsCompanion(
+                id: Value(_string(row, 'id')),
+                spaceId: Value(_string(row, 'spaceId')),
+                contextId: Value(_optionalString(row, 'contextId')),
+                name: Value(_string(row, 'name')),
+                description: Value(_optionalString(row, 'description') ?? ''),
+                color: Value(_integer(row, 'color')),
+                icon: Value(_optionalString(row, 'icon') ?? 'folder'),
+                imagePath: Value(_backupMediaPath(_optionalString(row, 'imagePath'), mediaTargets)),
+                position: Value(_optionalInteger(row, 'position') ?? 0),
+                createdAt: Value(_dateTime(row, 'createdAt')),
+                updatedAt: Value(_dateTime(row, 'updatedAt')),
+                deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
+      for (final row in habits) {
+        await _database
+            .into(_database.habitRecords)
+            .insert(
+              HabitRecordsCompanion(
+                id: Value(_string(row, 'id')),
+                spaceId: Value(_string(row, 'spaceId')),
+                contextId: Value(_optionalString(row, 'contextId')),
+                name: Value(_string(row, 'name')),
+                description: Value(_optionalString(row, 'description') ?? ''),
+                color: Value(_integer(row, 'color')),
+                icon: Value(_optionalString(row, 'icon') ?? 'star'),
+                targetPerWeek: Value(_optionalInteger(row, 'targetPerWeek') ?? 7),
+                weekdays: Value(_optionalString(row, 'weekdays') ?? '1,2,3,4,5,6,7'),
+                position: Value(_optionalInteger(row, 'position') ?? 0),
+                archived: Value(_optionalBoolean(row, 'archived') ?? false),
+                createdAt: Value(_dateTime(row, 'createdAt')),
+                updatedAt: Value(_dateTime(row, 'updatedAt')),
+                deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
       for (final row in tags) {
         await _database
             .into(_database.tagRecords)
@@ -363,7 +691,59 @@ class BackupService {
                 spaceId: Value(_optionalString(row, 'spaceId')),
                 name: Value(_string(row, 'name')),
                 color: Value(_integer(row, 'color')),
+                icon: Value(_optionalString(row, 'icon') ?? 'folder'),
                 position: Value(_integer(row, 'position')),
+                createdAt: Value(_dateTime(row, 'createdAt')),
+                updatedAt: Value(_dateTime(row, 'updatedAt')),
+                deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
+      for (final row in homeCategories) {
+        await _database
+            .into(_database.homeCategoryRecords)
+            .insert(
+              HomeCategoryRecordsCompanion(
+                id: Value(_string(row, 'id')),
+                name: Value(_string(row, 'name')),
+                icon: Value(_optionalString(row, 'icon') ?? 'category'),
+                color: Value(_integer(row, 'color')),
+                position: Value(_optionalInteger(row, 'position') ?? 0),
+                createdAt: Value(_dateTime(row, 'createdAt')),
+                updatedAt: Value(_dateTime(row, 'updatedAt')),
+                deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
+      for (final row in homeLocations) {
+        await _database
+            .into(_database.homeLocationRecords)
+            .insert(
+              HomeLocationRecordsCompanion(
+                id: Value(_string(row, 'id')),
+                name: Value(_string(row, 'name')),
+                icon: Value(_optionalString(row, 'icon') ?? 'place'),
+                color: Value(_integer(row, 'color')),
+                position: Value(_optionalInteger(row, 'position') ?? 0),
+                createdAt: Value(_dateTime(row, 'createdAt')),
+                updatedAt: Value(_dateTime(row, 'updatedAt')),
+                deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
+      for (final row in homeUnits) {
+        await _database
+            .into(_database.homeUnitRecords)
+            .insert(
+              HomeUnitRecordsCompanion(
+                id: Value(_string(row, 'id')),
+                name: Value(_string(row, 'name')),
+                symbol: Value(_optionalString(row, 'symbol') ?? ''),
+                kind: Value(_optionalString(row, 'kind') ?? 'count'),
+                position: Value(_optionalInteger(row, 'position') ?? 0),
                 createdAt: Value(_dateTime(row, 'createdAt')),
                 updatedAt: Value(_dateTime(row, 'updatedAt')),
                 deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
@@ -377,18 +757,41 @@ class BackupService {
             .insert(
               HomeItemRecordsCompanion(
                 id: Value(_string(row, 'id')),
+                contextId: Value(_optionalString(row, 'contextId')),
+                groupId: Value(_optionalString(row, 'groupId')),
                 name: Value(_string(row, 'name')),
-                category: Value(_string(row, 'category')),
-                location: Value(_string(row, 'location')),
+                description: Value(_optionalString(row, 'description') ?? ''),
+                icon: Value(_optionalString(row, 'icon') ?? 'inventory'),
+                color: Value(_optionalInteger(row, 'color')),
+                catalogId: Value(_optionalString(row, 'catalogId')),
+                category: Value(_optionalString(row, 'category') ?? ''),
+                categoryId: Value(_optionalString(row, 'categoryId')),
+                location: Value(_optionalString(row, 'location') ?? ''),
                 quantity: Value(_number(row, 'quantity')),
+                minQuantity: Value(_optionalNumber(row, 'minQuantity')),
                 reorderLevel: Value(_optionalNumber(row, 'reorderLevel')),
-                unit: Value(_string(row, 'unit')),
-                notes: Value(_string(row, 'notes')),
+                unit: Value(_optionalString(row, 'unit') ?? ''),
+                unitId: Value(_optionalString(row, 'unitId')),
+                packSize: Value(_optionalString(row, 'packSize') ?? ''),
+                expiresDateKey: Value(_optionalDateKey(row, 'expiresAt')),
+                notes: Value(_optionalString(row, 'notes') ?? ''),
                 lastPurchasedAt: Value(_optionalDateTime(row, 'lastPurchasedAt')),
                 createdAt: Value(_dateTime(row, 'createdAt')),
                 updatedAt: Value(_dateTime(row, 'updatedAt')),
                 deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
               ),
+            );
+      }
+
+      for (final row in homeItemLocations) {
+        await _database
+            .into(_database.homeItemLocationRecords)
+            .insert(
+              HomeItemLocationRecordsCompanion.insert(
+                homeItemId: _string(row, 'homeItemId'),
+                locationId: _string(row, 'locationId'),
+              ),
+              mode: InsertMode.insertOrIgnore,
             );
       }
 
@@ -398,12 +801,19 @@ class BackupService {
             .insert(
               ShoppingItemRecordsCompanion(
                 id: Value(_string(row, 'id')),
+                contextId: Value(_optionalString(row, 'contextId')),
                 name: Value(_string(row, 'name')),
                 quantity: Value(_number(row, 'quantity')),
-                unit: Value(_string(row, 'unit')),
+                unit: Value(_optionalString(row, 'unit') ?? ''),
+                packSize: Value(_optionalString(row, 'packSize') ?? ''),
                 checked: Value(_boolean(row, 'checked')),
-                note: Value(_string(row, 'note')),
+                note: Value(_optionalString(row, 'note') ?? ''),
                 homeItemId: Value(_optionalString(row, 'homeItemId')),
+                catalogId: Value(_optionalString(row, 'catalogId')),
+                category: Value(_optionalString(row, 'category') ?? ''),
+                categoryId: Value(_optionalString(row, 'categoryId')),
+                icon: Value(_optionalString(row, 'icon') ?? 'shopping_basket'),
+                color: Value(_optionalInteger(row, 'color')),
                 position: Value(_optionalInteger(row, 'position') ?? 0),
                 createdAt: Value(_dateTime(row, 'createdAt')),
                 updatedAt: Value(_dateTime(row, 'updatedAt')),
@@ -442,6 +852,10 @@ class BackupService {
                 startMinute: Value(_optionalInteger(row, 'startMinute')),
                 endMinute: Value(_optionalInteger(row, 'endMinute')),
                 timeZone: Value(_optionalString(row, 'timeZone')),
+                contextId: Value(_optionalString(row, 'contextId')),
+                projectId: Value(_optionalString(row, 'projectId')),
+                icon: Value(_optionalString(row, 'icon') ?? ''),
+                priority: Value(_optionalString(row, 'priority') ?? 'none'),
                 startAt: Value(_optionalDateTime(row, 'startAt')),
                 endAt: Value(_optionalDateTime(row, 'endAt')),
                 allDay: Value(_boolean(row, 'allDay')),
@@ -452,9 +866,26 @@ class BackupService {
                 readOnly: Value(_optionalBoolean(row, 'readOnly') ?? false),
                 lastCompletedAt: Value(_optionalDateTime(row, 'lastCompletedAt')),
                 repeatAfterCompletionDays: Value(_optionalInteger(row, 'repeatAfterCompletionDays')),
+                completedAt: Value(_optionalDateTime(row, 'completedAt')),
                 createdAt: Value(_dateTime(row, 'createdAt')),
                 updatedAt: Value(_dateTime(row, 'updatedAt')),
                 deletedAt: Value(_optionalDateTime(row, 'deletedAt')),
+              ),
+            );
+      }
+
+      for (final row in maintenanceLogs) {
+        await _database
+            .into(_database.maintenanceLogRecords)
+            .insert(
+              MaintenanceLogRecordsCompanion.insert(
+                id: _string(row, 'id'),
+                entryId: _string(row, 'entryId'),
+                performedDateKey: _dateKey(row, 'performedOn'),
+                nextDueDateKey: _dateKey(row, 'nextDue'),
+                note: Value(_optionalString(row, 'note') ?? ''),
+                durationMinutes: Value(_optionalInteger(row, 'durationMinutes')),
+                createdAt: _dateTime(row, 'createdAt'),
               ),
             );
       }
@@ -480,6 +911,34 @@ class BackupService {
             );
       }
 
+      for (final row in habitCompletions) {
+        await _database
+            .into(_database.habitCompletionRecords)
+            .insert(
+              HabitCompletionRecordsCompanion.insert(
+                habitId: _string(row, 'habitId'),
+                dateKey: _integer(row, 'dateKey'),
+                createdAt: _dateTime(row, 'createdAt'),
+              ),
+            );
+      }
+
+      for (final row in timeEntries) {
+        await _database
+            .into(_database.timeEntryRecords)
+            .insert(
+              TimeEntryRecordsCompanion.insert(
+                id: _string(row, 'id'),
+                entryId: _string(row, 'entryId'),
+                occurrenceDateKey: Value(_optionalInteger(row, 'occurrenceDateKey')),
+                startedAt: _dateTime(row, 'startedAt'),
+                endedAt: Value(_optionalDateTime(row, 'endedAt')),
+                note: Value(_optionalString(row, 'note') ?? ''),
+                createdAt: _dateTime(row, 'createdAt'),
+              ),
+            );
+      }
+
       for (final row in reminders) {
         await _database
             .into(_database.reminderRecords)
@@ -500,8 +959,11 @@ class BackupService {
             .insert(
               ShiftPatternRecordsCompanion(
                 id: Value(_string(row, 'id')),
-                spaceId: Value(_string(row, 'spaceId')),
+                // Shifts are Work-only; a restored legacy row is repaired here
+                // instead of being stored invisible to every query.
+                spaceId: const Value('work'),
                 name: Value(_string(row, 'name')),
+                contextId: Value(_optionalString(row, 'contextId')),
                 timeZone: Value(_string(row, 'timeZone')),
                 cycleDays: Value(_integer(row, 'cycleDays')),
                 anchorDateKey: Value(_integer(row, 'anchorDateKey')),
@@ -566,6 +1028,7 @@ class BackupService {
                 id: Value(_string(row, 'id')),
                 patternId: Value(_string(row, 'patternId')),
                 label: Value(_string(row, 'label')),
+                dayIndex: Value(_optionalInteger(row, 'dayIndex')),
                 position: Value(_integer(row, 'position')),
               ),
             );
@@ -592,6 +1055,93 @@ class BackupService {
             .insert(SettingRecordsCompanion.insert(key: entry.key, value: '${entry.value}'));
       }
     });
+
+    // Older payloads carry category, location and unit text but no reference
+    // rows. Seed the household vocabulary and map those strings after the
+    // plan is safely in place.
+    await _database.seedHomeReferenceDefaults();
+    await _database.repairHomeItemReferences();
+
+    // The restore replaced the plan, so media that belonged to the old one is
+    // no longer reachable. Best effort: a failure here only leaves unused files.
+    await _pruneMedia(previousMedia, keep: mediaBytes.keys.toSet());
+  }
+
+  Future<Set<String>> _referencedMediaPaths() async {
+    final paths = <String>{};
+    for (final row in await _database.select(_database.contextRecords).get()) {
+      final path = row.imagePath;
+      if (path != null && path.isNotEmpty) paths.add(path);
+    }
+    for (final row in await _database.select(_database.projectRecords).get()) {
+      final path = row.imagePath;
+      if (path != null && path.isNotEmpty) paths.add(path);
+    }
+    return paths;
+  }
+
+  Future<void> _pruneMedia(Set<String> previous, {required Set<String> keep}) async {
+    try {
+      final directory = await _mediaDir();
+      final root = p.normalize(directory.absolute.path);
+      for (final path in previous) {
+        if (keep.contains(path)) continue;
+        final normalized = p.normalize(File(path).absolute.path);
+        // Never delete outside the managed media folder.
+        if (!p.isWithin(root, normalized)) continue;
+        final file = File(normalized);
+        if (await file.exists()) await file.delete();
+      }
+    } catch (_) {
+      // Orphaned media is harmless; the restore already succeeded.
+    }
+  }
+
+  static void _validateEntries(List<Map<String, Object?>> entries) {
+    for (final row in entries) {
+      for (final field in const ['id', 'spaceId', 'title']) {
+        final value = _optionalString(row, field);
+        if (value == null || value.isEmpty) {
+          throw BackupFormatException('entry is missing $field');
+        }
+      }
+      final kind = row['kind'];
+      if (kind is! String || !EntryKind.values.any((value) => value.name == kind)) {
+        throw BackupFormatException('entry has an unknown kind');
+      }
+      final status = row['status'];
+      if (status is! String || !EntryStatus.values.any((value) => value.name == status)) {
+        throw BackupFormatException('entry has an unknown status');
+      }
+      final priority = row['priority'];
+      if (priority != null &&
+          (priority is! String || !EntryPriority.values.any((value) => value.name == priority))) {
+        throw BackupFormatException('entry has an unknown priority');
+      }
+      final zone = _optionalString(row, 'timeZone');
+      if (zone != null && zone.isNotEmpty && !isKnownTimeZone(zone)) {
+        throw BackupFormatException('entry has an unknown timezone');
+      }
+      final rawRecurrence = row['recurrenceJson'];
+      if (rawRecurrence != null) {
+        if (rawRecurrence is! String) throw BackupFormatException('entry recurrence is invalid');
+        try {
+          final decoded = jsonDecode(rawRecurrence);
+          if (decoded is! Map) throw const FormatException('not an object');
+          RecurrenceRule.fromJson(Map<String, Object?>.from(decoded));
+        } on Object {
+          throw BackupFormatException('entry recurrence is invalid');
+        }
+      }
+    }
+  }
+
+  static String? _backupMediaPath(String? path, Map<String, String> targets) {
+    if (path == null || path.isEmpty) return null;
+    // Only paths carried by the backup may survive import. Keeping an arbitrary
+    // stored path would let a crafted backup point at a local file that the
+    // next export then reads.
+    return targets[path];
   }
 
   static String _date(DateTime value) => value.toUtc().toIso8601String();
@@ -646,6 +1196,24 @@ class BackupService {
   static int? _optionalInteger(Map<String, Object?> row, String key) {
     if (row[key] == null) return null;
     return _integer(row, key);
+  }
+
+  static int _dateKey(Map<String, Object?> row, String key) {
+    final value = row[key];
+    if (value is int) return value;
+    if (value is String && value.isNotEmpty) {
+      try {
+        return LocalDate.parse(value).key;
+      } on FormatException {
+        // Fall through to the validation error below.
+      }
+    }
+    throw BackupFormatException('$key is not a date');
+  }
+
+  static int? _optionalDateKey(Map<String, Object?> row, String key) {
+    if (row[key] == null || row[key] == '') return null;
+    return _dateKey(row, key);
   }
 
   static double _number(Map<String, Object?> row, String key) {

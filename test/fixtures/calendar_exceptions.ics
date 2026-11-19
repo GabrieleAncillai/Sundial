@@ -1,6 +1,6 @@
 BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Mane Test//EN
+PRODID:-//Sundial Test//EN
 BEGIN:VEVENT
 UID:series@example.com
 SUMMARY:Weekly sync

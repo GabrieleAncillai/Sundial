@@ -1,4 +1,5 @@
 # Miscellaneous
+_scratch_*
 *.class
 *.log
 *.pyc

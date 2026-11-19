@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
+import '../core/i18n/date_labels.dart';
 import '../core/i18n/l10n.dart';
 import '../core/i18n/recurrence_label.dart';
 import '../core/i18n/reminder_label.dart';
+import '../core/sound/sound_service.dart';
+import '../core/time/time_field.dart';
+import '../core/timezone/timezone_picker.dart';
 import '../core/widgets/ui_kit.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import '../features/entries/widgets/repeat_editor_sheet.dart';
 import '../features/reminders/widgets/reminder_offset_sheet.dart';
 import '../models/reminder.dart';
 import '../state/providers.dart';
@@ -21,26 +25,83 @@ const _editorFallbackSpaces = <Space>[
   Space(id: 'home', name: 'Home', colorValue: 0xFF5B7F6B, position: 2),
 ];
 
-enum _Repeat { never, daily, weekly, monthly, yearly }
-
 Future<void> showEntryEditor(
   BuildContext context, {
   Entry? entry,
   LocalDate? initialDate,
+  int? initialStartMinute,
+  int? initialEndMinute,
+  String? initialSpaceId,
+  String? initialContextId,
+  String? initialUnitId,
+  String? initialProjectId,
   required List<Space> spaces,
 }) {
+  if (entry?.readOnly == true) {
+    return _showReadOnlyEntry(context, entry!);
+  }
   return showAppSheet<void>(
     context: context,
-    builder: (context) => EntryEditorSheet(entry: entry, initialDate: initialDate, spaces: spaces),
+    builder: (context) => EntryEditorSheet(
+      entry: entry,
+      initialDate: initialDate,
+      initialStartMinute: initialStartMinute,
+      initialEndMinute: initialEndMinute,
+      initialSpaceId: initialSpaceId,
+      initialContextId: initialContextId,
+      initialUnitId: initialUnitId,
+      initialProjectId: initialProjectId,
+      spaces: spaces,
+    ),
+  );
+}
+
+Future<void> _showReadOnlyEntry(BuildContext context, Entry entry) {
+  final l10n = context.l10n;
+  final c = context.mc;
+  return showAppSheet<void>(
+    context: context,
+    builder: (sheetContext) => AppSheet(
+      children: [
+        Text(entry.title, style: SundialType.headline(21, color: c.text)),
+        const SizedBox(height: 6),
+        Text(l10n.importedEvent, style: SundialType.label(12, color: c.accent)),
+        const SizedBox(height: 12),
+        Text(l10n.readOnlyNotice, style: SundialType.body(14, color: c.textSecondary)),
+        if (entry.notes.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          Text(entry.notes, style: SundialType.body(14, color: c.text)),
+        ],
+        const SizedBox(height: 22),
+        FilledButton(onPressed: () => Navigator.of(sheetContext).pop(), child: Text(l10n.close)),
+      ],
+    ),
   );
 }
 
 class EntryEditorSheet extends ConsumerStatefulWidget {
-  const EntryEditorSheet({super.key, required this.spaces, this.entry, this.initialDate});
+  const EntryEditorSheet({
+    super.key,
+    required this.spaces,
+    this.entry,
+    this.initialDate,
+    this.initialStartMinute,
+    this.initialEndMinute,
+    this.initialSpaceId,
+    this.initialContextId,
+    this.initialUnitId,
+    this.initialProjectId,
+  });
 
   final List<Space> spaces;
   final Entry? entry;
   final LocalDate? initialDate;
+  final int? initialStartMinute;
+  final int? initialEndMinute;
+  final String? initialSpaceId;
+  final String? initialContextId;
+  final String? initialUnitId;
+  final String? initialProjectId;
 
   @override
   ConsumerState<EntryEditorSheet> createState() => _EntryEditorSheetState();
@@ -52,28 +113,42 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
   late final TextEditingController _notesController;
   late String _spaceId;
   late EntryKind _kind;
+  late EntryPriority _priority;
+  String? _contextId;
+  String? _projectId;
   late LocalDate _date;
   late LocalDate? _endDate;
   late bool _allDay;
-  late int _startMinute;
-  late int _endMinute;
-  late _Repeat _repeat;
+  int? _startMinute;
+  int? _endMinute;
+  late String _timeZone;
+  RecurrenceRule? _recurrence;
   late bool _repeatAfterCompletion;
-  late final TextEditingController _repeatDaysController;
+  late int _repeatDays;
   late String _deviceTimeZone;
   late Set<String> _tagIds;
   late Set<LocalDate> _skipDates;
   late Set<int> _reminderOffsets;
   late Set<int> _reminderTimes;
   bool _onlyThisOccurrence = false;
+  Entry? _series;
+  RecurrenceOverride? _initialOverride;
   bool _remindersLoaded = true;
+  bool _remindersLoadFailed = false;
+  List<Reminder> _disabledReminders = const <Reminder>[];
   bool _saving = false;
 
   List<Space> get _spaces => widget.spaces.isEmpty ? _editorFallbackSpaces : widget.spaces;
 
-  /// The stored timezone for an existing timed entry; the device zone for a
-  /// new one. All-day entries carry no timezone at all.
-  String get _timeZone => widget.entry?.timeZone ?? _deviceTimeZone;
+  /// Derived from which time fields are present, matching the four task
+  /// shapes in the v2 request. The UI never stores a separate mode.
+  EntryTiming get _timing {
+    if (_allDay) return EntryTiming.anytime;
+    if (_startMinute != null && _endMinute != null) return EntryTiming.scheduled;
+    if (_startMinute != null) return EntryTiming.clockIn;
+    if (_endMinute != null) return EntryTiming.deadline;
+    return EntryTiming.anytime;
+  }
 
   @override
   void initState() {
@@ -82,20 +157,30 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     _deviceTimeZone = ref.read(deviceTimeZoneProvider);
     _titleController = TextEditingController(text: entry?.title ?? '');
     _notesController = TextEditingController(text: entry?.notes ?? '');
-    _spaceId = entry != null && _spaces.any((space) => space.id == entry.spaceId)
-        ? entry.spaceId
+    final requestedSpace = entry?.spaceId ?? widget.initialSpaceId;
+    _spaceId = requestedSpace != null && _spaces.any((space) => space.id == requestedSpace)
+        ? requestedSpace
         : _spaces.first.id;
     _kind = entry?.kind ?? EntryKind.task;
-    _date = entry?.date ?? widget.initialDate ?? localDateAt(ref.read(nowProvider), _deviceTimeZone);
+    _priority = entry?.priority ?? EntryPriority.none;
+    _contextId = entry?.contextId ?? widget.initialUnitId ?? widget.initialContextId;
+    _projectId = entry?.projectId ?? widget.initialProjectId;
+    final occurrence = entry != null && entry.recurrence != null && widget.initialDate != null;
+    _date = occurrence ? widget.initialDate! : (entry?.date ?? widget.initialDate ?? _today());
     _endDate = entry?.endDate;
     _allDay = entry?.allDay ?? false;
-    _startMinute = entry?.startMinute ?? 9 * 60;
-    _endMinute = entry?.endMinute ?? 10 * 60;
-    _repeat = _repeatFrom(entry?.recurrence);
+    // Never invent times for an existing entry: a clock-in, deadline or anytime
+    // task must keep its shape after an edit.
+    _startMinute = entry != null ? entry.startMinute : (widget.initialStartMinute ?? 9 * 60);
+    _endMinute = entry != null ? entry.endMinute : (widget.initialEndMinute ?? 10 * 60);
+    final planningZone = ref.read(settingsProvider).timezoneOverride;
+    _timeZone = entry?.timeZone ?? (planningZone.isEmpty ? _deviceTimeZone : planningZone);
+    _recurrence = entry?.recurrence;
     _repeatAfterCompletion = entry?.repeatAfterCompletionDays != null;
-    _repeatDaysController = TextEditingController(text: '${entry?.repeatAfterCompletionDays ?? 30}');
+    _repeatDays = entry?.repeatAfterCompletionDays ?? 30;
     _tagIds = {...?entry?.tagIds};
     _skipDates = {...?entry?.recurrence?.skipDates};
+    if (entry != null && entry.recurrence != null) _loadSeries(entry.id);
     if (entry == null) {
       _reminderOffsets = {...ref.read(settingsProvider).defaultReminderOffsets};
       _reminderTimes = <int>{};
@@ -105,6 +190,55 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
       _remindersLoaded = false;
       _loadReminders(entry.id);
     }
+  }
+
+  LocalDate _today() => localDateAt(ref.read(nowProvider), _deviceTimeZone);
+
+  /// Loads the stored series for a recurring occurrence.
+  ///
+  /// Cards open the editor with the expanded occurrence, whose title and notes
+  /// already include the override. Saving that copy back would write the
+  /// override into the whole series, so edits are always based on the stored
+  /// series and scoped to one occurrence explicitly.
+  Future<void> _loadSeries(String entryId) async {
+    final series = await ref.read(repositoryProvider).readEntry(entryId);
+    if (!mounted || series == null || series.recurrence == null) return;
+    final date = widget.initialDate;
+    RecurrenceOverride? override;
+    if (date != null) {
+      for (final candidate in series.recurrence!.overrides) {
+        if (candidate.date == date) {
+          override = candidate;
+          break;
+        }
+      }
+    }
+    setState(() {
+      _series = series;
+      _initialOverride = override;
+      _recurrence = series.recurrence;
+      _skipDates = {...?series.recurrence?.skipDates};
+      _date = override?.effectiveDate ?? date ?? series.date ?? _date;
+      _startMinute = override?.startMinute ?? series.startMinute;
+      _endMinute = override?.endMinute ?? series.endMinute;
+      _allDay = override?.allDay ?? series.allDay;
+      _titleController.text = override?.title ?? series.title;
+      _notesController.text = override?.notes ?? series.notes;
+    });
+  }
+
+  void _setOnlyThisOccurrence(bool value) {
+    final series = _series;
+    if (series == null) {
+      setState(() => _onlyThisOccurrence = value);
+      return;
+    }
+    final override = _initialOverride;
+    setState(() {
+      _onlyThisOccurrence = value;
+      _titleController.text = value ? (override?.title ?? series.title) : series.title;
+      _notesController.text = value ? (override?.notes ?? series.notes) : series.notes;
+    });
   }
 
   Future<void> _loadReminders(String entryId) async {
@@ -120,11 +254,15 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
           for (final reminder in reminders)
             if (reminder.enabled && reminder.timeMinute != null) reminder.timeMinute!,
         };
+        _disabledReminders = reminders.where((reminder) => !reminder.enabled).toList();
         _remindersLoaded = true;
       });
     } catch (error) {
       if (!mounted) return;
-      setState(() => _remindersLoaded = true);
+      setState(() {
+        _remindersLoaded = true;
+        _remindersLoadFailed = true;
+      });
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(context.l10n.couldNotLoadReminders('$error'))));
@@ -135,7 +273,6 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
   void dispose() {
     _titleController.dispose();
     _notesController.dispose();
-    _repeatDaysController.dispose();
     super.dispose();
   }
 
@@ -143,11 +280,33 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
   Widget build(BuildContext context) {
     final c = context.mc;
     final l10n = context.l10n;
+    if (widget.entry?.readOnly == true) {
+      final entry = widget.entry!;
+      return AppSheet(
+        children: [
+          Text(entry.title, style: SundialType.headline(21, color: c.text)),
+          const SizedBox(height: 6),
+          Text(l10n.importedEvent, style: SundialType.label(12, color: c.accent)),
+          const SizedBox(height: 12),
+          Text(l10n.readOnlyNotice, style: SundialType.body(14, color: c.textSecondary)),
+          if (entry.notes.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Text(entry.notes, style: SundialType.body(14, color: c.text)),
+          ],
+          const SizedBox(height: 22),
+          FilledButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.close)),
+        ],
+      );
+    }
     final title = widget.entry == null ? l10n.newEntry : l10n.editEntry;
-    final locale = Localizations.localeOf(context).toLanguageTag();
     final availableTags = (ref.watch(tagsProvider).value ?? const <Tag>[])
         .where((tag) => tag.appliesTo(_spaceId))
         .toList();
+    final contexts = ref.watch(contextsProvider(_spaceId)).value ?? const <PlannerContext>[];
+    final projects = ref.watch(projectsProvider(_spaceId)).value ?? const <Project>[];
+    if (_contextId != null && !contexts.any((item) => item.id == _contextId)) _contextId = null;
+    if (_contextId == null && contexts.length == 1) _contextId = contexts.single.id;
+    if (_projectId != null && !projects.any((item) => item.id == _projectId)) _projectId = null;
 
     return AppSheet(
       children: [
@@ -159,7 +318,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: Text(title, style: ManeType.headline(20, color: c.text)),
+                    child: Text(title, style: SundialType.headline(20, color: c.text)),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -174,216 +333,76 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                 autofocus: true,
                 textCapitalization: TextCapitalization.sentences,
                 textInputAction: TextInputAction.next,
-                decoration: InputDecoration(labelText: l10n.titleQuestion),
+                decoration: InputDecoration(
+                  labelText: l10n.titleQuestion,
+                  suffixIcon: SundialTextClear(controller: _titleController, tooltip: l10n.clearText),
+                  suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+                ),
                 validator: (value) => value == null || value.trim().isEmpty ? l10n.titleRequired : null,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _notesController,
+                maxLines: 2,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(labelText: l10n.notesOptional, alignLabelWithHint: true),
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
-                    child: _LabeledDropdown<String>(
+                    child: SundialSelectField(
                       label: l10n.space,
-                      value: _spaceId,
-                      items: _spaces
-                          .map(
-                            (space) => DropdownMenuItem<String>(
-                              value: space.id,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: BoxDecoration(
-                                      color: Color(space.colorValue),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(space.name),
-                                ],
-                              ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            _spaceId = value;
-                            final allowed = (ref.read(tagsProvider).value ?? const <Tag>[])
-                                .where((tag) => tag.appliesTo(value))
-                                .map((tag) => tag.id)
-                                .toSet();
-                            _tagIds.removeWhere((id) => !allowed.contains(id));
-                          });
-                        }
-                      },
+                      valueLabel: _spaceName(_spaceId),
+                      leading: Container(
+                        width: 9,
+                        height: 9,
+                        decoration: BoxDecoration(color: _spaceColor(_spaceId), shape: BoxShape.circle),
+                      ),
+                      onTap: () => _pickSpace(context),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _LabeledDropdown<EntryKind>(
+                    child: SundialSelectField(
                       label: l10n.type,
-                      value: _kind,
-                      items: EntryKind.values
-                          .map(
-                            (kind) => DropdownMenuItem<EntryKind>(
-                              value: kind,
-                              child: Text(entryKindLabel(context, kind)),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) setState(() => _kind = value);
-                      },
+                      valueLabel: entryKindLabel(context, _kind),
+                      leading: const Icon(Icons.category_outlined),
+                      onTap: () => _pickKind(context),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              _PickerRow(
-                icon: Icons.event_outlined,
-                label: l10n.date,
-                value: DateFormat.yMMMEd(locale).format(_date.toDateTime()),
-                onTap: _pickDate,
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: _PickerRow(
-                      icon: Icons.date_range_outlined,
-                      label: l10n.endDate,
-                      value: _endDate == null
-                          ? l10n.singleDay
-                          : DateFormat.yMMMEd(locale).format(_endDate!.toDateTime()),
-                      onTap: _pickEndDate,
-                    ),
-                  ),
-                  if (_endDate != null)
-                    IconButton(
-                      onPressed: () => setState(() => _endDate = null),
-                      icon: const Icon(Icons.close, size: 18),
-                      tooltip: l10n.singleDay,
-                    ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(4, 4, 0, 0),
-                child: Text(l10n.multiDayHint, style: ManeType.body(11, color: c.textTertiary)),
-              ),
-              const SizedBox(height: 4),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.allDay),
-                value: _allDay,
-                onChanged: (value) => setState(() => _allDay = value),
-              ),
-              if (!_allDay)
-                Row(
-                  children: [
-                    Expanded(
-                      child: _PickerRow(
-                        icon: Icons.schedule,
-                        label: l10n.starts,
-                        value: _timeLabel(_startMinute),
-                        onTap: _pickStartTime,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _PickerRow(
-                        icon: Icons.schedule_outlined,
-                        label: l10n.ends,
-                        value: _timeLabel(_endMinute),
-                        onTap: _pickEndTime,
-                      ),
-                    ),
-                  ],
-                ),
-              if (!_allDay)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 6, 0, 0),
-                  child: Row(
-                    children: [
-                      Icon(Icons.public, size: 14, color: c.textTertiary),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          l10n.timesDefinedIn(_timeZone),
-                          style: ManeType.body(11.5, color: c.textSecondary),
+              if (contexts.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                SundialSelectField(
+                  label: l10n.context,
+                  valueLabel: _contextName(contexts, _contextId) ?? l10n.noContext,
+                  leading: _contextColor(contexts, _contextId) == null
+                      ? const Icon(Icons.work_outline)
+                      : Container(
+                          width: 9,
+                          height: 9,
+                          decoration: BoxDecoration(
+                            color: _contextColor(contexts, _contextId),
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              const SizedBox(height: 12),
-              if (!_repeatAfterCompletion)
-                _LabeledDropdown<_Repeat>(
-                  label: l10n.repeat,
-                  value: _repeat,
-                  items: _Repeat.values
-                      .map(
-                        (repeat) => DropdownMenuItem<_Repeat>(
-                          value: repeat,
-                          child: Text(_repeatLabel(context, repeat)),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) setState(() => _repeat = value);
-                  },
-                ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.repeatAfterCompletion),
-                subtitle: Text(l10n.repeatAfterCompletionSubtitle),
-                value: _repeatAfterCompletion,
-                onChanged: (value) => setState(() {
-                  _repeatAfterCompletion = value;
-                  if (value) _repeat = _Repeat.never;
-                }),
-              ),
-              if (widget.entry?.recurrence != null && widget.initialDate != null) ...[
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.onlyThisOccurrence),
-                  subtitle: Text(l10n.onlyThisOccurrenceSubtitle),
-                  value: _onlyThisOccurrence,
-                  onChanged: (value) => setState(() => _onlyThisOccurrence = value),
-                ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: () => setState(() {
-                      final date = widget.initialDate!;
-                      if (!_skipDates.remove(date)) _skipDates.add(date);
-                    }),
-                    icon: Icon(
-                      _skipDates.contains(widget.initialDate) ? Icons.undo : Icons.event_busy_outlined,
-                      size: 18,
-                    ),
-                    label: Text(
-                      _skipDates.contains(widget.initialDate)
-                          ? l10n.skippedOccurrences
-                          : l10n.skipThisOccurrence,
-                    ),
-                  ),
+                  onTap: () => _pickContext(context, contexts),
                 ),
               ],
-              if (_repeatAfterCompletion)
-                TextFormField(
-                  controller: _repeatDaysController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: l10n.repeatAfterDaysLabel),
-                  validator: (value) {
-                    final days = int.tryParse(value?.trim() ?? '');
-                    return days == null || days <= 0 ? l10n.daysRequired : null;
-                  },
+              if (projects.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                SundialSelectField(
+                  label: l10n.project,
+                  valueLabel: _projectName(projects, _projectId) ?? l10n.noProject,
+                  leading: const Icon(Icons.folder_outlined),
+                  onTap: () => _pickProject(context, projects),
                 ),
+              ],
               const SizedBox(height: 12),
               if (availableTags.isNotEmpty) ...[
-                Text(l10n.tags, style: ManeType.label(12.5, color: c.textSecondary)),
+                Text(l10n.categories, style: SundialType.label(12.5, color: c.textSecondary)),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 6,
@@ -404,12 +423,151 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                       ),
                   ],
                 ),
+                const SizedBox(height: 12),
+              ],
+              Text(l10n.priority, style: SundialType.label(12.5, color: c.textSecondary)),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final priority in EntryPriority.values)
+                    ChoiceChip(
+                      label: Text(_priorityLabel(context, priority)),
+                      selected: _priority == priority,
+                      onSelected: (_) => setState(() => _priority = priority),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.allDay),
+                value: _allDay,
+                onChanged: (value) => setState(() {
+                  _allDay = value;
+                  if (value) {
+                    _startMinute = null;
+                    _endMinute = null;
+                    _endDate = null;
+                  }
+                }),
+              ),
+              if (!_allDay)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      Icon(_timingIcon(_timing), size: 16, color: c.textTertiary),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _timingHint(context, _timing),
+                          style: SundialType.body(11.5, color: c.textTertiary),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 10),
+              SundialDateField(
+                icon: Icons.event_outlined,
+                label: l10n.date,
+                valueLabel: formatFullDate(context, _date.toDateTime()),
+                onTap: _pickDate,
+              ),
+              if (_allDay || (_startMinute != null && _endMinute != null)) ...[
+                const SizedBox(height: 10),
+                SundialDateField(
+                  icon: Icons.date_range_outlined,
+                  label: l10n.endDate,
+                  valueLabel: _endDate == null
+                      ? l10n.singleDay
+                      : formatFullDate(context, _endDate!.toDateTime()),
+                  onTap: _pickEndDate,
+                  onClear: _endDate == null ? null : () => setState(() => _endDate = null),
+                  clearTooltip: l10n.singleDay,
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 4, 0, 0),
+                  child: Text(l10n.multiDayHint, style: SundialType.body(11, color: c.textTertiary)),
+                ),
+              ],
+              if (!_allDay) ...[
+                const SizedBox(height: 10),
+                SundialTimeField(
+                  label: l10n.starts,
+                  icon: Icons.schedule,
+                  valueLabel: _startMinute == null ? l10n.noTime : _timeLabel(_startMinute!),
+                  initialMinute: _startMinute,
+                  clearTooltip: l10n.clearStart,
+                  onClear: () => setState(() => _startMinute = null),
+                  onChanged: (minute) => setState(() => _applyStart(minute)),
+                ),
+                const SizedBox(height: 10),
+                SundialTimeField(
+                  label: _timing == EntryTiming.deadline ? l10n.deadline : l10n.ends,
+                  icon: _timing == EntryTiming.deadline ? Icons.flag_outlined : Icons.schedule_outlined,
+                  valueLabel: _endMinute == null ? l10n.noTime : _timeLabel(_endMinute!),
+                  initialMinute: _endMinute,
+                  clearTooltip: l10n.clearEnd,
+                  onClear: () => setState(() => _endMinute = null),
+                  onChanged: (minute) => setState(() => _applyEnd(minute)),
+                ),
+                const SizedBox(height: 10),
+                SundialSelectField(
+                  label: l10n.timeZone,
+                  valueLabel: _timeZone,
+                  leading: const Icon(Icons.public),
+                  onTap: () => _pickTimeZone(context),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 6, 0, 0),
+                  child: Text(
+                    l10n.timesDefinedIn(_timeZone),
+                    style: SundialType.body(11.5, color: c.textSecondary),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              SundialSelectField(
+                label: l10n.repeat,
+                valueLabel: _repeatSummary(context),
+                leading: const Icon(Icons.repeat),
+                onTap: () => _editRepeat(context),
+              ),
+              if (widget.entry?.recurrence != null && widget.initialDate != null) ...[
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.onlyThisOccurrence),
+                  subtitle: Text(l10n.onlyThisOccurrenceSubtitle),
+                  value: _onlyThisOccurrence,
+                  onChanged: _setOnlyThisOccurrence,
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => setState(() {
+                      final date = widget.initialDate!;
+                      if (!_skipDates.remove(date)) _skipDates.add(date);
+                    }),
+                    icon: Icon(
+                      _skipDates.contains(widget.initialDate) ? Icons.undo : Icons.event_busy_outlined,
+                      size: 18,
+                    ),
+                    label: Text(
+                      _skipDates.contains(widget.initialDate)
+                          ? l10n.skippedOccurrences
+                          : l10n.skipThisOccurrence,
+                    ),
+                  ),
+                ),
               ],
               const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
-                    child: Text(l10n.reminders, style: ManeType.label(12.5, color: c.textSecondary)),
+                    child: Text(l10n.reminders, style: SundialType.label(12.5, color: c.textSecondary)),
                   ),
                   TextButton.icon(
                     onPressed: _saving ? null : _editReminders,
@@ -418,8 +576,10 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                   ),
                 ],
               ),
-              if (_reminderOffsets.isEmpty && _reminderTimes.isEmpty)
-                Text(l10n.remindersOff, style: ManeType.body(11.5, color: c.textTertiary))
+              if (_remindersLoadFailed)
+                Text(l10n.remindersUnavailable, style: SundialType.body(11.5, color: c.danger))
+              else if (_reminderOffsets.isEmpty && _reminderTimes.isEmpty)
+                Text(l10n.remindersOff, style: SundialType.body(11.5, color: c.textTertiary))
               else
                 Wrap(
                   spacing: 6,
@@ -441,13 +601,6 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
                       ),
                   ],
                 ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _notesController,
-                maxLines: 3,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(labelText: l10n.notesOptional, alignLabelWithHint: true),
-              ),
               const SizedBox(height: 20),
               FilledButton(
                 onPressed: _saving || !_remindersLoaded ? null : _save,
@@ -475,10 +628,22 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     );
   }
 
+  String _timingHint(BuildContext context, EntryTiming timing) => switch (timing) {
+    EntryTiming.scheduled => context.l10n.timingScheduledHint,
+    EntryTiming.clockIn => context.l10n.timingClockInHint,
+    EntryTiming.deadline => context.l10n.timingDeadlineHint,
+    EntryTiming.anytime => context.l10n.timingAnytimeHint,
+  };
+
+  String _priorityLabel(BuildContext context, EntryPriority priority) => switch (priority) {
+    EntryPriority.none => context.l10n.priorityNone,
+    EntryPriority.low => context.l10n.priorityLow,
+    EntryPriority.medium => context.l10n.priorityMedium,
+    EntryPriority.high => context.l10n.priorityHigh,
+  };
+
   String _timeLabel(int minutes) {
-    final normalized = minutes % 1440;
-    final label = TimeOfDay(hour: normalized ~/ 60, minute: normalized % 60).format(context);
-    return minutes >= 1440 ? '$label ${context.l10n.overnightSuffix}' : label;
+    return formatMinuteLabel(context, minutes, overnightSuffix: context.l10n.overnightSuffix);
   }
 
   Future<void> _pickDate() async {
@@ -507,106 +672,137 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     setState(() => _endDate = end.isAfter(_date) ? end : null);
   }
 
-  Future<void> _pickStartTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: _startMinute ~/ 60, minute: _startMinute % 60),
-    );
-    if (picked == null || !mounted) return;
-    setState(() {
-      final duration = _endMinute - _startMinute;
-      _startMinute = picked.hour * 60 + picked.minute;
-      _endMinute = _startMinute + duration;
-    });
+  void _applyStart(int minute) {
+    final previous = _startMinute;
+    _startMinute = minute;
+    final end = _endMinute;
+    if (end == null) return;
+    if (previous == null) {
+      if (end <= _startMinute!) _endMinute = _startMinute! + 60;
+    } else {
+      _endMinute = _startMinute! + (end - previous);
+    }
   }
 
-  Future<void> _pickEndTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: (_endMinute ~/ 60) % 24, minute: _endMinute % 60),
-    );
-    if (picked == null || !mounted) return;
-    setState(() {
-      var end = picked.hour * 60 + picked.minute;
-      // A single-day end at or before the start runs into tomorrow. An explicit
-      // end date already carries the day, so keep the picked wall-clock time.
-      if (_endDate == null && end <= _startMinute) end += 1440;
-      _endMinute = end;
-    });
+  void _applyEnd(int picked) {
+    var end = picked;
+    // A single-day end at or before the start runs into tomorrow. An explicit
+    // end date already carries the day, so keep the picked wall-clock time.
+    final start = _startMinute;
+    if (start != null && _endDate == null && end <= start) end += 1440;
+    _endMinute = end;
   }
 
   Future<void> _save() async {
     final form = _formKey.currentState;
     if (form == null || !form.validate()) return;
     final existing = widget.entry;
-    final endDate = _endDate != null && _endDate!.isAfter(_date) ? _endDate : null;
-    if (!_allDay && endDate == null && _endMinute <= _startMinute) {
+    if (existing?.readOnly == true) return;
+    final base = _series ?? existing;
+    final scheduled = !_allDay && _startMinute != null && _endMinute != null;
+    final endDate = (scheduled || _allDay) && _endDate != null && _endDate!.isAfter(_date) ? _endDate : null;
+    if (scheduled && endDate == null && _endMinute! <= _startMinute!) {
+      ref.read(soundControllerProvider).play(UiSound.error);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.endAfterStartError)));
       return;
     }
-    final singleOccurrence =
-        _onlyThisOccurrence && existing?.recurrence != null && widget.initialDate != null;
+    final singleOccurrence = _onlyThisOccurrence && base?.recurrence != null && widget.initialDate != null;
 
     setState(() => _saving = true);
     final now = DateTime.now();
     final title = _titleController.text.trim();
     final notes = _notesController.text.trim();
-    var recurrence = _repeatAfterCompletion ? null : _buildRecurrence();
+    var recurrence = _repeatAfterCompletion ? null : _recurrence;
+    if (recurrence != null) recurrence = recurrence.copyWith(skipDates: _skipDates);
     if (singleOccurrence) {
       final original = widget.initialDate!;
+      final series = base!;
       final overrides = [
-        ...existing!.recurrence!.overrides.where((override) => override.date != original),
+        ...series.recurrence!.overrides.where((override) => override.date != original),
         if (!_skipDates.contains(original))
           RecurrenceOverride(
             date: original,
             dateOverride: _date == original ? null : _date,
             startMinute: _allDay ? null : _startMinute,
             endMinute: _allDay ? null : _endMinute,
-            allDay: _allDay == existing.allDay ? null : _allDay,
-            title: title == existing.title ? null : title,
-            notes: notes == existing.notes ? null : notes,
+            allDay: _allDay == series.allDay ? null : _allDay,
+            title: title == series.title ? null : title,
+            notes: notes == series.notes ? null : notes,
           ),
       ];
-      recurrence = existing.recurrence!.copyWith(skipDates: _skipDates, overrides: overrides);
+      recurrence = series.recurrence!.copyWith(skipDates: _skipDates, overrides: overrides);
     }
 
-    final entry = Entry(
-      id: existing?.id ?? const Uuid().v4(),
-      spaceId: _spaceId,
-      title: singleOccurrence ? existing!.title : title,
-      notes: singleOccurrence ? existing!.notes : notes,
-      kind: _kind,
-      date: singleOccurrence ? existing!.date : _date,
-      endDate: singleOccurrence ? existing!.endDate : endDate,
-      startMinute: singleOccurrence ? existing!.startMinute : (_allDay ? null : _startMinute),
-      endMinute: singleOccurrence ? existing!.endMinute : (_allDay ? null : _endMinute),
-      timeZone: singleOccurrence ? existing!.timeZone : (_allDay ? null : _timeZone),
-      tagIds: _tagIds,
-      allDay: singleOccurrence ? existing!.allDay : _allDay,
-      status: existing?.status ?? EntryStatus.open,
-      recurrence: recurrence,
-      repeatAfterCompletionDays: _repeatAfterCompletion
-          ? int.tryParse(_repeatDaysController.text.trim()) ?? 30
-          : null,
-      createdAt: existing?.createdAt ?? now,
-      updatedAt: now,
-    );
+    // Editing an occurrence must not move the series anchor or rewrite its
+    // times. Timing changes stay scoped to the occurrence.
+    final fromOccurrence = _series != null && widget.initialDate != null;
+    final writeSeriesTiming = !fromOccurrence || _initialOverride == null;
+
+    final entry = base == null
+        ? Entry(
+            id: const Uuid().v4(),
+            spaceId: _spaceId,
+            title: title,
+            notes: notes,
+            kind: _kind,
+            date: _date,
+            endDate: endDate,
+            startMinute: _allDay ? null : _startMinute,
+            endMinute: _allDay ? null : _endMinute,
+            timeZone: _allDay || (_startMinute == null && _endMinute == null) ? null : _timeZone,
+            contextId: _contextId,
+            projectId: _projectId,
+            priority: _priority,
+            tagIds: _tagIds,
+            allDay: _allDay,
+            recurrence: recurrence,
+            repeatAfterCompletionDays: _repeatAfterCompletion ? (_repeatDays <= 0 ? 1 : _repeatDays) : null,
+            createdAt: now,
+            updatedAt: now,
+          )
+        : base.copyWith(
+            spaceId: _spaceId,
+            title: singleOccurrence ? base.title : title,
+            notes: singleOccurrence ? base.notes : notes,
+            kind: _kind,
+            contextId: singleOccurrence ? base.contextId : _contextId,
+            projectId: singleOccurrence ? base.projectId : _projectId,
+            priority: _priority,
+            tagIds: _tagIds,
+            recurrence: recurrence,
+            repeatAfterCompletionDays: _repeatAfterCompletion ? (_repeatDays <= 0 ? 1 : _repeatDays) : null,
+            updatedAt: now.toUtc(),
+          );
+    final resolved = singleOccurrence || !writeSeriesTiming
+        ? entry
+        : entry.copyWith(
+            date: _date,
+            endDate: endDate,
+            startMinute: _allDay ? null : _startMinute,
+            endMinute: _allDay ? null : _endMinute,
+            timeZone: _allDay || (_startMinute == null && _endMinute == null) ? null : _timeZone,
+            allDay: _allDay,
+          );
 
     try {
       final repository = ref.read(repositoryProvider);
-      await repository.saveEntry(entry);
-      await repository.saveRemindersForEntry(entry.id, [
-        for (final offset in _reminderOffsets)
-          Reminder(id: Reminder.idFor(entry.id, offset), entryId: entry.id, offsetMinutes: offset),
-        for (final minute in _reminderTimes)
-          Reminder(
-            id: Reminder.timeIdFor(entry.id, minute),
-            entryId: entry.id,
-            offsetMinutes: 0,
-            timeMinute: minute,
-          ),
-      ]);
-      if (_reminderOffsets.isNotEmpty || _reminderTimes.isNotEmpty) {
+      await repository.saveEntry(resolved);
+      // A failed reminder read must not silently erase reminders on save.
+      if (!_remindersLoadFailed) {
+        await repository.saveRemindersForEntry(resolved.id, [
+          ..._disabledReminders,
+          for (final offset in _reminderOffsets)
+            Reminder(id: Reminder.idFor(resolved.id, offset), entryId: resolved.id, offsetMinutes: offset),
+          for (final minute in _reminderTimes)
+            Reminder(
+              id: Reminder.timeIdFor(resolved.id, minute),
+              entryId: resolved.id,
+              offsetMinutes: 0,
+              timeMinute: minute,
+            ),
+        ]);
+      }
+      if (!_remindersLoadFailed && (_reminderOffsets.isNotEmpty || _reminderTimes.isNotEmpty)) {
         final allowed = await ref.read(notificationServiceProvider).ensurePermissions();
         if (!allowed && mounted) {
           ScaffoldMessenger.of(
@@ -615,7 +811,9 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
         }
       }
       await ref.read(reminderCoordinatorProvider).reschedule();
+      ref.read(soundControllerProvider).play(UiSound.confirm);
     } catch (error) {
+      ref.read(soundControllerProvider).play(UiSound.error);
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(
@@ -630,7 +828,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
 
   Future<void> _delete() async {
     final entry = widget.entry;
-    if (entry == null) return;
+    if (entry == null || entry.readOnly) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -654,7 +852,9 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     try {
       await ref.read(repositoryProvider).deleteEntry(entry.id);
       await ref.read(reminderCoordinatorProvider).reschedule();
+      ref.read(soundControllerProvider).play(UiSound.back);
     } catch (error) {
+      ref.read(soundControllerProvider).play(UiSound.error);
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(
@@ -681,110 +881,184 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     }
   }
 
-  RecurrenceRule? _buildRecurrence() {
-    final existing = widget.entry?.recurrence;
-    final frequency = _frequencyFor(_repeat);
-    if (frequency == null) return null;
+  Future<void> _editRepeat(BuildContext context) async {
+    final picked = await showRepeatEditor(
+      context,
+      initial: RepeatSelection(
+        rule: _recurrence,
+        afterCompletion: _repeatAfterCompletion,
+        intervalDays: _repeatDays,
+      ),
+      anchor: _date,
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _repeatAfterCompletion = picked.afterCompletion;
+      _repeatDays = picked.intervalDays;
+      _recurrence = picked.rule;
+    });
+  }
 
-    // Keep an existing rule intact when the user did not change the shape.
-    if (existing != null && existing.frequency == frequency && widget.entry?.date == _date) {
-      return existing.copyWith(skipDates: _skipDates);
+  String _repeatSummary(BuildContext context) {
+    final l10n = context.l10n;
+    if (_repeatAfterCompletion) return '${l10n.repeatAfterCompletion} · ${l10n.daysValue(_repeatDays)}';
+    final rule = _recurrence;
+    if (rule == null) return l10n.repeatSummaryNever;
+    final base = recurrenceLabel(context, rule, _date);
+    final until = rule.until;
+    if (until != null) {
+      return '$base · ${l10n.recurrenceUntil(formatFullDate(context, until.toDateTime()))}';
     }
-
-    return switch (_repeat) {
-      _Repeat.never => null,
-      _Repeat.daily => RecurrenceRule(frequency: RecurrenceFrequency.daily, skipDates: _skipDates),
-      _Repeat.weekly => RecurrenceRule(
-        frequency: RecurrenceFrequency.weekly,
-        weekdays: {_date.weekday},
-        skipDates: _skipDates,
-      ),
-      _Repeat.monthly => RecurrenceRule(
-        frequency: RecurrenceFrequency.monthly,
-        monthDay: _date.day,
-        skipDates: _skipDates,
-      ),
-      _Repeat.yearly => RecurrenceRule(frequency: RecurrenceFrequency.yearly, skipDates: _skipDates),
-    };
+    final count = rule.count;
+    if (count != null) return '$base · ${l10n.repeatOccurrences(count)}';
+    return base;
   }
 
-  _Repeat _repeatFrom(RecurrenceRule? rule) {
-    return switch (rule?.frequency) {
-      null => _Repeat.never,
-      RecurrenceFrequency.daily => _Repeat.daily,
-      RecurrenceFrequency.weekly => _Repeat.weekly,
-      RecurrenceFrequency.monthly => _Repeat.monthly,
-      RecurrenceFrequency.yearly => _Repeat.yearly,
-    };
+  String _spaceName(String id) {
+    for (final space in _spaces) {
+      if (space.id == id) return space.name;
+    }
+    return id;
   }
 
-  RecurrenceFrequency? _frequencyFor(_Repeat repeat) => switch (repeat) {
-    _Repeat.never => null,
-    _Repeat.daily => RecurrenceFrequency.daily,
-    _Repeat.weekly => RecurrenceFrequency.weekly,
-    _Repeat.monthly => RecurrenceFrequency.monthly,
-    _Repeat.yearly => RecurrenceFrequency.yearly,
-  };
+  Color _spaceColor(String id) {
+    for (final space in _spaces) {
+      if (space.id == id) return Color(space.colorValue);
+    }
+    return const Color(0xFF4F6D5A);
+  }
 
-  String _repeatLabel(BuildContext context, _Repeat repeat) => switch (repeat) {
-    _Repeat.never => context.l10n.repeatNever,
-    _Repeat.daily => context.l10n.repeatDaily,
-    _Repeat.weekly => context.l10n.repeatWeekly,
-    _Repeat.monthly => context.l10n.repeatMonthly,
-    _Repeat.yearly => context.l10n.repeatYearly,
-  };
-}
+  String? _contextName(List<PlannerContext> contexts, String? id) {
+    if (id == null) return null;
+    for (final context in contexts) {
+      if (context.id == id) return context.name;
+    }
+    return null;
+  }
 
-class _LabeledDropdown<T> extends StatelessWidget {
-  const _LabeledDropdown({
-    required this.label,
-    required this.value,
-    required this.items,
-    required this.onChanged,
-  });
+  Color? _contextColor(List<PlannerContext> contexts, String? id) {
+    if (id == null) return null;
+    for (final context in contexts) {
+      if (context.id == id) return Color(context.colorValue);
+    }
+    return null;
+  }
 
-  final String label;
-  final T value;
-  final List<DropdownMenuItem<T>> items;
-  final ValueChanged<T?> onChanged;
+  String? _projectName(List<Project> projects, String? id) {
+    if (id == null) return null;
+    for (final project in projects) {
+      if (project.id == id) return project.name;
+    }
+    return null;
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return InputDecorator(
-      decoration: InputDecoration(
-        labelText: label,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<T>(
-          isExpanded: true,
-          isDense: true,
-          value: value,
-          items: items,
-          onChanged: onChanged,
-        ),
-      ),
+  Future<void> _pickSpace(BuildContext context) async {
+    final l10n = context.l10n;
+    final picked = await showSundialSelectSheet<String>(
+      context: context,
+      title: l10n.space,
+      selected: _spaceId,
+      options: [
+        for (final space in _spaces)
+          SundialSelectOption(
+            value: space.id,
+            label: space.name,
+            leading: Container(
+              width: 9,
+              height: 9,
+              decoration: BoxDecoration(color: Color(space.colorValue), shape: BoxShape.circle),
+            ),
+          ),
+      ],
     );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _spaceId = picked;
+      _contextId = null;
+      _projectId = null;
+      final allowed = (ref.read(tagsProvider).value ?? const <Tag>[])
+          .where((tag) => tag.appliesTo(picked))
+          .map((tag) => tag.id)
+          .toSet();
+      _tagIds.removeWhere((id) => !allowed.contains(id));
+    });
   }
-}
 
-class _PickerRow extends StatelessWidget {
-  const _PickerRow({required this.icon, required this.label, required this.value, required this.onTap});
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
-      child: InputDecorator(
-        decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon, size: 20)),
-        child: Text(value, maxLines: 1, overflow: TextOverflow.ellipsis),
-      ),
+  Future<void> _pickKind(BuildContext context) async {
+    final l10n = context.l10n;
+    final picked = await showSundialSelectSheet<EntryKind>(
+      context: context,
+      title: l10n.type,
+      selected: _kind,
+      options: [
+        for (final kind in EntryKind.values)
+          SundialSelectOption(value: kind, label: entryKindLabel(context, kind)),
+      ],
     );
+    if (picked != null && mounted) setState(() => _kind = picked);
   }
+
+  Future<void> _pickContext(BuildContext context, List<PlannerContext> contexts) async {
+    final l10n = context.l10n;
+    final picked = await showSundialSelectSheet<String>(
+      context: context,
+      title: l10n.context,
+      selected: _contextId ?? '',
+      options: [
+        SundialSelectOption(value: '', label: l10n.noContext),
+        for (final item in contexts)
+          SundialSelectOption(
+            value: item.id,
+            label: item.name,
+            leading: Container(
+              width: 9,
+              height: 9,
+              decoration: BoxDecoration(color: Color(item.colorValue), shape: BoxShape.circle),
+            ),
+          ),
+      ],
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _contextId = picked.isEmpty ? null : picked;
+      _projectId = null;
+    });
+  }
+
+  Future<void> _pickProject(BuildContext context, List<Project> projects) async {
+    final l10n = context.l10n;
+    final picked = await showSundialSelectSheet<String>(
+      context: context,
+      title: l10n.project,
+      selected: _projectId ?? '',
+      searchHint: l10n.search,
+      options: [
+        SundialSelectOption(value: '', label: l10n.noProject),
+        for (final project in projects) SundialSelectOption(value: project.id, label: project.name),
+      ],
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _projectId = picked.isEmpty ? null : picked);
+  }
+
+  Future<void> _pickTimeZone(BuildContext context) async {
+    final l10n = context.l10n;
+    final picked = await showTimeZonePicker(
+      context,
+      selected: _timeZone,
+      title: l10n.timeZone,
+      searchHint: l10n.timezoneSearch,
+      deviceLabel: l10n.timezoneDevice,
+      deviceZone: _deviceTimeZone,
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _timeZone = picked.isEmpty ? _deviceTimeZone : picked);
+  }
+
+  IconData _timingIcon(EntryTiming timing) => switch (timing) {
+    EntryTiming.scheduled => Icons.schedule,
+    EntryTiming.clockIn => Icons.play_circle_outline,
+    EntryTiming.deadline => Icons.flag_outlined,
+    EntryTiming.anytime => Icons.all_inclusive,
+  };
 }

@@ -5,12 +5,12 @@ import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/drift.dart' show Variable;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mane/services/app_database.dart';
-import 'package:mane/models/home_item.dart';
-import 'package:mane/models/reminder.dart';
-import 'package:mane/models/shift_checklist.dart';
-import 'package:mane/models/shopping_item.dart';
-import 'package:mane_core/mane_core.dart';
+import 'package:sundial/services/app_database.dart';
+import 'package:sundial/models/home_item.dart';
+import 'package:sundial/models/reminder.dart';
+import 'package:sundial/models/shift_checklist.dart';
+import 'package:sundial/models/shopping_item.dart';
+import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 
 void main() {
@@ -165,8 +165,8 @@ void main() {
   });
 
   test('completion survives a database restart', () async {
-    final directory = await Directory.systemTemp.createTemp('mane-restart');
-    final path = '${directory.path}/mane.sqlite';
+    final directory = await Directory.systemTemp.createTemp('sundial-restart');
+    final path = '${directory.path}/sundial.sqlite';
     final monday = LocalDate.parse('2026-11-09');
     final now = DateTime.utc(2026, 11, 9, 8);
 
@@ -278,12 +278,13 @@ void main() {
 
     var entries = await database.watchEntriesBetween(monday, monday, 'Europe/Madrid').first;
     expect(entries.single.entry.tagIds, {'job-a'});
-    expect((await database.watchTags().first).single.name, 'Job A');
+    expect((await database.watchTags().first).where((tag) => tag.id == 'job-a').single.name, 'Job A');
 
     await database.softDeleteTag('job-a');
     entries = await database.watchEntriesBetween(monday, monday, 'Europe/Madrid').first;
     expect(entries.single.entry.tagIds, isEmpty);
-    expect(await database.watchTags().first, isEmpty);
+    expect((await database.watchTags().first).where((tag) => tag.id == 'job-a'), isEmpty);
+    expect(await database.watchTags().first, isNotEmpty);
   });
 
   test('stores multiple reminders per entry and replaces them on save', () async {
