@@ -1,17 +1,18 @@
 # Compliance v2 matrix
 
-Status: 2026-11-13, `feat/compliance-v2`. This matrix records what was verified
-in this pass. It deliberately marks unfinished work as open instead of treating
-the product-polish claims as proof.
+Status: 2026-11-13, revalidated 2026-11-18 at the pre-PR head,
+`feat/compliance-v2`. This matrix records what was verified in this pass. It
+deliberately marks unfinished work as open instead of treating the
+product-polish claims as proof.
 
 ## Gate results
 
 | Gate | Result |
 |---|---|
 | `flutter analyze --no-fatal-infos` | Pass, no issues |
-| `dart format --line-length 110 --output=none --set-exit-if-changed lib test packages/sundial_core` | Pass |
-| `flutter test` | Pass, 215 tests |
-| `(cd packages/sundial_core && dart test)` | Pass, 92 tests |
+| Format check, CI command (generated files excluded) | Pass, 210 files |
+| `flutter test` | Pass, 271 tests |
+| `(cd packages/sundial_core && dart test)` | Pass, 95 tests |
 | `flutter build linux --debug` | Pass |
 | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk flutter build apk --debug` | Pass |
 
@@ -104,7 +105,7 @@ the product-polish claims as proof.
 | Clockify-style summary and detailed PDF | Met (existing) | `report_writer.dart`, `report_writer_test.dart` |
 | Summary and detailed CSV | Met | `ReportWriter.summaryCsv` and `ReportWriter.csv`; menu exports all four formats; `report_writer_test.dart` reconciles rows, shares and total |
 | No billing/rate columns | Met | writer has no money columns |
-| Compare against `docs/refs/` | Partial | structure matches; a final pixel/data comparison is still a manual review |
+| Compare against the reference reports | Partial | structure matches; the billing PDFs stay local and are not committed, so a final pixel/data comparison remains a manual review |
 
 ## Settings
 
