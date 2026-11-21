@@ -141,6 +141,30 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         : entries.where((entry) => entry.matches(query)).toList();
     final pairedCount = ref.watch(pairedDevicesProvider).value?.length ?? 0;
 
+    final sidebar = _SettingsSidebar(
+      searchController: _search,
+      searchHint: l10n.settingsSearch,
+      onSearchChanged: (value) => setState(() => _query = value),
+      searching: query.isNotEmpty,
+      matches: matches,
+      selected: _desktopSection,
+      onlineEnabled: settings.onlineEnabled,
+      onSelected: _selectDesktopSection,
+      onOpenLink: _openDesktopLink,
+      onBack: () => Navigator.of(context).maybePop(),
+    );
+    final pane = Expanded(
+      child: SundialContentPane(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _paneHeader(context, l10n),
+            Expanded(child: _paneBody(context, l10n, settings, pairedCount)),
+          ],
+        ),
+      ),
+    );
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: AppBackground(
@@ -149,32 +173,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _SettingsSidebar(
-                  searchController: _search,
-                  searchHint: l10n.settingsSearch,
-                  onSearchChanged: (value) => setState(() => _query = value),
-                  searching: query.isNotEmpty,
-                  matches: matches,
-                  selected: _desktopSection,
-                  onlineEnabled: settings.onlineEnabled,
-                  onSelected: _selectDesktopSection,
-                  onOpenLink: _openDesktopLink,
-                  onBack: () => Navigator.of(context).maybePop(),
-                ),
-                const SizedBox(width: 22),
-                Expanded(
-                  child: SundialContentPane(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _paneHeader(context, l10n),
-                        Expanded(child: _paneBody(context, l10n, settings, pairedCount)),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              children: settings.navSide == SundialNavSide.right
+                  ? [pane, const SizedBox(width: 22), sidebar]
+                  : [sidebar, const SizedBox(width: 22), pane],
             ),
           ),
         ),

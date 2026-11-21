@@ -48,12 +48,12 @@ void main() {
 
   tearDown(() => database.close());
 
-  Widget host(Widget child) => ProviderScope(
+  Widget host(Widget child, {AppSettings settings = const AppSettings()}) => ProviderScope(
     overrides: [
       databaseProvider.overrideWithValue(database),
       deviceTimeZoneProvider.overrideWith(() => DeviceTimeZoneController(initial: 'Europe/Madrid')),
       nowProvider.overrideWithValue(now),
-      initialSettingsProvider.overrideWithValue(const AppSettings()),
+      initialSettingsProvider.overrideWithValue(settings),
     ],
     child: MaterialApp(
       locale: const Locale('en'),
@@ -203,6 +203,28 @@ void main() {
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('desktop settings sidebar follows the navigation side setting', (tester) async {
+    tester.view.physicalSize = const Size(1280, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    for (final side in SundialNavSide.values) {
+      await tester.pumpWidget(host(const SettingsPage(), settings: AppSettings(navSide: side)));
+      await tester.pumpAndSettle();
+
+      final sidebarBack = tester.getCenter(find.byIcon(Icons.chevron_left));
+      final paneRow = tester.getCenter(find.text('Theme'));
+      expect(
+        sidebarBack.dx < paneRow.dx,
+        side == SundialNavSide.left,
+        reason: '${side.name} sidebar should sit ${side.name} of the settings pane',
+      );
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(seconds: 1));
+    }
   });
 
   testWidgets('desktop settings search opens the matching row in the pane', (tester) async {
