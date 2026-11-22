@@ -13,6 +13,32 @@ not deliver `BOOT_COMPLETED` to the app. The widget and OEM battery checks still
 need the user. Checkboxes below reflect that run; unchecked boxes are not
 passes.
 
+## 2026-11-21 UI and replica verification
+
+Run on the HUAWEI MAR-LX3A (Android 10) with debug 0.9.0 and the Linux debug
+bundle on the same LAN. This pass covered the walkthrough fixes and the v14
+replica path, not the notification, reboot or battery items.
+
+- [x] Today, search, reminder labels, stats, tags, settings, phone Plan modes
+      and space pages match the fixes in `docs/refs/THINGS_TO_FIX.md` at 360 dp.
+- [x] Spanish navigation, Devices, nearby pairing and device-address screens
+      fit at 360 dp.
+- [x] The Spanish search hint fits after the second shortening.
+- [x] Manual host/port pairing UI is present; the identity is the phone name,
+      not `localhost`; the paired endpoint renders as IPv4 plus port.
+- [x] An entry created on the phone reached the desktop through a scheduled
+      pull. Its completion and deletion propagated (soft delete plus
+      tombstone) without opening the Devices page.
+- [x] The phone Home inventory shows the desktop's replicated “Huevos” row.
+- [ ] Clean-pair approval/rejection, source replacement, IPv6-only endpoints
+      and image sync were not re-run because the devices were already paired.
+- [ ] Notification, reboot, battery, widget and timezone items were not re-run
+      in this pass. The 2026-11-09 results and the remaining failures above
+      still stand.
+
+Desktop screenshots are unavailable in this Wayland session; the desktop pass
+was launch, logs and database verification.
+
 ## Emulator baseline (already verified)
 
 On 2026-11-09, on a Pixel 9 emulator (Google Play image) with a debug build of
@@ -103,6 +129,8 @@ the home-screen widget.
 Manual host/port is the supported fallback here; the phone reports "Network
 discovery is unavailable" and mDNS could not be used.
 
+Old code-display flow (2026-11-09 run, before the pairing request rework):
+
 - [x] Set a username and PIN on both devices. The PIN is at least four digits.
 - [x] On device A, open Devices, show a code, and unlock with the PIN.
 - [x] Device B finds A over mDNS, or connects with A's address and port.
@@ -114,6 +142,98 @@ discovery is unavailable" and mDNS could not be used.
       airplane mode off and refresh; A's snapshot returns.
 - [x] Unpair on one device and verify queries are rejected and the cached
       snapshot is removed.
+
+Pairing request flow (protocol 4, started 2026-11-21):
+
+- [x] Both devices use the same username and each has its own PIN.
+- [x] On A, open Devices, send a pairing request to B (discovered, or B's
+      address and port from B's Devices page).
+- [ ] B shows the approval card while Sundial is open. The device name,
+      fingerprint and six-digit code match on both screens.
+- [ ] Reject on B; A shows that B rejected the request.
+- [ ] Send again and approve on B with B's PIN. Both devices report the pairing
+      and the Devices page offers the source choice for the two plans.
+- [ ] Send a request with a different username on one device; it is refused with
+      a "same username" message.
+- [ ] Leave a request unanswered for five minutes; A reports that it expired.
+- [ ] Close Sundial on B and send a request from A; A reports the expiry and the
+      user must open Sundial on B. This is the documented background limit.
+
+Notes from the 2026-11-21 pairing start:
+
+- The first attempt used the old protocol-2 Linux build. Both devices must run
+  the current build; `/sundial/v1/info` reports protocol 4.
+- Avahi on Linux advertised the desktop's IPv6 link-local address first, while
+  the server listens on IPv4, so the phone showed "Could not reach the device".
+  The fix advertises the bound IPv4 in the `ip4` TXT attribute and prefers it on
+  the client. The nearby list now shows the IPv4 address.
+
+## Replica sync (v14, not yet run on a physical second device)
+
+Use two physical devices or one device plus the Linux desktop. Automated tests
+cover the mesh, replacement, rollback and transport; this pass validates the
+real UI and LAN behavior.
+
+- [x] Both devices run protocol 4 and the same username.
+- [x] Nearby devices shows an animated search state and resolves the desktop
+      over IPv4 (not the IPv6 link-local address).
+- [x] A pairing request from the phone reaches the desktop's approval card.
+- [ ] Approve the request on the desktop with the desktop PIN and verify the
+      six-digit code matches on both screens.
+- [ ] On B, choose "Use A's plan", enter B's PIN. B reports that a backup was
+      written, identity/pairing/device-local settings are intact, and A's
+      entries, shifts and home rows appear in B's normal screens.
+- [ ] A's plan is unchanged by the replacement.
+- [ ] Create an entry on B and pull on A; it appears. Edit different fields on
+      both while offline, then pull both ways; both edits survive.
+- [ ] Delete a row on A and pull on B; it disappears. Edit that row on B before
+      pulling the delete; the newer edit restores it on both.
+- [ ] Complete the same occurrence on both devices; one completion row remains
+      and both show it done.
+- [ ] Close B, add data on A, reopen B; B catches up on start. Turn A off; B
+      still opens and edits, and its Devices card shows A's error.
+- [ ] Try "Replace this device from A" with the wrong PIN; it is refused and B's
+      plan is unchanged.
+- [ ] With three devices, pair A–B, A–C and B–C. A change on A reaches C only
+      after A–C is paired; B does not relay it. The Devices page lists the
+      known-but-not-paired device with a pair action.
+- [ ] Unpair one link and verify the missing-link behavior; pair again and
+      verify the device catches up.
+
+The old `/sundial/v1/query` snapshot endpoint and `remote_snapshot_records` are
+kept for one release and are no longer read by the Devices page.
+
+## Context and project images (schema v15, protocol 4)
+
+Prerequisite: both devices run the same build. A protocol-3 peer is refused with
+the "needs a Sundial update" message. Use the existing context/project editor;
+there is no new picker.
+
+- [ ] Add or change a context image on the desktop, then pull on the phone. The
+      image appears in the phone's context card and detail page, sourced from
+      the phone's own `media/cache/<sha256>.png`, not the desktop path.
+- [ ] Do the same for a project image.
+- [ ] Replace the image on the desktop and pull on the phone. The phone shows
+      the new picture; while the fetch is pending the card shows the icon
+      fallback, never the old picture.
+- [ ] Remove the image on the desktop and pull on the phone. The phone falls
+      back to icon and color; the old cache file may remain on disk.
+- [ ] Turn the phone's Wi-Fi off, change or remove the image on the desktop,
+      turn Wi-Fi on, and pull. The phone converges without user action.
+- [ ] Stop the desktop while the phone still needs an image. The row is already
+      editable and the phone shows the icon fallback; a later pull retries and
+      fetches the image. The Devices card may show a media error until then.
+- [ ] On the phone, open Devices and replace its plan from the desktop after
+      choosing a PIN. Context and project images are present after the
+      replacement, and identity/pairing still work.
+- [ ] Repeat the replacement with the desktop's media cache removed (for
+      example after a fresh install without its media folder). The replacement
+      aborts before clearing the phone and the phone's plan is unchanged.
+- [ ] Delete all data on the phone and confirm contexts/projects and
+      `media/cache` are gone, then restore a v15 backup and confirm images and
+      ids return.
+- [ ] Import a v14 backup (no `imageMediaId`) and confirm ids are computed and
+      images still show and sync.
 
 ## MCP
 

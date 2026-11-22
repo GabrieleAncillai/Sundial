@@ -35,8 +35,8 @@ git clone https://github.com/InlitX/streak.git ../Streak
 | Home inventory, shopping and maintenance | `lib/services/food_library.dart`, `assets/data/foods.tsv`, `lib/screens/nutrition/food.dart` (seeded library, search, picker and portion/measure flow) | none | Neither reference has a planner inventory. The seeded household catalog, search, art tiles and measure picker adapt the GymMane nutrition library pattern. Product variants, reference categories/locations/units, expiry/minimum stock, inventory-linked shopping suggestions and gadget service logs are Sundial-specific and live in `features/home_inventory` and schema v13. |
 | ICS import | `lib/services/workout_import.dart` for local file-picking patterns | `lib/services/import_service.dart` for validation and dedupe patterns | No reference implements iCalendar. The parser is Sundial-specific and deliberately narrow. |
 | Sleep window and shift checklists | none | none | New planner domain; pure calculation in `sundial_core`, UI in `features/sleep` and `features/shifts`. |
-| LAN pairing, query and MCP | none | `lib/services/auto_sync.dart`, `lib/services/folder_sync.dart` (shared-folder backup exchange only) | Neither reference has LAN pairing or MCP. Sundial uses standard TLS pinning, PBKDF2, HMAC and a nonce cache in `features/sync`; the richer snapshot is persisted read-only. The MCP adapter exposes the v0.9 tool set with `Mcp-Session-Id` and one-message SSE responses. |
-| Device / desktop behavior | `lib/services/device_kind.dart` | `lib/services/desktop_window.dart`, `lib/core/utils/responsive.dart` | Phone-first, desktop-aware. |
+| LAN pairing, query and MCP | none | `lib/services/auto_sync.dart`, `lib/services/folder_sync.dart` (shared-folder backup exchange only) | Neither reference has LAN pairing or MCP. Sundial uses standard TLS pinning, PBKDF2, HMAC and a nonce cache in `features/sync`; pairing is an in-app request approved with the local PIN, and the current snapshot is persisted read-only. The v14 target in `docs/refs/SYNC_REWORK.md` is a pull-only replica with field-level LWW. The MCP adapter exposes the v0.9 tool set with `Mcp-Session-Id` and one-message SSE responses. |
+| Device / desktop behavior | `lib/services/device_kind.dart` | `lib/services/desktop_window.dart`, `lib/core/utils/responsive.dart` | Phone-first, desktop-aware. Sundial adds `lib/core/window/window_chrome.dart` and the Linux runner frame policy; Streak only toggles fullscreen. |
 | Build and release | `.github/workflows/build-apk.yml` | `.github/workflows/build-apk.yml`, `.github/workflows/linux.yml`, `fdroid/com.streak.app.yml`, `fastlane/` | Split APKs, GitHub Releases, F-Droid metadata, signing docs. |
 | Tests | `test/` | `test/` | Copy the test style and coverage areas. |
 
@@ -71,11 +71,13 @@ git clone https://github.com/InlitX/streak.git ../Streak
   only the local PIN because the planner must stay account-free and portable;
   the lock hash is excluded from backups and there is no recovery code.
 - **LAN pairing, query and MCP.** Streak has a shared-folder backup exchange,
-  not LAN discovery. Sundial implements pinned TLS, a short-code pairing
-  handshake, signed read-only queries, persisted snapshots and a loopback MCP
-  adapter with the full tool set and session ids. These stay in
-  `lib/features/sync` and `lib/features/mcp`. See the v0.4 and v0.9 deviation
-  notes in `docs/full-docs.md`.
+  not LAN discovery. Sundial implements pinned TLS, an in-app pairing request
+  approved with the local PIN plus a short visual code, signed read-only
+  queries, persisted snapshots and a loopback MCP adapter with the full tool
+  set and session ids. These stay in `lib/features/sync` and
+  `lib/features/mcp`. The v14 target is a pull-only replica with field-level
+  LWW; see `docs/refs/SYNC_REWORK.md` and the v0.4 and v0.9 deviation notes in
+  `docs/full-docs.md`.
 - **Search and the Android widget.** Neither reference has a global search
   across entries, tags and household items, or a widget with this data shape.
   Search uses a Drift query in `lib/services/app_database.dart`; the widget
@@ -97,6 +99,12 @@ git clone https://github.com/InlitX/streak.git ../Streak
   share time, so a collision stays visible without a seam or a stepped outline.
   The full-surface Plan month and its fold into the week/day timeline are also
   planner-specific; Streak's month grid is a compact activity picker.
+- **Desktop window chrome.** GymMane and Streak are mobile-first; Streak's
+  `lib/services/desktop_window.dart` only toggles fullscreen. Sundial's Linux
+  runner selects the frame in `linux/runner/my_application.cc` and
+  `lib/core/window/window_chrome.dart` pushes the app palette to GTK. This is a
+  platform-layer adaptation, not a new visual pattern. See the window-chrome
+  note in `docs/full-docs.md`.
 - **Stats and report export.** Streak has habit statistics; neither reference
   has a Clockify-style tracked-time report. The dashboard uses Sundial data and the
   PDF/CSV writer lives in `lib/features/stats/report_writer.dart`.

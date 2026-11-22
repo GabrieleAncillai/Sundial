@@ -4,8 +4,253 @@ Keep this file current. A fresh context window should be able to resume from it.
 
 ## Current milestone
 
-Schema v13 and the Home rework are implemented and green. See the dated entry
-below and section 4.2 of `docs/full-docs.md`.
+The sync rework is underway. Phase 0 through Phase 5 of
+`docs/refs/SYNC_REWORK.md` shipped on 2026-11-21, including content-addressed
+media sync. The remaining work is the real-device multi-device and image pass,
+removing the transitional read-only snapshot path, and the optional Phase 4
+background listener.
+
+## 2026-11-21 Device verification and tree cleanup
+
+- **Phone pass.** HUAWEI MAR-LX3A, Android 10, debug 0.9.0 at 360 dp. Verified
+  the P1 and P2 layouts, the Spanish six-tab bar, the phone Month/Week/Day
+  switch, the job-page task action, the Devices copy, manual host/port entry,
+  the non-localhost identity and Spanish Devices/pairing screens at 360 dp.
+- **One regression found and fixed.** The first Spanish search hint still
+  ellipsized on the device. It is now `Busca entradas, etiquetas` and was
+  re-checked on the phone. `test/l10n_test.dart` follows the new string.
+- **Replica sync.** Phone and desktop (protocol 4) converged. A probe entry
+  created on the phone arrived on the desktop through the scheduled pull; the
+  status change and then the soft delete plus tombstone also arrived without
+  opening Devices. The phone shows the desktop's “Huevos” inventory row.
+- **Desktop pass.** The Linux debug bundle starts and syncs on the same LAN.
+  Wayland blocks the available screenshot tools, so the desktop check is
+  launch, logs and database verification, not a visual pass.
+- **Not run.** Clean-pair approval/rejection, source replacement, IPv6-only
+  endpoint display, image sync and the notification/reboot/battery/widget
+  checklist remain open.
+- **Validation.** `flutter analyze --no-fatal-infos` clean; 379 app tests and
+  107 core tests pass; format check clean; Linux debug and Android debug builds
+  pass.
+
+## 2026-11-21 Walkthrough P3 product decisions
+
+- **Phone Week view.** Plan now offers Month, Week and Day on phones. Week uses
+  the new `WeekAgenda`, a vertical seven-day list extracted from the old Week
+  screen, instead of squeezing the desktop grid into 360 dp. Below 520 dp the
+  view switch moves to its own toolbar row so all three segments fit.
+- **Space pages.** The empty state leads with “Add a task” (prefilled to that
+  space) and keeps “Create the first one” as the secondary action. The Home hint
+  now says inventory and shopping work without a home context.
+- **Docs.** `README.md` describes the phone week agenda. The P3 entries are
+  marked fixed in `docs/refs/THINGS_TO_FIX.md`.
+- **Validation.** `flutter analyze --no-fatal-infos` clean; 379 app tests and
+  107 core tests pass; format check clean; Linux debug and Android debug
+  builds pass. New coverage in `test/things_to_fix_p3_test.dart`.
+
+## 2026-11-21 Walkthrough P2 fixes
+
+- **Stats.** The BY DAY card shows “No data in this range.” when every bar is
+  zero instead of painting three-pixel bars that disappear into the card.
+- **Terminology.** The tag manager, tag editor and entry chips now use the
+  existing Tags strings (`tagsManager`, `addTag`, `editTag`, `tagName`,
+  `noTags`) instead of the inventory category strings.
+- **Bottom navigation.** Spanish uses “Datos”; labels honor text scaling up to
+  1.3× and then shrink to the slot, so a six-tab bar no longer ellipsizes.
+- **Settings rows.** `SettingsNavRow` gained `valueBelow`; the time-zone row
+  puts the zone id under the title, leaving the subtitle its full two lines.
+- **Page subtitles and search.** `SundialPageHeader` subtitles wrap to two
+  lines, and the search hint is shortened in both languages.
+- **Shift editor header.** Added a check action with the `savePattern`
+  tooltip; it shares `_save` with the bottom button.
+- **Validation.** `flutter analyze --no-fatal-infos` clean; 377 app tests and
+  107 core tests pass; format check clean; Linux debug and Android debug
+  builds pass. New coverage in `test/things_to_fix_p2_test.dart`, plus the
+  header-save case in `test/shift_editor_test.dart`.
+
+## 2026-11-21 Walkthrough P1 fixes
+
+- **Today header.** Below 420 dp the List/Timeline switch moves to its own row,
+  so the weekday keeps its display size instead of wrapping mid-word.
+- **Today empty state.** The progress card is hidden when there are no tasks and
+  the list/timeline fallbacks were removed, leaving one empty-state card.
+- **Search.** The prompt is scrollable and goes compact when the keyboard
+  shrinks the viewport, so it no longer overflows above the keyboard.
+- **Reminders.** English and Spanish ARBs use ICU plurals for minutes, hours
+  and days; “1 hour before” is now singular.
+- **Shift editor fields.** Added `SundialFieldLabel` and `SundialTextField`, moved
+  `SundialDateField` to the caption-above-control idiom, and applied it to the
+  pattern name, anchor date, slot label and checklist label. The form has a top
+  inset so the first label is not clipped.
+- **Validation.** `flutter analyze --no-fatal-infos` clean; 370 app tests and
+  107 core tests pass; format check clean; Linux debug and Android debug
+  builds pass. New coverage in `test/things_to_fix_p1_test.dart`,
+  `test/l10n_test.dart` and `test/shift_editor_test.dart`.
+
+## 2026-11-21 Content-addressed media sync (Design B)
+
+- **Identity and cache.** Context/project images are identified by the lowercase
+  SHA-256 of their PNG bytes. Schema v15 adds `image_media_id` to both tables and
+  a device-local `media_cache_records` index. `MediaStore` keeps immutable files
+  at `.../media/cache/<sha256>.png`; editor deletion refuses cache paths so a
+  shared file survives.
+- **Merge and payloads.** `image` is an atomic merge group on contexts and
+  projects. `image_path` remains device-local and is stripped from snapshots,
+  changes, media requests and media responses. Local display paths follow the
+  merged id: a cache path when the bytes arrived, null while pending.
+- **Protocol 4.** Added signed, paired-only `POST /sundial/v1/sync/media`.
+  Requests carry 1–32 hashes (`^[0-9a-f]{64}$`); responses carry base64 PNG data
+  or `missing`. The server serves only registered cache files, verifies the hash,
+  caps items at 4 MiB and responses at 8 MiB, and never accepts a path. Pairing
+  now refuses protocol-3 peers.
+- **Pull and replacement.** After a normal pull the engine fetches missing ids,
+  verifies and installs them, and links rows to a local path. A fetch failure is
+  a per-peer media error; the ids stay pending and are retried on the next pull.
+  Source replacement stages and verifies every image before the target is
+  cleared, and aborts untouched if any image cannot be verified. Replacement
+  keeps the local media cache.
+- **Backups.** Schema 15. Context/project JSON carries `imageMediaId`; the media
+  map carries display bytes or cache bytes when the display copy is gone. Import
+  rebuilds `media_cache_records`; v14 backups compute ids from restored bytes.
+- **Migration.** The real v14→v15 test rewinds a file, keeps real display files
+  and verifies backfill, cache files and image field versions. Missing and
+  corrupt files leave ids null without failing the upgrade.
+- **Validation.** `flutter analyze --no-fatal-infos` clean; 365 app tests and 107
+  core tests pass; Linux debug bundle and Android debug APK build. New coverage:
+  `test/media_store_test.dart`, image add/replace/remove/retry in
+  `test/sync_engine_test.dart`, replacement with images and abort in
+  `test/sync_replacement_test.dart`, mesh convergence/no-relay in
+  `test/sync_mesh_test.dart`, endpoint security in `test/lan_test.dart`, backup
+  v15/v14 in `test/backup_test.dart`, and v14→v15 in `test/migration_test.dart`.
+- **Remaining.** The physical-device image checklist in
+  `docs/device-checklist.md` still needs the user's run.
+
+## 2026-11-21 Sync rework Phase 3: replacement, scheduling and status UI
+
+- **Scheduled replica pulls.** `SyncService` now pulls each paired peer on
+  start, resume, discovery, the five-minute timer and manual refresh. Pulls are
+  serialized per device, one peer never blocks another, and a failed peer keeps
+  its own error and cursor.
+- **Source replacement.** A paired peer can replace this device after the local
+  PIN is entered. The source snapshot is staged page by page in memory and
+  validated; a backup is written first when this device has user data and its
+  failure aborts the replacement. The clear-and-apply runs in one transaction,
+  adopts the source dataset and `weekStart`, generates a new node id and epoch,
+  moves the HLC past the source and records the source cursor. Identity,
+  pairing records, MCP token and device-local settings survive. A malformed
+  stage leaves the target untouched.
+- **Devices page.** The read-only snapshot card is replaced by per-peer sync
+  status: last pull, syncing, error, a “different plan” source choice with the
+  PIN-gated replace action, and a “replace this device from …” action. Devices
+  learned from peers but not directly paired appear in a roster section with a
+  pair action.
+- **Side effects.** The app shell listens to `SyncService.applyEvents` and
+  rebuilds the reminder queue, reloads `weekStart` and refreshes the Android
+  home widget after a remote apply.
+- **Mesh coverage.** Tests cover three- and four-device convergence, the
+  missing-link rule (a peer never relays another device's changes), replacement
+  cursor continuation, backup abort, rollback, PIN rejection and
+  identity/pairing preservation.
+- **Discovery hardening.** mDNS now advertises the server's bound IPv4 in a
+  TXT `ip4` attribute and clients prefer it over the resolved host. Avahi on
+  Linux was returning an IPv6 link-local address that the IPv4-only listener
+  could not answer, which surfaced as “Could not reach the device”. The Linux
+  broadcast no longer sets an Avahi host override.
+- **Discovery feedback.** The Nearby devices screen now shows an animated
+  search state while mDNS is looking, a bounded four-second search card with a
+  manual-address hint, a spinner on the refresh action, and a clear
+  no-results/fallback card. Verified on the Android device with the desktop
+  stopped and running.
+- **Validation.** `flutter analyze --no-fatal-infos` clean; 332 app tests and
+  107 core tests pass; the Linux debug bundle and Android debug APK build. The
+  updated debug APK was installed on the MAR-LX3A, the new Devices page and
+  identity setup were exercised, and the on-device DB is schema v14. Nearby
+  discovery now resolves the desktop over IPv4 and a pairing request reaches
+  the desktop's approval card. A two-physical-device sync pass is still
+  required.
+- **Transitional.** The old `/sundial/v1/query` snapshot endpoint and
+  `remote_snapshot_records` are kept for one release because the MCP adapter
+  still shares `remote_payload.dart`. The Devices UI no longer reads them; the
+  service only refreshes the preview when a peer serves a different dataset.
+  Removing them is a follow-up once the MCP payload helpers move.
+
+## 2026-11-21 Sync rework Phase 2: v14 replica foundation
+
+- **Schema v14.** Added `sync_device_state_records` (node id, dataset id,
+  epoch, persisted HLC), `sync_change_records` (local edit feed),
+  `sync_field_version_records`, `sync_tombstone_records` and
+  `sync_peer_state_records`. Shift slots and exceptions gained stable `sync_id`
+  UUIDs, backfilled during the migration. Existing soft-deleted rows get
+  tombstones; existing rows get one base field version.
+- **Merge mapping.** `sync_field_groups.dart` splits every synced table into
+  atomic merge groups (for example `entry.timing` and `homeItem.stock`),
+  serializes Drift values to JSON-safe primitives and produces canonical row
+  keys. Only `weekStart` is included from settings; context/project image paths
+  are stripped from payloads.
+- **Write capture.** `AppDatabase` records one HLC version per changed group
+  and appends a local change row inside the same transaction. It covers the
+  mutating paths added so far, including home side effects and time entries.
+  Remote applies, migrations, seeds and imports do not record.
+- **Per-row child writes.** Entry tags, reminders, shift slots/exceptions/
+  pattern tags and checklist items are added, updated or removed individually.
+  The `removedIds`/`previousIds` path stops a stale editor from deleting a
+  concurrent addition; a caller that predates sync ids falls back to the old
+  replace-all behavior instead of leaving stale rows.
+- **Store and engine.** `SyncStore` produces dependency-ordered snapshot pages
+  and delta pages, then applies a page in one transaction with per-field HLC
+  comparison, tombstones, resurrection, `createdAt` preservation and
+  `updatedAt` max. `SyncEngine` pulls a snapshot when needed, follows deltas,
+  and falls back to a fresh snapshot when a peer epoch changes.
+- **Transport.** Protocol 3 adds signed `POST /sundial/v1/sync/snapshot` and
+  `POST /sundial/v1/sync/changes`. Requests sign the body as well as the path;
+  the existing pinning, private-address bind, nonce cache and pair-only access
+  still apply. `LanClient` implements the transport.
+- **Validation.** `flutter analyze --no-fatal-infos` clean; 319 app tests and
+  107 core tests pass. New coverage is in `test/sync_clock_test.dart`,
+  `test/sync_store_test.dart`, `test/sync_engine_test.dart`, the v13→v14 case
+  in `test/migration_test.dart`, and the signed snapshot/changes case in
+  `test/lan_test.dart`. Linux and Android builds have not been rerun since the
+  Phase 2 edits.
+- **Not in this increment.** Source replacement and source selection, wiring
+  the engine into the five-minute scheduler, the Devices status UI,
+  notification/widget refresh after apply, and the 3/4-device mesh. The
+  read-only snapshot card is unchanged until Phase 3.
+
+## 2026-11-21 Sync rework: pairing requests and snapshot enrichment
+
+- **Pairing request flow (protocol 3).** The initiator picks a discovered
+  device or enters a manual host/port and sends a request carrying a one-time
+  code; the peer shows an in-app approval card with the device name, username,
+  fingerprint, code and plan status. Approval requires the peer's own PIN and
+  must match the local PIN hash; the PIN never leaves the device. Requests
+  expire after five minutes, only one is active at a time and the endpoint is
+  rate-limited. The old code-display/code-entry tabs are gone.
+- **Plan handshake.** A device-local `syncDatasetId` setting and `hasUserData`
+  detection travel in the request and the final pairing response. The approval
+  card warns when two devices hold different plans; full sync will ask for a
+  source before replacing one. `syncDatasetId` is excluded from backups so a
+  restore starts a new dataset. `hasUserData` ignores the seeded spaces,
+  default tags and home reference rows.
+- **Snapshot card.** The read-only LAN payload now also carries contexts,
+  projects and habits, and the Devices card shows context and inventory
+  counts. The misleading “discovery unavailable” empty state was replaced.
+- **Transport hardening.** `/sundial/v1/pair/request` and
+  `/sundial/v1/pair/request/{id}` are new; the final `/sundial/v1/pair` is
+  bound to the approved request and a one-time token. The server still binds to
+  a private address, the client still pins the certificate, and the query
+  replay cache and five-minute clock window are unchanged.
+- **Validation.** `flutter analyze --no-fatal-infos` clean; `flutter test`
+  (292 tests) and `(cd packages/sundial_core && dart test)` (107 tests) pass;
+  the Linux debug bundle and Android debug APK build; the ARB parity and
+  widget-literal scanners pass. New coverage is in `test/lan_test.dart`
+  (approval, rejection, expiry, one-at-a-time, rate limit, dataset handshake,
+  username mismatch), `test/sync_service_test.dart` (polling and completion),
+  `test/app_database_test.dart` (dataset id and user-data detection),
+  `test/backup_test.dart` (dataset exclusion) and `test/l10n_test.dart`.
+- **Next.** Phase 2: schema v14 (`sync_device_state`, change feed, field
+  versions, tombstones, peer cursors), HLC and merge-field mapping, write
+  capture in `AppDatabase`, per-row child writes, and the snapshot/delta
+  endpoints with transactional apply.
 
 ## 2026-11-17 Home inventory, shopping and gadgets rework
 

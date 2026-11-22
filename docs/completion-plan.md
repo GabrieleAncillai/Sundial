@@ -1,7 +1,13 @@
 # Sundial completion plan
 
-Status: active. Baseline v0.9 plus the schema v13 Home rework. Last updated
-2026-11-17.
+Status: active. Baseline v0.9 plus the schema v14 sync foundation. The sync
+rework in `docs/refs/SYNC_REWORK.md` supersedes the query-only sync scope;
+Phase 0 (manual address), Phase 1 (pairing request, PIN approval, plan
+handshake), Phase 2 (v14 schema, replica store, signed snapshot/changes
+transport) and Phase 3 (scheduled pulls, source replacement, Devices status
+and mesh tests) are shipped. Remaining: the real-device multi-device pass,
+removal of the transitional read-only snapshot path, and optional Phase 4
+background pairing. Last updated 2026-11-21.
 
 This is the working plan that takes Sundial from the v0.5 release candidate to a
 daily-usable v1.0. It is deliberately broader than the original v1.0 gate: the

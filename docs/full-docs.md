@@ -99,7 +99,10 @@ needs to separate them without creating a new app.
 **Current state.** Manual entries, today and week views, per-occurrence
 completion for recurring things. The shift-pattern engine and editor are built
 and tested, including cycles, multiple slots per day, overnight slots and date
-exceptions. A pattern can carry a checklist, and each shift date stores its own
+exceptions. The calendar's day sheet sets each work pattern to usual, working
+or free for one date; it writes a single date exception, so a weekend decided
+week by week and a monthly free Saturday stay single rows rather than one-off
+entries. A pattern can carry a checklist, and each shift date stores its own
 completions. Read-only ICS import is shipped with a documented RRULE subset.
 Overlapping shifts stay full-width blocks: the later shift paints its
 translucent fill over the earlier one, so the shared minutes read as a blended
@@ -301,52 +304,171 @@ Peers pin its SHA-256 fingerprint. The private key, PIN hash and pairing secrets
 live in `identity_records` and `paired_device_records`, which are deliberately
 excluded from JSON backups.
 
-Pairing flow:
+Pairing flow (protocol 4):
 
-1. One device opens a five-minute pairing session and shows a six-digit code.
-   Five failed attempts close the session.
-2. The other device fetches the host's certificate fingerprint and derives a
-   short-lived key from the code and **both** fingerprints with PBKDF2
-   (150,000 iterations). A man-in-the-middle with a different certificate
-   cannot produce the matching HMAC.
-3. The guest sends a random 32-byte shared key inside AES-256-GCM under that
-   pairing key, plus an HMAC over the binding message. The host verifies the
-   MAC, stores the key, and returns an HMAC acknowledgement under the new key.
+1. The initiating device fetches the peer's pinned certificate and sends a
+   pairing request with a one-time six-digit code and its own device identity
+   and plan id. One request is active at a time, it expires after five minutes,
+   and the endpoint is rate-limited.
+2. The peer shows an in-app approval card with the device name, username,
+   certificate fingerprint and the same code. Approval requires the local PIN;
+   the PIN is never sent.
+3. Both sides derive the short-lived pairing key from the code and **both**
+   fingerprints with PBKDF2 (150,000 iterations). The initiating device sends
+   the random 32-byte shared key inside AES-256-GCM under that key, bound by an
+   HMAC and a one-time approval token. The peer stores the key and returns an
+   HMAC acknowledgement under it.
 4. Every later request is signed with HMAC-SHA256 over method, path, timestamp,
    nonce and body hash. The server accepts a five-minute clock window and keeps
    a per-device nonce cache to reject replays.
+
+Pairing requests can only arrive while Sundial is running. The Devices page
+restores manual host/port entry for networks where mDNS is blocked. A
+background pairing service is a later, off-by-default extension. Protocol 4 adds
+content-addressed media sync; a device advertising protocol 3 is refused with
+the existing "needs a Sundial update" message because it cannot resolve context
+or project images.
 
 Unpairing removes the row locally; the other device keeps its own copy. There
 is no account to delete and no password-reset channel. The PIN is a local
 gate, not a defense against someone holding the unlocked device.
 
-### 5.4 LAN sync is query, not replication
+### 5.4 LAN sync: pull-only replicas (schema v15, protocol 4)
 
-Each app owns its data. The planner owns time. A companion app owns its own
-domain.
+Each app owns its copy of the planner. The decision in
+`docs/refs/SYNC_REWORK.md` supersedes the earlier query-only rule: paired
+devices hold full replicas and merge with a field-level LWW map plus
+tombstones. Phases 2 and 3 shipped on 2026-11-21: schema v14, the merge
+mapping, local change capture, the replica store/apply engine, signed
+snapshot/changes endpoints, scheduled pulls, source replacement and the Devices
+sync UI. Media sync (Design B) shipped on top of it with schema v15 and
+protocol 4: context and project images travel by content-addressed id over a
+signed, paired-only endpoint, never as paths. The old read-only snapshot
+endpoint and table are kept for one release because the MCP adapter still shares
+the payload helpers; no UI reads them.
 
-Sync is a query: Sundial asks a paired device for the data it needs over the LAN
-and shows a read-only snapshot. It never merges rows, resolves conflicts or
-writes into the remote database. The schema stays sync-ready (UUIDs,
-`updatedAt`, soft deletes), but replication and CRDTs are not part of v0.4.
+Target model:
 
-Shipped transport and discovery:
+- Every paired device holds the planner rows. Two to four devices form a full
+  pairwise mesh; there is no relay and no hub.
+- Each logical merge field carries a hybrid logical clock. Deletes are
+  tombstones; a newer edit restores a row.
+- Initial sync is an explicit source replacement, not an automatic merge. The
+  target is backed up, staged and replaced transactionally.
+- Only `weekStart` crosses devices as a setting. Identity, pairing keys,
+  certificates, MCP tokens, app-lock secrets, sync cursors, remote snapshots
+  and image paths stay device-local. `image_media_id` is the only image field
+  that travels.
+- The LAN server stays pull-only: it serves a snapshot and its own change feed
+  and never writes into the caller's database.
+
+Shipped in Phase 2 and Phase 3:
+
+- Schema v14 adds a device state row (sync node id, dataset id, epoch and the
+  persisted HLC), a local change feed, per-field versions, tombstones and peer
+  cursors. Shift slots and exceptions carry stable `sync_id` UUIDs.
+- Logical merge groups keep related columns together: `entry.timing`,
+  `entry.recurrence`, `entry.classification`, `homeItem.stock`,
+  `shiftSlot.slot` and the rest. Concurrent edits to different groups both
+  survive; two edits to the same group resolve by HLC and node id.
+- `SyncStore.snapshotPage` emits live rows and tombstones in dependency order
+  with a keyset cursor and a replay point captured at snapshot start.
+  `changesPage` emits only this device's local changes after a sequence.
+- `SyncStore` applies a page in one transaction: accepted field versions are
+  written, rejected groups are left alone, a newer tombstone hides a row and a
+  newer edit resurrects it. Re-applying a page is a no-op.
+- `SyncEngine` pulls a snapshot when the peer cursor is missing or the dataset
+  differs, follows deltas otherwise, and restarts from a snapshot when a peer
+  epoch changes.
+- `SyncService` pulls on start, resume, discovery, the five-minute timer and
+  manual refresh. Pulls are serialized per peer; one failure never blocks the
+  other peers or the local plan.
+- Source replacement is staged and transactional. The target verifies its PIN,
+  writes an automatic backup when it has user data, stages every snapshot page
+  and then clears and applies in one transaction. It adopts the source dataset
+  and `weekStart`, generates a new node id and epoch, moves its HLC past the
+  source and records the source cursor. Identity, pairing records, MCP token
+  and device-local settings survive.
+- The Devices page shows per-peer sync status, a “different plan” source
+  choice, a PIN-gated replace action, and a roster of devices learned from
+  peers but not yet paired directly.
+- After a remote apply, the app shell rebuilds the reminder queue, reloads
+  `weekStart` and refreshes the Android home widget. It does not play a sound
+  or notify for ordinary remote edits.
+- Protocol 3 added `POST /sundial/v1/sync/snapshot` and
+  `POST /sundial/v1/sync/changes`. Both require the paired shared key and sign
+  the request body, timestamp, nonce and path.
+- Protocol 4 adds `POST /sundial/v1/sync/media`, a signed, paired-only,
+  pull-only request of up to 32 SHA-256 ids. It serves only files registered in
+  the local `media_cache_records`, verifies the hash, caps each image at 4 MiB
+  and a response at 8 MiB, and never accepts a path. Unknown ids come back in
+  `missing`; oversized or malformed requests are rejected rather than truncated.
+
+Still shipped transport and discovery:
 
 - mDNS/DNS-SD advertisement and browsing through Bonsoir (`_sundial._tcp`), with a
-  manual host and port fallback when the platform daemon is unavailable.
+  manual host and port fallback when the platform daemon is unavailable. The
+  TXT record carries the bound IPv4; clients prefer it because Avahi can
+  otherwise resolve a dual-stack host to an IPv6 link-local address that the
+  IPv4 listener cannot answer.
 - HTTPS with the device's pinned self-signed certificate. The server binds to
   the LAN and uses an ephemeral port; only paired devices with a valid HMAC
   signature can query.
-- Read-only resources: `summary` (today's plan and next shifts), `entries`,
-  `shifts`, `spaces`, `tags`, `home` and `shopping`. Date ranges are capped at
-  366 days.
+- Interim read-only resources: `summary` (today's plan and next shifts),
+  `entries`, `shifts`, `spaces`, `tags`, `contexts`, `projects`, `habits`,
+  `home` and `shopping`. Date ranges are capped at 366 days.
 - A single opt-in master switch. When it is on, the app starts the server and
-  discovery on launch, refreshes on resume, refreshes when mDNS reports a peer,
-  and polls every five minutes. Manual refresh is always available.
-- Snapshots are kept in memory and shown on the Devices page. If a device is
-  offline, the local plan keeps working and the device shows its last error.
-- No cloud relay, no background traffic when the devices are not on the same
-  network, and no write path from one device to the other.
+  discovery on launch, pulls on resume and when mDNS reports a peer, and polls
+  every five minutes. Manual refresh is always available.
+- Peer status is kept in memory and per-peer cursors are persisted. If a device
+  is offline, the local plan keeps working and that device shows its own error.
+- The transitional `/sundial/v1/query` resource set still answers for one
+  release and the `remote_snapshot_records` table is no longer written by the
+  UI path; the Devices page uses replica sync status instead.
+- No cloud relay and no background traffic when the devices are not on the same
+  network.
+
+#### Context and project images (Design B)
+
+A media id is the lowercase SHA-256 hex of the PNG bytes. `context_records` and
+`project_records` gained an `image_media_id`; the existing `image_path` stays a
+device-local display path and is stripped from every snapshot, change, media
+request and media response. The `image` merge group is atomic, so a concurrent
+replacement resolves to the newest id.
+
+- Schema v15 adds `media_cache_records` (`media_id`, `path`, `mime`, `byte_size`,
+  `created_at`). It is a device-local index: it never syncs, never appears in a
+  JSON backup and is rebuilt on import and migration.
+- Files live at `.../media/cache/<sha256>.png`. The cache is immutable and may be
+  shared by several rows; replacing or removing an image never deletes a cache
+  file because a delayed peer may still ask for that hash. Editors only delete
+  their own display copies.
+- `saveContext` and `saveProject` read the display file inside the row
+  transaction, validate the PNG signature, hash it, ensure the cache copy and
+  write `image_media_id`. A missing or invalid file leaves the id null but never
+  fails the row save.
+- After a normal pull, `SyncEngine` fetches only the ids the local plan is
+  missing, verifies every hash, installs the cache file and links affected rows
+  to a local path. A row with a pending image has a null path, so the UI shows
+  the icon fallback instead of a broken or stale picture. Fetch failures are
+  recorded per peer and retried on the next pull; they never block row sync or
+  editing.
+- Source replacement is stricter: all staged image ids are fetched and verified
+  before the target is cleared. If any image cannot be verified, the replacement
+  aborts and the old plan stays intact, after the usual pre-replacement backup.
+- The v14 to v15 migration hashes every existing context/project display file
+  into the cache and sets `image_media_id`. Missing, corrupt or oversized files
+  leave that row's id null without failing the upgrade.
+- Backups include `imageMediaId`, include display bytes or (when the display
+  copy is gone) the cache bytes, and rebuild the local media index on import.
+  Schema 3-15 are accepted; a v14 backup computes ids from the restored bytes.
+- v1 keeps unreferenced cache files. There is no automatic garbage collection;
+  delete-all clears the index and the managed media folder.
+
+Neither GymMane nor Streak replicates images, so this is a documented deviation
+from the reference implementations. It reuses their small-app patterns for the
+editor and follows the existing signed LAN transport rather than adding a new
+network stack.
 
 ### 5.5 MCP is optional and local
 
@@ -413,10 +535,10 @@ does not update changed rows.
 
 ## 6. Data model (target)
 
-The migration path is v1 → … → v12 → v13. The shipped schema has the shape
+The migration path is v1 → … → v14 → v15. The shipped schema has the shape
 below, including tags, reference-data-backed home variants, shopping items,
 per-slot shift checklists, shift tags, per-pattern sleep buffers, maintenance
-logs and the local pairing identity.
+logs, the local pairing identity and content-addressed media.
 
 - **spaces**: id, name, color, position, timestamps, soft delete. Seeded with
   Personal, Work and Home. Spaces are rows, not an enum.
@@ -442,6 +564,13 @@ logs and the local pairing identity.
   same date; override replaces the cycle slots; extra adds to them.
 - **tags**: id, space id (nullable), name, color, position, timestamps, soft
   delete.
+- **contexts and projects**: grouping rows with name, description, color, icon
+  and a device-local `image_path`. `image_media_id` is the lowercase SHA-256 of
+  the PNG bytes and is the only image field that syncs; both tables use one
+  atomic `image` merge group.
+- **media_cache_records**: device-local index of `media_id`, cache path, mime,
+  byte size and creation time. It is not synced, is absent from backups and is
+  rebuilt on import and v14→v15 migration.
 - **entry_tags**: entry id, tag id.
 - **home_categories**: id, name, icon, color, position, timestamps, soft
   delete. Seeded with food, spices, household consumables, cleaning, personal
@@ -508,7 +637,9 @@ migrating existing data.
 - **Entry editor.** Title, space, type, date/time or all-day, timezone,
   recurrence, reminder offsets or times, tags, notes, delete.
 - **Shift pattern editor.** Cycle, anchor, timezone, per-day slots, exceptions,
-  preview and overlap validation.
+  preview and overlap validation. Adding a slot to an empty day copies the
+  nearest earlier day's slots (label, start and end); additional slots on a day
+  that already has one keep the default 09:00–17:00 times.
 - **Tags manager.**
 - **Home inventory and shopping list.**
 - **Settings.** Theme, locale, week start, work hours, default reminder lead
@@ -593,6 +724,36 @@ Release distribution follows the references: GitHub Releases and Obtainium
 first, optional F-Droid/IzzyOnDroid/OpenAPK, local APKs for testing. Split the
 APK per ABI. Release signing is a user-provided keystore step; a debug-signed
 build is not a production release.
+
+### Desktop window chrome
+
+Android uses the system status bar and is already themed from Flutter. Linux is
+different: GTK draws the window frame outside the Flutter canvas, and on Wayland
+GTK3 gets server-side decorations only from compositors that expose the KDE
+protocol; GNOME does not, and COSMIC differs. The runner therefore owns the
+frame:
+
+- GNOME-family desktops (GNOME, Zorin, Ubuntu, Budgie, Unity, Pantheon) get a
+  `GtkHeaderBar`. It keeps native drag, double-click maximize, the window menu,
+  tiling, accessibility and the user's `gtk-decoration-layout` button order.
+- KDE, Cinnamon/Mint, XFCE and MATE are left to the window manager, which draws
+  its own frame. If a compositor cannot provide server-side decorations, GTK
+  falls back to a header bar and the same styling applies.
+- `lib/core/window/window_chrome.dart` sends the resolved `SundialColors` and
+  brightness over `io.github.sundial/window` whenever the theme changes. The
+  runner installs a `GtkCssProvider` at application priority so the bar uses
+  `pageBg`, `border`, `text`, `surfaceHigh` and the danger tokens instead of the
+  desktop palette. The same brightness sets
+  `gtk-application-prefer-dark-theme`, which also fixes GTK-native dialogs.
+- High-contrast themes are left untouched; the palette provider is cleared so
+  the desktop accessibility theme keeps control.
+- If the channel is unavailable (tests or a build without the runner handler),
+  the Flutter side no-ops and GTK keeps its theme. Window chrome is cosmetic and
+  never blocks startup.
+
+This is a documented deviation: GymMane and Streak are mobile-first, and Streak's
+`DesktopWindow` only toggles fullscreen. The selection and styling live in
+`linux/runner/my_application.cc`.
 
 ## 9. Roadmap and checklists
 

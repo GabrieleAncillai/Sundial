@@ -149,7 +149,7 @@ Treat this as the baseline. Verify it before changing anything.
 - Settings for theme, English/Spanish, week start, hiding Work, work/quiet hours,
   defaults, sleep buffers, backup, sync/MCP switches and About.
 - Versioned JSON backup with a validated, transactional import (schema v8),
-  schema 3–8 upgrades, and automatic daily local copies with rotation.
+  schema 3–15 upgrades, and automatic daily local copies with rotation.
 - Home inventory, shopping list, low-stock flow, quick quantity adjustments,
   purchase history and interval maintenance with a dedicated due view.
 - CSV export/import for entries, shopping and inventory.
@@ -169,8 +169,13 @@ Treat this as the baseline. Verify it before changing anything.
   discovery and a five-minute timer.
 - Read-only snapshots on a Devices page, persisted across restarts; the local
   plan is never merged with a remote one and keeps working when a peer is
-  offline. The snapshot payload carries spaces, tags, the next week of entries
-  and shifts, inventory and shopping.
+  offline. The snapshot payload carries spaces, tags, contexts, projects,
+  habits, the next week of entries and shifts, inventory and shopping.
+- In-app pairing requests (protocol 4): the initiating device sends a
+  five-minute request with a one-time code, the peer approves locally with its
+  PIN, and the final key exchange is bound to the approved request and a
+  one-time token. A device-local dataset id and `hasUserData` flag travel with
+  the request; full replica sync uses them for source selection.
 - Local MCP endpoint on loopback with a bearer token, the full tool set,
   `Mcp-Session-Id` handling, one-message SSE responses and write tools behind a
   setting.
@@ -186,27 +191,61 @@ Treat this as the baseline. Verify it before changing anything.
 - A tagged release workflow for signed split-per-ABI APKs, a Linux bundle and
   checksums, with the keystore documented as a user-provided step.
 - Linux debug build and Android debug APK both pass.
-- Tests: 131 app/database/widget tests, 85 core tests, including real v1–v7
+- Sync rework Phase 2 and 3: schema v14 with a persisted HLC, local change feed,
+  per-field versions, tombstones and peer cursors; stable sync ids on shift
+  slots/exceptions; a field-group mapping and write capture in `AppDatabase`;
+  per-row child writes; dependency-ordered snapshot pages, delta pages,
+  transactional field-level apply and a pull engine; signed
+  `/sync/snapshot` and `/sync/changes` endpoints; scheduled per-peer pulls,
+  staged source replacement with backup/PIN/rollback, the Devices sync status
+  and source-choice UI, an advisory roster, and reminder/`weekStart`/widget
+  refresh after apply; mDNS advertises the bound IPv4 in the TXT record so an
+  IPv6 link-local resolution cannot break a pairing request.
+- Content-addressed media sync (Design B, protocol 4): schema v15 adds
+  `image_media_id` to contexts/projects and the device-local
+  `media_cache_records` index; the `image` merge group is atomic and
+  `image_path` stays stripped from every payload; `POST /sundial/v1/sync/media`
+  serves only registered `media/cache/<sha256>.png` files to paired devices,
+  with 32-id, 4 MiB item and 8 MiB response limits; normal pulls retry missing
+  images without blocking rows; source replacement verifies staged images or
+  aborts; backup v15 carries ids and bytes and rebuilds the index.
+- Tests: 365 app/database/widget tests, 107 core tests, including real v1–v15
   data migration tests, DST/travel scenarios, backup round-trip, older-schema
   upgrade and rejection, calendar navigation and semantics, shift checklists,
   ICS parsing/import/export, GymMane import, CSV, home tracking, app lock,
   custom times, quiet/work suppression, MCP tools/sessions/SSE, sync snapshot
   persistence, pairing crypto, TLS pinning, replay rejection, MCP auth, search,
-  widget data and the shift editor flow.
+  widget data, the shift editor flow, HLC ordering/skew, field-group merges,
+  delete/resurrection, idempotent apply, page rollback, source replacement,
+  three/four-device mesh convergence, the missing-link rule, payload secrecy,
+  media hashing/cache immutability, image add/replace/remove/retry, replacement
+  media abort, the media endpoint security boundaries and v14→v15 media
+  backfill.
 - CI in `.github/workflows/build.yml`: format check, analyze, both test suites,
   a Linux debug build and a debug APK build.
 - Zed tasks in `.zed/tasks.json` for deps, codegen, tests, lint, builds and
   device deploy.
 
-**Known gaps:** the v0.9 baseline is functionally green; only the v1.0 device
-verification, accessibility/contrast audit and signed release remain. The
-constraint audit is in `docs/compliance-audit.md`.
+**Known gaps:** the v0.9 baseline is functionally green; the v15 replica sync,
+Phase 3 replacement/scheduling and media sync are in place. Remaining: the
+real-device multi-device and image pass, removal of the transitional read-only
+snapshot path, and the optional Phase 4 background pairing. The constraint audit
+is in `docs/compliance-audit.md`.
+
+- The Devices page no longer reads the old read-only snapshot card, but
+  `/sundial/v1/query` and `remote_snapshot_records` remain for one release
+  because the MCP adapter still shares `remote_payload.dart`. Removing them
+  needs the MCP payload helpers moved first.
+- Real-device replica sync has not yet been observed across two physical
+  devices in this run; the mesh, replacement and transport are covered by
+  automated tests, and the new Devices page/identity setup was exercised on the
+  Android device. The two-device checklist still needs the user's pass.
 
 - Real-device notification delivery, reboot, battery optimization and
   timezone-change behavior still need the user's Android device checklist.
 - No dedicated Android `TIMEZONE_CHANGED` receiver; the queue rebuilds on
   resume and after the device zone is re-read.
-- Backup import accepts schemas 3 through 8; versions 1–2 are rejected. Import
+- Backup import accepts schemas 3 through 15; versions 1–2 are rejected. Import
   replaces the local plan rather than merging.
 - ICS import still does not support `BYHOUR`/`BYMINUTE`, multiple
   `BYMONTHDAY` values, `EXRULE`, or non-IANA zones outside the Windows alias
@@ -219,7 +258,7 @@ constraint audit is in `docs/compliance-audit.md`.
   HTTP is one SSE message per call, not a long-lived stream; sessions live in
   memory and `GET /mcp` is rejected.
 - mDNS depends on the platform daemon (Avahi on Linux, NSD on Android) and still
-  needs the user's real-device check. Pairing sessions live in memory and are
+  needs the user's real-device check. Pairing requests live in memory and are
   cancelled by an app restart.
 - LAN snapshots are persisted read-only and restored after a restart; they are
   never merged. A companion app's ContentProvider is not integrated because no
@@ -459,15 +498,27 @@ exists to pair devices the user owns, not to identify the user to a service.
 Pairing flow: one device shows a short code, the other enters it, both store a
 shared key. Use a standard pairing pattern; do not invent cryptography.
 
-### 10.3 LAN sync is query, not replication
+### 10.3 LAN sync is a pull-only replica
 
-Each app owns its data. The planner owns time. A companion app owns its domain.
+> Updated 2026-11-21: `docs/refs/SYNC_REWORK.md` supersedes the earlier
+> query-only rule. Phase 2 through Phase 5 shipped the v14 replica schema, the
+> store/engine, signed snapshot/changes/media endpoints, scheduled pulls,
+> staged source replacement, the Devices sync UI and protocol 4
+> content-addressed images (schema v15). The old read-only snapshot
+> endpoint/table are kept for one release and are no longer read by the UI.
+> The target is a full replica on every paired device with a field-level LWW
+> map and tombstones, a 2–4 device pairwise mesh, and an explicit source
+> replacement on first pairing. There is still no cloud, relay, account or
+> conflict dialog.
 
-The first version of sync is a query: Sundial asks a companion app for the data it
-needs over the LAN and shows it. No merge, no conflicts, no CRDT. If the same
-data is later edited on two devices, then real sync with per-record timestamps,
-tombstones and a conflict rule. The schema is already sync-ready: UUIDs,
-`updatedAt`, soft deletes.
+Each device owns a full copy of the planner rows. A peer only serves its own
+snapshot, change feed and registered media cache; it never writes into the
+caller's database. The schema is sync-ready: UUIDs, `updatedAt`, soft deletes
+and, from v14, HLC field versions, a local change feed and tombstones. Only
+`weekStart` is a synced setting; pairing keys, identity secrets, MCP tokens,
+app-lock data, sync cursors and image paths stay device-local. Context/project
+images sync by SHA-256 `image_media_id`; `image_path` and the image files never
+leave the device. The media cache is an index, not a synced table.
 
 Sync is **automatic when possible**:
 
