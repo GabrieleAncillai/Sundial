@@ -535,6 +535,17 @@ class $ContextRecordsTable extends ContextRecords
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _imageMediaIdMeta = const VerificationMeta(
+    'imageMediaId',
+  );
+  @override
+  late final GeneratedColumn<String> imageMediaId = GeneratedColumn<String>(
+    'image_media_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _positionMeta = const VerificationMeta(
     'position',
   );
@@ -589,6 +600,7 @@ class $ContextRecordsTable extends ContextRecords
     color,
     icon,
     imagePath,
+    imageMediaId,
     position,
     createdAt,
     updatedAt,
@@ -656,6 +668,15 @@ class $ContextRecordsTable extends ContextRecords
         imagePath.isAcceptableOrUnknown(data['image_path']!, _imagePathMeta),
       );
     }
+    if (data.containsKey('image_media_id')) {
+      context.handle(
+        _imageMediaIdMeta,
+        imageMediaId.isAcceptableOrUnknown(
+          data['image_media_id']!,
+          _imageMediaIdMeta,
+        ),
+      );
+    }
     if (data.containsKey('position')) {
       context.handle(
         _positionMeta,
@@ -721,6 +742,10 @@ class $ContextRecordsTable extends ContextRecords
         DriftSqlType.string,
         data['${effectivePrefix}image_path'],
       ),
+      imageMediaId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}image_media_id'],
+      ),
       position: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}position'],
@@ -754,6 +779,7 @@ class ContextRow extends DataClass implements Insertable<ContextRow> {
   final int color;
   final String icon;
   final String? imagePath;
+  final String? imageMediaId;
   final int position;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -766,6 +792,7 @@ class ContextRow extends DataClass implements Insertable<ContextRow> {
     required this.color,
     required this.icon,
     this.imagePath,
+    this.imageMediaId,
     required this.position,
     required this.createdAt,
     required this.updatedAt,
@@ -782,6 +809,9 @@ class ContextRow extends DataClass implements Insertable<ContextRow> {
     map['icon'] = Variable<String>(icon);
     if (!nullToAbsent || imagePath != null) {
       map['image_path'] = Variable<String>(imagePath);
+    }
+    if (!nullToAbsent || imageMediaId != null) {
+      map['image_media_id'] = Variable<String>(imageMediaId);
     }
     map['position'] = Variable<int>(position);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -803,6 +833,9 @@ class ContextRow extends DataClass implements Insertable<ContextRow> {
       imagePath: imagePath == null && nullToAbsent
           ? const Value.absent()
           : Value(imagePath),
+      imageMediaId: imageMediaId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imageMediaId),
       position: Value(position),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -825,6 +858,7 @@ class ContextRow extends DataClass implements Insertable<ContextRow> {
       color: serializer.fromJson<int>(json['color']),
       icon: serializer.fromJson<String>(json['icon']),
       imagePath: serializer.fromJson<String?>(json['imagePath']),
+      imageMediaId: serializer.fromJson<String?>(json['imageMediaId']),
       position: serializer.fromJson<int>(json['position']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -842,6 +876,7 @@ class ContextRow extends DataClass implements Insertable<ContextRow> {
       'color': serializer.toJson<int>(color),
       'icon': serializer.toJson<String>(icon),
       'imagePath': serializer.toJson<String?>(imagePath),
+      'imageMediaId': serializer.toJson<String?>(imageMediaId),
       'position': serializer.toJson<int>(position),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -857,6 +892,7 @@ class ContextRow extends DataClass implements Insertable<ContextRow> {
     int? color,
     String? icon,
     Value<String?> imagePath = const Value.absent(),
+    Value<String?> imageMediaId = const Value.absent(),
     int? position,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -869,6 +905,7 @@ class ContextRow extends DataClass implements Insertable<ContextRow> {
     color: color ?? this.color,
     icon: icon ?? this.icon,
     imagePath: imagePath.present ? imagePath.value : this.imagePath,
+    imageMediaId: imageMediaId.present ? imageMediaId.value : this.imageMediaId,
     position: position ?? this.position,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -885,6 +922,9 @@ class ContextRow extends DataClass implements Insertable<ContextRow> {
       color: data.color.present ? data.color.value : this.color,
       icon: data.icon.present ? data.icon.value : this.icon,
       imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
+      imageMediaId: data.imageMediaId.present
+          ? data.imageMediaId.value
+          : this.imageMediaId,
       position: data.position.present ? data.position.value : this.position,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -902,6 +942,7 @@ class ContextRow extends DataClass implements Insertable<ContextRow> {
           ..write('color: $color, ')
           ..write('icon: $icon, ')
           ..write('imagePath: $imagePath, ')
+          ..write('imageMediaId: $imageMediaId, ')
           ..write('position: $position, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -919,6 +960,7 @@ class ContextRow extends DataClass implements Insertable<ContextRow> {
     color,
     icon,
     imagePath,
+    imageMediaId,
     position,
     createdAt,
     updatedAt,
@@ -935,6 +977,7 @@ class ContextRow extends DataClass implements Insertable<ContextRow> {
           other.color == this.color &&
           other.icon == this.icon &&
           other.imagePath == this.imagePath &&
+          other.imageMediaId == this.imageMediaId &&
           other.position == this.position &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -949,6 +992,7 @@ class ContextRecordsCompanion extends UpdateCompanion<ContextRow> {
   final Value<int> color;
   final Value<String> icon;
   final Value<String?> imagePath;
+  final Value<String?> imageMediaId;
   final Value<int> position;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -962,6 +1006,7 @@ class ContextRecordsCompanion extends UpdateCompanion<ContextRow> {
     this.color = const Value.absent(),
     this.icon = const Value.absent(),
     this.imagePath = const Value.absent(),
+    this.imageMediaId = const Value.absent(),
     this.position = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -976,6 +1021,7 @@ class ContextRecordsCompanion extends UpdateCompanion<ContextRow> {
     required int color,
     this.icon = const Value.absent(),
     this.imagePath = const Value.absent(),
+    this.imageMediaId = const Value.absent(),
     this.position = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -995,6 +1041,7 @@ class ContextRecordsCompanion extends UpdateCompanion<ContextRow> {
     Expression<int>? color,
     Expression<String>? icon,
     Expression<String>? imagePath,
+    Expression<String>? imageMediaId,
     Expression<int>? position,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -1009,6 +1056,7 @@ class ContextRecordsCompanion extends UpdateCompanion<ContextRow> {
       if (color != null) 'color': color,
       if (icon != null) 'icon': icon,
       if (imagePath != null) 'image_path': imagePath,
+      if (imageMediaId != null) 'image_media_id': imageMediaId,
       if (position != null) 'position': position,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -1025,6 +1073,7 @@ class ContextRecordsCompanion extends UpdateCompanion<ContextRow> {
     Value<int>? color,
     Value<String>? icon,
     Value<String?>? imagePath,
+    Value<String?>? imageMediaId,
     Value<int>? position,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -1039,6 +1088,7 @@ class ContextRecordsCompanion extends UpdateCompanion<ContextRow> {
       color: color ?? this.color,
       icon: icon ?? this.icon,
       imagePath: imagePath ?? this.imagePath,
+      imageMediaId: imageMediaId ?? this.imageMediaId,
       position: position ?? this.position,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -1071,6 +1121,9 @@ class ContextRecordsCompanion extends UpdateCompanion<ContextRow> {
     if (imagePath.present) {
       map['image_path'] = Variable<String>(imagePath.value);
     }
+    if (imageMediaId.present) {
+      map['image_media_id'] = Variable<String>(imageMediaId.value);
+    }
     if (position.present) {
       map['position'] = Variable<int>(position.value);
     }
@@ -1099,6 +1152,7 @@ class ContextRecordsCompanion extends UpdateCompanion<ContextRow> {
           ..write('color: $color, ')
           ..write('icon: $icon, ')
           ..write('imagePath: $imagePath, ')
+          ..write('imageMediaId: $imageMediaId, ')
           ..write('position: $position, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -1203,6 +1257,17 @@ class $ProjectRecordsTable extends ProjectRecords
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _imageMediaIdMeta = const VerificationMeta(
+    'imageMediaId',
+  );
+  @override
+  late final GeneratedColumn<String> imageMediaId = GeneratedColumn<String>(
+    'image_media_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _positionMeta = const VerificationMeta(
     'position',
   );
@@ -1258,6 +1323,7 @@ class $ProjectRecordsTable extends ProjectRecords
     color,
     icon,
     imagePath,
+    imageMediaId,
     position,
     createdAt,
     updatedAt,
@@ -1331,6 +1397,15 @@ class $ProjectRecordsTable extends ProjectRecords
         imagePath.isAcceptableOrUnknown(data['image_path']!, _imagePathMeta),
       );
     }
+    if (data.containsKey('image_media_id')) {
+      context.handle(
+        _imageMediaIdMeta,
+        imageMediaId.isAcceptableOrUnknown(
+          data['image_media_id']!,
+          _imageMediaIdMeta,
+        ),
+      );
+    }
     if (data.containsKey('position')) {
       context.handle(
         _positionMeta,
@@ -1400,6 +1475,10 @@ class $ProjectRecordsTable extends ProjectRecords
         DriftSqlType.string,
         data['${effectivePrefix}image_path'],
       ),
+      imageMediaId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}image_media_id'],
+      ),
       position: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}position'],
@@ -1434,6 +1513,7 @@ class ProjectRow extends DataClass implements Insertable<ProjectRow> {
   final int color;
   final String icon;
   final String? imagePath;
+  final String? imageMediaId;
   final int position;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -1447,6 +1527,7 @@ class ProjectRow extends DataClass implements Insertable<ProjectRow> {
     required this.color,
     required this.icon,
     this.imagePath,
+    this.imageMediaId,
     required this.position,
     required this.createdAt,
     required this.updatedAt,
@@ -1466,6 +1547,9 @@ class ProjectRow extends DataClass implements Insertable<ProjectRow> {
     map['icon'] = Variable<String>(icon);
     if (!nullToAbsent || imagePath != null) {
       map['image_path'] = Variable<String>(imagePath);
+    }
+    if (!nullToAbsent || imageMediaId != null) {
+      map['image_media_id'] = Variable<String>(imageMediaId);
     }
     map['position'] = Variable<int>(position);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -1490,6 +1574,9 @@ class ProjectRow extends DataClass implements Insertable<ProjectRow> {
       imagePath: imagePath == null && nullToAbsent
           ? const Value.absent()
           : Value(imagePath),
+      imageMediaId: imageMediaId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imageMediaId),
       position: Value(position),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -1513,6 +1600,7 @@ class ProjectRow extends DataClass implements Insertable<ProjectRow> {
       color: serializer.fromJson<int>(json['color']),
       icon: serializer.fromJson<String>(json['icon']),
       imagePath: serializer.fromJson<String?>(json['imagePath']),
+      imageMediaId: serializer.fromJson<String?>(json['imageMediaId']),
       position: serializer.fromJson<int>(json['position']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -1531,6 +1619,7 @@ class ProjectRow extends DataClass implements Insertable<ProjectRow> {
       'color': serializer.toJson<int>(color),
       'icon': serializer.toJson<String>(icon),
       'imagePath': serializer.toJson<String?>(imagePath),
+      'imageMediaId': serializer.toJson<String?>(imageMediaId),
       'position': serializer.toJson<int>(position),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -1547,6 +1636,7 @@ class ProjectRow extends DataClass implements Insertable<ProjectRow> {
     int? color,
     String? icon,
     Value<String?> imagePath = const Value.absent(),
+    Value<String?> imageMediaId = const Value.absent(),
     int? position,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -1560,6 +1650,7 @@ class ProjectRow extends DataClass implements Insertable<ProjectRow> {
     color: color ?? this.color,
     icon: icon ?? this.icon,
     imagePath: imagePath.present ? imagePath.value : this.imagePath,
+    imageMediaId: imageMediaId.present ? imageMediaId.value : this.imageMediaId,
     position: position ?? this.position,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -1577,6 +1668,9 @@ class ProjectRow extends DataClass implements Insertable<ProjectRow> {
       color: data.color.present ? data.color.value : this.color,
       icon: data.icon.present ? data.icon.value : this.icon,
       imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
+      imageMediaId: data.imageMediaId.present
+          ? data.imageMediaId.value
+          : this.imageMediaId,
       position: data.position.present ? data.position.value : this.position,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -1595,6 +1689,7 @@ class ProjectRow extends DataClass implements Insertable<ProjectRow> {
           ..write('color: $color, ')
           ..write('icon: $icon, ')
           ..write('imagePath: $imagePath, ')
+          ..write('imageMediaId: $imageMediaId, ')
           ..write('position: $position, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -1613,6 +1708,7 @@ class ProjectRow extends DataClass implements Insertable<ProjectRow> {
     color,
     icon,
     imagePath,
+    imageMediaId,
     position,
     createdAt,
     updatedAt,
@@ -1630,6 +1726,7 @@ class ProjectRow extends DataClass implements Insertable<ProjectRow> {
           other.color == this.color &&
           other.icon == this.icon &&
           other.imagePath == this.imagePath &&
+          other.imageMediaId == this.imageMediaId &&
           other.position == this.position &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -1645,6 +1742,7 @@ class ProjectRecordsCompanion extends UpdateCompanion<ProjectRow> {
   final Value<int> color;
   final Value<String> icon;
   final Value<String?> imagePath;
+  final Value<String?> imageMediaId;
   final Value<int> position;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -1659,6 +1757,7 @@ class ProjectRecordsCompanion extends UpdateCompanion<ProjectRow> {
     this.color = const Value.absent(),
     this.icon = const Value.absent(),
     this.imagePath = const Value.absent(),
+    this.imageMediaId = const Value.absent(),
     this.position = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -1674,6 +1773,7 @@ class ProjectRecordsCompanion extends UpdateCompanion<ProjectRow> {
     required int color,
     this.icon = const Value.absent(),
     this.imagePath = const Value.absent(),
+    this.imageMediaId = const Value.absent(),
     this.position = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -1694,6 +1794,7 @@ class ProjectRecordsCompanion extends UpdateCompanion<ProjectRow> {
     Expression<int>? color,
     Expression<String>? icon,
     Expression<String>? imagePath,
+    Expression<String>? imageMediaId,
     Expression<int>? position,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -1709,6 +1810,7 @@ class ProjectRecordsCompanion extends UpdateCompanion<ProjectRow> {
       if (color != null) 'color': color,
       if (icon != null) 'icon': icon,
       if (imagePath != null) 'image_path': imagePath,
+      if (imageMediaId != null) 'image_media_id': imageMediaId,
       if (position != null) 'position': position,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -1726,6 +1828,7 @@ class ProjectRecordsCompanion extends UpdateCompanion<ProjectRow> {
     Value<int>? color,
     Value<String>? icon,
     Value<String?>? imagePath,
+    Value<String?>? imageMediaId,
     Value<int>? position,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -1741,6 +1844,7 @@ class ProjectRecordsCompanion extends UpdateCompanion<ProjectRow> {
       color: color ?? this.color,
       icon: icon ?? this.icon,
       imagePath: imagePath ?? this.imagePath,
+      imageMediaId: imageMediaId ?? this.imageMediaId,
       position: position ?? this.position,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -1776,6 +1880,9 @@ class ProjectRecordsCompanion extends UpdateCompanion<ProjectRow> {
     if (imagePath.present) {
       map['image_path'] = Variable<String>(imagePath.value);
     }
+    if (imageMediaId.present) {
+      map['image_media_id'] = Variable<String>(imageMediaId.value);
+    }
     if (position.present) {
       map['position'] = Variable<int>(position.value);
     }
@@ -1805,6 +1912,7 @@ class ProjectRecordsCompanion extends UpdateCompanion<ProjectRow> {
           ..write('color: $color, ')
           ..write('icon: $icon, ')
           ..write('imagePath: $imagePath, ')
+          ..write('imageMediaId: $imageMediaId, ')
           ..write('position: $position, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -7146,6 +7254,16 @@ class $ShiftSlotRecordsTable extends ShiftSlotRecords
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
+  static const VerificationMeta _syncIdMeta = const VerificationMeta('syncId');
+  @override
+  late final GeneratedColumn<String> syncId = GeneratedColumn<String>(
+    'sync_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _patternIdMeta = const VerificationMeta(
     'patternId',
   );
@@ -7206,6 +7324,7 @@ class $ShiftSlotRecordsTable extends ShiftSlotRecords
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    syncId,
     patternId,
     dayIndex,
     label,
@@ -7226,6 +7345,12 @@ class $ShiftSlotRecordsTable extends ShiftSlotRecords
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('sync_id')) {
+      context.handle(
+        _syncIdMeta,
+        syncId.isAcceptableOrUnknown(data['sync_id']!, _syncIdMeta),
+      );
     }
     if (data.containsKey('pattern_id')) {
       context.handle(
@@ -7281,6 +7406,10 @@ class $ShiftSlotRecordsTable extends ShiftSlotRecords
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
+      syncId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_id'],
+      )!,
       patternId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}pattern_id'],
@@ -7312,6 +7441,9 @@ class $ShiftSlotRecordsTable extends ShiftSlotRecords
 
 class ShiftSlotRow extends DataClass implements Insertable<ShiftSlotRow> {
   final int id;
+
+  /// Stable identity across devices. The local [id] stays device-local.
+  final String syncId;
   final String patternId;
   final int dayIndex;
   final String label;
@@ -7319,6 +7451,7 @@ class ShiftSlotRow extends DataClass implements Insertable<ShiftSlotRow> {
   final int endMinute;
   const ShiftSlotRow({
     required this.id,
+    required this.syncId,
     required this.patternId,
     required this.dayIndex,
     required this.label,
@@ -7329,6 +7462,7 @@ class ShiftSlotRow extends DataClass implements Insertable<ShiftSlotRow> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['sync_id'] = Variable<String>(syncId);
     map['pattern_id'] = Variable<String>(patternId);
     map['day_index'] = Variable<int>(dayIndex);
     map['label'] = Variable<String>(label);
@@ -7340,6 +7474,7 @@ class ShiftSlotRow extends DataClass implements Insertable<ShiftSlotRow> {
   ShiftSlotRecordsCompanion toCompanion(bool nullToAbsent) {
     return ShiftSlotRecordsCompanion(
       id: Value(id),
+      syncId: Value(syncId),
       patternId: Value(patternId),
       dayIndex: Value(dayIndex),
       label: Value(label),
@@ -7355,6 +7490,7 @@ class ShiftSlotRow extends DataClass implements Insertable<ShiftSlotRow> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ShiftSlotRow(
       id: serializer.fromJson<int>(json['id']),
+      syncId: serializer.fromJson<String>(json['syncId']),
       patternId: serializer.fromJson<String>(json['patternId']),
       dayIndex: serializer.fromJson<int>(json['dayIndex']),
       label: serializer.fromJson<String>(json['label']),
@@ -7367,6 +7503,7 @@ class ShiftSlotRow extends DataClass implements Insertable<ShiftSlotRow> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'syncId': serializer.toJson<String>(syncId),
       'patternId': serializer.toJson<String>(patternId),
       'dayIndex': serializer.toJson<int>(dayIndex),
       'label': serializer.toJson<String>(label),
@@ -7377,6 +7514,7 @@ class ShiftSlotRow extends DataClass implements Insertable<ShiftSlotRow> {
 
   ShiftSlotRow copyWith({
     int? id,
+    String? syncId,
     String? patternId,
     int? dayIndex,
     String? label,
@@ -7384,6 +7522,7 @@ class ShiftSlotRow extends DataClass implements Insertable<ShiftSlotRow> {
     int? endMinute,
   }) => ShiftSlotRow(
     id: id ?? this.id,
+    syncId: syncId ?? this.syncId,
     patternId: patternId ?? this.patternId,
     dayIndex: dayIndex ?? this.dayIndex,
     label: label ?? this.label,
@@ -7393,6 +7532,7 @@ class ShiftSlotRow extends DataClass implements Insertable<ShiftSlotRow> {
   ShiftSlotRow copyWithCompanion(ShiftSlotRecordsCompanion data) {
     return ShiftSlotRow(
       id: data.id.present ? data.id.value : this.id,
+      syncId: data.syncId.present ? data.syncId.value : this.syncId,
       patternId: data.patternId.present ? data.patternId.value : this.patternId,
       dayIndex: data.dayIndex.present ? data.dayIndex.value : this.dayIndex,
       label: data.label.present ? data.label.value : this.label,
@@ -7407,6 +7547,7 @@ class ShiftSlotRow extends DataClass implements Insertable<ShiftSlotRow> {
   String toString() {
     return (StringBuffer('ShiftSlotRow(')
           ..write('id: $id, ')
+          ..write('syncId: $syncId, ')
           ..write('patternId: $patternId, ')
           ..write('dayIndex: $dayIndex, ')
           ..write('label: $label, ')
@@ -7417,13 +7558,21 @@ class ShiftSlotRow extends DataClass implements Insertable<ShiftSlotRow> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, patternId, dayIndex, label, startMinute, endMinute);
+  int get hashCode => Object.hash(
+    id,
+    syncId,
+    patternId,
+    dayIndex,
+    label,
+    startMinute,
+    endMinute,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ShiftSlotRow &&
           other.id == this.id &&
+          other.syncId == this.syncId &&
           other.patternId == this.patternId &&
           other.dayIndex == this.dayIndex &&
           other.label == this.label &&
@@ -7433,6 +7582,7 @@ class ShiftSlotRow extends DataClass implements Insertable<ShiftSlotRow> {
 
 class ShiftSlotRecordsCompanion extends UpdateCompanion<ShiftSlotRow> {
   final Value<int> id;
+  final Value<String> syncId;
   final Value<String> patternId;
   final Value<int> dayIndex;
   final Value<String> label;
@@ -7440,6 +7590,7 @@ class ShiftSlotRecordsCompanion extends UpdateCompanion<ShiftSlotRow> {
   final Value<int> endMinute;
   const ShiftSlotRecordsCompanion({
     this.id = const Value.absent(),
+    this.syncId = const Value.absent(),
     this.patternId = const Value.absent(),
     this.dayIndex = const Value.absent(),
     this.label = const Value.absent(),
@@ -7448,6 +7599,7 @@ class ShiftSlotRecordsCompanion extends UpdateCompanion<ShiftSlotRow> {
   });
   ShiftSlotRecordsCompanion.insert({
     this.id = const Value.absent(),
+    this.syncId = const Value.absent(),
     required String patternId,
     required int dayIndex,
     this.label = const Value.absent(),
@@ -7459,6 +7611,7 @@ class ShiftSlotRecordsCompanion extends UpdateCompanion<ShiftSlotRow> {
        endMinute = Value(endMinute);
   static Insertable<ShiftSlotRow> custom({
     Expression<int>? id,
+    Expression<String>? syncId,
     Expression<String>? patternId,
     Expression<int>? dayIndex,
     Expression<String>? label,
@@ -7467,6 +7620,7 @@ class ShiftSlotRecordsCompanion extends UpdateCompanion<ShiftSlotRow> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (syncId != null) 'sync_id': syncId,
       if (patternId != null) 'pattern_id': patternId,
       if (dayIndex != null) 'day_index': dayIndex,
       if (label != null) 'label': label,
@@ -7477,6 +7631,7 @@ class ShiftSlotRecordsCompanion extends UpdateCompanion<ShiftSlotRow> {
 
   ShiftSlotRecordsCompanion copyWith({
     Value<int>? id,
+    Value<String>? syncId,
     Value<String>? patternId,
     Value<int>? dayIndex,
     Value<String>? label,
@@ -7485,6 +7640,7 @@ class ShiftSlotRecordsCompanion extends UpdateCompanion<ShiftSlotRow> {
   }) {
     return ShiftSlotRecordsCompanion(
       id: id ?? this.id,
+      syncId: syncId ?? this.syncId,
       patternId: patternId ?? this.patternId,
       dayIndex: dayIndex ?? this.dayIndex,
       label: label ?? this.label,
@@ -7498,6 +7654,9 @@ class ShiftSlotRecordsCompanion extends UpdateCompanion<ShiftSlotRow> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (syncId.present) {
+      map['sync_id'] = Variable<String>(syncId.value);
     }
     if (patternId.present) {
       map['pattern_id'] = Variable<String>(patternId.value);
@@ -7521,6 +7680,7 @@ class ShiftSlotRecordsCompanion extends UpdateCompanion<ShiftSlotRow> {
   String toString() {
     return (StringBuffer('ShiftSlotRecordsCompanion(')
           ..write('id: $id, ')
+          ..write('syncId: $syncId, ')
           ..write('patternId: $patternId, ')
           ..write('dayIndex: $dayIndex, ')
           ..write('label: $label, ')
@@ -7774,6 +7934,16 @@ class $ShiftExceptionRecordsTable extends ShiftExceptionRecords
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
+  static const VerificationMeta _syncIdMeta = const VerificationMeta('syncId');
+  @override
+  late final GeneratedColumn<String> syncId = GeneratedColumn<String>(
+    'sync_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _patternIdMeta = const VerificationMeta(
     'patternId',
   );
@@ -7843,6 +8013,7 @@ class $ShiftExceptionRecordsTable extends ShiftExceptionRecords
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    syncId,
     patternId,
     dateKey,
     type,
@@ -7864,6 +8035,12 @@ class $ShiftExceptionRecordsTable extends ShiftExceptionRecords
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('sync_id')) {
+      context.handle(
+        _syncIdMeta,
+        syncId.isAcceptableOrUnknown(data['sync_id']!, _syncIdMeta),
+      );
     }
     if (data.containsKey('pattern_id')) {
       context.handle(
@@ -7923,6 +8100,10 @@ class $ShiftExceptionRecordsTable extends ShiftExceptionRecords
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
+      syncId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_id'],
+      )!,
       patternId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}pattern_id'],
@@ -7959,6 +8140,9 @@ class $ShiftExceptionRecordsTable extends ShiftExceptionRecords
 class ShiftExceptionRow extends DataClass
     implements Insertable<ShiftExceptionRow> {
   final int id;
+
+  /// Stable identity across devices. The local [id] stays device-local.
+  final String syncId;
   final String patternId;
   final int dateKey;
 
@@ -7969,6 +8153,7 @@ class ShiftExceptionRow extends DataClass
   final String note;
   const ShiftExceptionRow({
     required this.id,
+    required this.syncId,
     required this.patternId,
     required this.dateKey,
     required this.type,
@@ -7980,6 +8165,7 @@ class ShiftExceptionRow extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['sync_id'] = Variable<String>(syncId);
     map['pattern_id'] = Variable<String>(patternId);
     map['date_key'] = Variable<int>(dateKey);
     map['type'] = Variable<String>(type);
@@ -7996,6 +8182,7 @@ class ShiftExceptionRow extends DataClass
   ShiftExceptionRecordsCompanion toCompanion(bool nullToAbsent) {
     return ShiftExceptionRecordsCompanion(
       id: Value(id),
+      syncId: Value(syncId),
       patternId: Value(patternId),
       dateKey: Value(dateKey),
       type: Value(type),
@@ -8016,6 +8203,7 @@ class ShiftExceptionRow extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ShiftExceptionRow(
       id: serializer.fromJson<int>(json['id']),
+      syncId: serializer.fromJson<String>(json['syncId']),
       patternId: serializer.fromJson<String>(json['patternId']),
       dateKey: serializer.fromJson<int>(json['dateKey']),
       type: serializer.fromJson<String>(json['type']),
@@ -8029,6 +8217,7 @@ class ShiftExceptionRow extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'syncId': serializer.toJson<String>(syncId),
       'patternId': serializer.toJson<String>(patternId),
       'dateKey': serializer.toJson<int>(dateKey),
       'type': serializer.toJson<String>(type),
@@ -8040,6 +8229,7 @@ class ShiftExceptionRow extends DataClass
 
   ShiftExceptionRow copyWith({
     int? id,
+    String? syncId,
     String? patternId,
     int? dateKey,
     String? type,
@@ -8048,6 +8238,7 @@ class ShiftExceptionRow extends DataClass
     String? note,
   }) => ShiftExceptionRow(
     id: id ?? this.id,
+    syncId: syncId ?? this.syncId,
     patternId: patternId ?? this.patternId,
     dateKey: dateKey ?? this.dateKey,
     type: type ?? this.type,
@@ -8058,6 +8249,7 @@ class ShiftExceptionRow extends DataClass
   ShiftExceptionRow copyWithCompanion(ShiftExceptionRecordsCompanion data) {
     return ShiftExceptionRow(
       id: data.id.present ? data.id.value : this.id,
+      syncId: data.syncId.present ? data.syncId.value : this.syncId,
       patternId: data.patternId.present ? data.patternId.value : this.patternId,
       dateKey: data.dateKey.present ? data.dateKey.value : this.dateKey,
       type: data.type.present ? data.type.value : this.type,
@@ -8073,6 +8265,7 @@ class ShiftExceptionRow extends DataClass
   String toString() {
     return (StringBuffer('ShiftExceptionRow(')
           ..write('id: $id, ')
+          ..write('syncId: $syncId, ')
           ..write('patternId: $patternId, ')
           ..write('dateKey: $dateKey, ')
           ..write('type: $type, ')
@@ -8084,13 +8277,22 @@ class ShiftExceptionRow extends DataClass
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, patternId, dateKey, type, startMinute, endMinute, note);
+  int get hashCode => Object.hash(
+    id,
+    syncId,
+    patternId,
+    dateKey,
+    type,
+    startMinute,
+    endMinute,
+    note,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ShiftExceptionRow &&
           other.id == this.id &&
+          other.syncId == this.syncId &&
           other.patternId == this.patternId &&
           other.dateKey == this.dateKey &&
           other.type == this.type &&
@@ -8102,6 +8304,7 @@ class ShiftExceptionRow extends DataClass
 class ShiftExceptionRecordsCompanion
     extends UpdateCompanion<ShiftExceptionRow> {
   final Value<int> id;
+  final Value<String> syncId;
   final Value<String> patternId;
   final Value<int> dateKey;
   final Value<String> type;
@@ -8110,6 +8313,7 @@ class ShiftExceptionRecordsCompanion
   final Value<String> note;
   const ShiftExceptionRecordsCompanion({
     this.id = const Value.absent(),
+    this.syncId = const Value.absent(),
     this.patternId = const Value.absent(),
     this.dateKey = const Value.absent(),
     this.type = const Value.absent(),
@@ -8119,6 +8323,7 @@ class ShiftExceptionRecordsCompanion
   });
   ShiftExceptionRecordsCompanion.insert({
     this.id = const Value.absent(),
+    this.syncId = const Value.absent(),
     required String patternId,
     required int dateKey,
     required String type,
@@ -8130,6 +8335,7 @@ class ShiftExceptionRecordsCompanion
        type = Value(type);
   static Insertable<ShiftExceptionRow> custom({
     Expression<int>? id,
+    Expression<String>? syncId,
     Expression<String>? patternId,
     Expression<int>? dateKey,
     Expression<String>? type,
@@ -8139,6 +8345,7 @@ class ShiftExceptionRecordsCompanion
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (syncId != null) 'sync_id': syncId,
       if (patternId != null) 'pattern_id': patternId,
       if (dateKey != null) 'date_key': dateKey,
       if (type != null) 'type': type,
@@ -8150,6 +8357,7 @@ class ShiftExceptionRecordsCompanion
 
   ShiftExceptionRecordsCompanion copyWith({
     Value<int>? id,
+    Value<String>? syncId,
     Value<String>? patternId,
     Value<int>? dateKey,
     Value<String>? type,
@@ -8159,6 +8367,7 @@ class ShiftExceptionRecordsCompanion
   }) {
     return ShiftExceptionRecordsCompanion(
       id: id ?? this.id,
+      syncId: syncId ?? this.syncId,
       patternId: patternId ?? this.patternId,
       dateKey: dateKey ?? this.dateKey,
       type: type ?? this.type,
@@ -8173,6 +8382,9 @@ class ShiftExceptionRecordsCompanion
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (syncId.present) {
+      map['sync_id'] = Variable<String>(syncId.value);
     }
     if (patternId.present) {
       map['pattern_id'] = Variable<String>(patternId.value);
@@ -8199,6 +8411,7 @@ class ShiftExceptionRecordsCompanion
   String toString() {
     return (StringBuffer('ShiftExceptionRecordsCompanion(')
           ..write('id: $id, ')
+          ..write('syncId: $syncId, ')
           ..write('patternId: $patternId, ')
           ..write('dateKey: $dateKey, ')
           ..write('type: $type, ')
@@ -14394,6 +14607,370 @@ class SettingRecordsCompanion extends UpdateCompanion<SettingRow> {
   }
 }
 
+class $MediaCacheRecordsTable extends MediaCacheRecords
+    with TableInfo<$MediaCacheRecordsTable, MediaCacheRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MediaCacheRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _mediaIdMeta = const VerificationMeta(
+    'mediaId',
+  );
+  @override
+  late final GeneratedColumn<String> mediaId = GeneratedColumn<String>(
+    'media_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mimeMeta = const VerificationMeta('mime');
+  @override
+  late final GeneratedColumn<String> mime = GeneratedColumn<String>(
+    'mime',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _byteSizeMeta = const VerificationMeta(
+    'byteSize',
+  );
+  @override
+  late final GeneratedColumn<int> byteSize = GeneratedColumn<int>(
+    'byte_size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    mediaId,
+    path,
+    mime,
+    byteSize,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'media_cache_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MediaCacheRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('media_id')) {
+      context.handle(
+        _mediaIdMeta,
+        mediaId.isAcceptableOrUnknown(data['media_id']!, _mediaIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_mediaIdMeta);
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+        _pathMeta,
+        path.isAcceptableOrUnknown(data['path']!, _pathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pathMeta);
+    }
+    if (data.containsKey('mime')) {
+      context.handle(
+        _mimeMeta,
+        mime.isAcceptableOrUnknown(data['mime']!, _mimeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_mimeMeta);
+    }
+    if (data.containsKey('byte_size')) {
+      context.handle(
+        _byteSizeMeta,
+        byteSize.isAcceptableOrUnknown(data['byte_size']!, _byteSizeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_byteSizeMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {mediaId};
+  @override
+  MediaCacheRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MediaCacheRow(
+      mediaId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}media_id'],
+      )!,
+      path: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path'],
+      )!,
+      mime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mime'],
+      )!,
+      byteSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}byte_size'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $MediaCacheRecordsTable createAlias(String alias) {
+    return $MediaCacheRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class MediaCacheRow extends DataClass implements Insertable<MediaCacheRow> {
+  /// Lowercase SHA-256 hex of the PNG bytes.
+  final String mediaId;
+  final String path;
+  final String mime;
+  final int byteSize;
+  final DateTime createdAt;
+  const MediaCacheRow({
+    required this.mediaId,
+    required this.path,
+    required this.mime,
+    required this.byteSize,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['media_id'] = Variable<String>(mediaId);
+    map['path'] = Variable<String>(path);
+    map['mime'] = Variable<String>(mime);
+    map['byte_size'] = Variable<int>(byteSize);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  MediaCacheRecordsCompanion toCompanion(bool nullToAbsent) {
+    return MediaCacheRecordsCompanion(
+      mediaId: Value(mediaId),
+      path: Value(path),
+      mime: Value(mime),
+      byteSize: Value(byteSize),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory MediaCacheRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MediaCacheRow(
+      mediaId: serializer.fromJson<String>(json['mediaId']),
+      path: serializer.fromJson<String>(json['path']),
+      mime: serializer.fromJson<String>(json['mime']),
+      byteSize: serializer.fromJson<int>(json['byteSize']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'mediaId': serializer.toJson<String>(mediaId),
+      'path': serializer.toJson<String>(path),
+      'mime': serializer.toJson<String>(mime),
+      'byteSize': serializer.toJson<int>(byteSize),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  MediaCacheRow copyWith({
+    String? mediaId,
+    String? path,
+    String? mime,
+    int? byteSize,
+    DateTime? createdAt,
+  }) => MediaCacheRow(
+    mediaId: mediaId ?? this.mediaId,
+    path: path ?? this.path,
+    mime: mime ?? this.mime,
+    byteSize: byteSize ?? this.byteSize,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  MediaCacheRow copyWithCompanion(MediaCacheRecordsCompanion data) {
+    return MediaCacheRow(
+      mediaId: data.mediaId.present ? data.mediaId.value : this.mediaId,
+      path: data.path.present ? data.path.value : this.path,
+      mime: data.mime.present ? data.mime.value : this.mime,
+      byteSize: data.byteSize.present ? data.byteSize.value : this.byteSize,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MediaCacheRow(')
+          ..write('mediaId: $mediaId, ')
+          ..write('path: $path, ')
+          ..write('mime: $mime, ')
+          ..write('byteSize: $byteSize, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(mediaId, path, mime, byteSize, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MediaCacheRow &&
+          other.mediaId == this.mediaId &&
+          other.path == this.path &&
+          other.mime == this.mime &&
+          other.byteSize == this.byteSize &&
+          other.createdAt == this.createdAt);
+}
+
+class MediaCacheRecordsCompanion extends UpdateCompanion<MediaCacheRow> {
+  final Value<String> mediaId;
+  final Value<String> path;
+  final Value<String> mime;
+  final Value<int> byteSize;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const MediaCacheRecordsCompanion({
+    this.mediaId = const Value.absent(),
+    this.path = const Value.absent(),
+    this.mime = const Value.absent(),
+    this.byteSize = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MediaCacheRecordsCompanion.insert({
+    required String mediaId,
+    required String path,
+    required String mime,
+    required int byteSize,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : mediaId = Value(mediaId),
+       path = Value(path),
+       mime = Value(mime),
+       byteSize = Value(byteSize),
+       createdAt = Value(createdAt);
+  static Insertable<MediaCacheRow> custom({
+    Expression<String>? mediaId,
+    Expression<String>? path,
+    Expression<String>? mime,
+    Expression<int>? byteSize,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (mediaId != null) 'media_id': mediaId,
+      if (path != null) 'path': path,
+      if (mime != null) 'mime': mime,
+      if (byteSize != null) 'byte_size': byteSize,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MediaCacheRecordsCompanion copyWith({
+    Value<String>? mediaId,
+    Value<String>? path,
+    Value<String>? mime,
+    Value<int>? byteSize,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return MediaCacheRecordsCompanion(
+      mediaId: mediaId ?? this.mediaId,
+      path: path ?? this.path,
+      mime: mime ?? this.mime,
+      byteSize: byteSize ?? this.byteSize,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (mediaId.present) {
+      map['media_id'] = Variable<String>(mediaId.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
+    }
+    if (mime.present) {
+      map['mime'] = Variable<String>(mime.value);
+    }
+    if (byteSize.present) {
+      map['byte_size'] = Variable<int>(byteSize.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MediaCacheRecordsCompanion(')
+          ..write('mediaId: $mediaId, ')
+          ..write('path: $path, ')
+          ..write('mime: $mime, ')
+          ..write('byteSize: $byteSize, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $HomePurchaseRecordsTable extends HomePurchaseRecords
     with TableInfo<$HomePurchaseRecordsTable, HomePurchaseRow> {
   @override
@@ -15684,6 +16261,2340 @@ class RemoteSnapshotRecordsCompanion
   }
 }
 
+class $SyncDeviceStateRecordsTable extends SyncDeviceStateRecords
+    with TableInfo<$SyncDeviceStateRecordsTable, SyncDeviceStateRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncDeviceStateRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nodeIdMeta = const VerificationMeta('nodeId');
+  @override
+  late final GeneratedColumn<String> nodeId = GeneratedColumn<String>(
+    'node_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _datasetIdMeta = const VerificationMeta(
+    'datasetId',
+  );
+  @override
+  late final GeneratedColumn<String> datasetId = GeneratedColumn<String>(
+    'dataset_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _epochMeta = const VerificationMeta('epoch');
+  @override
+  late final GeneratedColumn<String> epoch = GeneratedColumn<String>(
+    'epoch',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _hlcMillisMeta = const VerificationMeta(
+    'hlcMillis',
+  );
+  @override
+  late final GeneratedColumn<int> hlcMillis = GeneratedColumn<int>(
+    'hlc_millis',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _hlcCounterMeta = const VerificationMeta(
+    'hlcCounter',
+  );
+  @override
+  late final GeneratedColumn<int> hlcCounter = GeneratedColumn<int>(
+    'hlc_counter',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    nodeId,
+    datasetId,
+    epoch,
+    hlcMillis,
+    hlcCounter,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_device_state_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncDeviceStateRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('node_id')) {
+      context.handle(
+        _nodeIdMeta,
+        nodeId.isAcceptableOrUnknown(data['node_id']!, _nodeIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nodeIdMeta);
+    }
+    if (data.containsKey('dataset_id')) {
+      context.handle(
+        _datasetIdMeta,
+        datasetId.isAcceptableOrUnknown(data['dataset_id']!, _datasetIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_datasetIdMeta);
+    }
+    if (data.containsKey('epoch')) {
+      context.handle(
+        _epochMeta,
+        epoch.isAcceptableOrUnknown(data['epoch']!, _epochMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_epochMeta);
+    }
+    if (data.containsKey('hlc_millis')) {
+      context.handle(
+        _hlcMillisMeta,
+        hlcMillis.isAcceptableOrUnknown(data['hlc_millis']!, _hlcMillisMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_hlcMillisMeta);
+    }
+    if (data.containsKey('hlc_counter')) {
+      context.handle(
+        _hlcCounterMeta,
+        hlcCounter.isAcceptableOrUnknown(data['hlc_counter']!, _hlcCounterMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_hlcCounterMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncDeviceStateRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncDeviceStateRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      nodeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}node_id'],
+      )!,
+      datasetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dataset_id'],
+      )!,
+      epoch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}epoch'],
+      )!,
+      hlcMillis: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}hlc_millis'],
+      )!,
+      hlcCounter: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}hlc_counter'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SyncDeviceStateRecordsTable createAlias(String alias) {
+    return $SyncDeviceStateRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class SyncDeviceStateRow extends DataClass
+    implements Insertable<SyncDeviceStateRow> {
+  final String id;
+  final String nodeId;
+  final String datasetId;
+  final String epoch;
+  final int hlcMillis;
+  final int hlcCounter;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const SyncDeviceStateRow({
+    required this.id,
+    required this.nodeId,
+    required this.datasetId,
+    required this.epoch,
+    required this.hlcMillis,
+    required this.hlcCounter,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['node_id'] = Variable<String>(nodeId);
+    map['dataset_id'] = Variable<String>(datasetId);
+    map['epoch'] = Variable<String>(epoch);
+    map['hlc_millis'] = Variable<int>(hlcMillis);
+    map['hlc_counter'] = Variable<int>(hlcCounter);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  SyncDeviceStateRecordsCompanion toCompanion(bool nullToAbsent) {
+    return SyncDeviceStateRecordsCompanion(
+      id: Value(id),
+      nodeId: Value(nodeId),
+      datasetId: Value(datasetId),
+      epoch: Value(epoch),
+      hlcMillis: Value(hlcMillis),
+      hlcCounter: Value(hlcCounter),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory SyncDeviceStateRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncDeviceStateRow(
+      id: serializer.fromJson<String>(json['id']),
+      nodeId: serializer.fromJson<String>(json['nodeId']),
+      datasetId: serializer.fromJson<String>(json['datasetId']),
+      epoch: serializer.fromJson<String>(json['epoch']),
+      hlcMillis: serializer.fromJson<int>(json['hlcMillis']),
+      hlcCounter: serializer.fromJson<int>(json['hlcCounter']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'nodeId': serializer.toJson<String>(nodeId),
+      'datasetId': serializer.toJson<String>(datasetId),
+      'epoch': serializer.toJson<String>(epoch),
+      'hlcMillis': serializer.toJson<int>(hlcMillis),
+      'hlcCounter': serializer.toJson<int>(hlcCounter),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  SyncDeviceStateRow copyWith({
+    String? id,
+    String? nodeId,
+    String? datasetId,
+    String? epoch,
+    int? hlcMillis,
+    int? hlcCounter,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => SyncDeviceStateRow(
+    id: id ?? this.id,
+    nodeId: nodeId ?? this.nodeId,
+    datasetId: datasetId ?? this.datasetId,
+    epoch: epoch ?? this.epoch,
+    hlcMillis: hlcMillis ?? this.hlcMillis,
+    hlcCounter: hlcCounter ?? this.hlcCounter,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  SyncDeviceStateRow copyWithCompanion(SyncDeviceStateRecordsCompanion data) {
+    return SyncDeviceStateRow(
+      id: data.id.present ? data.id.value : this.id,
+      nodeId: data.nodeId.present ? data.nodeId.value : this.nodeId,
+      datasetId: data.datasetId.present ? data.datasetId.value : this.datasetId,
+      epoch: data.epoch.present ? data.epoch.value : this.epoch,
+      hlcMillis: data.hlcMillis.present ? data.hlcMillis.value : this.hlcMillis,
+      hlcCounter: data.hlcCounter.present
+          ? data.hlcCounter.value
+          : this.hlcCounter,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncDeviceStateRow(')
+          ..write('id: $id, ')
+          ..write('nodeId: $nodeId, ')
+          ..write('datasetId: $datasetId, ')
+          ..write('epoch: $epoch, ')
+          ..write('hlcMillis: $hlcMillis, ')
+          ..write('hlcCounter: $hlcCounter, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    nodeId,
+    datasetId,
+    epoch,
+    hlcMillis,
+    hlcCounter,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncDeviceStateRow &&
+          other.id == this.id &&
+          other.nodeId == this.nodeId &&
+          other.datasetId == this.datasetId &&
+          other.epoch == this.epoch &&
+          other.hlcMillis == this.hlcMillis &&
+          other.hlcCounter == this.hlcCounter &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class SyncDeviceStateRecordsCompanion
+    extends UpdateCompanion<SyncDeviceStateRow> {
+  final Value<String> id;
+  final Value<String> nodeId;
+  final Value<String> datasetId;
+  final Value<String> epoch;
+  final Value<int> hlcMillis;
+  final Value<int> hlcCounter;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const SyncDeviceStateRecordsCompanion({
+    this.id = const Value.absent(),
+    this.nodeId = const Value.absent(),
+    this.datasetId = const Value.absent(),
+    this.epoch = const Value.absent(),
+    this.hlcMillis = const Value.absent(),
+    this.hlcCounter = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncDeviceStateRecordsCompanion.insert({
+    required String id,
+    required String nodeId,
+    required String datasetId,
+    required String epoch,
+    required int hlcMillis,
+    required int hlcCounter,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       nodeId = Value(nodeId),
+       datasetId = Value(datasetId),
+       epoch = Value(epoch),
+       hlcMillis = Value(hlcMillis),
+       hlcCounter = Value(hlcCounter),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<SyncDeviceStateRow> custom({
+    Expression<String>? id,
+    Expression<String>? nodeId,
+    Expression<String>? datasetId,
+    Expression<String>? epoch,
+    Expression<int>? hlcMillis,
+    Expression<int>? hlcCounter,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (nodeId != null) 'node_id': nodeId,
+      if (datasetId != null) 'dataset_id': datasetId,
+      if (epoch != null) 'epoch': epoch,
+      if (hlcMillis != null) 'hlc_millis': hlcMillis,
+      if (hlcCounter != null) 'hlc_counter': hlcCounter,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncDeviceStateRecordsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? nodeId,
+    Value<String>? datasetId,
+    Value<String>? epoch,
+    Value<int>? hlcMillis,
+    Value<int>? hlcCounter,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return SyncDeviceStateRecordsCompanion(
+      id: id ?? this.id,
+      nodeId: nodeId ?? this.nodeId,
+      datasetId: datasetId ?? this.datasetId,
+      epoch: epoch ?? this.epoch,
+      hlcMillis: hlcMillis ?? this.hlcMillis,
+      hlcCounter: hlcCounter ?? this.hlcCounter,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (nodeId.present) {
+      map['node_id'] = Variable<String>(nodeId.value);
+    }
+    if (datasetId.present) {
+      map['dataset_id'] = Variable<String>(datasetId.value);
+    }
+    if (epoch.present) {
+      map['epoch'] = Variable<String>(epoch.value);
+    }
+    if (hlcMillis.present) {
+      map['hlc_millis'] = Variable<int>(hlcMillis.value);
+    }
+    if (hlcCounter.present) {
+      map['hlc_counter'] = Variable<int>(hlcCounter.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncDeviceStateRecordsCompanion(')
+          ..write('id: $id, ')
+          ..write('nodeId: $nodeId, ')
+          ..write('datasetId: $datasetId, ')
+          ..write('epoch: $epoch, ')
+          ..write('hlcMillis: $hlcMillis, ')
+          ..write('hlcCounter: $hlcCounter, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncChangeRecordsTable extends SyncChangeRecords
+    with TableInfo<$SyncChangeRecordsTable, SyncChangeRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncChangeRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _seqMeta = const VerificationMeta('seq');
+  @override
+  late final GeneratedColumn<int> seq = GeneratedColumn<int>(
+    'seq',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _changeIdMeta = const VerificationMeta(
+    'changeId',
+  );
+  @override
+  late final GeneratedColumn<String> changeId = GeneratedColumn<String>(
+    'change_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _originNodeIdMeta = const VerificationMeta(
+    'originNodeId',
+  );
+  @override
+  late final GeneratedColumn<String> originNodeId = GeneratedColumn<String>(
+    'origin_node_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _originEpochMeta = const VerificationMeta(
+    'originEpoch',
+  );
+  @override
+  late final GeneratedColumn<String> originEpoch = GeneratedColumn<String>(
+    'origin_epoch',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _originSeqMeta = const VerificationMeta(
+    'originSeq',
+  );
+  @override
+  late final GeneratedColumn<int> originSeq = GeneratedColumn<int>(
+    'origin_seq',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entityMeta = const VerificationMeta('entity');
+  @override
+  late final GeneratedColumn<String> entity = GeneratedColumn<String>(
+    'entity',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rowKeyMeta = const VerificationMeta('rowKey');
+  @override
+  late final GeneratedColumn<String> rowKey = GeneratedColumn<String>(
+    'row_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _opMeta = const VerificationMeta('op');
+  @override
+  late final GeneratedColumn<String> op = GeneratedColumn<String>(
+    'op',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rowJsonMeta = const VerificationMeta(
+    'rowJson',
+  );
+  @override
+  late final GeneratedColumn<String> rowJson = GeneratedColumn<String>(
+    'row_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionsJsonMeta = const VerificationMeta(
+    'versionsJson',
+  );
+  @override
+  late final GeneratedColumn<String> versionsJson = GeneratedColumn<String>(
+    'versions_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    seq,
+    changeId,
+    originNodeId,
+    originEpoch,
+    originSeq,
+    entity,
+    rowKey,
+    op,
+    rowJson,
+    versionsJson,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_change_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncChangeRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('seq')) {
+      context.handle(
+        _seqMeta,
+        seq.isAcceptableOrUnknown(data['seq']!, _seqMeta),
+      );
+    }
+    if (data.containsKey('change_id')) {
+      context.handle(
+        _changeIdMeta,
+        changeId.isAcceptableOrUnknown(data['change_id']!, _changeIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_changeIdMeta);
+    }
+    if (data.containsKey('origin_node_id')) {
+      context.handle(
+        _originNodeIdMeta,
+        originNodeId.isAcceptableOrUnknown(
+          data['origin_node_id']!,
+          _originNodeIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_originNodeIdMeta);
+    }
+    if (data.containsKey('origin_epoch')) {
+      context.handle(
+        _originEpochMeta,
+        originEpoch.isAcceptableOrUnknown(
+          data['origin_epoch']!,
+          _originEpochMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_originEpochMeta);
+    }
+    if (data.containsKey('origin_seq')) {
+      context.handle(
+        _originSeqMeta,
+        originSeq.isAcceptableOrUnknown(data['origin_seq']!, _originSeqMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_originSeqMeta);
+    }
+    if (data.containsKey('entity')) {
+      context.handle(
+        _entityMeta,
+        entity.isAcceptableOrUnknown(data['entity']!, _entityMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityMeta);
+    }
+    if (data.containsKey('row_key')) {
+      context.handle(
+        _rowKeyMeta,
+        rowKey.isAcceptableOrUnknown(data['row_key']!, _rowKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rowKeyMeta);
+    }
+    if (data.containsKey('op')) {
+      context.handle(_opMeta, op.isAcceptableOrUnknown(data['op']!, _opMeta));
+    } else if (isInserting) {
+      context.missing(_opMeta);
+    }
+    if (data.containsKey('row_json')) {
+      context.handle(
+        _rowJsonMeta,
+        rowJson.isAcceptableOrUnknown(data['row_json']!, _rowJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rowJsonMeta);
+    }
+    if (data.containsKey('versions_json')) {
+      context.handle(
+        _versionsJsonMeta,
+        versionsJson.isAcceptableOrUnknown(
+          data['versions_json']!,
+          _versionsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_versionsJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {seq};
+  @override
+  SyncChangeRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncChangeRow(
+      seq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}seq'],
+      )!,
+      changeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}change_id'],
+      )!,
+      originNodeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}origin_node_id'],
+      )!,
+      originEpoch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}origin_epoch'],
+      )!,
+      originSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}origin_seq'],
+      )!,
+      entity: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity'],
+      )!,
+      rowKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}row_key'],
+      )!,
+      op: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}op'],
+      )!,
+      rowJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}row_json'],
+      )!,
+      versionsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}versions_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SyncChangeRecordsTable createAlias(String alias) {
+    return $SyncChangeRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class SyncChangeRow extends DataClass implements Insertable<SyncChangeRow> {
+  final int seq;
+  final String changeId;
+  final String originNodeId;
+  final String originEpoch;
+  final int originSeq;
+  final String entity;
+  final String rowKey;
+
+  /// `upsert` or `delete`.
+  final String op;
+  final String rowJson;
+  final String versionsJson;
+  final DateTime createdAt;
+  const SyncChangeRow({
+    required this.seq,
+    required this.changeId,
+    required this.originNodeId,
+    required this.originEpoch,
+    required this.originSeq,
+    required this.entity,
+    required this.rowKey,
+    required this.op,
+    required this.rowJson,
+    required this.versionsJson,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['seq'] = Variable<int>(seq);
+    map['change_id'] = Variable<String>(changeId);
+    map['origin_node_id'] = Variable<String>(originNodeId);
+    map['origin_epoch'] = Variable<String>(originEpoch);
+    map['origin_seq'] = Variable<int>(originSeq);
+    map['entity'] = Variable<String>(entity);
+    map['row_key'] = Variable<String>(rowKey);
+    map['op'] = Variable<String>(op);
+    map['row_json'] = Variable<String>(rowJson);
+    map['versions_json'] = Variable<String>(versionsJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  SyncChangeRecordsCompanion toCompanion(bool nullToAbsent) {
+    return SyncChangeRecordsCompanion(
+      seq: Value(seq),
+      changeId: Value(changeId),
+      originNodeId: Value(originNodeId),
+      originEpoch: Value(originEpoch),
+      originSeq: Value(originSeq),
+      entity: Value(entity),
+      rowKey: Value(rowKey),
+      op: Value(op),
+      rowJson: Value(rowJson),
+      versionsJson: Value(versionsJson),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory SyncChangeRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncChangeRow(
+      seq: serializer.fromJson<int>(json['seq']),
+      changeId: serializer.fromJson<String>(json['changeId']),
+      originNodeId: serializer.fromJson<String>(json['originNodeId']),
+      originEpoch: serializer.fromJson<String>(json['originEpoch']),
+      originSeq: serializer.fromJson<int>(json['originSeq']),
+      entity: serializer.fromJson<String>(json['entity']),
+      rowKey: serializer.fromJson<String>(json['rowKey']),
+      op: serializer.fromJson<String>(json['op']),
+      rowJson: serializer.fromJson<String>(json['rowJson']),
+      versionsJson: serializer.fromJson<String>(json['versionsJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'seq': serializer.toJson<int>(seq),
+      'changeId': serializer.toJson<String>(changeId),
+      'originNodeId': serializer.toJson<String>(originNodeId),
+      'originEpoch': serializer.toJson<String>(originEpoch),
+      'originSeq': serializer.toJson<int>(originSeq),
+      'entity': serializer.toJson<String>(entity),
+      'rowKey': serializer.toJson<String>(rowKey),
+      'op': serializer.toJson<String>(op),
+      'rowJson': serializer.toJson<String>(rowJson),
+      'versionsJson': serializer.toJson<String>(versionsJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  SyncChangeRow copyWith({
+    int? seq,
+    String? changeId,
+    String? originNodeId,
+    String? originEpoch,
+    int? originSeq,
+    String? entity,
+    String? rowKey,
+    String? op,
+    String? rowJson,
+    String? versionsJson,
+    DateTime? createdAt,
+  }) => SyncChangeRow(
+    seq: seq ?? this.seq,
+    changeId: changeId ?? this.changeId,
+    originNodeId: originNodeId ?? this.originNodeId,
+    originEpoch: originEpoch ?? this.originEpoch,
+    originSeq: originSeq ?? this.originSeq,
+    entity: entity ?? this.entity,
+    rowKey: rowKey ?? this.rowKey,
+    op: op ?? this.op,
+    rowJson: rowJson ?? this.rowJson,
+    versionsJson: versionsJson ?? this.versionsJson,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  SyncChangeRow copyWithCompanion(SyncChangeRecordsCompanion data) {
+    return SyncChangeRow(
+      seq: data.seq.present ? data.seq.value : this.seq,
+      changeId: data.changeId.present ? data.changeId.value : this.changeId,
+      originNodeId: data.originNodeId.present
+          ? data.originNodeId.value
+          : this.originNodeId,
+      originEpoch: data.originEpoch.present
+          ? data.originEpoch.value
+          : this.originEpoch,
+      originSeq: data.originSeq.present ? data.originSeq.value : this.originSeq,
+      entity: data.entity.present ? data.entity.value : this.entity,
+      rowKey: data.rowKey.present ? data.rowKey.value : this.rowKey,
+      op: data.op.present ? data.op.value : this.op,
+      rowJson: data.rowJson.present ? data.rowJson.value : this.rowJson,
+      versionsJson: data.versionsJson.present
+          ? data.versionsJson.value
+          : this.versionsJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncChangeRow(')
+          ..write('seq: $seq, ')
+          ..write('changeId: $changeId, ')
+          ..write('originNodeId: $originNodeId, ')
+          ..write('originEpoch: $originEpoch, ')
+          ..write('originSeq: $originSeq, ')
+          ..write('entity: $entity, ')
+          ..write('rowKey: $rowKey, ')
+          ..write('op: $op, ')
+          ..write('rowJson: $rowJson, ')
+          ..write('versionsJson: $versionsJson, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    seq,
+    changeId,
+    originNodeId,
+    originEpoch,
+    originSeq,
+    entity,
+    rowKey,
+    op,
+    rowJson,
+    versionsJson,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncChangeRow &&
+          other.seq == this.seq &&
+          other.changeId == this.changeId &&
+          other.originNodeId == this.originNodeId &&
+          other.originEpoch == this.originEpoch &&
+          other.originSeq == this.originSeq &&
+          other.entity == this.entity &&
+          other.rowKey == this.rowKey &&
+          other.op == this.op &&
+          other.rowJson == this.rowJson &&
+          other.versionsJson == this.versionsJson &&
+          other.createdAt == this.createdAt);
+}
+
+class SyncChangeRecordsCompanion extends UpdateCompanion<SyncChangeRow> {
+  final Value<int> seq;
+  final Value<String> changeId;
+  final Value<String> originNodeId;
+  final Value<String> originEpoch;
+  final Value<int> originSeq;
+  final Value<String> entity;
+  final Value<String> rowKey;
+  final Value<String> op;
+  final Value<String> rowJson;
+  final Value<String> versionsJson;
+  final Value<DateTime> createdAt;
+  const SyncChangeRecordsCompanion({
+    this.seq = const Value.absent(),
+    this.changeId = const Value.absent(),
+    this.originNodeId = const Value.absent(),
+    this.originEpoch = const Value.absent(),
+    this.originSeq = const Value.absent(),
+    this.entity = const Value.absent(),
+    this.rowKey = const Value.absent(),
+    this.op = const Value.absent(),
+    this.rowJson = const Value.absent(),
+    this.versionsJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  SyncChangeRecordsCompanion.insert({
+    this.seq = const Value.absent(),
+    required String changeId,
+    required String originNodeId,
+    required String originEpoch,
+    required int originSeq,
+    required String entity,
+    required String rowKey,
+    required String op,
+    required String rowJson,
+    required String versionsJson,
+    required DateTime createdAt,
+  }) : changeId = Value(changeId),
+       originNodeId = Value(originNodeId),
+       originEpoch = Value(originEpoch),
+       originSeq = Value(originSeq),
+       entity = Value(entity),
+       rowKey = Value(rowKey),
+       op = Value(op),
+       rowJson = Value(rowJson),
+       versionsJson = Value(versionsJson),
+       createdAt = Value(createdAt);
+  static Insertable<SyncChangeRow> custom({
+    Expression<int>? seq,
+    Expression<String>? changeId,
+    Expression<String>? originNodeId,
+    Expression<String>? originEpoch,
+    Expression<int>? originSeq,
+    Expression<String>? entity,
+    Expression<String>? rowKey,
+    Expression<String>? op,
+    Expression<String>? rowJson,
+    Expression<String>? versionsJson,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (seq != null) 'seq': seq,
+      if (changeId != null) 'change_id': changeId,
+      if (originNodeId != null) 'origin_node_id': originNodeId,
+      if (originEpoch != null) 'origin_epoch': originEpoch,
+      if (originSeq != null) 'origin_seq': originSeq,
+      if (entity != null) 'entity': entity,
+      if (rowKey != null) 'row_key': rowKey,
+      if (op != null) 'op': op,
+      if (rowJson != null) 'row_json': rowJson,
+      if (versionsJson != null) 'versions_json': versionsJson,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  SyncChangeRecordsCompanion copyWith({
+    Value<int>? seq,
+    Value<String>? changeId,
+    Value<String>? originNodeId,
+    Value<String>? originEpoch,
+    Value<int>? originSeq,
+    Value<String>? entity,
+    Value<String>? rowKey,
+    Value<String>? op,
+    Value<String>? rowJson,
+    Value<String>? versionsJson,
+    Value<DateTime>? createdAt,
+  }) {
+    return SyncChangeRecordsCompanion(
+      seq: seq ?? this.seq,
+      changeId: changeId ?? this.changeId,
+      originNodeId: originNodeId ?? this.originNodeId,
+      originEpoch: originEpoch ?? this.originEpoch,
+      originSeq: originSeq ?? this.originSeq,
+      entity: entity ?? this.entity,
+      rowKey: rowKey ?? this.rowKey,
+      op: op ?? this.op,
+      rowJson: rowJson ?? this.rowJson,
+      versionsJson: versionsJson ?? this.versionsJson,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (seq.present) {
+      map['seq'] = Variable<int>(seq.value);
+    }
+    if (changeId.present) {
+      map['change_id'] = Variable<String>(changeId.value);
+    }
+    if (originNodeId.present) {
+      map['origin_node_id'] = Variable<String>(originNodeId.value);
+    }
+    if (originEpoch.present) {
+      map['origin_epoch'] = Variable<String>(originEpoch.value);
+    }
+    if (originSeq.present) {
+      map['origin_seq'] = Variable<int>(originSeq.value);
+    }
+    if (entity.present) {
+      map['entity'] = Variable<String>(entity.value);
+    }
+    if (rowKey.present) {
+      map['row_key'] = Variable<String>(rowKey.value);
+    }
+    if (op.present) {
+      map['op'] = Variable<String>(op.value);
+    }
+    if (rowJson.present) {
+      map['row_json'] = Variable<String>(rowJson.value);
+    }
+    if (versionsJson.present) {
+      map['versions_json'] = Variable<String>(versionsJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncChangeRecordsCompanion(')
+          ..write('seq: $seq, ')
+          ..write('changeId: $changeId, ')
+          ..write('originNodeId: $originNodeId, ')
+          ..write('originEpoch: $originEpoch, ')
+          ..write('originSeq: $originSeq, ')
+          ..write('entity: $entity, ')
+          ..write('rowKey: $rowKey, ')
+          ..write('op: $op, ')
+          ..write('rowJson: $rowJson, ')
+          ..write('versionsJson: $versionsJson, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncFieldVersionRecordsTable extends SyncFieldVersionRecords
+    with TableInfo<$SyncFieldVersionRecordsTable, SyncFieldVersionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncFieldVersionRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _entityMeta = const VerificationMeta('entity');
+  @override
+  late final GeneratedColumn<String> entity = GeneratedColumn<String>(
+    'entity',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rowKeyMeta = const VerificationMeta('rowKey');
+  @override
+  late final GeneratedColumn<String> rowKey = GeneratedColumn<String>(
+    'row_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fieldMeta = const VerificationMeta('field');
+  @override
+  late final GeneratedColumn<String> field = GeneratedColumn<String>(
+    'field',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<String> version = GeneratedColumn<String>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    entity,
+    rowKey,
+    field,
+    version,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_field_version_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncFieldVersionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('entity')) {
+      context.handle(
+        _entityMeta,
+        entity.isAcceptableOrUnknown(data['entity']!, _entityMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityMeta);
+    }
+    if (data.containsKey('row_key')) {
+      context.handle(
+        _rowKeyMeta,
+        rowKey.isAcceptableOrUnknown(data['row_key']!, _rowKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rowKeyMeta);
+    }
+    if (data.containsKey('field')) {
+      context.handle(
+        _fieldMeta,
+        field.isAcceptableOrUnknown(data['field']!, _fieldMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fieldMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_versionMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {entity, rowKey, field};
+  @override
+  SyncFieldVersionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncFieldVersionRow(
+      entity: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity'],
+      )!,
+      rowKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}row_key'],
+      )!,
+      field: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}field'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}version'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SyncFieldVersionRecordsTable createAlias(String alias) {
+    return $SyncFieldVersionRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class SyncFieldVersionRow extends DataClass
+    implements Insertable<SyncFieldVersionRow> {
+  final String entity;
+  final String rowKey;
+  final String field;
+  final String version;
+  final DateTime updatedAt;
+  const SyncFieldVersionRow({
+    required this.entity,
+    required this.rowKey,
+    required this.field,
+    required this.version,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['entity'] = Variable<String>(entity);
+    map['row_key'] = Variable<String>(rowKey);
+    map['field'] = Variable<String>(field);
+    map['version'] = Variable<String>(version);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  SyncFieldVersionRecordsCompanion toCompanion(bool nullToAbsent) {
+    return SyncFieldVersionRecordsCompanion(
+      entity: Value(entity),
+      rowKey: Value(rowKey),
+      field: Value(field),
+      version: Value(version),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory SyncFieldVersionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncFieldVersionRow(
+      entity: serializer.fromJson<String>(json['entity']),
+      rowKey: serializer.fromJson<String>(json['rowKey']),
+      field: serializer.fromJson<String>(json['field']),
+      version: serializer.fromJson<String>(json['version']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'entity': serializer.toJson<String>(entity),
+      'rowKey': serializer.toJson<String>(rowKey),
+      'field': serializer.toJson<String>(field),
+      'version': serializer.toJson<String>(version),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  SyncFieldVersionRow copyWith({
+    String? entity,
+    String? rowKey,
+    String? field,
+    String? version,
+    DateTime? updatedAt,
+  }) => SyncFieldVersionRow(
+    entity: entity ?? this.entity,
+    rowKey: rowKey ?? this.rowKey,
+    field: field ?? this.field,
+    version: version ?? this.version,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  SyncFieldVersionRow copyWithCompanion(SyncFieldVersionRecordsCompanion data) {
+    return SyncFieldVersionRow(
+      entity: data.entity.present ? data.entity.value : this.entity,
+      rowKey: data.rowKey.present ? data.rowKey.value : this.rowKey,
+      field: data.field.present ? data.field.value : this.field,
+      version: data.version.present ? data.version.value : this.version,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncFieldVersionRow(')
+          ..write('entity: $entity, ')
+          ..write('rowKey: $rowKey, ')
+          ..write('field: $field, ')
+          ..write('version: $version, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(entity, rowKey, field, version, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncFieldVersionRow &&
+          other.entity == this.entity &&
+          other.rowKey == this.rowKey &&
+          other.field == this.field &&
+          other.version == this.version &&
+          other.updatedAt == this.updatedAt);
+}
+
+class SyncFieldVersionRecordsCompanion
+    extends UpdateCompanion<SyncFieldVersionRow> {
+  final Value<String> entity;
+  final Value<String> rowKey;
+  final Value<String> field;
+  final Value<String> version;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const SyncFieldVersionRecordsCompanion({
+    this.entity = const Value.absent(),
+    this.rowKey = const Value.absent(),
+    this.field = const Value.absent(),
+    this.version = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncFieldVersionRecordsCompanion.insert({
+    required String entity,
+    required String rowKey,
+    required String field,
+    required String version,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : entity = Value(entity),
+       rowKey = Value(rowKey),
+       field = Value(field),
+       version = Value(version),
+       updatedAt = Value(updatedAt);
+  static Insertable<SyncFieldVersionRow> custom({
+    Expression<String>? entity,
+    Expression<String>? rowKey,
+    Expression<String>? field,
+    Expression<String>? version,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (entity != null) 'entity': entity,
+      if (rowKey != null) 'row_key': rowKey,
+      if (field != null) 'field': field,
+      if (version != null) 'version': version,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncFieldVersionRecordsCompanion copyWith({
+    Value<String>? entity,
+    Value<String>? rowKey,
+    Value<String>? field,
+    Value<String>? version,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return SyncFieldVersionRecordsCompanion(
+      entity: entity ?? this.entity,
+      rowKey: rowKey ?? this.rowKey,
+      field: field ?? this.field,
+      version: version ?? this.version,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (entity.present) {
+      map['entity'] = Variable<String>(entity.value);
+    }
+    if (rowKey.present) {
+      map['row_key'] = Variable<String>(rowKey.value);
+    }
+    if (field.present) {
+      map['field'] = Variable<String>(field.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<String>(version.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncFieldVersionRecordsCompanion(')
+          ..write('entity: $entity, ')
+          ..write('rowKey: $rowKey, ')
+          ..write('field: $field, ')
+          ..write('version: $version, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncTombstoneRecordsTable extends SyncTombstoneRecords
+    with TableInfo<$SyncTombstoneRecordsTable, SyncTombstoneRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncTombstoneRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _entityMeta = const VerificationMeta('entity');
+  @override
+  late final GeneratedColumn<String> entity = GeneratedColumn<String>(
+    'entity',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rowKeyMeta = const VerificationMeta('rowKey');
+  @override
+  late final GeneratedColumn<String> rowKey = GeneratedColumn<String>(
+    'row_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<String> version = GeneratedColumn<String>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rowJsonMeta = const VerificationMeta(
+    'rowJson',
+  );
+  @override
+  late final GeneratedColumn<String> rowJson = GeneratedColumn<String>(
+    'row_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    entity,
+    rowKey,
+    version,
+    rowJson,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_tombstone_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncTombstoneRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('entity')) {
+      context.handle(
+        _entityMeta,
+        entity.isAcceptableOrUnknown(data['entity']!, _entityMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityMeta);
+    }
+    if (data.containsKey('row_key')) {
+      context.handle(
+        _rowKeyMeta,
+        rowKey.isAcceptableOrUnknown(data['row_key']!, _rowKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rowKeyMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_versionMeta);
+    }
+    if (data.containsKey('row_json')) {
+      context.handle(
+        _rowJsonMeta,
+        rowJson.isAcceptableOrUnknown(data['row_json']!, _rowJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rowJsonMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {entity, rowKey};
+  @override
+  SyncTombstoneRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncTombstoneRow(
+      entity: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity'],
+      )!,
+      rowKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}row_key'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}version'],
+      )!,
+      rowJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}row_json'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SyncTombstoneRecordsTable createAlias(String alias) {
+    return $SyncTombstoneRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class SyncTombstoneRow extends DataClass
+    implements Insertable<SyncTombstoneRow> {
+  final String entity;
+  final String rowKey;
+  final String version;
+  final String rowJson;
+  final DateTime updatedAt;
+  const SyncTombstoneRow({
+    required this.entity,
+    required this.rowKey,
+    required this.version,
+    required this.rowJson,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['entity'] = Variable<String>(entity);
+    map['row_key'] = Variable<String>(rowKey);
+    map['version'] = Variable<String>(version);
+    map['row_json'] = Variable<String>(rowJson);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  SyncTombstoneRecordsCompanion toCompanion(bool nullToAbsent) {
+    return SyncTombstoneRecordsCompanion(
+      entity: Value(entity),
+      rowKey: Value(rowKey),
+      version: Value(version),
+      rowJson: Value(rowJson),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory SyncTombstoneRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncTombstoneRow(
+      entity: serializer.fromJson<String>(json['entity']),
+      rowKey: serializer.fromJson<String>(json['rowKey']),
+      version: serializer.fromJson<String>(json['version']),
+      rowJson: serializer.fromJson<String>(json['rowJson']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'entity': serializer.toJson<String>(entity),
+      'rowKey': serializer.toJson<String>(rowKey),
+      'version': serializer.toJson<String>(version),
+      'rowJson': serializer.toJson<String>(rowJson),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  SyncTombstoneRow copyWith({
+    String? entity,
+    String? rowKey,
+    String? version,
+    String? rowJson,
+    DateTime? updatedAt,
+  }) => SyncTombstoneRow(
+    entity: entity ?? this.entity,
+    rowKey: rowKey ?? this.rowKey,
+    version: version ?? this.version,
+    rowJson: rowJson ?? this.rowJson,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  SyncTombstoneRow copyWithCompanion(SyncTombstoneRecordsCompanion data) {
+    return SyncTombstoneRow(
+      entity: data.entity.present ? data.entity.value : this.entity,
+      rowKey: data.rowKey.present ? data.rowKey.value : this.rowKey,
+      version: data.version.present ? data.version.value : this.version,
+      rowJson: data.rowJson.present ? data.rowJson.value : this.rowJson,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncTombstoneRow(')
+          ..write('entity: $entity, ')
+          ..write('rowKey: $rowKey, ')
+          ..write('version: $version, ')
+          ..write('rowJson: $rowJson, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(entity, rowKey, version, rowJson, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncTombstoneRow &&
+          other.entity == this.entity &&
+          other.rowKey == this.rowKey &&
+          other.version == this.version &&
+          other.rowJson == this.rowJson &&
+          other.updatedAt == this.updatedAt);
+}
+
+class SyncTombstoneRecordsCompanion extends UpdateCompanion<SyncTombstoneRow> {
+  final Value<String> entity;
+  final Value<String> rowKey;
+  final Value<String> version;
+  final Value<String> rowJson;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const SyncTombstoneRecordsCompanion({
+    this.entity = const Value.absent(),
+    this.rowKey = const Value.absent(),
+    this.version = const Value.absent(),
+    this.rowJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncTombstoneRecordsCompanion.insert({
+    required String entity,
+    required String rowKey,
+    required String version,
+    required String rowJson,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : entity = Value(entity),
+       rowKey = Value(rowKey),
+       version = Value(version),
+       rowJson = Value(rowJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<SyncTombstoneRow> custom({
+    Expression<String>? entity,
+    Expression<String>? rowKey,
+    Expression<String>? version,
+    Expression<String>? rowJson,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (entity != null) 'entity': entity,
+      if (rowKey != null) 'row_key': rowKey,
+      if (version != null) 'version': version,
+      if (rowJson != null) 'row_json': rowJson,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncTombstoneRecordsCompanion copyWith({
+    Value<String>? entity,
+    Value<String>? rowKey,
+    Value<String>? version,
+    Value<String>? rowJson,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return SyncTombstoneRecordsCompanion(
+      entity: entity ?? this.entity,
+      rowKey: rowKey ?? this.rowKey,
+      version: version ?? this.version,
+      rowJson: rowJson ?? this.rowJson,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (entity.present) {
+      map['entity'] = Variable<String>(entity.value);
+    }
+    if (rowKey.present) {
+      map['row_key'] = Variable<String>(rowKey.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<String>(version.value);
+    }
+    if (rowJson.present) {
+      map['row_json'] = Variable<String>(rowJson.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncTombstoneRecordsCompanion(')
+          ..write('entity: $entity, ')
+          ..write('rowKey: $rowKey, ')
+          ..write('version: $version, ')
+          ..write('rowJson: $rowJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncPeerStateRecordsTable extends SyncPeerStateRecords
+    with TableInfo<$SyncPeerStateRecordsTable, SyncPeerStateRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncPeerStateRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _peerDeviceIdMeta = const VerificationMeta(
+    'peerDeviceId',
+  );
+  @override
+  late final GeneratedColumn<String> peerDeviceId = GeneratedColumn<String>(
+    'peer_device_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _datasetIdMeta = const VerificationMeta(
+    'datasetId',
+  );
+  @override
+  late final GeneratedColumn<String> datasetId = GeneratedColumn<String>(
+    'dataset_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _peerEpochMeta = const VerificationMeta(
+    'peerEpoch',
+  );
+  @override
+  late final GeneratedColumn<String> peerEpoch = GeneratedColumn<String>(
+    'peer_epoch',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastPulledSeqMeta = const VerificationMeta(
+    'lastPulledSeq',
+  );
+  @override
+  late final GeneratedColumn<int> lastPulledSeq = GeneratedColumn<int>(
+    'last_pulled_seq',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lastSyncedAtMeta = const VerificationMeta(
+    'lastSyncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSyncedAt = GeneratedColumn<DateTime>(
+    'last_synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastErrorMeta = const VerificationMeta(
+    'lastError',
+  );
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+    'last_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    peerDeviceId,
+    datasetId,
+    peerEpoch,
+    lastPulledSeq,
+    lastSyncedAt,
+    lastError,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_peer_state_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncPeerStateRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('peer_device_id')) {
+      context.handle(
+        _peerDeviceIdMeta,
+        peerDeviceId.isAcceptableOrUnknown(
+          data['peer_device_id']!,
+          _peerDeviceIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_peerDeviceIdMeta);
+    }
+    if (data.containsKey('dataset_id')) {
+      context.handle(
+        _datasetIdMeta,
+        datasetId.isAcceptableOrUnknown(data['dataset_id']!, _datasetIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_datasetIdMeta);
+    }
+    if (data.containsKey('peer_epoch')) {
+      context.handle(
+        _peerEpochMeta,
+        peerEpoch.isAcceptableOrUnknown(data['peer_epoch']!, _peerEpochMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_peerEpochMeta);
+    }
+    if (data.containsKey('last_pulled_seq')) {
+      context.handle(
+        _lastPulledSeqMeta,
+        lastPulledSeq.isAcceptableOrUnknown(
+          data['last_pulled_seq']!,
+          _lastPulledSeqMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_synced_at')) {
+      context.handle(
+        _lastSyncedAtMeta,
+        lastSyncedAt.isAcceptableOrUnknown(
+          data['last_synced_at']!,
+          _lastSyncedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(
+        _lastErrorMeta,
+        lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {peerDeviceId};
+  @override
+  SyncPeerStateRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncPeerStateRow(
+      peerDeviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}peer_device_id'],
+      )!,
+      datasetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dataset_id'],
+      )!,
+      peerEpoch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}peer_epoch'],
+      )!,
+      lastPulledSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_pulled_seq'],
+      )!,
+      lastSyncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_synced_at'],
+      ),
+      lastError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_error'],
+      ),
+    );
+  }
+
+  @override
+  $SyncPeerStateRecordsTable createAlias(String alias) {
+    return $SyncPeerStateRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class SyncPeerStateRow extends DataClass
+    implements Insertable<SyncPeerStateRow> {
+  final String peerDeviceId;
+  final String datasetId;
+  final String peerEpoch;
+  final int lastPulledSeq;
+  final DateTime? lastSyncedAt;
+  final String? lastError;
+  const SyncPeerStateRow({
+    required this.peerDeviceId,
+    required this.datasetId,
+    required this.peerEpoch,
+    required this.lastPulledSeq,
+    this.lastSyncedAt,
+    this.lastError,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['peer_device_id'] = Variable<String>(peerDeviceId);
+    map['dataset_id'] = Variable<String>(datasetId);
+    map['peer_epoch'] = Variable<String>(peerEpoch);
+    map['last_pulled_seq'] = Variable<int>(lastPulledSeq);
+    if (!nullToAbsent || lastSyncedAt != null) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt);
+    }
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    return map;
+  }
+
+  SyncPeerStateRecordsCompanion toCompanion(bool nullToAbsent) {
+    return SyncPeerStateRecordsCompanion(
+      peerDeviceId: Value(peerDeviceId),
+      datasetId: Value(datasetId),
+      peerEpoch: Value(peerEpoch),
+      lastPulledSeq: Value(lastPulledSeq),
+      lastSyncedAt: lastSyncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSyncedAt),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+    );
+  }
+
+  factory SyncPeerStateRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncPeerStateRow(
+      peerDeviceId: serializer.fromJson<String>(json['peerDeviceId']),
+      datasetId: serializer.fromJson<String>(json['datasetId']),
+      peerEpoch: serializer.fromJson<String>(json['peerEpoch']),
+      lastPulledSeq: serializer.fromJson<int>(json['lastPulledSeq']),
+      lastSyncedAt: serializer.fromJson<DateTime?>(json['lastSyncedAt']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'peerDeviceId': serializer.toJson<String>(peerDeviceId),
+      'datasetId': serializer.toJson<String>(datasetId),
+      'peerEpoch': serializer.toJson<String>(peerEpoch),
+      'lastPulledSeq': serializer.toJson<int>(lastPulledSeq),
+      'lastSyncedAt': serializer.toJson<DateTime?>(lastSyncedAt),
+      'lastError': serializer.toJson<String?>(lastError),
+    };
+  }
+
+  SyncPeerStateRow copyWith({
+    String? peerDeviceId,
+    String? datasetId,
+    String? peerEpoch,
+    int? lastPulledSeq,
+    Value<DateTime?> lastSyncedAt = const Value.absent(),
+    Value<String?> lastError = const Value.absent(),
+  }) => SyncPeerStateRow(
+    peerDeviceId: peerDeviceId ?? this.peerDeviceId,
+    datasetId: datasetId ?? this.datasetId,
+    peerEpoch: peerEpoch ?? this.peerEpoch,
+    lastPulledSeq: lastPulledSeq ?? this.lastPulledSeq,
+    lastSyncedAt: lastSyncedAt.present ? lastSyncedAt.value : this.lastSyncedAt,
+    lastError: lastError.present ? lastError.value : this.lastError,
+  );
+  SyncPeerStateRow copyWithCompanion(SyncPeerStateRecordsCompanion data) {
+    return SyncPeerStateRow(
+      peerDeviceId: data.peerDeviceId.present
+          ? data.peerDeviceId.value
+          : this.peerDeviceId,
+      datasetId: data.datasetId.present ? data.datasetId.value : this.datasetId,
+      peerEpoch: data.peerEpoch.present ? data.peerEpoch.value : this.peerEpoch,
+      lastPulledSeq: data.lastPulledSeq.present
+          ? data.lastPulledSeq.value
+          : this.lastPulledSeq,
+      lastSyncedAt: data.lastSyncedAt.present
+          ? data.lastSyncedAt.value
+          : this.lastSyncedAt,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncPeerStateRow(')
+          ..write('peerDeviceId: $peerDeviceId, ')
+          ..write('datasetId: $datasetId, ')
+          ..write('peerEpoch: $peerEpoch, ')
+          ..write('lastPulledSeq: $lastPulledSeq, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('lastError: $lastError')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    peerDeviceId,
+    datasetId,
+    peerEpoch,
+    lastPulledSeq,
+    lastSyncedAt,
+    lastError,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncPeerStateRow &&
+          other.peerDeviceId == this.peerDeviceId &&
+          other.datasetId == this.datasetId &&
+          other.peerEpoch == this.peerEpoch &&
+          other.lastPulledSeq == this.lastPulledSeq &&
+          other.lastSyncedAt == this.lastSyncedAt &&
+          other.lastError == this.lastError);
+}
+
+class SyncPeerStateRecordsCompanion extends UpdateCompanion<SyncPeerStateRow> {
+  final Value<String> peerDeviceId;
+  final Value<String> datasetId;
+  final Value<String> peerEpoch;
+  final Value<int> lastPulledSeq;
+  final Value<DateTime?> lastSyncedAt;
+  final Value<String?> lastError;
+  final Value<int> rowid;
+  const SyncPeerStateRecordsCompanion({
+    this.peerDeviceId = const Value.absent(),
+    this.datasetId = const Value.absent(),
+    this.peerEpoch = const Value.absent(),
+    this.lastPulledSeq = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncPeerStateRecordsCompanion.insert({
+    required String peerDeviceId,
+    required String datasetId,
+    required String peerEpoch,
+    this.lastPulledSeq = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : peerDeviceId = Value(peerDeviceId),
+       datasetId = Value(datasetId),
+       peerEpoch = Value(peerEpoch);
+  static Insertable<SyncPeerStateRow> custom({
+    Expression<String>? peerDeviceId,
+    Expression<String>? datasetId,
+    Expression<String>? peerEpoch,
+    Expression<int>? lastPulledSeq,
+    Expression<DateTime>? lastSyncedAt,
+    Expression<String>? lastError,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (peerDeviceId != null) 'peer_device_id': peerDeviceId,
+      if (datasetId != null) 'dataset_id': datasetId,
+      if (peerEpoch != null) 'peer_epoch': peerEpoch,
+      if (lastPulledSeq != null) 'last_pulled_seq': lastPulledSeq,
+      if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
+      if (lastError != null) 'last_error': lastError,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncPeerStateRecordsCompanion copyWith({
+    Value<String>? peerDeviceId,
+    Value<String>? datasetId,
+    Value<String>? peerEpoch,
+    Value<int>? lastPulledSeq,
+    Value<DateTime?>? lastSyncedAt,
+    Value<String?>? lastError,
+    Value<int>? rowid,
+  }) {
+    return SyncPeerStateRecordsCompanion(
+      peerDeviceId: peerDeviceId ?? this.peerDeviceId,
+      datasetId: datasetId ?? this.datasetId,
+      peerEpoch: peerEpoch ?? this.peerEpoch,
+      lastPulledSeq: lastPulledSeq ?? this.lastPulledSeq,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      lastError: lastError ?? this.lastError,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (peerDeviceId.present) {
+      map['peer_device_id'] = Variable<String>(peerDeviceId.value);
+    }
+    if (datasetId.present) {
+      map['dataset_id'] = Variable<String>(datasetId.value);
+    }
+    if (peerEpoch.present) {
+      map['peer_epoch'] = Variable<String>(peerEpoch.value);
+    }
+    if (lastPulledSeq.present) {
+      map['last_pulled_seq'] = Variable<int>(lastPulledSeq.value);
+    }
+    if (lastSyncedAt.present) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncPeerStateRecordsCompanion(')
+          ..write('peerDeviceId: $peerDeviceId, ')
+          ..write('datasetId: $datasetId, ')
+          ..write('peerEpoch: $peerEpoch, ')
+          ..write('lastPulledSeq: $lastPulledSeq, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('lastError: $lastError, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -15739,12 +18650,24 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PairedDeviceRecordsTable pairedDeviceRecords =
       $PairedDeviceRecordsTable(this);
   late final $SettingRecordsTable settingRecords = $SettingRecordsTable(this);
+  late final $MediaCacheRecordsTable mediaCacheRecords =
+      $MediaCacheRecordsTable(this);
   late final $HomePurchaseRecordsTable homePurchaseRecords =
       $HomePurchaseRecordsTable(this);
   late final $MaintenanceLogRecordsTable maintenanceLogRecords =
       $MaintenanceLogRecordsTable(this);
   late final $RemoteSnapshotRecordsTable remoteSnapshotRecords =
       $RemoteSnapshotRecordsTable(this);
+  late final $SyncDeviceStateRecordsTable syncDeviceStateRecords =
+      $SyncDeviceStateRecordsTable(this);
+  late final $SyncChangeRecordsTable syncChangeRecords =
+      $SyncChangeRecordsTable(this);
+  late final $SyncFieldVersionRecordsTable syncFieldVersionRecords =
+      $SyncFieldVersionRecordsTable(this);
+  late final $SyncTombstoneRecordsTable syncTombstoneRecords =
+      $SyncTombstoneRecordsTable(this);
+  late final $SyncPeerStateRecordsTable syncPeerStateRecords =
+      $SyncPeerStateRecordsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -15776,9 +18699,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     identityRecords,
     pairedDeviceRecords,
     settingRecords,
+    mediaCacheRecords,
     homePurchaseRecords,
     maintenanceLogRecords,
     remoteSnapshotRecords,
+    syncDeviceStateRecords,
+    syncChangeRecords,
+    syncFieldVersionRecords,
+    syncTombstoneRecords,
+    syncPeerStateRecords,
   ];
 }
 
@@ -16625,6 +19554,7 @@ typedef $$ContextRecordsTableCreateCompanionBuilder =
       required int color,
       Value<String> icon,
       Value<String?> imagePath,
+      Value<String?> imageMediaId,
       Value<int> position,
       required DateTime createdAt,
       required DateTime updatedAt,
@@ -16640,6 +19570,7 @@ typedef $$ContextRecordsTableUpdateCompanionBuilder =
       Value<int> color,
       Value<String> icon,
       Value<String?> imagePath,
+      Value<String?> imageMediaId,
       Value<int> position,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -16845,6 +19776,11 @@ class $$ContextRecordsTableFilterComposer
 
   ColumnFilters<String> get imagePath => $composableBuilder(
     column: $table.imagePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get imageMediaId => $composableBuilder(
+    column: $table.imageMediaId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -17081,6 +20017,11 @@ class $$ContextRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get imageMediaId => $composableBuilder(
+    column: $table.imageMediaId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get position => $composableBuilder(
     column: $table.position,
     builder: (column) => ColumnOrderings(column),
@@ -17153,6 +20094,11 @@ class $$ContextRecordsTableAnnotationComposer
 
   GeneratedColumn<String> get imagePath =>
       $composableBuilder(column: $table.imagePath, builder: (column) => column);
+
+  GeneratedColumn<String> get imageMediaId => $composableBuilder(
+    column: $table.imageMediaId,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get position =>
       $composableBuilder(column: $table.position, builder: (column) => column);
@@ -17387,6 +20333,7 @@ class $$ContextRecordsTableTableManager
                 Value<int> color = const Value.absent(),
                 Value<String> icon = const Value.absent(),
                 Value<String?> imagePath = const Value.absent(),
+                Value<String?> imageMediaId = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -17400,6 +20347,7 @@ class $$ContextRecordsTableTableManager
                 color: color,
                 icon: icon,
                 imagePath: imagePath,
+                imageMediaId: imageMediaId,
                 position: position,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -17415,6 +20363,7 @@ class $$ContextRecordsTableTableManager
                 required int color,
                 Value<String> icon = const Value.absent(),
                 Value<String?> imagePath = const Value.absent(),
+                Value<String?> imageMediaId = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -17428,6 +20377,7 @@ class $$ContextRecordsTableTableManager
                 color: color,
                 icon: icon,
                 imagePath: imagePath,
+                imageMediaId: imageMediaId,
                 position: position,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -17664,6 +20614,7 @@ typedef $$ProjectRecordsTableCreateCompanionBuilder =
       required int color,
       Value<String> icon,
       Value<String?> imagePath,
+      Value<String?> imageMediaId,
       Value<int> position,
       required DateTime createdAt,
       required DateTime updatedAt,
@@ -17680,6 +20631,7 @@ typedef $$ProjectRecordsTableUpdateCompanionBuilder =
       Value<int> color,
       Value<String> icon,
       Value<String?> imagePath,
+      Value<String?> imageMediaId,
       Value<int> position,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -17791,6 +20743,11 @@ class $$ProjectRecordsTableFilterComposer
 
   ColumnFilters<String> get imagePath => $composableBuilder(
     column: $table.imagePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get imageMediaId => $composableBuilder(
+    column: $table.imageMediaId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -17925,6 +20882,11 @@ class $$ProjectRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get imageMediaId => $composableBuilder(
+    column: $table.imageMediaId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get position => $composableBuilder(
     column: $table.position,
     builder: (column) => ColumnOrderings(column),
@@ -18020,6 +20982,11 @@ class $$ProjectRecordsTableAnnotationComposer
 
   GeneratedColumn<String> get imagePath =>
       $composableBuilder(column: $table.imagePath, builder: (column) => column);
+
+  GeneratedColumn<String> get imageMediaId => $composableBuilder(
+    column: $table.imageMediaId,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get position =>
       $composableBuilder(column: $table.position, builder: (column) => column);
@@ -18147,6 +21114,7 @@ class $$ProjectRecordsTableTableManager
                 Value<int> color = const Value.absent(),
                 Value<String> icon = const Value.absent(),
                 Value<String?> imagePath = const Value.absent(),
+                Value<String?> imageMediaId = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -18161,6 +21129,7 @@ class $$ProjectRecordsTableTableManager
                 color: color,
                 icon: icon,
                 imagePath: imagePath,
+                imageMediaId: imageMediaId,
                 position: position,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -18177,6 +21146,7 @@ class $$ProjectRecordsTableTableManager
                 required int color,
                 Value<String> icon = const Value.absent(),
                 Value<String?> imagePath = const Value.absent(),
+                Value<String?> imageMediaId = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -18191,6 +21161,7 @@ class $$ProjectRecordsTableTableManager
                 color: color,
                 icon: icon,
                 imagePath: imagePath,
+                imageMediaId: imageMediaId,
                 position: position,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -23765,6 +26736,7 @@ typedef $$ShiftPatternRecordsTableProcessedTableManager =
 typedef $$ShiftSlotRecordsTableCreateCompanionBuilder =
     ShiftSlotRecordsCompanion Function({
       Value<int> id,
+      Value<String> syncId,
       required String patternId,
       required int dayIndex,
       Value<String> label,
@@ -23774,6 +26746,7 @@ typedef $$ShiftSlotRecordsTableCreateCompanionBuilder =
 typedef $$ShiftSlotRecordsTableUpdateCompanionBuilder =
     ShiftSlotRecordsCompanion Function({
       Value<int> id,
+      Value<String> syncId,
       Value<String> patternId,
       Value<int> dayIndex,
       Value<String> label,
@@ -23824,6 +26797,11 @@ class $$ShiftSlotRecordsTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncId => $composableBuilder(
+    column: $table.syncId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -23885,6 +26863,11 @@ class $$ShiftSlotRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get syncId => $composableBuilder(
+    column: $table.syncId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get dayIndex => $composableBuilder(
     column: $table.dayIndex,
     builder: (column) => ColumnOrderings(column),
@@ -23941,6 +26924,9 @@ class $$ShiftSlotRecordsTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get syncId =>
+      $composableBuilder(column: $table.syncId, builder: (column) => column);
 
   GeneratedColumn<int> get dayIndex =>
       $composableBuilder(column: $table.dayIndex, builder: (column) => column);
@@ -24012,6 +26998,7 @@ class $$ShiftSlotRecordsTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> syncId = const Value.absent(),
                 Value<String> patternId = const Value.absent(),
                 Value<int> dayIndex = const Value.absent(),
                 Value<String> label = const Value.absent(),
@@ -24019,6 +27006,7 @@ class $$ShiftSlotRecordsTableTableManager
                 Value<int> endMinute = const Value.absent(),
               }) => ShiftSlotRecordsCompanion(
                 id: id,
+                syncId: syncId,
                 patternId: patternId,
                 dayIndex: dayIndex,
                 label: label,
@@ -24028,6 +27016,7 @@ class $$ShiftSlotRecordsTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> syncId = const Value.absent(),
                 required String patternId,
                 required int dayIndex,
                 Value<String> label = const Value.absent(),
@@ -24035,6 +27024,7 @@ class $$ShiftSlotRecordsTableTableManager
                 required int endMinute,
               }) => ShiftSlotRecordsCompanion.insert(
                 id: id,
+                syncId: syncId,
                 patternId: patternId,
                 dayIndex: dayIndex,
                 label: label,
@@ -24492,6 +27482,7 @@ typedef $$ShiftPatternTagRecordsTableProcessedTableManager =
 typedef $$ShiftExceptionRecordsTableCreateCompanionBuilder =
     ShiftExceptionRecordsCompanion Function({
       Value<int> id,
+      Value<String> syncId,
       required String patternId,
       required int dateKey,
       required String type,
@@ -24502,6 +27493,7 @@ typedef $$ShiftExceptionRecordsTableCreateCompanionBuilder =
 typedef $$ShiftExceptionRecordsTableUpdateCompanionBuilder =
     ShiftExceptionRecordsCompanion Function({
       Value<int> id,
+      Value<String> syncId,
       Value<String> patternId,
       Value<int> dateKey,
       Value<String> type,
@@ -24557,6 +27549,11 @@ class $$ShiftExceptionRecordsTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncId => $composableBuilder(
+    column: $table.syncId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -24623,6 +27620,11 @@ class $$ShiftExceptionRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get syncId => $composableBuilder(
+    column: $table.syncId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get dateKey => $composableBuilder(
     column: $table.dateKey,
     builder: (column) => ColumnOrderings(column),
@@ -24684,6 +27686,9 @@ class $$ShiftExceptionRecordsTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get syncId =>
+      $composableBuilder(column: $table.syncId, builder: (column) => column);
 
   GeneratedColumn<int> get dateKey =>
       $composableBuilder(column: $table.dateKey, builder: (column) => column);
@@ -24767,6 +27772,7 @@ class $$ShiftExceptionRecordsTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> syncId = const Value.absent(),
                 Value<String> patternId = const Value.absent(),
                 Value<int> dateKey = const Value.absent(),
                 Value<String> type = const Value.absent(),
@@ -24775,6 +27781,7 @@ class $$ShiftExceptionRecordsTableTableManager
                 Value<String> note = const Value.absent(),
               }) => ShiftExceptionRecordsCompanion(
                 id: id,
+                syncId: syncId,
                 patternId: patternId,
                 dateKey: dateKey,
                 type: type,
@@ -24785,6 +27792,7 @@ class $$ShiftExceptionRecordsTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> syncId = const Value.absent(),
                 required String patternId,
                 required int dateKey,
                 required String type,
@@ -24793,6 +27801,7 @@ class $$ShiftExceptionRecordsTableTableManager
                 Value<String> note = const Value.absent(),
               }) => ShiftExceptionRecordsCompanion.insert(
                 id: id,
+                syncId: syncId,
                 patternId: patternId,
                 dateKey: dateKey,
                 type: type,
@@ -30160,6 +33169,215 @@ typedef $$SettingRecordsTableProcessedTableManager =
       SettingRow,
       PrefetchHooks Function()
     >;
+typedef $$MediaCacheRecordsTableCreateCompanionBuilder =
+    MediaCacheRecordsCompanion Function({
+      required String mediaId,
+      required String path,
+      required String mime,
+      required int byteSize,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$MediaCacheRecordsTableUpdateCompanionBuilder =
+    MediaCacheRecordsCompanion Function({
+      Value<String> mediaId,
+      Value<String> path,
+      Value<String> mime,
+      Value<int> byteSize,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$MediaCacheRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $MediaCacheRecordsTable> {
+  $$MediaCacheRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get mediaId => $composableBuilder(
+    column: $table.mediaId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mime => $composableBuilder(
+    column: $table.mime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get byteSize => $composableBuilder(
+    column: $table.byteSize,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MediaCacheRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MediaCacheRecordsTable> {
+  $$MediaCacheRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get mediaId => $composableBuilder(
+    column: $table.mediaId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mime => $composableBuilder(
+    column: $table.mime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get byteSize => $composableBuilder(
+    column: $table.byteSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MediaCacheRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MediaCacheRecordsTable> {
+  $$MediaCacheRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get mediaId =>
+      $composableBuilder(column: $table.mediaId, builder: (column) => column);
+
+  GeneratedColumn<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => column);
+
+  GeneratedColumn<String> get mime =>
+      $composableBuilder(column: $table.mime, builder: (column) => column);
+
+  GeneratedColumn<int> get byteSize =>
+      $composableBuilder(column: $table.byteSize, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$MediaCacheRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MediaCacheRecordsTable,
+          MediaCacheRow,
+          $$MediaCacheRecordsTableFilterComposer,
+          $$MediaCacheRecordsTableOrderingComposer,
+          $$MediaCacheRecordsTableAnnotationComposer,
+          $$MediaCacheRecordsTableCreateCompanionBuilder,
+          $$MediaCacheRecordsTableUpdateCompanionBuilder,
+          (
+            MediaCacheRow,
+            BaseReferences<
+              _$AppDatabase,
+              $MediaCacheRecordsTable,
+              MediaCacheRow
+            >,
+          ),
+          MediaCacheRow,
+          PrefetchHooks Function()
+        > {
+  $$MediaCacheRecordsTableTableManager(
+    _$AppDatabase db,
+    $MediaCacheRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MediaCacheRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MediaCacheRecordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MediaCacheRecordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> mediaId = const Value.absent(),
+                Value<String> path = const Value.absent(),
+                Value<String> mime = const Value.absent(),
+                Value<int> byteSize = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MediaCacheRecordsCompanion(
+                mediaId: mediaId,
+                path: path,
+                mime: mime,
+                byteSize: byteSize,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String mediaId,
+                required String path,
+                required String mime,
+                required int byteSize,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => MediaCacheRecordsCompanion.insert(
+                mediaId: mediaId,
+                path: path,
+                mime: mime,
+                byteSize: byteSize,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MediaCacheRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MediaCacheRecordsTable,
+      MediaCacheRow,
+      $$MediaCacheRecordsTableFilterComposer,
+      $$MediaCacheRecordsTableOrderingComposer,
+      $$MediaCacheRecordsTableAnnotationComposer,
+      $$MediaCacheRecordsTableCreateCompanionBuilder,
+      $$MediaCacheRecordsTableUpdateCompanionBuilder,
+      (
+        MediaCacheRow,
+        BaseReferences<_$AppDatabase, $MediaCacheRecordsTable, MediaCacheRow>,
+      ),
+      MediaCacheRow,
+      PrefetchHooks Function()
+    >;
 typedef $$HomePurchaseRecordsTableCreateCompanionBuilder =
     HomePurchaseRecordsCompanion Function({
       required String id,
@@ -31229,6 +34447,1283 @@ typedef $$RemoteSnapshotRecordsTableProcessedTableManager =
       RemoteSnapshotRow,
       PrefetchHooks Function()
     >;
+typedef $$SyncDeviceStateRecordsTableCreateCompanionBuilder =
+    SyncDeviceStateRecordsCompanion Function({
+      required String id,
+      required String nodeId,
+      required String datasetId,
+      required String epoch,
+      required int hlcMillis,
+      required int hlcCounter,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$SyncDeviceStateRecordsTableUpdateCompanionBuilder =
+    SyncDeviceStateRecordsCompanion Function({
+      Value<String> id,
+      Value<String> nodeId,
+      Value<String> datasetId,
+      Value<String> epoch,
+      Value<int> hlcMillis,
+      Value<int> hlcCounter,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$SyncDeviceStateRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncDeviceStateRecordsTable> {
+  $$SyncDeviceStateRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nodeId => $composableBuilder(
+    column: $table.nodeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get datasetId => $composableBuilder(
+    column: $table.datasetId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get epoch => $composableBuilder(
+    column: $table.epoch,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get hlcMillis => $composableBuilder(
+    column: $table.hlcMillis,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get hlcCounter => $composableBuilder(
+    column: $table.hlcCounter,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncDeviceStateRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncDeviceStateRecordsTable> {
+  $$SyncDeviceStateRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nodeId => $composableBuilder(
+    column: $table.nodeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get datasetId => $composableBuilder(
+    column: $table.datasetId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get epoch => $composableBuilder(
+    column: $table.epoch,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get hlcMillis => $composableBuilder(
+    column: $table.hlcMillis,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get hlcCounter => $composableBuilder(
+    column: $table.hlcCounter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncDeviceStateRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncDeviceStateRecordsTable> {
+  $$SyncDeviceStateRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get nodeId =>
+      $composableBuilder(column: $table.nodeId, builder: (column) => column);
+
+  GeneratedColumn<String> get datasetId =>
+      $composableBuilder(column: $table.datasetId, builder: (column) => column);
+
+  GeneratedColumn<String> get epoch =>
+      $composableBuilder(column: $table.epoch, builder: (column) => column);
+
+  GeneratedColumn<int> get hlcMillis =>
+      $composableBuilder(column: $table.hlcMillis, builder: (column) => column);
+
+  GeneratedColumn<int> get hlcCounter => $composableBuilder(
+    column: $table.hlcCounter,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$SyncDeviceStateRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncDeviceStateRecordsTable,
+          SyncDeviceStateRow,
+          $$SyncDeviceStateRecordsTableFilterComposer,
+          $$SyncDeviceStateRecordsTableOrderingComposer,
+          $$SyncDeviceStateRecordsTableAnnotationComposer,
+          $$SyncDeviceStateRecordsTableCreateCompanionBuilder,
+          $$SyncDeviceStateRecordsTableUpdateCompanionBuilder,
+          (
+            SyncDeviceStateRow,
+            BaseReferences<
+              _$AppDatabase,
+              $SyncDeviceStateRecordsTable,
+              SyncDeviceStateRow
+            >,
+          ),
+          SyncDeviceStateRow,
+          PrefetchHooks Function()
+        > {
+  $$SyncDeviceStateRecordsTableTableManager(
+    _$AppDatabase db,
+    $SyncDeviceStateRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncDeviceStateRecordsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$SyncDeviceStateRecordsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$SyncDeviceStateRecordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> nodeId = const Value.absent(),
+                Value<String> datasetId = const Value.absent(),
+                Value<String> epoch = const Value.absent(),
+                Value<int> hlcMillis = const Value.absent(),
+                Value<int> hlcCounter = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncDeviceStateRecordsCompanion(
+                id: id,
+                nodeId: nodeId,
+                datasetId: datasetId,
+                epoch: epoch,
+                hlcMillis: hlcMillis,
+                hlcCounter: hlcCounter,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String nodeId,
+                required String datasetId,
+                required String epoch,
+                required int hlcMillis,
+                required int hlcCounter,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => SyncDeviceStateRecordsCompanion.insert(
+                id: id,
+                nodeId: nodeId,
+                datasetId: datasetId,
+                epoch: epoch,
+                hlcMillis: hlcMillis,
+                hlcCounter: hlcCounter,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncDeviceStateRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncDeviceStateRecordsTable,
+      SyncDeviceStateRow,
+      $$SyncDeviceStateRecordsTableFilterComposer,
+      $$SyncDeviceStateRecordsTableOrderingComposer,
+      $$SyncDeviceStateRecordsTableAnnotationComposer,
+      $$SyncDeviceStateRecordsTableCreateCompanionBuilder,
+      $$SyncDeviceStateRecordsTableUpdateCompanionBuilder,
+      (
+        SyncDeviceStateRow,
+        BaseReferences<
+          _$AppDatabase,
+          $SyncDeviceStateRecordsTable,
+          SyncDeviceStateRow
+        >,
+      ),
+      SyncDeviceStateRow,
+      PrefetchHooks Function()
+    >;
+typedef $$SyncChangeRecordsTableCreateCompanionBuilder =
+    SyncChangeRecordsCompanion Function({
+      Value<int> seq,
+      required String changeId,
+      required String originNodeId,
+      required String originEpoch,
+      required int originSeq,
+      required String entity,
+      required String rowKey,
+      required String op,
+      required String rowJson,
+      required String versionsJson,
+      required DateTime createdAt,
+    });
+typedef $$SyncChangeRecordsTableUpdateCompanionBuilder =
+    SyncChangeRecordsCompanion Function({
+      Value<int> seq,
+      Value<String> changeId,
+      Value<String> originNodeId,
+      Value<String> originEpoch,
+      Value<int> originSeq,
+      Value<String> entity,
+      Value<String> rowKey,
+      Value<String> op,
+      Value<String> rowJson,
+      Value<String> versionsJson,
+      Value<DateTime> createdAt,
+    });
+
+class $$SyncChangeRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncChangeRecordsTable> {
+  $$SyncChangeRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get changeId => $composableBuilder(
+    column: $table.changeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get originNodeId => $composableBuilder(
+    column: $table.originNodeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get originEpoch => $composableBuilder(
+    column: $table.originEpoch,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get originSeq => $composableBuilder(
+    column: $table.originSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entity => $composableBuilder(
+    column: $table.entity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rowKey => $composableBuilder(
+    column: $table.rowKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get op => $composableBuilder(
+    column: $table.op,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rowJson => $composableBuilder(
+    column: $table.rowJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get versionsJson => $composableBuilder(
+    column: $table.versionsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncChangeRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncChangeRecordsTable> {
+  $$SyncChangeRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get changeId => $composableBuilder(
+    column: $table.changeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get originNodeId => $composableBuilder(
+    column: $table.originNodeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get originEpoch => $composableBuilder(
+    column: $table.originEpoch,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get originSeq => $composableBuilder(
+    column: $table.originSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entity => $composableBuilder(
+    column: $table.entity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rowKey => $composableBuilder(
+    column: $table.rowKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get op => $composableBuilder(
+    column: $table.op,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rowJson => $composableBuilder(
+    column: $table.rowJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get versionsJson => $composableBuilder(
+    column: $table.versionsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncChangeRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncChangeRecordsTable> {
+  $$SyncChangeRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get seq =>
+      $composableBuilder(column: $table.seq, builder: (column) => column);
+
+  GeneratedColumn<String> get changeId =>
+      $composableBuilder(column: $table.changeId, builder: (column) => column);
+
+  GeneratedColumn<String> get originNodeId => $composableBuilder(
+    column: $table.originNodeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get originEpoch => $composableBuilder(
+    column: $table.originEpoch,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get originSeq =>
+      $composableBuilder(column: $table.originSeq, builder: (column) => column);
+
+  GeneratedColumn<String> get entity =>
+      $composableBuilder(column: $table.entity, builder: (column) => column);
+
+  GeneratedColumn<String> get rowKey =>
+      $composableBuilder(column: $table.rowKey, builder: (column) => column);
+
+  GeneratedColumn<String> get op =>
+      $composableBuilder(column: $table.op, builder: (column) => column);
+
+  GeneratedColumn<String> get rowJson =>
+      $composableBuilder(column: $table.rowJson, builder: (column) => column);
+
+  GeneratedColumn<String> get versionsJson => $composableBuilder(
+    column: $table.versionsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$SyncChangeRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncChangeRecordsTable,
+          SyncChangeRow,
+          $$SyncChangeRecordsTableFilterComposer,
+          $$SyncChangeRecordsTableOrderingComposer,
+          $$SyncChangeRecordsTableAnnotationComposer,
+          $$SyncChangeRecordsTableCreateCompanionBuilder,
+          $$SyncChangeRecordsTableUpdateCompanionBuilder,
+          (
+            SyncChangeRow,
+            BaseReferences<
+              _$AppDatabase,
+              $SyncChangeRecordsTable,
+              SyncChangeRow
+            >,
+          ),
+          SyncChangeRow,
+          PrefetchHooks Function()
+        > {
+  $$SyncChangeRecordsTableTableManager(
+    _$AppDatabase db,
+    $SyncChangeRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncChangeRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncChangeRecordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SyncChangeRecordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> seq = const Value.absent(),
+                Value<String> changeId = const Value.absent(),
+                Value<String> originNodeId = const Value.absent(),
+                Value<String> originEpoch = const Value.absent(),
+                Value<int> originSeq = const Value.absent(),
+                Value<String> entity = const Value.absent(),
+                Value<String> rowKey = const Value.absent(),
+                Value<String> op = const Value.absent(),
+                Value<String> rowJson = const Value.absent(),
+                Value<String> versionsJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => SyncChangeRecordsCompanion(
+                seq: seq,
+                changeId: changeId,
+                originNodeId: originNodeId,
+                originEpoch: originEpoch,
+                originSeq: originSeq,
+                entity: entity,
+                rowKey: rowKey,
+                op: op,
+                rowJson: rowJson,
+                versionsJson: versionsJson,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> seq = const Value.absent(),
+                required String changeId,
+                required String originNodeId,
+                required String originEpoch,
+                required int originSeq,
+                required String entity,
+                required String rowKey,
+                required String op,
+                required String rowJson,
+                required String versionsJson,
+                required DateTime createdAt,
+              }) => SyncChangeRecordsCompanion.insert(
+                seq: seq,
+                changeId: changeId,
+                originNodeId: originNodeId,
+                originEpoch: originEpoch,
+                originSeq: originSeq,
+                entity: entity,
+                rowKey: rowKey,
+                op: op,
+                rowJson: rowJson,
+                versionsJson: versionsJson,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncChangeRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncChangeRecordsTable,
+      SyncChangeRow,
+      $$SyncChangeRecordsTableFilterComposer,
+      $$SyncChangeRecordsTableOrderingComposer,
+      $$SyncChangeRecordsTableAnnotationComposer,
+      $$SyncChangeRecordsTableCreateCompanionBuilder,
+      $$SyncChangeRecordsTableUpdateCompanionBuilder,
+      (
+        SyncChangeRow,
+        BaseReferences<_$AppDatabase, $SyncChangeRecordsTable, SyncChangeRow>,
+      ),
+      SyncChangeRow,
+      PrefetchHooks Function()
+    >;
+typedef $$SyncFieldVersionRecordsTableCreateCompanionBuilder =
+    SyncFieldVersionRecordsCompanion Function({
+      required String entity,
+      required String rowKey,
+      required String field,
+      required String version,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$SyncFieldVersionRecordsTableUpdateCompanionBuilder =
+    SyncFieldVersionRecordsCompanion Function({
+      Value<String> entity,
+      Value<String> rowKey,
+      Value<String> field,
+      Value<String> version,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$SyncFieldVersionRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncFieldVersionRecordsTable> {
+  $$SyncFieldVersionRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get entity => $composableBuilder(
+    column: $table.entity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rowKey => $composableBuilder(
+    column: $table.rowKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get field => $composableBuilder(
+    column: $table.field,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncFieldVersionRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncFieldVersionRecordsTable> {
+  $$SyncFieldVersionRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get entity => $composableBuilder(
+    column: $table.entity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rowKey => $composableBuilder(
+    column: $table.rowKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get field => $composableBuilder(
+    column: $table.field,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncFieldVersionRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncFieldVersionRecordsTable> {
+  $$SyncFieldVersionRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get entity =>
+      $composableBuilder(column: $table.entity, builder: (column) => column);
+
+  GeneratedColumn<String> get rowKey =>
+      $composableBuilder(column: $table.rowKey, builder: (column) => column);
+
+  GeneratedColumn<String> get field =>
+      $composableBuilder(column: $table.field, builder: (column) => column);
+
+  GeneratedColumn<String> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$SyncFieldVersionRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncFieldVersionRecordsTable,
+          SyncFieldVersionRow,
+          $$SyncFieldVersionRecordsTableFilterComposer,
+          $$SyncFieldVersionRecordsTableOrderingComposer,
+          $$SyncFieldVersionRecordsTableAnnotationComposer,
+          $$SyncFieldVersionRecordsTableCreateCompanionBuilder,
+          $$SyncFieldVersionRecordsTableUpdateCompanionBuilder,
+          (
+            SyncFieldVersionRow,
+            BaseReferences<
+              _$AppDatabase,
+              $SyncFieldVersionRecordsTable,
+              SyncFieldVersionRow
+            >,
+          ),
+          SyncFieldVersionRow,
+          PrefetchHooks Function()
+        > {
+  $$SyncFieldVersionRecordsTableTableManager(
+    _$AppDatabase db,
+    $SyncFieldVersionRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncFieldVersionRecordsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$SyncFieldVersionRecordsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$SyncFieldVersionRecordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> entity = const Value.absent(),
+                Value<String> rowKey = const Value.absent(),
+                Value<String> field = const Value.absent(),
+                Value<String> version = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncFieldVersionRecordsCompanion(
+                entity: entity,
+                rowKey: rowKey,
+                field: field,
+                version: version,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String entity,
+                required String rowKey,
+                required String field,
+                required String version,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => SyncFieldVersionRecordsCompanion.insert(
+                entity: entity,
+                rowKey: rowKey,
+                field: field,
+                version: version,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncFieldVersionRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncFieldVersionRecordsTable,
+      SyncFieldVersionRow,
+      $$SyncFieldVersionRecordsTableFilterComposer,
+      $$SyncFieldVersionRecordsTableOrderingComposer,
+      $$SyncFieldVersionRecordsTableAnnotationComposer,
+      $$SyncFieldVersionRecordsTableCreateCompanionBuilder,
+      $$SyncFieldVersionRecordsTableUpdateCompanionBuilder,
+      (
+        SyncFieldVersionRow,
+        BaseReferences<
+          _$AppDatabase,
+          $SyncFieldVersionRecordsTable,
+          SyncFieldVersionRow
+        >,
+      ),
+      SyncFieldVersionRow,
+      PrefetchHooks Function()
+    >;
+typedef $$SyncTombstoneRecordsTableCreateCompanionBuilder =
+    SyncTombstoneRecordsCompanion Function({
+      required String entity,
+      required String rowKey,
+      required String version,
+      required String rowJson,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$SyncTombstoneRecordsTableUpdateCompanionBuilder =
+    SyncTombstoneRecordsCompanion Function({
+      Value<String> entity,
+      Value<String> rowKey,
+      Value<String> version,
+      Value<String> rowJson,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$SyncTombstoneRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncTombstoneRecordsTable> {
+  $$SyncTombstoneRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get entity => $composableBuilder(
+    column: $table.entity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rowKey => $composableBuilder(
+    column: $table.rowKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rowJson => $composableBuilder(
+    column: $table.rowJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncTombstoneRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncTombstoneRecordsTable> {
+  $$SyncTombstoneRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get entity => $composableBuilder(
+    column: $table.entity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rowKey => $composableBuilder(
+    column: $table.rowKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rowJson => $composableBuilder(
+    column: $table.rowJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncTombstoneRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncTombstoneRecordsTable> {
+  $$SyncTombstoneRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get entity =>
+      $composableBuilder(column: $table.entity, builder: (column) => column);
+
+  GeneratedColumn<String> get rowKey =>
+      $composableBuilder(column: $table.rowKey, builder: (column) => column);
+
+  GeneratedColumn<String> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get rowJson =>
+      $composableBuilder(column: $table.rowJson, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$SyncTombstoneRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncTombstoneRecordsTable,
+          SyncTombstoneRow,
+          $$SyncTombstoneRecordsTableFilterComposer,
+          $$SyncTombstoneRecordsTableOrderingComposer,
+          $$SyncTombstoneRecordsTableAnnotationComposer,
+          $$SyncTombstoneRecordsTableCreateCompanionBuilder,
+          $$SyncTombstoneRecordsTableUpdateCompanionBuilder,
+          (
+            SyncTombstoneRow,
+            BaseReferences<
+              _$AppDatabase,
+              $SyncTombstoneRecordsTable,
+              SyncTombstoneRow
+            >,
+          ),
+          SyncTombstoneRow,
+          PrefetchHooks Function()
+        > {
+  $$SyncTombstoneRecordsTableTableManager(
+    _$AppDatabase db,
+    $SyncTombstoneRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncTombstoneRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncTombstoneRecordsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$SyncTombstoneRecordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> entity = const Value.absent(),
+                Value<String> rowKey = const Value.absent(),
+                Value<String> version = const Value.absent(),
+                Value<String> rowJson = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncTombstoneRecordsCompanion(
+                entity: entity,
+                rowKey: rowKey,
+                version: version,
+                rowJson: rowJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String entity,
+                required String rowKey,
+                required String version,
+                required String rowJson,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => SyncTombstoneRecordsCompanion.insert(
+                entity: entity,
+                rowKey: rowKey,
+                version: version,
+                rowJson: rowJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncTombstoneRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncTombstoneRecordsTable,
+      SyncTombstoneRow,
+      $$SyncTombstoneRecordsTableFilterComposer,
+      $$SyncTombstoneRecordsTableOrderingComposer,
+      $$SyncTombstoneRecordsTableAnnotationComposer,
+      $$SyncTombstoneRecordsTableCreateCompanionBuilder,
+      $$SyncTombstoneRecordsTableUpdateCompanionBuilder,
+      (
+        SyncTombstoneRow,
+        BaseReferences<
+          _$AppDatabase,
+          $SyncTombstoneRecordsTable,
+          SyncTombstoneRow
+        >,
+      ),
+      SyncTombstoneRow,
+      PrefetchHooks Function()
+    >;
+typedef $$SyncPeerStateRecordsTableCreateCompanionBuilder =
+    SyncPeerStateRecordsCompanion Function({
+      required String peerDeviceId,
+      required String datasetId,
+      required String peerEpoch,
+      Value<int> lastPulledSeq,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> lastError,
+      Value<int> rowid,
+    });
+typedef $$SyncPeerStateRecordsTableUpdateCompanionBuilder =
+    SyncPeerStateRecordsCompanion Function({
+      Value<String> peerDeviceId,
+      Value<String> datasetId,
+      Value<String> peerEpoch,
+      Value<int> lastPulledSeq,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> lastError,
+      Value<int> rowid,
+    });
+
+class $$SyncPeerStateRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncPeerStateRecordsTable> {
+  $$SyncPeerStateRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get peerDeviceId => $composableBuilder(
+    column: $table.peerDeviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get datasetId => $composableBuilder(
+    column: $table.datasetId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get peerEpoch => $composableBuilder(
+    column: $table.peerEpoch,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastPulledSeq => $composableBuilder(
+    column: $table.lastPulledSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncPeerStateRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncPeerStateRecordsTable> {
+  $$SyncPeerStateRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get peerDeviceId => $composableBuilder(
+    column: $table.peerDeviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get datasetId => $composableBuilder(
+    column: $table.datasetId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get peerEpoch => $composableBuilder(
+    column: $table.peerEpoch,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lastPulledSeq => $composableBuilder(
+    column: $table.lastPulledSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncPeerStateRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncPeerStateRecordsTable> {
+  $$SyncPeerStateRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get peerDeviceId => $composableBuilder(
+    column: $table.peerDeviceId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get datasetId =>
+      $composableBuilder(column: $table.datasetId, builder: (column) => column);
+
+  GeneratedColumn<String> get peerEpoch =>
+      $composableBuilder(column: $table.peerEpoch, builder: (column) => column);
+
+  GeneratedColumn<int> get lastPulledSeq => $composableBuilder(
+    column: $table.lastPulledSeq,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+}
+
+class $$SyncPeerStateRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncPeerStateRecordsTable,
+          SyncPeerStateRow,
+          $$SyncPeerStateRecordsTableFilterComposer,
+          $$SyncPeerStateRecordsTableOrderingComposer,
+          $$SyncPeerStateRecordsTableAnnotationComposer,
+          $$SyncPeerStateRecordsTableCreateCompanionBuilder,
+          $$SyncPeerStateRecordsTableUpdateCompanionBuilder,
+          (
+            SyncPeerStateRow,
+            BaseReferences<
+              _$AppDatabase,
+              $SyncPeerStateRecordsTable,
+              SyncPeerStateRow
+            >,
+          ),
+          SyncPeerStateRow,
+          PrefetchHooks Function()
+        > {
+  $$SyncPeerStateRecordsTableTableManager(
+    _$AppDatabase db,
+    $SyncPeerStateRecordsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncPeerStateRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncPeerStateRecordsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$SyncPeerStateRecordsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> peerDeviceId = const Value.absent(),
+                Value<String> datasetId = const Value.absent(),
+                Value<String> peerEpoch = const Value.absent(),
+                Value<int> lastPulledSeq = const Value.absent(),
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncPeerStateRecordsCompanion(
+                peerDeviceId: peerDeviceId,
+                datasetId: datasetId,
+                peerEpoch: peerEpoch,
+                lastPulledSeq: lastPulledSeq,
+                lastSyncedAt: lastSyncedAt,
+                lastError: lastError,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String peerDeviceId,
+                required String datasetId,
+                required String peerEpoch,
+                Value<int> lastPulledSeq = const Value.absent(),
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncPeerStateRecordsCompanion.insert(
+                peerDeviceId: peerDeviceId,
+                datasetId: datasetId,
+                peerEpoch: peerEpoch,
+                lastPulledSeq: lastPulledSeq,
+                lastSyncedAt: lastSyncedAt,
+                lastError: lastError,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncPeerStateRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncPeerStateRecordsTable,
+      SyncPeerStateRow,
+      $$SyncPeerStateRecordsTableFilterComposer,
+      $$SyncPeerStateRecordsTableOrderingComposer,
+      $$SyncPeerStateRecordsTableAnnotationComposer,
+      $$SyncPeerStateRecordsTableCreateCompanionBuilder,
+      $$SyncPeerStateRecordsTableUpdateCompanionBuilder,
+      (
+        SyncPeerStateRow,
+        BaseReferences<
+          _$AppDatabase,
+          $SyncPeerStateRecordsTable,
+          SyncPeerStateRow
+        >,
+      ),
+      SyncPeerStateRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -31301,10 +35796,28 @@ class $AppDatabaseManager {
       $$PairedDeviceRecordsTableTableManager(_db, _db.pairedDeviceRecords);
   $$SettingRecordsTableTableManager get settingRecords =>
       $$SettingRecordsTableTableManager(_db, _db.settingRecords);
+  $$MediaCacheRecordsTableTableManager get mediaCacheRecords =>
+      $$MediaCacheRecordsTableTableManager(_db, _db.mediaCacheRecords);
   $$HomePurchaseRecordsTableTableManager get homePurchaseRecords =>
       $$HomePurchaseRecordsTableTableManager(_db, _db.homePurchaseRecords);
   $$MaintenanceLogRecordsTableTableManager get maintenanceLogRecords =>
       $$MaintenanceLogRecordsTableTableManager(_db, _db.maintenanceLogRecords);
   $$RemoteSnapshotRecordsTableTableManager get remoteSnapshotRecords =>
       $$RemoteSnapshotRecordsTableTableManager(_db, _db.remoteSnapshotRecords);
+  $$SyncDeviceStateRecordsTableTableManager get syncDeviceStateRecords =>
+      $$SyncDeviceStateRecordsTableTableManager(
+        _db,
+        _db.syncDeviceStateRecords,
+      );
+  $$SyncChangeRecordsTableTableManager get syncChangeRecords =>
+      $$SyncChangeRecordsTableTableManager(_db, _db.syncChangeRecords);
+  $$SyncFieldVersionRecordsTableTableManager get syncFieldVersionRecords =>
+      $$SyncFieldVersionRecordsTableTableManager(
+        _db,
+        _db.syncFieldVersionRecords,
+      );
+  $$SyncTombstoneRecordsTableTableManager get syncTombstoneRecords =>
+      $$SyncTombstoneRecordsTableTableManager(_db, _db.syncTombstoneRecords);
+  $$SyncPeerStateRecordsTableTableManager get syncPeerStateRecords =>
+      $$SyncPeerStateRecordsTableTableManager(_db, _db.syncPeerStateRecords);
 }

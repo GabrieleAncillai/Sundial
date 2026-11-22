@@ -231,7 +231,7 @@
   "defaultReminders": "Default reminders",
   "defaultRemindersSubtitle": "Pre-selected when you add an entry.",
   "reminderAtTime": "At the start time",
-  "reminderMinutesBefore": "{count} minutes before",
+  "reminderMinutesBefore": "{count, plural, =1{1 minute before} other{{count} minutes before}}",
   "@reminderMinutesBefore": {
     "placeholders": {
       "count": {
@@ -239,7 +239,7 @@
       }
     }
   },
-  "reminderHoursBefore": "{count} hours before",
+  "reminderHoursBefore": "{count, plural, =1{1 hour before} other{{count} hours before}}",
   "@reminderHoursBefore": {
     "placeholders": {
       "count": {
@@ -247,7 +247,7 @@
       }
     }
   },
-  "reminderDaysBefore": "{count} days before",
+  "reminderDaysBefore": "{count, plural, =1{1 day before} other{{count} days before}}",
   "@reminderDaysBefore": {
     "placeholders": {
       "count": {
@@ -527,6 +527,22 @@
   "noShiftPatterns": "No shift patterns yet.",
   "noSlots": "No slots on this day.",
   "noExceptions": "No exceptions.",
+  "adjustShifts": "Adjust shifts",
+  "shiftDayTitle": "Day shifts",
+  "shiftDayUsual": "Usual",
+  "shiftDayWorking": "Working",
+  "shiftDayFree": "Free",
+  "shiftDayFreeAllDay": "Free all day",
+  "shiftDayShiftCount": "{count} shifts",
+  "@shiftDayShiftCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shiftDayMultipleHint": "This day has more than one shift. Edit the pattern to change them.",
+  "shiftTimes": "Shift times",
   "shiftChecklist": "Shift checklist",
   "shiftChecklistSubtitle": "Items to tick off on each shift of this pattern.",
   "addChecklistItem": "Add checklist item",
@@ -590,6 +606,7 @@
   "pair": "Pair",
   "pairedDevices": "Paired devices",
   "noPairedDevices": "No paired devices yet.",
+  "noPairedDevicesHint": "Pair a phone or computer to sync your plan here.",
   "unpair": "Unpair",
   "unpairQuestion": "Unpair this device?",
   "unpairBody": "It disappears from this device. The other device keeps its own copy.",
@@ -630,6 +647,105 @@
       }
     }
   },
+  "remoteContexts": "{count} jobs, homes or people",
+  "@remoteContexts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "remoteInventory": "{count} inventory items",
+  "@remoteInventory": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncStatusNever": "Not synced yet",
+  "syncStatusPulling": "Syncing…",
+  "syncStatusLast": "Last synced {time}",
+  "@syncStatusLast": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncStatusError": "Sync error: {error}",
+  "@syncStatusError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "syncStatusReplacing": "Replacing this device's plan…",
+  "differentPlanTitle": "Different plan",
+  "differentPlanBody": "{name} keeps its own plan. Choose which plan this device should use.",
+  "@differentPlanBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "usePeerPlan": "Use {name}'s plan",
+  "@usePeerPlan": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "keepThisPlan": "Keep this plan",
+  "keepThisPlanNote": "To adopt this plan instead, open Sundial on {name} and choose “Replace this device from …”.",
+  "@keepThisPlanNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "replaceFromDevice": "Replace this device from {name}",
+  "@replaceFromDevice": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "replaceWarningTitle": "Replace this device's plan?",
+  "replaceWarningBody": "The plan on {name} replaces this device's plan. Identity, pairing and device-local settings stay. A backup is written first when this device has data.",
+  "@replaceWarningBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "replacePinLabel": "This device's PIN",
+  "replaceAction": "Replace",
+  "replaceDone": "The plan was replaced.",
+  "replaceFailed": "Could not replace the plan: {error}",
+  "@replaceFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "knownDevicesTitle": "Known from your other devices",
+  "knownDevicesBody": "These devices share a plan with a paired device. Pair them directly so their changes reach this device.",
+  "knownDeviceFingerprint": "Fingerprint {fingerprint}",
+  "@knownDeviceFingerprint": {
+    "placeholders": {
+      "fingerprint": {
+        "type": "String"
+      }
+    }
+  },
   "serverOnPort": "Server on port {port}",
   "@serverOnPort": {
     "placeholders": {
@@ -642,6 +758,7 @@
   "discoveryUnavailable": "Network discovery is unavailable. Use the address manually.",
   "identityFingerprint": "Certificate fingerprint",
   "manualAddress": "Device address",
+  "manualAddressHint": "Enter the address and port shown on the other device. Use this when network discovery is blocked.",
   "hostHint": "192.168.1.20",
   "mcpEndpoint": "Local MCP endpoint",
   "mcpEndpointSubtitle": "Read-only by default, loopback only, off unless enabled.",
@@ -671,7 +788,7 @@
   },
   "mcpStopped": "MCP endpoint is off.",
   "search": "Search",
-  "searchHint": "Search entries, tags and home items",
+  "searchHint": "Search entries, tags, items",
   "searchPrompt": "Type a title, a note, a tag or a household item.",
   "searchNoResults": "Nothing matches “{query}”.",
   "@searchNoResults": {
@@ -892,7 +1009,7 @@
   "noJobs": "No jobs yet.",
   "noJobsHint": "Add a job to give its shifts, projects and tasks a home.",
   "noHomes": "No homes yet.",
-  "noHomesHint": "Add a home to organise inventory, gadgets and house projects.",
+  "noHomesHint": "Homes group house projects and tasks. Inventory and shopping work without one.",
   "noPeople": "No people or groups yet.",
   "noPeopleHint": "Use projects to keep time with different people separate.",
   "noProjects": "No projects yet.",
@@ -929,6 +1046,7 @@
       }
     }
   },
+  "addTask": "Add a task",
   "addTaskFor": "Add a task for {name}",
   "@addTaskFor": {
     "placeholders": {
@@ -1122,6 +1240,7 @@
   "bySpace": "By space",
   "byProject": "By project",
   "byDay": "By day",
+  "noDataInRange": "No data in this range.",
   "habitConsistency": "Habit consistency",
   "rangeWeek": "Week",
   "rangeMonth": "Month",
@@ -1222,6 +1341,7 @@
   "dataDeleteIncomplete": "The plan was deleted, but some media or automatic backups could not be removed. Check storage permissions and delete them from the app's data folder.",
   "nearbyDevices": "Nearby devices",
   "scanningDevices": "Looking for Sundial devices on this network…",
+  "searchingNearbyHint": "Keep both devices on the same network. You can also enter the address manually.",
   "noNearbyDevices": "No nearby Sundial devices found. Make sure the other device has online functionalities enabled.",
   "pairWithDevice": "Pair with {name}",
   "@pairWithDevice": {
@@ -1241,7 +1361,52 @@
       }
     }
   },
-  "syncExplainer": "Sundial finds your other devices on the local network. Pairing stores a shared key once, so changing networks or IP addresses does not break the link. Sync stays read-only and never replaces your local plan.",
+  "sendPairingRequest": "Send pairing request",
+  "sendPairingRequestHint": "The other device shows an approval card. Approve it there with that device's PIN.",
+  "waitingForApproval": "Waiting for approval on {name}…",
+  "@waitingForApproval": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pairingRequestTitle": "Pairing request",
+  "pairingRequestBody": "{name} ({username}) wants to pair with this device.",
+  "@pairingRequestBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "pairingRequestCode": "Check this code on both devices",
+  "pairingRequestCodeHint": "The codes must match before you approve. The PIN is never sent.",
+  "pairingRequestFingerprint": "Certificate fingerprint",
+  "pairingPlanSame": "Both devices use the same plan.",
+  "pairingPlanDifferent": "These devices have different plans. Pairing stores the link; full sync will ask which plan to keep.",
+  "pairingApproved": "Pairing approved",
+  "pairingApprovedHint": "Finish the request on {name}. It will connect on its own.",
+  "@pairingApprovedHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pairingApprovePinHint": "Your PIN approves this request locally.",
+  "pairingRequestRejected": "The other device rejected the request.",
+  "pairingRequestExpired": "The request expired. Make sure Sundial is open on the other device and send it again.",
+  "pairingFailedGeneric": "Pairing did not finish. Try again.",
+  "invalidHostPort": "Enter a valid address and port.",
+  "approve": "Approve",
+  "reject": "Reject",
+  "back": "Back",
+  "tryAgain": "Try again",
+  "syncExplainer": "Sundial finds your other devices on the local network. Pairing stores a shared key once, so changing networks or IP addresses does not break the link. Changes then replicate directly over the LAN; the first pairing asks which plan should survive.",
   "pairSuccess": "Device paired.",
   "pairFailed": "Could not pair: {error}",
   "@pairFailed": {

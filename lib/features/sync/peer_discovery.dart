@@ -25,7 +25,7 @@ class DiscoveredPeer {
 abstract class PeerDiscovery {
   Stream<DiscoveredPeer> get peers;
 
-  Future<void> start({required LocalIdentity identity, required int port});
+  Future<void> start({required LocalIdentity identity, required int port, required String host});
 
   Future<void> stop();
 
@@ -50,16 +50,17 @@ class BonsoirPeerDiscovery implements PeerDiscovery {
   Stream<DiscoveredPeer> get peers => _peers.stream;
 
   @override
-  Future<void> start({required LocalIdentity identity, required int port}) async {
+  Future<void> start({required LocalIdentity identity, required int port, required String host}) async {
     final fingerprint = await fingerprintOfCertificatePem(identity.certificatePem);
     _selfFingerprint = fingerprint;
-    // Only the public certificate fingerprint is advertised. An unauthenticated
-    // LAN listener must not learn the username or device id before pairing.
+    // The TXT address is the IPv4 the HTTPS server actually bound. Avahi on
+    // Linux may resolve to an IPv6 link-local address first, which an
+    // IPv4-only listener cannot answer.
     final service = BonsoirService(
       name: identity.deviceName,
       type: serviceType,
       port: port,
-      attributes: {'fp': fingerprint},
+      attributes: {'fp': fingerprint, if (host.isNotEmpty) 'ip4': host},
     );
 
     final broadcast = BonsoirBroadcast(service: service, printLogs: false);
@@ -84,12 +85,17 @@ class BonsoirPeerDiscovery implements PeerDiscovery {
     if (event is! BonsoirDiscoveryServiceResolvedEvent) return;
     final service = event.service;
     final fingerprint = service.attributes['fp'];
-    final host = service.host;
+    final host = resolvedHost(service);
     if (fingerprint == null || fingerprint == _selfFingerprint || host == null || host.isEmpty) return;
     _peers.add(
       DiscoveredPeer(deviceName: service.name, fingerprint: fingerprint, host: host, port: service.port),
     );
   }
+
+  /// Prefer the IPv4 address advertised in the TXT record. Avahi can resolve a
+  /// dual-stack host to an IPv6 link-local address that an IPv4-only listener
+  /// cannot answer.
+  static String? resolvedHost(BonsoirService service) => service.attributes['ip4'] ?? service.host;
 
   @override
   Future<void> stop() async {

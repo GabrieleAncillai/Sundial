@@ -21,6 +21,41 @@ abstract final class SyncPayloads {
     'position': tag.position,
   };
 
+  static Map<String, Object?> contextJson(PlannerContext context) => {
+    'id': context.id,
+    'spaceId': context.spaceId,
+    'name': context.name,
+    'description': context.description,
+    'color': context.colorValue,
+    'icon': context.icon,
+    'position': context.position,
+  };
+
+  static Map<String, Object?> projectJson(Project project) => {
+    'id': project.id,
+    'spaceId': project.spaceId,
+    'contextId': project.contextId,
+    'name': project.name,
+    'description': project.description,
+    'color': project.colorValue,
+    'icon': project.icon,
+    'position': project.position,
+  };
+
+  static Map<String, Object?> habitJson(Habit habit) => {
+    'id': habit.id,
+    'spaceId': habit.spaceId,
+    'contextId': habit.contextId,
+    'name': habit.name,
+    'description': habit.description,
+    'color': habit.colorValue,
+    'icon': habit.icon,
+    'targetPerWeek': habit.targetPerWeek,
+    'weekdays': habit.weekdays.toList()..sort(),
+    'position': habit.position,
+    'archived': habit.archived,
+  };
+
   static Map<String, Object?> entryJson(Entry entry) => {
     'id': entry.id,
     'spaceId': entry.spaceId,
@@ -151,6 +186,9 @@ abstract final class SyncPayloads {
     final shifts = await repository.watchShifts(today, end, timeZone).first;
     final spaces = await repository.watchSpaces().first;
     final tags = await repository.watchTags().first;
+    final contexts = await repository.watchContexts().first;
+    final projects = await repository.watchProjects().first;
+    final habits = await repository.watchHabits().first;
     final home = await repository.watchHomeItems().first;
     final shopping = await repository.watchShoppingItems().first;
 
@@ -159,6 +197,9 @@ abstract final class SyncPayloads {
       'range': {'start': today.iso, 'end': end.iso},
       'spaces': [for (final space in spaces) spaceJson(space)],
       'tags': [for (final tag in tags) tagJson(tag)],
+      'contexts': [for (final context in contexts) contextJson(context)],
+      'projects': [for (final project in projects) projectJson(project)],
+      'habits': [for (final habit in habits) habitJson(habit)],
       'entries': [for (final occurrence in entries) occurrenceJson(occurrence)],
       'shifts': [for (final shift in shifts) shiftJson(shift)],
       'home': [for (final item in home) homeItemJson(item)],

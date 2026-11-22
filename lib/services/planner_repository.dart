@@ -111,8 +111,11 @@ class PlannerRepository {
   Future<List<ShiftChecklistItem>> readShiftChecklistItems(String patternId) =>
       _database.readShiftChecklistItems(patternId);
 
-  Future<void> saveShiftChecklistItems(String patternId, List<ShiftChecklistItem> items) =>
-      _database.saveShiftChecklistItems(patternId, items);
+  Future<void> saveShiftChecklistItems(
+    String patternId,
+    List<ShiftChecklistItem> items, {
+    Set<String>? previousIds,
+  }) => _database.saveShiftChecklistItems(patternId, items, previousIds: previousIds);
 
   Future<Set<String>> readShiftChecklistCompletions(
     String patternId,
@@ -208,6 +211,10 @@ class PlannerRepository {
 
   Future<void> writeSetting(String key, String value) => _database.writeSetting(key, value);
 
+  Future<String> ensureSyncDatasetId() => _database.ensureSyncDatasetId();
+
+  Future<bool> hasUserData() => _database.hasUserData();
+
   /// Entries whose viewer-local date falls between [start] and [end].
   Stream<List<EntryOccurrence>> watchEntries(LocalDate start, LocalDate end, String viewerTimeZone) =>
       _database.watchEntriesBetween(start, end, viewerTimeZone);
@@ -223,7 +230,8 @@ class PlannerRepository {
 
   Stream<List<ShiftPattern>> watchShiftPatterns() => _database.watchShiftPatterns();
 
-  Future<void> saveEntry(Entry entry) => _database.saveEntry(entry);
+  Future<void> saveEntry(Entry entry, {Set<String>? removedTagIds}) =>
+      _database.saveEntry(entry, removedTagIds: removedTagIds);
 
   /// Importers replace their own read-only rows. User-facing writes use
   /// [saveEntry] and are rejected for those rows.
@@ -237,8 +245,11 @@ class PlannerRepository {
 
   Future<Map<String, List<Reminder>>> readAllReminders() => _database.readAllReminders();
 
-  Future<void> saveRemindersForEntry(String entryId, List<Reminder> reminders) =>
-      _database.saveRemindersForEntry(entryId, reminders);
+  Future<void> saveRemindersForEntry(
+    String entryId,
+    List<Reminder> reminders, {
+    Set<String>? removedReminderIds,
+  }) => _database.saveRemindersForEntry(entryId, reminders, removedReminderIds: removedReminderIds);
 
   Future<void> setEntryStatus(String id, EntryStatus status) => _database.setEntryStatus(id, status);
 
@@ -317,7 +328,13 @@ class PlannerRepository {
 
   Future<void> clearAllData() => _database.clearAllData();
 
-  Future<void> saveShiftPattern(ShiftPattern pattern) => _database.saveShiftPattern(pattern);
+  Future<void> saveShiftPattern(ShiftPattern pattern, {ShiftPattern? previous}) =>
+      _database.saveShiftPattern(pattern, previous: previous);
+
+  /// Sets or clears the shift override for one pattern on one date. A null
+  /// [exception] restores the pattern's own slots for that day.
+  Future<void> setShiftDayOverride(String patternId, LocalDate date, ShiftException? exception) =>
+      _database.setShiftDayOverride(patternId, date, exception);
 
   Future<void> deleteShiftPattern(String id) => _database.softDeleteShiftPattern(id);
 }

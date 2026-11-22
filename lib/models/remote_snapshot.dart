@@ -15,6 +15,10 @@ class RemoteSnapshot {
     this.nextShiftLabel,
     this.nextShiftStart,
     required this.openShopping,
+    this.contextCount = 0,
+    this.projectCount = 0,
+    this.homeItemCount = 0,
+    this.shoppingItemCount = 0,
     this.payload = const <String, Object?>{},
   });
 
@@ -27,6 +31,10 @@ class RemoteSnapshot {
   final String? nextShiftLabel;
   final DateTime? nextShiftStart;
   final int openShopping;
+  final int contextCount;
+  final int projectCount;
+  final int homeItemCount;
+  final int shoppingItemCount;
 
   /// The full read-only query payload, kept so a restart can show the same
   /// snapshot without calling the peer again.
@@ -76,6 +84,10 @@ class RemoteSnapshot {
       nextShiftLabel: nextShiftLabel,
       nextShiftStart: nextShiftStart,
       openShopping: data['openShopping'] is int ? data['openShopping'] as int : 0,
+      contextCount: (data['contexts'] as List?)?.length ?? 0,
+      projectCount: (data['projects'] as List?)?.length ?? 0,
+      homeItemCount: (data['home'] as List?)?.length ?? 0,
+      shoppingItemCount: (data['shopping'] as List?)?.length ?? 0,
       payload: data,
     );
   }

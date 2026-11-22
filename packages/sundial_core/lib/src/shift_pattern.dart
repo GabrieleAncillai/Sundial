@@ -7,6 +7,7 @@ import 'time.dart';
 /// 1440 means the shift crosses midnight (22:00 to 02:00 is 1320 to 1560).
 class ShiftSlot {
   const ShiftSlot({
+    this.syncId = '',
     required this.dayIndex,
     this.label = '',
     required this.startMinute,
@@ -15,6 +16,9 @@ class ShiftSlot {
        assert(startMinute >= 0 && startMinute < 1440),
        assert(endMinute > startMinute && endMinute <= 2880);
 
+  /// Stable identity across devices. Legacy rows and hand-made JSON may leave
+  /// it empty until the database assigns one.
+  final String syncId;
   final int dayIndex;
   final String label;
   final int startMinute;
@@ -28,14 +32,17 @@ class ShiftSlot {
   /// it so two slots on the same day stay independent.
   String get key => '$dayIndex:$startMinute:$endMinute:$label';
 
-  ShiftSlot copyWith({int? dayIndex, String? label, int? startMinute, int? endMinute}) => ShiftSlot(
-    dayIndex: dayIndex ?? this.dayIndex,
-    label: label ?? this.label,
-    startMinute: startMinute ?? this.startMinute,
-    endMinute: endMinute ?? this.endMinute,
-  );
+  ShiftSlot copyWith({String? syncId, int? dayIndex, String? label, int? startMinute, int? endMinute}) =>
+      ShiftSlot(
+        syncId: syncId ?? this.syncId,
+        dayIndex: dayIndex ?? this.dayIndex,
+        label: label ?? this.label,
+        startMinute: startMinute ?? this.startMinute,
+        endMinute: endMinute ?? this.endMinute,
+      );
 
   Map<String, Object?> toJson() => <String, Object?>{
+    if (syncId.isNotEmpty) 'syncId': syncId,
     'dayIndex': dayIndex,
     'label': label,
     'startMinute': startMinute,
@@ -43,6 +50,7 @@ class ShiftSlot {
   };
 
   factory ShiftSlot.fromJson(Map<String, Object?> json) {
+    final syncId = json['syncId'];
     final dayIndex = json['dayIndex'];
     final label = json['label'];
     final startMinute = json['startMinute'];
@@ -50,7 +58,13 @@ class ShiftSlot {
     if (dayIndex is! int || label is! String || startMinute is! int || endMinute is! int) {
       throw const FormatException('Invalid shift slot');
     }
-    return ShiftSlot(dayIndex: dayIndex, label: label, startMinute: startMinute, endMinute: endMinute);
+    return ShiftSlot(
+      syncId: syncId is String ? syncId : '',
+      dayIndex: dayIndex,
+      label: label,
+      startMinute: startMinute,
+      endMinute: endMinute,
+    );
   }
 }
 
@@ -62,6 +76,7 @@ enum ShiftExceptionType { free, override, extra }
 /// slots for the date. `extra` adds a shift without removing the cycle slots.
 class ShiftException {
   const ShiftException({
+    this.syncId = '',
     required this.date,
     required this.type,
     this.startMinute,
@@ -69,6 +84,9 @@ class ShiftException {
     this.note = '',
   });
 
+  /// Stable identity across devices. Legacy rows and hand-made JSON may leave
+  /// it empty until the database assigns one.
+  final String syncId;
   final LocalDate date;
   final ShiftExceptionType type;
   final int? startMinute;
@@ -77,7 +95,24 @@ class ShiftException {
 
   bool get hasTimes => startMinute != null && endMinute != null;
 
+  ShiftException copyWith({
+    String? syncId,
+    LocalDate? date,
+    ShiftExceptionType? type,
+    int? startMinute,
+    int? endMinute,
+    String? note,
+  }) => ShiftException(
+    syncId: syncId ?? this.syncId,
+    date: date ?? this.date,
+    type: type ?? this.type,
+    startMinute: startMinute ?? this.startMinute,
+    endMinute: endMinute ?? this.endMinute,
+    note: note ?? this.note,
+  );
+
   Map<String, Object?> toJson() => <String, Object?>{
+    if (syncId.isNotEmpty) 'syncId': syncId,
     'date': date.iso,
     'type': type.name,
     if (startMinute != null) 'startMinute': startMinute,
@@ -95,10 +130,12 @@ class ShiftException {
       (value) => value.name == rawType,
       orElse: () => throw FormatException('Unknown shift exception type: $rawType'),
     );
+    final syncId = json['syncId'];
     final startMinute = json['startMinute'];
     final endMinute = json['endMinute'];
     final note = json['note'];
     return ShiftException(
+      syncId: syncId is String ? syncId : '',
       date: LocalDate.parse(rawDate),
       type: type,
       startMinute: startMinute is int ? startMinute : null,

@@ -9,20 +9,13 @@ import '../../app_version.dart';
 import '../../models/local_identity.dart';
 import '../../models/paired_device.dart';
 import '../../services/planner_repository.dart';
+import '../media/media_store.dart';
 import 'device_certificate.dart';
 import 'pairing_crypto.dart';
+import 'pairing_request.dart';
 import 'remote_payload.dart';
-
-class PairingSession {
-  const PairingSession({required this.code, required this.expiresAt});
-
-  final String code;
-  final DateTime expiresAt;
-
-  bool get expired => DateTime.now().isAfter(expiresAt);
-
-  String get displayCode => '${code.substring(0, 3)} ${code.substring(3)}';
-}
+import 'sync_models.dart';
+import 'sync_store.dart';
 
 class LanServerException implements Exception {
   const LanServerException(this.message);
@@ -43,35 +36,54 @@ class LanServerException implements Exception {
 class LanServer {
   LanServer({
     required PlannerRepository repository,
+    required SyncStore syncStore,
     required String Function() deviceTimeZone,
     DateTime Function()? clock,
   }) : _repository = repository,
+       _syncStore = syncStore,
        _deviceTimeZone = deviceTimeZone,
        _clock = clock ?? DateTime.now;
 
-  static const protocolVersion = 2;
+  /// Protocol 4 adds the content-addressed media endpoint. Pairing requires it:
+  /// a protocol-3 peer cannot resolve context or project images.
+  static const protocolVersion = 4;
+  static const pairRequestTtl = Duration(minutes: 5);
+  static const _pairRequestLimit = 5;
 
   final PlannerRepository _repository;
+  final SyncStore _syncStore;
   final String Function() _deviceTimeZone;
   final DateTime Function() _clock;
 
   HttpServer? _server;
+  String _address = '';
   LocalIdentity? _identity;
   String _fingerprint = '';
-  _ActivePairing? _pairing;
-  int _pairAttempts = 0;
+  _IncomingPairingRequest? _incomingRequest;
+  int _pairRequestAttempts = 0;
+  DateTime? _pairRequestWindowStart;
   final _pairedEvents = StreamController<PairedDevice>.broadcast();
+  final _incomingRequests = StreamController<PairingRequest>.broadcast();
   final Map<String, Map<String, DateTime>> _nonces = {};
 
   Stream<PairedDevice> get pairedDevices => _pairedEvents.stream;
 
-  PairingSession? get pairingSession {
-    final active = _pairing;
-    if (active == null || _clock().isAfter(active.expiresAt)) return null;
-    return PairingSession(code: active.code, expiresAt: active.expiresAt);
+  /// Requests that arrived while the server was running. Only one request is
+  /// held at a time; approving or rejecting it is done by the local user.
+  Stream<PairingRequest> get incomingRequests => _incomingRequests.stream;
+
+  PairingRequest? get pendingPairingRequest {
+    _expireIncoming();
+    final active = _incomingRequest;
+    if (active == null || active.status != PairingRequestStatus.pending) return null;
+    return _snapshot(active);
   }
 
   int get port => _server?.port ?? 0;
+
+  /// The private IPv4 address the HTTPS server is bound to. Empty when the
+  /// server is stopped.
+  String get address => _address;
 
   Future<int> start({required LocalIdentity identity, int port = 0, InternetAddress? address}) async {
     if (_server != null) return _server!.port;
@@ -84,32 +96,55 @@ class LanServer {
     final bindAddress = address ?? await _privateBindAddress();
     final server = await HttpServer.bindSecure(bindAddress, port, context, shared: false);
     _server = server;
+    _address = server.address.address;
     server.listen(_handle, onError: (Object _) {});
     return server.port;
   }
 
   Future<void> stop() async {
-    _pairing = null;
+    _incomingRequest = null;
+    _pairRequestAttempts = 0;
+    _pairRequestWindowStart = null;
     await _server?.close(force: true);
     _server = null;
+    _address = '';
   }
 
   Future<void> dispose() async {
     await stop();
     await _pairedEvents.close();
+    await _incomingRequests.close();
   }
 
-  PairingSession beginPairing({Duration validFor = const Duration(minutes: 5)}) {
-    final expiresAt = _clock().add(validFor);
-    final active = _ActivePairing(code: PairingCrypto.newPairingCode(), expiresAt: expiresAt);
-    _pairing = active;
-    _pairAttempts = 0;
-    return PairingSession(code: active.code, expiresAt: expiresAt);
+  /// Marks a pending request as rejected. Returns null when the id is unknown
+  /// or the request is no longer pending.
+  PairingRequest? rejectPairingRequest(String id) {
+    _expireIncoming();
+    final active = _incomingRequest;
+    if (active == null || active.id != id || active.status != PairingRequestStatus.pending) {
+      return null;
+    }
+    active.status = PairingRequestStatus.rejected;
+    final snapshot = _snapshot(active);
+    _incomingRequests.add(snapshot);
+    return snapshot;
   }
 
-  void cancelPairing() {
-    _pairing = null;
-    _pairAttempts = 0;
+  /// Marks a pending request as approved. The PIN is verified by the caller
+  /// before this point; this method only changes the request state.
+  PairingRequest? approvePairingRequest(String id) {
+    _expireIncoming();
+    final active = _incomingRequest;
+    if (active == null || active.id != id || active.status != PairingRequestStatus.pending) {
+      return null;
+    }
+    active.status = PairingRequestStatus.approved;
+    active.approvalToken = PairingCrypto.randomBase64Url(24);
+    _pairRequestAttempts = 0;
+    _pairRequestWindowStart = null;
+    final snapshot = _snapshot(active);
+    _incomingRequests.add(snapshot);
+    return snapshot;
   }
 
   /// Bind to a private LAN address, never every interface. A device with no
@@ -150,8 +185,28 @@ class LanServer {
         await _handleInfo(request);
         return;
       }
+      if (request.method == 'POST' && path == '/sundial/v1/pair/request') {
+        await _handlePairRequest(request);
+        return;
+      }
+      if (request.method == 'GET' && path.startsWith('/sundial/v1/pair/request/')) {
+        await _handlePairRequestStatus(request, path.substring('/sundial/v1/pair/request/'.length));
+        return;
+      }
       if (request.method == 'POST' && path == '/sundial/v1/pair') {
         await _handlePair(request);
+        return;
+      }
+      if (request.method == 'POST' && path == '/sundial/v1/sync/snapshot') {
+        await _handleSyncSnapshot(request);
+        return;
+      }
+      if (request.method == 'POST' && path == '/sundial/v1/sync/changes') {
+        await _handleSyncChanges(request);
+        return;
+      }
+      if (request.method == 'POST' && path == '/sundial/v1/sync/media') {
+        await _handleSyncMedia(request);
         return;
       }
       if (request.method == 'GET' && path == '/sundial/v1/query') {
@@ -182,20 +237,154 @@ class LanServer {
       'version': appVersion,
       'protocol': protocolVersion,
       'fingerprint': _fingerprint,
-      'pairing': pairingSession != null,
+      'pairing': pendingPairingRequest != null,
       'port': port,
     });
   }
 
-  Future<void> _handlePair(HttpRequest request) async {
+  Future<void> _handlePairRequest(HttpRequest request) async {
     final identity = _identity;
-    final active = _pairing;
-    if (identity == null || active == null || _clock().isAfter(active.expiresAt)) {
-      await _json(request.response, HttpStatus.forbidden, {'error': 'pairing_closed'});
+    if (identity == null) {
+      await _json(request.response, HttpStatus.serviceUnavailable, {'error': 'not_ready'});
       return;
     }
-    if (++_pairAttempts > 5) {
-      _pairing = null;
+
+    final now = _clock().toUtc();
+    _expireIncoming();
+    final active = _incomingRequest;
+    if (active != null && active.status == PairingRequestStatus.pending) {
+      await _json(request.response, HttpStatus.tooManyRequests, {'error': 'pairing_busy'});
+      return;
+    }
+    if (!_countPairRequest(now)) {
+      await _json(request.response, HttpStatus.tooManyRequests, {'error': 'rate_limited'});
+      return;
+    }
+
+    final body = await _readBody(request);
+    final decoded = jsonDecode(body);
+    if (decoded is! Map<String, dynamic>) {
+      await _json(request.response, HttpStatus.badRequest, {'error': 'bad_request'});
+      return;
+    }
+
+    final requestId = decoded['requestId'];
+    final code = decoded['code'];
+    final username = decoded['username'];
+    final deviceId = decoded['deviceId'];
+    final deviceName = decoded['deviceName'];
+    final guestFingerprint = decoded['fingerprint'];
+    final guestPort = decoded['port'];
+    final datasetId = decoded['datasetId'];
+    final hasUserData = decoded['hasUserData'];
+    if (requestId is! String ||
+        !_validRequestId(requestId) ||
+        code is! String ||
+        !RegExp(r'^\d{6}$').hasMatch(code) ||
+        username is! String ||
+        username.trim().isEmpty ||
+        username.length > 64 ||
+        deviceId is! String ||
+        deviceId.isEmpty ||
+        deviceId.length > 128 ||
+        deviceId == identity.deviceId ||
+        deviceName is! String ||
+        deviceName.trim().isEmpty ||
+        deviceName.length > 128 ||
+        guestFingerprint is! String ||
+        !_validFingerprint(guestFingerprint) ||
+        guestPort is! int ||
+        guestPort < 0 ||
+        guestPort > 65535 ||
+        datasetId is! String ||
+        datasetId.isEmpty ||
+        datasetId.length > 128 ||
+        hasUserData is! bool) {
+      await _json(request.response, HttpStatus.badRequest, {'error': 'bad_request'});
+      return;
+    }
+    if (username.trim().toLowerCase() != identity.username.toLowerCase()) {
+      await _json(request.response, HttpStatus.forbidden, {'error': 'username_mismatch'});
+      return;
+    }
+
+    final localDatasetId = await _repository.ensureSyncDatasetId();
+    final remoteHost = request.connectionInfo?.remoteAddress.address ?? '';
+    final incoming = _IncomingPairingRequest(
+      id: requestId,
+      code: code,
+      username: username.trim(),
+      deviceId: deviceId,
+      deviceName: deviceName.trim(),
+      certificateFingerprint: guestFingerprint,
+      host: remoteHost,
+      port: guestPort,
+      datasetId: datasetId,
+      hasUserData: hasUserData,
+      datasetMatches: datasetId == localDatasetId,
+      receivedAt: now,
+      expiresAt: now.add(pairRequestTtl),
+    );
+    _incomingRequest = incoming;
+    _incomingRequests.add(_snapshot(incoming));
+    await _json(request.response, HttpStatus.ok, {
+      'ok': true,
+      'requestId': requestId,
+      'expiresAt': incoming.expiresAt.toIso8601String(),
+    });
+  }
+
+  Future<void> _handlePairRequestStatus(HttpRequest request, String rawId) async {
+    final identity = _identity;
+    if (identity == null) {
+      await _json(request.response, HttpStatus.serviceUnavailable, {'error': 'not_ready'});
+      return;
+    }
+    String id;
+    try {
+      id = Uri.decodeComponent(rawId);
+    } on ArgumentError {
+      await _json(request.response, HttpStatus.badRequest, {'error': 'bad_request'});
+      return;
+    }
+    _expireIncoming();
+    final active = _incomingRequest;
+    if (active == null || active.id != id) {
+      await _json(request.response, HttpStatus.notFound, {'error': 'unknown_request'});
+      return;
+    }
+
+    final payload = <String, Object?>{
+      'status': active.status.name,
+      'expiresAt': active.expiresAt.toIso8601String(),
+    };
+    if (active.status == PairingRequestStatus.approved) {
+      payload.addAll({
+        'approvalToken': active.approvalToken,
+        'deviceId': identity.deviceId,
+        'deviceName': identity.deviceName,
+        'username': identity.username,
+        'fingerprint': _fingerprint,
+        'port': port,
+        'datasetId': await _repository.ensureSyncDatasetId(),
+        'hasUserData': await _repository.hasUserData(),
+      });
+    }
+    await _json(request.response, HttpStatus.ok, payload);
+  }
+
+  Future<void> _handlePair(HttpRequest request) async {
+    final identity = _identity;
+    if (identity == null) {
+      await _json(request.response, HttpStatus.serviceUnavailable, {'error': 'not_ready'});
+      return;
+    }
+    _expireIncoming();
+    final active = _incomingRequest;
+    if (active == null ||
+        active.status != PairingRequestStatus.approved ||
+        active.approvalToken == null ||
+        active.consumed) {
       await _json(request.response, HttpStatus.forbidden, {'error': 'pairing_closed'});
       return;
     }
@@ -207,6 +396,8 @@ class LanServer {
       return;
     }
 
+    final requestId = decoded['requestId'];
+    final approvalToken = decoded['approvalToken'];
     final username = decoded['username'];
     final deviceId = decoded['deviceId'];
     final deviceName = decoded['deviceName'];
@@ -214,32 +405,39 @@ class LanServer {
     final guestPort = decoded['port'];
     final mac = decoded['mac'];
     final keyData = decoded['key'];
-    if (username is! String ||
+    if (requestId is! String ||
+        requestId != active.id ||
+        approvalToken is! String ||
+        !PairingCrypto.constantTimeStringEquals(approvalToken, active.approvalToken!) ||
+        username is! String ||
+        username.trim().toLowerCase() != active.username.toLowerCase() ||
         deviceId is! String ||
+        deviceId != active.deviceId ||
         deviceName is! String ||
         guestFingerprint is! String ||
+        guestFingerprint != active.certificateFingerprint ||
+        guestPort is! int ||
+        guestPort < 0 ||
+        guestPort > 65535 ||
         mac is! String ||
-        keyData is! Map ||
-        deviceId == identity.deviceId ||
-        !_validFingerprint(guestFingerprint)) {
-      await _json(request.response, HttpStatus.badRequest, {'error': 'bad_request'});
+        keyData is! Map) {
+      await _json(request.response, HttpStatus.forbidden, {'error': 'pairing_rejected'});
       return;
     }
 
     final pairingKey = await PairingCrypto.derivePairingKey(
       code: active.code,
       hostFingerprint: _fingerprint,
-      guestFingerprint: guestFingerprint,
+      guestFingerprint: active.certificateFingerprint,
       username: identity.username,
     );
     final message = PairingCrypto.pairRequestMessage(
       hostFingerprint: _fingerprint,
-      guestFingerprint: guestFingerprint,
+      guestFingerprint: active.certificateFingerprint,
       username: identity.username,
-      guestDeviceId: deviceId,
+      guestDeviceId: active.deviceId,
     );
-    if (username.trim().toLowerCase() != identity.username.toLowerCase() ||
-        !await PairingCrypto.verifyHmac(pairingKey, message, mac)) {
+    if (!await PairingCrypto.verifyHmac(pairingKey, message, mac)) {
       await _json(request.response, HttpStatus.forbidden, {'error': 'pairing_rejected'});
       return;
     }
@@ -259,26 +457,30 @@ class LanServer {
     }
 
     final now = _clock().toUtc();
-    final remoteHost = request.connectionInfo?.remoteAddress.address ?? '';
     final paired = PairedDevice(
-      id: deviceId,
-      name: deviceName.trim(),
-      username: username.trim(),
-      certificateFingerprint: guestFingerprint,
+      id: active.deviceId,
+      name: active.deviceName,
+      username: active.username,
+      certificateFingerprint: active.certificateFingerprint,
       sharedKey: sharedKey,
-      host: remoteHost,
-      port: guestPort is int ? guestPort : 0,
+      host: active.host,
+      port: active.port,
       lastSeenAt: now,
       createdAt: now,
       updatedAt: now,
     );
     await _repository.savePairedDevice(paired);
-    _pairing = null;
-    _pairAttempts = 0;
+    active.consumed = true;
+    active.status = PairingRequestStatus.completed;
+    active.approvalToken = null;
+    _incomingRequests.add(_snapshot(active));
 
     final ack = await PairingCrypto.hmacBase64(
       sharedKey,
-      PairingCrypto.pairAckMessage(hostFingerprint: _fingerprint, guestFingerprint: guestFingerprint),
+      PairingCrypto.pairAckMessage(
+        hostFingerprint: _fingerprint,
+        guestFingerprint: active.certificateFingerprint,
+      ),
     );
     _pairedEvents.add(paired);
     await _json(request.response, HttpStatus.ok, {
@@ -289,6 +491,8 @@ class LanServer {
       'username': identity.username,
       'fingerprint': _fingerprint,
       'port': port,
+      'datasetId': await _repository.ensureSyncDatasetId(),
+      'hasUserData': await _repository.hasUserData(),
     });
   }
 
@@ -299,57 +503,10 @@ class LanServer {
       return;
     }
 
-    final deviceId = request.headers.value('x-sundial-device');
-    final timestampRaw = request.headers.value('x-sundial-timestamp');
-    final nonce = request.headers.value('x-sundial-nonce');
-    final signature = request.headers.value('x-sundial-signature');
-    if (deviceId == null || timestampRaw == null || nonce == null || signature == null) {
-      await _json(request.response, HttpStatus.unauthorized, {'error': 'unauthorized'});
-      return;
-    }
-    final timestamp = int.tryParse(timestampRaw);
-    if (timestamp == null) {
-      await _json(request.response, HttpStatus.unauthorized, {'error': 'unauthorized'});
-      return;
-    }
+    final paired = await _authenticatedDevice(request, body: '');
+    if (paired == null) return;
+
     final now = _clock().toUtc();
-    final requestTime = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000, isUtc: true);
-    if (now.difference(requestTime).abs() > const Duration(minutes: 5)) {
-      await _json(request.response, HttpStatus.unauthorized, {'error': 'stale'});
-      return;
-    }
-
-    final devices = await _repository.readPairedDevices();
-    PairedDevice? paired;
-    for (final device in devices) {
-      if (device.id == deviceId) {
-        paired = device;
-        break;
-      }
-    }
-    if (paired == null) {
-      await _json(request.response, HttpStatus.unauthorized, {'error': 'unauthorized'});
-      return;
-    }
-
-    final valid = await PairingCrypto.verifyRequest(
-      sharedKeyBase64: paired.sharedKey,
-      method: request.method,
-      path: '${request.uri.path}?${request.uri.query}',
-      timestamp: timestamp,
-      nonce: nonce,
-      body: '',
-      signatureBase64: signature,
-    );
-    if (!valid) {
-      await _json(request.response, HttpStatus.unauthorized, {'error': 'unauthorized'});
-      return;
-    }
-    if (!_acceptNonce(deviceId, nonce, now)) {
-      await _json(request.response, HttpStatus.unauthorized, {'error': 'replay'});
-      return;
-    }
-
     final query = request.uri.queryParameters;
     final timeZone = query['timeZone'] ?? _deviceTimeZone();
     if (!isKnownTimeZone(timeZone)) {
@@ -369,6 +526,196 @@ class LanServer {
     } on ArgumentError {
       await _json(request.response, HttpStatus.badRequest, {'error': 'bad_request'});
     }
+  }
+
+  /// Reads and checks the shared-key signature on a peer request. Returns null
+  /// after writing the error response, so the caller only handles success.
+  Future<PairedDevice?> _authenticatedDevice(HttpRequest request, {required String body}) async {
+    final deviceId = request.headers.value('x-sundial-device');
+    final timestampRaw = request.headers.value('x-sundial-timestamp');
+    final nonce = request.headers.value('x-sundial-nonce');
+    final signature = request.headers.value('x-sundial-signature');
+    if (deviceId == null || timestampRaw == null || nonce == null || signature == null) {
+      await _json(request.response, HttpStatus.unauthorized, {'error': 'unauthorized'});
+      return null;
+    }
+    final timestamp = int.tryParse(timestampRaw);
+    if (timestamp == null) {
+      await _json(request.response, HttpStatus.unauthorized, {'error': 'unauthorized'});
+      return null;
+    }
+    final now = _clock().toUtc();
+    final requestTime = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000, isUtc: true);
+    if (now.difference(requestTime).abs() > const Duration(minutes: 5)) {
+      await _json(request.response, HttpStatus.unauthorized, {'error': 'stale'});
+      return null;
+    }
+
+    final devices = await _repository.readPairedDevices();
+    PairedDevice? paired;
+    for (final device in devices) {
+      if (device.id == deviceId) {
+        paired = device;
+        break;
+      }
+    }
+    if (paired == null) {
+      await _json(request.response, HttpStatus.unauthorized, {'error': 'unauthorized'});
+      return null;
+    }
+
+    final valid = await PairingCrypto.verifyRequest(
+      sharedKeyBase64: paired.sharedKey,
+      method: request.method,
+      path: _signedPath(request),
+      timestamp: timestamp,
+      nonce: nonce,
+      body: body,
+      signatureBase64: signature,
+    );
+    if (!valid) {
+      await _json(request.response, HttpStatus.unauthorized, {'error': 'unauthorized'});
+      return null;
+    }
+    if (!_acceptNonce(deviceId, nonce, now)) {
+      await _json(request.response, HttpStatus.unauthorized, {'error': 'replay'});
+      return null;
+    }
+    return paired;
+  }
+
+  static String _signedPath(HttpRequest request) {
+    final query = request.uri.query;
+    return query.isEmpty ? request.uri.path : '${request.uri.path}?$query';
+  }
+
+  Future<void> _handleSyncSnapshot(HttpRequest request) async {
+    if (_identity == null) {
+      await _json(request.response, HttpStatus.serviceUnavailable, {'error': 'not_ready'});
+      return;
+    }
+    final body = await _readBody(request);
+    if (await _authenticatedDevice(request, body: body) == null) return;
+
+    final decoded = _decodeSyncBody(body);
+    if (decoded == null) {
+      await _json(request.response, HttpStatus.badRequest, {'error': 'bad_request'});
+      return;
+    }
+    final cursor = decoded['cursor'];
+    if (cursor != null && cursor is! String) {
+      await _json(request.response, HttpStatus.badRequest, {'error': 'bad_cursor'});
+      return;
+    }
+    try {
+      final page = await _syncStore.snapshotPage(
+        cursor: cursor as String?,
+        limit: _syncLimit(decoded['limit'], SyncStore.defaultSnapshotLimit),
+      );
+      await _json(request.response, HttpStatus.ok, page.toJson());
+    } on SyncProtocolException {
+      await _json(request.response, HttpStatus.badRequest, {'error': 'bad_cursor'});
+    }
+  }
+
+  Future<void> _handleSyncChanges(HttpRequest request) async {
+    if (_identity == null) {
+      await _json(request.response, HttpStatus.serviceUnavailable, {'error': 'not_ready'});
+      return;
+    }
+    final body = await _readBody(request);
+    if (await _authenticatedDevice(request, body: body) == null) return;
+
+    final decoded = _decodeSyncBody(body);
+    if (decoded == null) {
+      await _json(request.response, HttpStatus.badRequest, {'error': 'bad_request'});
+      return;
+    }
+    final since = decoded['since'];
+    if (since is! int || since < 0) {
+      await _json(request.response, HttpStatus.badRequest, {'error': 'bad_since'});
+      return;
+    }
+    final page = await _syncStore.changesPage(
+      since: since,
+      limit: _syncLimit(decoded['limit'], SyncStore.defaultChangesLimit),
+    );
+    await _json(request.response, HttpStatus.ok, page.toJson());
+  }
+
+  /// Serves content-addressed images to a paired device. The request contains
+  /// hashes only; the server never accepts a path and never logs bytes or file
+  /// systems locations.
+  Future<void> _handleSyncMedia(HttpRequest request) async {
+    if (_identity == null) {
+      await _json(request.response, HttpStatus.serviceUnavailable, {'error': 'not_ready'});
+      return;
+    }
+    final body = await _readBody(request);
+    if (await _authenticatedDevice(request, body: body) == null) return;
+
+    final decoded = _decodeSyncBody(body);
+    if (decoded == null || decoded['ids'] is! List) {
+      await _json(request.response, HttpStatus.badRequest, {'error': 'bad_media_request'});
+      return;
+    }
+    final rawIds = decoded['ids'] as List;
+    if (rawIds.length > MediaStore.maxIdsPerRequest) {
+      await _json(request.response, HttpStatus.badRequest, {'error': 'too_many_media_ids'});
+      return;
+    }
+    final ids = <String>{};
+    for (final raw in rawIds) {
+      if (raw is! String || !isMediaId(raw)) {
+        await _json(request.response, HttpStatus.badRequest, {'error': 'bad_media_id'});
+        return;
+      }
+      ids.add(raw);
+    }
+
+    final media = <Map<String, Object?>>[];
+    final missing = <String>[];
+    var total = 0;
+    for (final id in ids) {
+      try {
+        final blob = await _syncStore.readMedia(id);
+        if (blob == null) {
+          missing.add(id);
+          continue;
+        }
+        total += blob.bytes.length;
+        if (total > MediaStore.maxResponseBytes) {
+          await _json(request.response, HttpStatus.badRequest, {'error': 'media_response_too_large'});
+          return;
+        }
+        media.add(
+          SyncMediaItem(
+            id: blob.id,
+            mime: blob.mime,
+            byteSize: blob.bytes.length,
+            bytes: blob.bytes,
+          ).toJson(),
+        );
+      } on MediaTooLargeException {
+        await _json(request.response, HttpStatus.badRequest, {'error': 'media_too_large'});
+        return;
+      }
+    }
+    await _json(request.response, HttpStatus.ok, {'media': media, 'missing': missing});
+  }
+
+  Map<String, dynamic>? _decodeSyncBody(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      return decoded is Map<String, dynamic> ? decoded : null;
+    } on FormatException {
+      return null;
+    }
+  }
+
+  static int _syncLimit(Object? raw, int fallback) {
+    if (raw is! int) return fallback;
+    return raw.clamp(1, 2000).toInt();
   }
 
   Future<Object?> _resource(
@@ -433,6 +780,45 @@ class LanServer {
     return true;
   }
 
+  bool _countPairRequest(DateTime now) {
+    final start = _pairRequestWindowStart;
+    if (start == null || now.difference(start) > pairRequestTtl) {
+      _pairRequestWindowStart = now;
+      _pairRequestAttempts = 0;
+    }
+    _pairRequestAttempts++;
+    return _pairRequestAttempts <= _pairRequestLimit;
+  }
+
+  void _expireIncoming() {
+    final active = _incomingRequest;
+    if (active == null || active.status != PairingRequestStatus.pending) return;
+    if (_clock().toUtc().isBefore(active.expiresAt)) return;
+    active.status = PairingRequestStatus.expired;
+    active.approvalToken = null;
+    _incomingRequests.add(_snapshot(active));
+  }
+
+  PairingRequest _snapshot(_IncomingPairingRequest request) => PairingRequest(
+    id: request.id,
+    code: request.code,
+    username: request.username,
+    deviceId: request.deviceId,
+    deviceName: request.deviceName,
+    certificateFingerprint: request.certificateFingerprint,
+    host: request.host,
+    port: request.port,
+    datasetId: request.datasetId,
+    hasUserData: request.hasUserData,
+    datasetMatches: request.datasetMatches,
+    receivedAt: request.receivedAt,
+    expiresAt: request.expiresAt,
+    status: request.status,
+  );
+
+  static bool _validRequestId(String value) =>
+      value.length >= 16 && value.length <= 128 && RegExp(r'^[A-Za-z0-9_\-]+$').hasMatch(value);
+
   static bool _validFingerprint(String value) => RegExp(r'^[0-9a-f]{64}$').hasMatch(value);
 
   Future<String> _readBody(HttpRequest request) async {
@@ -454,9 +840,37 @@ class LanServer {
   }
 }
 
-class _ActivePairing {
-  const _ActivePairing({required this.code, required this.expiresAt});
+class _IncomingPairingRequest {
+  _IncomingPairingRequest({
+    required this.id,
+    required this.code,
+    required this.username,
+    required this.deviceId,
+    required this.deviceName,
+    required this.certificateFingerprint,
+    required this.host,
+    required this.port,
+    required this.datasetId,
+    required this.hasUserData,
+    required this.datasetMatches,
+    required this.receivedAt,
+    required this.expiresAt,
+  });
 
+  final String id;
   final String code;
+  final String username;
+  final String deviceId;
+  final String deviceName;
+  final String certificateFingerprint;
+  final String host;
+  final int port;
+  final String datasetId;
+  final bool hasUserData;
+  final bool datasetMatches;
+  final DateTime receivedAt;
   final DateTime expiresAt;
+  PairingRequestStatus status = PairingRequestStatus.pending;
+  String? approvalToken;
+  bool consumed = false;
 }

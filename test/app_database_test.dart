@@ -571,4 +571,40 @@ void main() {
     final occurrences = await database.watchEntriesBetween(monday, monday, 'Europe/Madrid').first;
     expect(occurrences, isEmpty);
   });
+
+  test('keeps one sync dataset id per database', () async {
+    await database.seedDefaults();
+    final first = await database.ensureSyncDatasetId();
+    expect(await database.ensureSyncDatasetId(), first);
+
+    final other = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(other.close);
+    await other.seedDefaults();
+    expect(await other.ensureSyncDatasetId(), isNot(first));
+  });
+
+  test('ignores seeded defaults when checking for user data', () async {
+    await database.seedDefaults();
+    expect(await database.hasUserData(), isFalse);
+
+    final now = DateTime.utc(2026, 11, 9, 8);
+    await database.saveEntry(
+      Entry(
+        id: 'first-entry',
+        spaceId: 'personal',
+        title: 'First entry',
+        date: LocalDate.parse('2026-11-09'),
+        allDay: true,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    expect(await database.hasUserData(), isTrue);
+  });
+
+  test('counts a user-created tag as user data', () async {
+    await database.seedDefaults();
+    await database.saveTag(const Tag(id: 'job-roof', name: 'Roof', colorValue: 0xFF123456));
+    expect(await database.hasUserData(), isTrue);
+  });
 }

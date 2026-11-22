@@ -353,17 +353,35 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String reminderMinutesBefore(int count) {
-    return '$count minutos antes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutos antes',
+      one: '1 minuto antes',
+    );
+    return '$_temp0';
   }
 
   @override
   String reminderHoursBefore(int count) {
-    return '$count horas antes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count horas antes',
+      one: '1 hora antes',
+    );
+    return '$_temp0';
   }
 
   @override
   String reminderDaysBefore(int count) {
-    return '$count días antes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días antes',
+      one: '1 día antes',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -833,6 +851,35 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noExceptions => 'Sin excepciones.';
 
   @override
+  String get adjustShifts => 'Ajustar turnos';
+
+  @override
+  String get shiftDayTitle => 'Turnos del día';
+
+  @override
+  String get shiftDayUsual => 'Habitual';
+
+  @override
+  String get shiftDayWorking => 'Trabajo';
+
+  @override
+  String get shiftDayFree => 'Libre';
+
+  @override
+  String get shiftDayFreeAllDay => 'Libre todo el día';
+
+  @override
+  String shiftDayShiftCount(int count) {
+    return '$count turnos';
+  }
+
+  @override
+  String get shiftDayMultipleHint => 'Este día tiene más de un turno. Edita el patrón para cambiarlos.';
+
+  @override
+  String get shiftTimes => 'Horario del turno';
+
+  @override
   String get shiftChecklist => 'Lista del turno';
 
   @override
@@ -956,6 +1003,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noPairedDevices => 'Todavía no hay dispositivos emparejados.';
 
   @override
+  String get noPairedDevicesHint => 'Empareja un teléfono u ordenador para sincronizar tu plan aquí.';
+
+  @override
   String get unpair => 'Desemparejar';
 
   @override
@@ -991,6 +1041,95 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String remoteContexts(int count) {
+    return '$count trabajos, hogares o personas';
+  }
+
+  @override
+  String remoteInventory(int count) {
+    return '$count artículos de inventario';
+  }
+
+  @override
+  String get syncStatusNever => 'Aún no sincronizado';
+
+  @override
+  String get syncStatusPulling => 'Sincronizando…';
+
+  @override
+  String syncStatusLast(String time) {
+    return 'Última sincronización: $time';
+  }
+
+  @override
+  String syncStatusError(String error) {
+    return 'Error de sincronización: $error';
+  }
+
+  @override
+  String get syncStatusReplacing => 'Reemplazando el plan de este dispositivo…';
+
+  @override
+  String get differentPlanTitle => 'Plan distinto';
+
+  @override
+  String differentPlanBody(String name) {
+    return '$name mantiene su propio plan. Elige qué plan debe usar este dispositivo.';
+  }
+
+  @override
+  String usePeerPlan(String name) {
+    return 'Usar el plan de $name';
+  }
+
+  @override
+  String get keepThisPlan => 'Mantener este plan';
+
+  @override
+  String keepThisPlanNote(String name) {
+    return 'Para adoptar este plan, abre Sundial en $name y elige «Reemplazar este dispositivo desde…».';
+  }
+
+  @override
+  String replaceFromDevice(String name) {
+    return 'Reemplazar este dispositivo desde $name';
+  }
+
+  @override
+  String get replaceWarningTitle => '¿Reemplazar el plan de este dispositivo?';
+
+  @override
+  String replaceWarningBody(String name) {
+    return 'El plan de $name reemplazará el plan de este dispositivo. La identidad, el emparejamiento y los ajustes locales se mantienen. Antes se crea una copia de seguridad si este dispositivo tiene datos.';
+  }
+
+  @override
+  String get replacePinLabel => 'PIN de este dispositivo';
+
+  @override
+  String get replaceAction => 'Reemplazar';
+
+  @override
+  String get replaceDone => 'El plan se reemplazó.';
+
+  @override
+  String replaceFailed(String error) {
+    return 'No se pudo reemplazar el plan: $error';
+  }
+
+  @override
+  String get knownDevicesTitle => 'Conocidos por tus otros dispositivos';
+
+  @override
+  String get knownDevicesBody =>
+      'Estos dispositivos comparten un plan con un dispositivo emparejado. Empareja cada uno directamente para recibir sus cambios.';
+
+  @override
+  String knownDeviceFingerprint(String fingerprint) {
+    return 'Huella $fingerprint';
+  }
+
+  @override
   String serverOnPort(int port) {
     return 'Servidor en el puerto $port';
   }
@@ -1007,6 +1146,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get manualAddress => 'Dirección del dispositivo';
+
+  @override
+  String get manualAddressHint =>
+      'Introduce la dirección y el puerto que muestra el otro dispositivo. Úsalo cuando el descubrimiento en red esté bloqueado.';
 
   @override
   String get hostHint => '192.168.1.20';
@@ -1058,7 +1201,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get search => 'Buscar';
 
   @override
-  String get searchHint => 'Busca entradas, etiquetas y artículos del hogar';
+  String get searchHint => 'Busca entradas, etiquetas';
 
   @override
   String get searchPrompt => 'Escribe un título, una nota, una etiqueta o un artículo del hogar.';
@@ -1313,7 +1456,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get planTab => 'Plan';
 
   @override
-  String get statsTab => 'Estadísticas';
+  String get statsTab => 'Datos';
 
   @override
   String get workTab => 'Trabajo';
@@ -1472,7 +1615,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noHomes => 'Todavía no hay casas.';
 
   @override
-  String get noHomesHint => 'Añade una casa para organizar inventario, aparatos y proyectos.';
+  String get noHomesHint =>
+      'Las casas agrupan proyectos y tareas del hogar. El inventario y la compra funcionan sin una.';
 
   @override
   String get noPeople => 'Todavía no hay personas o grupos.';
@@ -1545,6 +1689,9 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get addTask => 'Añadir una tarea';
 
   @override
   String addTaskFor(String name) {
@@ -1834,6 +1981,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get byDay => 'Por día';
 
   @override
+  String get noDataInRange => 'No hay datos en este periodo.';
+
+  @override
   String get habitConsistency => 'Constancia de hábitos';
 
   @override
@@ -2080,6 +2230,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get scanningDevices => 'Buscando dispositivos Sundial en esta red…';
 
   @override
+  String get searchingNearbyHint =>
+      'Mantén ambos dispositivos en la misma red. También puedes introducir la dirección manualmente.';
+
+  @override
   String get noNearbyDevices =>
       'No se han encontrado dispositivos Sundial. Asegúrate de que el otro dispositivo tiene las funciones en línea activadas.';
 
@@ -2100,8 +2254,80 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get sendPairingRequest => 'Enviar solicitud de emparejamiento';
+
+  @override
+  String get sendPairingRequestHint =>
+      'El otro dispositivo muestra una tarjeta de aprobación. Apruébala allí con el PIN de ese dispositivo.';
+
+  @override
+  String waitingForApproval(String name) {
+    return 'Esperando aprobación en $name…';
+  }
+
+  @override
+  String get pairingRequestTitle => 'Solicitud de emparejamiento';
+
+  @override
+  String pairingRequestBody(String name, String username) {
+    return '$name ($username) quiere emparejarse con este dispositivo.';
+  }
+
+  @override
+  String get pairingRequestCode => 'Comprueba este código en ambos dispositivos';
+
+  @override
+  String get pairingRequestCodeHint => 'Los códigos deben coincidir antes de aprobar. El PIN nunca se envía.';
+
+  @override
+  String get pairingRequestFingerprint => 'Huella del certificado';
+
+  @override
+  String get pairingPlanSame => 'Ambos dispositivos usan el mismo plan.';
+
+  @override
+  String get pairingPlanDifferent =>
+      'Estos dispositivos tienen planes distintos. El emparejamiento guarda el vínculo; la sincronización completa pedirá qué plan conservar.';
+
+  @override
+  String get pairingApproved => 'Emparejamiento aprobado';
+
+  @override
+  String pairingApprovedHint(String name) {
+    return 'Termina la solicitud en $name. Se conectará por su cuenta.';
+  }
+
+  @override
+  String get pairingApprovePinHint => 'Tu PIN aprueba esta solicitud localmente.';
+
+  @override
+  String get pairingRequestRejected => 'El otro dispositivo rechazó la solicitud.';
+
+  @override
+  String get pairingRequestExpired =>
+      'La solicitud ha caducado. Abre Sundial en el otro dispositivo y envíala otra vez.';
+
+  @override
+  String get pairingFailedGeneric => 'El emparejamiento no terminó. Inténtalo de nuevo.';
+
+  @override
+  String get invalidHostPort => 'Introduce una dirección y un puerto válidos.';
+
+  @override
+  String get approve => 'Aprobar';
+
+  @override
+  String get reject => 'Rechazar';
+
+  @override
+  String get back => 'Atrás';
+
+  @override
+  String get tryAgain => 'Reintentar';
+
+  @override
   String get syncExplainer =>
-      'Sundial encuentra tus otros dispositivos en la red local. El emparejamiento guarda una clave compartida una sola vez, así que cambiar de red o de IP no rompe el vínculo. La sincronización es de solo lectura y nunca sustituye tu plan local.';
+      'Sundial encuentra tus otros dispositivos en la red local. El emparejamiento guarda una clave compartida una sola vez, así que cambiar de red o de IP no rompe el vínculo. Los cambios se replican directamente por la LAN; al emparejar por primera vez eliges qué plan se conserva.';
 
   @override
   String get pairSuccess => 'Dispositivo emparejado.';

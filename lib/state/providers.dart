@@ -9,6 +9,8 @@ import '../features/sync/identity_service.dart';
 import '../features/sync/lan_client.dart';
 import '../features/sync/lan_server.dart';
 import '../features/sync/peer_discovery.dart';
+import '../features/sync/sync_engine.dart';
+import '../features/sync/sync_store.dart';
 import '../features/sync/sync_service.dart';
 import '../models/date_range.dart';
 import '../models/home_item.dart';
@@ -227,9 +229,16 @@ final lanClientProvider = Provider<LanClient>(
   (ref) => LanClient(ref.read(repositoryProvider), clock: ref.read(clockProvider)),
 );
 
+final syncStoreProvider = Provider<SyncStore>((ref) => SyncStore(ref.read(databaseProvider)));
+
+final syncEngineProvider = Provider<SyncEngine>(
+  (ref) => SyncEngine(store: ref.read(syncStoreProvider), transport: ref.read(lanClientProvider)),
+);
+
 final lanServerProvider = Provider<LanServer>(
   (ref) => LanServer(
     repository: ref.read(repositoryProvider),
+    syncStore: ref.read(syncStoreProvider),
     deviceTimeZone: () => ref.read(deviceTimeZoneProvider),
     clock: ref.read(clockProvider),
   ),
@@ -244,6 +253,10 @@ final syncServiceProvider = Provider<SyncService>((ref) {
     client: ref.read(lanClientProvider),
     server: ref.read(lanServerProvider),
     discovery: ref.read(peerDiscoveryProvider),
+    store: ref.read(syncStoreProvider),
+    engine: ref.read(syncEngineProvider),
+    backupBeforeReplace: () =>
+        ref.read(autoBackupServiceProvider).runNow(keep: ref.read(settingsProvider).autoBackupKeep),
     clock: ref.read(clockProvider),
   );
   ref.onDispose(service.dispose);

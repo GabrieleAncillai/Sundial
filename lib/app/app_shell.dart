@@ -16,6 +16,9 @@ import '../features/search/pages/search_page.dart';
 import '../features/settings/pages/settings_page.dart';
 import '../features/spaces/pages/space_overview_page.dart';
 import '../features/stats/pages/stats_page.dart';
+import '../features/sync/pairing_request.dart';
+import '../features/sync/sync_models.dart';
+import '../features/sync/widgets/pairing_approval_dialog.dart';
 import '../features/tags/widgets/tag_filter_sheet.dart';
 import '../models/app_settings.dart';
 import '../screens/entry_editor.dart';
@@ -42,6 +45,9 @@ class _AppShellState extends ConsumerState<AppShell>
   late final AnimationController _swap;
   final _sideSearch = TextEditingController();
   final _sideSearchFocus = FocusNode();
+  StreamSubscription<PairingRequest>? _pairingSubscription;
+  StreamSubscription<SyncApplyResult>? _syncApplySubscription;
+  bool _pairingDialogOpen = false;
 
   static const _destinations = <_Destination>[
     _Destination(label: _Label.today, icon: Icons.today_outlined, selectedIcon: Icons.today),
@@ -57,6 +63,8 @@ class _AppShellState extends ConsumerState<AppShell>
     super.initState();
     _swap = AnimationController(vsync: this, duration: const Duration(milliseconds: 280), value: 1);
     WidgetsBinding.instance.addObserver(this);
+    _pairingSubscription = ref.read(syncServiceProvider).incomingPairingRequests.listen(_onPairingRequest);
+    _syncApplySubscription = ref.read(syncServiceProvider).applyEvents.listen(_onSyncApplied);
     _clockTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (mounted) ref.invalidate(nowProvider);
     });
@@ -66,6 +74,8 @@ class _AppShellState extends ConsumerState<AppShell>
   @override
   void dispose() {
     _clockTimer?.cancel();
+    _pairingSubscription?.cancel();
+    _syncApplySubscription?.cancel();
     _swap.dispose();
     _sideSearch.dispose();
     _sideSearchFocus.dispose();
@@ -114,6 +124,31 @@ class _AppShellState extends ConsumerState<AppShell>
     }
     await _updateHomeWidget();
     unawaited(_runAutoBackup());
+  }
+
+  Future<void> _onSyncApplied(SyncApplyResult result) async {
+    if (!mounted) return;
+    try {
+      final entities = result.changedEntities;
+      if (entities.contains('setting')) {
+        await ref.read(settingsProvider.notifier).reload();
+      }
+      const reminderEntities = {
+        'entry',
+        'reminder',
+        'shiftPattern',
+        'shiftSlot',
+        'shiftException',
+        'completion',
+        'shiftChecklistCompletion',
+      };
+      if (entities.any(reminderEntities.contains)) {
+        await ref.read(reminderCoordinatorProvider).reschedule();
+      }
+      await _updateHomeWidget();
+    } catch (error) {
+      debugPrint('Sync side effects failed: $error');
+    }
   }
 
   Future<void> _runAutoBackup() async {
@@ -194,6 +229,20 @@ class _AppShellState extends ConsumerState<AppShell>
             body: entry.notes,
             fireAt: ref.read(clockProvider)().toUtc().add(const Duration(minutes: 10)),
           );
+    }
+  }
+
+  Future<void> _onPairingRequest(PairingRequest request) async {
+    if (!mounted || !request.pending || _pairingDialogOpen) return;
+    _pairingDialogOpen = true;
+    try {
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => PairingApprovalDialog(request: request),
+      );
+    } finally {
+      _pairingDialogOpen = false;
     }
   }
 

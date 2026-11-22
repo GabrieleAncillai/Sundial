@@ -32,6 +32,20 @@ void main() {
     expect(PairingCrypto.constantTimeEquals([1, 2], [1, 2, 3]), isFalse);
   });
 
+  test('compares short string tokens in constant time', () {
+    expect(PairingCrypto.constantTimeStringEquals('token-abc', 'token-abc'), isTrue);
+    expect(PairingCrypto.constantTimeStringEquals('token-abc', 'token-abd'), isFalse);
+    expect(PairingCrypto.constantTimeStringEquals('token-abc', 'token-ab'), isFalse);
+  });
+
+  test('creates url-safe unpadded request ids and approval tokens', () {
+    final first = PairingCrypto.randomBase64Url(24);
+    final second = PairingCrypto.randomBase64Url(24);
+    expect(first, matches(RegExp(r'^[A-Za-z0-9_-]{32}$')));
+    expect(second, matches(RegExp(r'^[A-Za-z0-9_-]{32}$')));
+    expect(first, isNot(second));
+  });
+
   test('creates a six-digit pairing code', () {
     for (var index = 0; index < 50; index++) {
       final code = PairingCrypto.newPairingCode();

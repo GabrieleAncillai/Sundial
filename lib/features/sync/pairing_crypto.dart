@@ -23,6 +23,10 @@ abstract final class PairingCrypto {
 
   static String randomBase64(int length) => base64Encode(randomBytes(length));
 
+  /// URL-safe, unpadded. Used for request ids and approval tokens that travel
+  /// in a path or a JSON body.
+  static String randomBase64Url(int length) => base64UrlEncode(randomBytes(length)).replaceAll('=', '');
+
   static String newPinSalt() => randomBase64(16);
 
   /// A six-digit code, displayed grouped as `123 456`.
@@ -53,6 +57,10 @@ abstract final class PairingCrypto {
     }
     return difference == 0;
   }
+
+  /// Compares short ASCII tokens, such as an approval token, in constant time.
+  static bool constantTimeStringEquals(String first, String second) =>
+      constantTimeEquals(utf8.encode(first), utf8.encode(second));
 
   static Future<bool> verifyPin({
     required String pin,

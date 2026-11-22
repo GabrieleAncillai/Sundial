@@ -231,7 +231,7 @@
   "defaultReminders": "Recordatorios por defecto",
   "defaultRemindersSubtitle": "Se marcan al añadir una entrada.",
   "reminderAtTime": "A la hora de inicio",
-  "reminderMinutesBefore": "{count} minutos antes",
+  "reminderMinutesBefore": "{count, plural, =1{1 minuto antes} other{{count} minutos antes}}",
   "@reminderMinutesBefore": {
     "placeholders": {
       "count": {
@@ -239,7 +239,7 @@
       }
     }
   },
-  "reminderHoursBefore": "{count} horas antes",
+  "reminderHoursBefore": "{count, plural, =1{1 hora antes} other{{count} horas antes}}",
   "@reminderHoursBefore": {
     "placeholders": {
       "count": {
@@ -247,7 +247,7 @@
       }
     }
   },
-  "reminderDaysBefore": "{count} días antes",
+  "reminderDaysBefore": "{count, plural, =1{1 día antes} other{{count} días antes}}",
   "@reminderDaysBefore": {
     "placeholders": {
       "count": {
@@ -527,6 +527,22 @@
   "noShiftPatterns": "Todavía no hay patrones de turnos.",
   "noSlots": "No hay tramos en este día.",
   "noExceptions": "Sin excepciones.",
+  "adjustShifts": "Ajustar turnos",
+  "shiftDayTitle": "Turnos del día",
+  "shiftDayUsual": "Habitual",
+  "shiftDayWorking": "Trabajo",
+  "shiftDayFree": "Libre",
+  "shiftDayFreeAllDay": "Libre todo el día",
+  "shiftDayShiftCount": "{count} turnos",
+  "@shiftDayShiftCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shiftDayMultipleHint": "Este día tiene más de un turno. Edita el patrón para cambiarlos.",
+  "shiftTimes": "Horario del turno",
   "shiftChecklist": "Lista del turno",
   "shiftChecklistSubtitle": "Tareas para marcar en cada turno de este patrón.",
   "addChecklistItem": "Añadir elemento",
@@ -590,6 +606,7 @@
   "pair": "Emparejar",
   "pairedDevices": "Dispositivos emparejados",
   "noPairedDevices": "Todavía no hay dispositivos emparejados.",
+  "noPairedDevicesHint": "Empareja un teléfono u ordenador para sincronizar tu plan aquí.",
   "unpair": "Desemparejar",
   "unpairQuestion": "¿Desemparejar este dispositivo?",
   "unpairBody": "Desaparece de este dispositivo. El otro conserva su propia copia.",
@@ -630,6 +647,105 @@
       }
     }
   },
+  "remoteContexts": "{count} trabajos, hogares o personas",
+  "@remoteContexts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "remoteInventory": "{count} artículos de inventario",
+  "@remoteInventory": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncStatusNever": "Aún no sincronizado",
+  "syncStatusPulling": "Sincronizando…",
+  "syncStatusLast": "Última sincronización: {time}",
+  "@syncStatusLast": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncStatusError": "Error de sincronización: {error}",
+  "@syncStatusError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "syncStatusReplacing": "Reemplazando el plan de este dispositivo…",
+  "differentPlanTitle": "Plan distinto",
+  "differentPlanBody": "{name} mantiene su propio plan. Elige qué plan debe usar este dispositivo.",
+  "@differentPlanBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "usePeerPlan": "Usar el plan de {name}",
+  "@usePeerPlan": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "keepThisPlan": "Mantener este plan",
+  "keepThisPlanNote": "Para adoptar este plan, abre Sundial en {name} y elige «Reemplazar este dispositivo desde…».",
+  "@keepThisPlanNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "replaceFromDevice": "Reemplazar este dispositivo desde {name}",
+  "@replaceFromDevice": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "replaceWarningTitle": "¿Reemplazar el plan de este dispositivo?",
+  "replaceWarningBody": "El plan de {name} reemplazará el plan de este dispositivo. La identidad, el emparejamiento y los ajustes locales se mantienen. Antes se crea una copia de seguridad si este dispositivo tiene datos.",
+  "@replaceWarningBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "replacePinLabel": "PIN de este dispositivo",
+  "replaceAction": "Reemplazar",
+  "replaceDone": "El plan se reemplazó.",
+  "replaceFailed": "No se pudo reemplazar el plan: {error}",
+  "@replaceFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "knownDevicesTitle": "Conocidos por tus otros dispositivos",
+  "knownDevicesBody": "Estos dispositivos comparten un plan con un dispositivo emparejado. Empareja cada uno directamente para recibir sus cambios.",
+  "knownDeviceFingerprint": "Huella {fingerprint}",
+  "@knownDeviceFingerprint": {
+    "placeholders": {
+      "fingerprint": {
+        "type": "String"
+      }
+    }
+  },
   "serverOnPort": "Servidor en el puerto {port}",
   "@serverOnPort": {
     "placeholders": {
@@ -642,6 +758,7 @@
   "discoveryUnavailable": "El descubrimiento en red no está disponible. Usa la dirección manualmente.",
   "identityFingerprint": "Huella del certificado",
   "manualAddress": "Dirección del dispositivo",
+  "manualAddressHint": "Introduce la dirección y el puerto que muestra el otro dispositivo. Úsalo cuando el descubrimiento en red esté bloqueado.",
   "hostHint": "192.168.1.20",
   "mcpEndpoint": "Endpoint MCP local",
   "mcpEndpointSubtitle": "Solo lectura por defecto, solo loopback y apagado salvo que lo actives.",
@@ -671,7 +788,7 @@
   },
   "mcpStopped": "El endpoint MCP está apagado.",
   "search": "Buscar",
-  "searchHint": "Busca entradas, etiquetas y artículos del hogar",
+  "searchHint": "Busca entradas, etiquetas",
   "searchPrompt": "Escribe un título, una nota, una etiqueta o un artículo del hogar.",
   "searchNoResults": "Nada coincide con «{query}».",
   "@searchNoResults": {
@@ -839,7 +956,7 @@
   "hoursWindow": "Configurar franja",
   "todayTab": "Hoy",
   "planTab": "Plan",
-  "statsTab": "Estadísticas",
+  "statsTab": "Datos",
   "workTab": "Trabajo",
   "homeTab": "Casa",
   "personalTab": "Personal",
@@ -892,7 +1009,7 @@
   "noJobs": "Todavía no hay trabajos.",
   "noJobsHint": "Añade un trabajo para agrupar sus turnos, proyectos y tareas.",
   "noHomes": "Todavía no hay casas.",
-  "noHomesHint": "Añade una casa para organizar inventario, aparatos y proyectos.",
+  "noHomesHint": "Las casas agrupan proyectos y tareas del hogar. El inventario y la compra funcionan sin una.",
   "noPeople": "Todavía no hay personas o grupos.",
   "noPeopleHint": "Usa proyectos para separar el tiempo con cada persona.",
   "noProjects": "Todavía no hay proyectos.",
@@ -929,6 +1046,7 @@
       }
     }
   },
+  "addTask": "Añadir una tarea",
   "addTaskFor": "Añadir una tarea para {name}",
   "@addTaskFor": {
     "placeholders": {
@@ -1122,6 +1240,7 @@
   "bySpace": "Por espacio",
   "byProject": "Por proyecto",
   "byDay": "Por día",
+  "noDataInRange": "No hay datos en este periodo.",
   "habitConsistency": "Constancia de hábitos",
   "rangeWeek": "Semana",
   "rangeMonth": "Mes",
@@ -1222,6 +1341,7 @@
   "dataDeleteIncomplete": "Se eliminó el plan, pero algunos archivos multimedia o copias automáticas no se pudieron borrar. Revisa los permisos de almacenamiento y bórralos desde la carpeta de datos de la app.",
   "nearbyDevices": "Dispositivos cercanos",
   "scanningDevices": "Buscando dispositivos Sundial en esta red…",
+  "searchingNearbyHint": "Mantén ambos dispositivos en la misma red. También puedes introducir la dirección manualmente.",
   "noNearbyDevices": "No se han encontrado dispositivos Sundial. Asegúrate de que el otro dispositivo tiene las funciones en línea activadas.",
   "pairWithDevice": "Emparejar con {name}",
   "@pairWithDevice": {
@@ -1241,7 +1361,52 @@
       }
     }
   },
-  "syncExplainer": "Sundial encuentra tus otros dispositivos en la red local. El emparejamiento guarda una clave compartida una sola vez, así que cambiar de red o de IP no rompe el vínculo. La sincronización es de solo lectura y nunca sustituye tu plan local.",
+  "sendPairingRequest": "Enviar solicitud de emparejamiento",
+  "sendPairingRequestHint": "El otro dispositivo muestra una tarjeta de aprobación. Apruébala allí con el PIN de ese dispositivo.",
+  "waitingForApproval": "Esperando aprobación en {name}…",
+  "@waitingForApproval": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pairingRequestTitle": "Solicitud de emparejamiento",
+  "pairingRequestBody": "{name} ({username}) quiere emparejarse con este dispositivo.",
+  "@pairingRequestBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "pairingRequestCode": "Comprueba este código en ambos dispositivos",
+  "pairingRequestCodeHint": "Los códigos deben coincidir antes de aprobar. El PIN nunca se envía.",
+  "pairingRequestFingerprint": "Huella del certificado",
+  "pairingPlanSame": "Ambos dispositivos usan el mismo plan.",
+  "pairingPlanDifferent": "Estos dispositivos tienen planes distintos. El emparejamiento guarda el vínculo; la sincronización completa pedirá qué plan conservar.",
+  "pairingApproved": "Emparejamiento aprobado",
+  "pairingApprovedHint": "Termina la solicitud en {name}. Se conectará por su cuenta.",
+  "@pairingApprovedHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pairingApprovePinHint": "Tu PIN aprueba esta solicitud localmente.",
+  "pairingRequestRejected": "El otro dispositivo rechazó la solicitud.",
+  "pairingRequestExpired": "La solicitud ha caducado. Abre Sundial en el otro dispositivo y envíala otra vez.",
+  "pairingFailedGeneric": "El emparejamiento no terminó. Inténtalo de nuevo.",
+  "invalidHostPort": "Introduce una dirección y un puerto válidos.",
+  "approve": "Aprobar",
+  "reject": "Rechazar",
+  "back": "Atrás",
+  "tryAgain": "Reintentar",
+  "syncExplainer": "Sundial encuentra tus otros dispositivos en la red local. El emparejamiento guarda una clave compartida una sola vez, así que cambiar de red o de IP no rompe el vínculo. Los cambios se replican directamente por la LAN; al emparejar por primera vez eliges qué plan se conserva.",
   "pairSuccess": "Dispositivo emparejado.",
   "pairFailed": "No se pudo emparejar: {error}",
   "@pairFailed": {

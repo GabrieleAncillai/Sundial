@@ -6,6 +6,7 @@ import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sundial/features/backup/backup_service.dart';
+import 'package:sundial/features/media/media_store.dart';
 import 'package:sundial/models/home_item.dart';
 import 'package:sundial/models/home_reference.dart';
 import 'package:sundial/models/local_identity.dart';
@@ -15,6 +16,8 @@ import 'package:sundial/models/shopping_item.dart';
 import 'package:sundial/services/app_database.dart';
 import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
+
+import 'support/media_fixture.dart';
 
 void main() {
   setUpAll(() {
@@ -232,7 +235,7 @@ void main() {
 
     final exported = await BackupService(source).exportJson();
     final payload = jsonDecode(exported) as Map<String, dynamic>;
-    expect(payload['schemaVersion'], 13);
+    expect(payload['schemaVersion'], 15);
     expect(payload.containsKey('identity'), isFalse);
     expect(payload.containsKey('pairedDevices'), isFalse);
     expect(exported, isNot(contains('cGluaGFzaA==')));
@@ -301,6 +304,180 @@ void main() {
     expect(File(restored.imagePath!).readAsBytesSync(), [1, 2, 3, 4]);
     expect(stale.existsSync(), isFalse);
     expect(orphan.existsSync(), isTrue);
+  });
+
+  test('v15 backups carry image ids and rebuild the local media index', () async {
+    final sourceMedia = await Directory.systemTemp.createTemp('sundial-backup-source');
+    final restoreMedia = await Directory.systemTemp.createTemp('sundial-backup-restore');
+    final pictures = await Directory.systemTemp.createTemp('sundial-backup-pictures');
+    addTearDown(() async {
+      for (final directory in [sourceMedia, restoreMedia, pictures]) {
+        if (directory.existsSync()) await directory.delete(recursive: true);
+      }
+    });
+    final sourceDb = AppDatabase(
+      NativeDatabase.memory(),
+      defaultTimeZone: 'Europe/Madrid',
+      mediaStore: MediaStore(directory: sourceMedia),
+    );
+    addTearDown(sourceDb.close);
+    await sourceDb.seedDefaults();
+    final contextFile = await writePng(pictures, 'cafe.png', tinyPng);
+    final projectFile = await writePng(pictures, 'reno.png', secondPng);
+    await sourceDb.saveContext(
+      PlannerContext(
+        id: 'cafe',
+        spaceId: 'work',
+        name: 'Cafe',
+        colorValue: 0xFF2F7ED8,
+        imagePath: contextFile.path,
+      ),
+    );
+    await sourceDb.saveProject(
+      Project(
+        id: 'reno',
+        spaceId: 'work',
+        contextId: 'cafe',
+        name: 'Renovation',
+        colorValue: 0xFF2FA98F,
+        imagePath: projectFile.path,
+      ),
+    );
+
+    final exported = await BackupService(sourceDb, mediaDirectory: sourceMedia).exportJson();
+    final payload = jsonDecode(exported) as Map<String, Object?>;
+    expect(payload['schemaVersion'], 15);
+    expect(jsonEncode(payload), isNot(contains('media_cache_records')));
+    final contexts = (payload['contexts'] as List).cast<Map<String, Object?>>();
+    expect(contexts.single['imageMediaId'], MediaStore.hashBytes(tinyPng));
+    final projects = (payload['projects'] as List).cast<Map<String, Object?>>();
+    expect(projects.single['imageMediaId'], MediaStore.hashBytes(secondPng));
+    expect((payload['media'] as Map).keys, containsAll([contextFile.path, projectFile.path]));
+
+    final targetDb = AppDatabase(
+      NativeDatabase.memory(),
+      defaultTimeZone: 'Europe/Madrid',
+      mediaStore: MediaStore(directory: restoreMedia),
+    );
+    addTearDown(targetDb.close);
+    await BackupService(targetDb, mediaDirectory: restoreMedia).importJson(exported);
+
+    final restoredContext = (await targetDb.watchContexts().first).single;
+    expect(restoredContext.imagePath, startsWith(restoreMedia.path));
+    expect(File(restoredContext.imagePath!).readAsBytesSync(), tinyPng);
+    final restoredProject = (await targetDb.watchProjects().first).single;
+    expect(File(restoredProject.imagePath!).readAsBytesSync(), secondPng);
+    final rawContext = (await targetDb.select(targetDb.contextRecords).get()).single;
+    expect(rawContext.imageMediaId, MediaStore.hashBytes(tinyPng));
+
+    final cache = await targetDb.select(targetDb.mediaCacheRecords).get();
+    expect(cache.map((row) => row.mediaId).toSet(), {
+      MediaStore.hashBytes(tinyPng),
+      MediaStore.hashBytes(secondPng),
+    });
+    for (final row in cache) {
+      expect(File(row.path).existsSync(), isTrue);
+    }
+  });
+
+  test('a backup includes the cache when the display copy is gone', () async {
+    final sourceMedia = await Directory.systemTemp.createTemp('sundial-backup-source');
+    final pictures = await Directory.systemTemp.createTemp('sundial-backup-pictures');
+    final restoreMedia = await Directory.systemTemp.createTemp('sundial-backup-restore');
+    addTearDown(() async {
+      for (final directory in [sourceMedia, pictures, restoreMedia]) {
+        if (directory.existsSync()) await directory.delete(recursive: true);
+      }
+    });
+    final sourceDb = AppDatabase(
+      NativeDatabase.memory(),
+      defaultTimeZone: 'Europe/Madrid',
+      mediaStore: MediaStore(directory: sourceMedia),
+    );
+    addTearDown(sourceDb.close);
+    await sourceDb.seedDefaults();
+    final image = await writePng(pictures, 'cafe.png', tinyPng);
+    await sourceDb.saveContext(
+      PlannerContext(
+        id: 'cafe',
+        spaceId: 'work',
+        name: 'Cafe',
+        colorValue: 0xFF2F7ED8,
+        imagePath: image.path,
+      ),
+    );
+    final mediaId = MediaStore.hashBytes(tinyPng);
+    await image.delete();
+
+    final exported = await BackupService(sourceDb, mediaDirectory: sourceMedia).exportJson();
+    final payload = jsonDecode(exported) as Map<String, Object?>;
+    final cachePath = '${sourceMedia.path}/cache/$mediaId.png';
+    expect((payload['media'] as Map).keys, contains(cachePath));
+
+    final targetDb = AppDatabase(
+      NativeDatabase.memory(),
+      defaultTimeZone: 'Europe/Madrid',
+      mediaStore: MediaStore(directory: restoreMedia),
+    );
+    addTearDown(targetDb.close);
+    await BackupService(targetDb, mediaDirectory: restoreMedia).importJson(exported);
+
+    final restored = (await targetDb.watchContexts().first).single;
+    expect(restored.imagePath, isNotNull);
+    expect(File(restored.imagePath!).readAsBytesSync(), tinyPng);
+  });
+
+  test('a v14 backup computes media ids from the restored bytes', () async {
+    final sourceMedia = await Directory.systemTemp.createTemp('sundial-backup-source');
+    final pictures = await Directory.systemTemp.createTemp('sundial-backup-pictures');
+    final restoreMedia = await Directory.systemTemp.createTemp('sundial-backup-restore');
+    addTearDown(() async {
+      for (final directory in [sourceMedia, pictures, restoreMedia]) {
+        if (directory.existsSync()) await directory.delete(recursive: true);
+      }
+    });
+    final sourceDb = AppDatabase(
+      NativeDatabase.memory(),
+      defaultTimeZone: 'Europe/Madrid',
+      mediaStore: MediaStore(directory: sourceMedia),
+    );
+    addTearDown(sourceDb.close);
+    await sourceDb.seedDefaults();
+    final image = await writePng(pictures, 'cafe.png', tinyPng);
+    await sourceDb.saveContext(
+      PlannerContext(
+        id: 'cafe',
+        spaceId: 'work',
+        name: 'Cafe',
+        colorValue: 0xFF2F7ED8,
+        imagePath: image.path,
+      ),
+    );
+
+    final payload =
+        jsonDecode(await BackupService(sourceDb, mediaDirectory: sourceMedia).exportJson())
+            as Map<String, Object?>;
+    payload['schemaVersion'] = 14;
+    for (final row in (payload['contexts'] as List).cast<Map<String, Object?>>()) {
+      row.remove('imageMediaId');
+    }
+    for (final row in (payload['projects'] as List).cast<Map<String, Object?>>()) {
+      row.remove('imageMediaId');
+    }
+
+    final targetDb = AppDatabase(
+      NativeDatabase.memory(),
+      defaultTimeZone: 'Europe/Madrid',
+      mediaStore: MediaStore(directory: restoreMedia),
+    );
+    addTearDown(targetDb.close);
+    await BackupService(targetDb, mediaDirectory: restoreMedia).importJson(jsonEncode(payload));
+
+    final raw = (await targetDb.select(targetDb.contextRecords).get()).single;
+    expect(raw.imageMediaId, MediaStore.hashBytes(tinyPng));
+    expect((await targetDb.watchContexts().first).single.imagePath, isNotNull);
+    final cache = await targetDb.select(targetDb.mediaCacheRecords).get();
+    expect(cache.single.mediaId, MediaStore.hashBytes(tinyPng));
   });
 
   test('restores over a populated database', () async {
@@ -572,6 +749,18 @@ void main() {
     expect(settings['themeMode'], 'dark');
     expect(settings.containsKey('appLockPinHash'), isFalse);
     expect(settings.containsKey('appLockEnabled'), isFalse);
+  });
+
+  test('excludes the sync dataset id from backups', () async {
+    await source.writeSetting('syncDatasetId', 'source-dataset');
+    final exported = await BackupService(source).exportJson();
+    expect(exported, isNot(contains('source-dataset')));
+
+    final target = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(target.close);
+    await BackupService(target).importJson(exported);
+    expect((await target.readSettings()).containsKey('syncDatasetId'), isFalse);
+    expect(await target.ensureSyncDatasetId(), isNot('source-dataset'));
   });
 
   test('upgrades a v4 payload with home items and shopping', () async {

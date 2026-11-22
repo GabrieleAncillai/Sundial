@@ -9,6 +9,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../data/home_reference_defaults.dart';
+import '../features/media/media_store.dart';
+import '../features/sync/sync_clock.dart';
+import '../features/sync/sync_field_groups.dart';
 import '../models/home_item.dart';
 import '../models/home_purchase.dart';
 import '../models/home_reference.dart';
@@ -23,6 +26,7 @@ import '../models/shopping_item.dart';
 import '../models/time_entry.dart';
 
 part 'app_database.g.dart';
+part 'app_database_sync.dart';
 
 @DataClassName('SpaceRow')
 class SpaceRecords extends Table {
@@ -47,6 +51,7 @@ class ContextRecords extends Table {
   IntColumn get color => integer()();
   TextColumn get icon => text().withDefault(const Constant('folder'))();
   TextColumn get imagePath => text().nullable()();
+  TextColumn get imageMediaId => text().nullable()();
   IntColumn get position => integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
@@ -66,6 +71,7 @@ class ProjectRecords extends Table {
   IntColumn get color => integer()();
   TextColumn get icon => text().withDefault(const Constant('folder'))();
   TextColumn get imagePath => text().nullable()();
+  TextColumn get imageMediaId => text().nullable()();
   IntColumn get position => integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
@@ -478,6 +484,9 @@ class ShiftPatternRecords extends Table {
 @DataClassName('ShiftSlotRow')
 class ShiftSlotRecords extends Table {
   IntColumn get id => integer().autoIncrement()();
+
+  /// Stable identity across devices. The local [id] stays device-local.
+  TextColumn get syncId => text().withDefault(const Constant(''))();
   TextColumn get patternId => text().references(ShiftPatternRecords, #id)();
   IntColumn get dayIndex => integer()();
   TextColumn get label => text().withDefault(const Constant(''))();
@@ -497,6 +506,9 @@ class ShiftPatternTagRecords extends Table {
 @DataClassName('ShiftExceptionRow')
 class ShiftExceptionRecords extends Table {
   IntColumn get id => integer().autoIncrement()();
+
+  /// Stable identity across devices. The local [id] stays device-local.
+  TextColumn get syncId => text().withDefault(const Constant(''))();
   TextColumn get patternId => text().references(ShiftPatternRecords, #id)();
   IntColumn get dateKey => integer()();
 
@@ -539,6 +551,94 @@ class SettingRecords extends Table {
   Set<Column<Object>> get primaryKey => {key};
 }
 
+/// Device-local index of content-addressed images. It is not a synced entity
+/// and never appears in a backup; every device rebuilds it from its own cache.
+@DataClassName('MediaCacheRow')
+class MediaCacheRecords extends Table {
+  /// Lowercase SHA-256 hex of the PNG bytes.
+  TextColumn get mediaId => text()();
+  TextColumn get path => text()();
+  TextColumn get mime => text()();
+  IntColumn get byteSize => integer()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {mediaId};
+}
+
+/// One row for this device's sync identity and clock. The dataset id is the
+/// logical plan shared by paired devices; the node id and epoch are local.
+@DataClassName('SyncDeviceStateRow')
+class SyncDeviceStateRecords extends Table {
+  TextColumn get id => text()();
+  TextColumn get nodeId => text()();
+  TextColumn get datasetId => text()();
+  TextColumn get epoch => text()();
+  IntColumn get hlcMillis => integer()();
+  IntColumn get hlcCounter => integer()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// Append-only feed of local edits. Remote applies never append here, which is
+/// what prevents echo loops between paired devices.
+@DataClassName('SyncChangeRow')
+class SyncChangeRecords extends Table {
+  IntColumn get seq => integer().autoIncrement()();
+  TextColumn get changeId => text().unique()();
+  TextColumn get originNodeId => text()();
+  TextColumn get originEpoch => text()();
+  IntColumn get originSeq => integer()();
+  TextColumn get entity => text()();
+  TextColumn get rowKey => text()();
+
+  /// `upsert` or `delete`.
+  TextColumn get op => text()();
+  TextColumn get rowJson => text()();
+  TextColumn get versionsJson => text()();
+  DateTimeColumn get createdAt => dateTime()();
+}
+
+@DataClassName('SyncFieldVersionRow')
+class SyncFieldVersionRecords extends Table {
+  TextColumn get entity => text()();
+  TextColumn get rowKey => text()();
+  TextColumn get field => text()();
+  TextColumn get version => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {entity, rowKey, field};
+}
+
+@DataClassName('SyncTombstoneRow')
+class SyncTombstoneRecords extends Table {
+  TextColumn get entity => text()();
+  TextColumn get rowKey => text()();
+  TextColumn get version => text()();
+  TextColumn get rowJson => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {entity, rowKey};
+}
+
+@DataClassName('SyncPeerStateRow')
+class SyncPeerStateRecords extends Table {
+  TextColumn get peerDeviceId => text()();
+  TextColumn get datasetId => text()();
+  TextColumn get peerEpoch => text()();
+  IntColumn get lastPulledSeq => integer().withDefault(const Constant(0))();
+  DateTimeColumn get lastSyncedAt => dateTime().nullable()();
+  TextColumn get lastError => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {peerDeviceId};
+}
+
 @DriftDatabase(
   tables: [
     SpaceRecords,
@@ -567,26 +667,66 @@ class SettingRecords extends Table {
     IdentityRecords,
     PairedDeviceRecords,
     SettingRecords,
+    MediaCacheRecords,
     HomePurchaseRecords,
     MaintenanceLogRecords,
     RemoteSnapshotRecords,
+    SyncDeviceStateRecords,
+    SyncChangeRecords,
+    SyncFieldVersionRecords,
+    SyncTombstoneRecords,
+    SyncPeerStateRecords,
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase(super.e, {this.defaultTimeZone = 'UTC'});
+  AppDatabase(super.e, {this.defaultTimeZone = 'UTC', MediaStore? mediaStore})
+    : mediaStore = mediaStore ?? MediaStore();
 
-  AppDatabase.open({this.defaultTimeZone = 'UTC'}) : super(_openConnection());
+  AppDatabase.open({this.defaultTimeZone = 'UTC', MediaStore? mediaStore})
+    : mediaStore = mediaStore ?? MediaStore(),
+      super(_openConnection());
 
   /// Used to interpret legacy wall-clock rows during the v1 to v2 migration.
   final String defaultTimeZone;
 
+  /// Device-local content-addressed image cache. Injected in tests so every
+  /// database instance uses its own temp directory.
+  final MediaStore mediaStore;
+
+  SyncHlcClock? _syncHlcClock;
+  int _syncRecordingSuppression = 0;
+  List<SyncEntitySpec>? _syncEntityCache;
+  Map<String, SyncEntitySpec>? _syncEntityByName;
+
+  bool get _syncRecording => _syncRecordingSuppression == 0;
+
+  /// Drops the in-memory HLC after the sync tables were replaced.
+  void resetSyncClockCache() => _syncHlcClock = null;
+
+  /// Runs a seed or import without writing sync changes.
+  Future<T> withoutSyncRecording<T>(Future<T> Function() action) async {
+    _syncRecordingSuppression++;
+    try {
+      return await action();
+    } finally {
+      _syncRecordingSuppression--;
+    }
+  }
+
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    onCreate: (m) => m.createAll(),
+    onCreate: (m) async {
+      await m.createAll();
+      await _ensureShiftSyncIndexes();
+    },
     onUpgrade: (m, from, to) async {
+      // Row mappers used by older migrations expect every current column, so
+      // the v14 shift sync ids must exist before the v6 slot backfill reads
+      // them. The v14 step still creates the sync tables and backfills values.
+      if (from < 14) await _addV14ColumnsEarly(m);
       // The v2 backfill reads entries with the current mapper, so all current
       // columns have to exist before it runs. The late v12 call below restores
       // this column if a v10 table rebuild drops it.
@@ -611,6 +751,8 @@ class AppDatabase extends _$AppDatabase {
       if (from < 11) await _migrateToV11(m);
       if (from < 12) await _migrateToV12(m);
       if (from < 13) await _migrateToV13(m);
+      if (from < 14) await _migrateToV14(m);
+      if (from < 15) await _migrateToV15(m);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -667,6 +809,7 @@ class AppDatabase extends _$AppDatabase {
     }
 
     await _seedHomeReferenceDefaults();
+    await seedSyncVersionsForEntities(const ['space', 'tag', 'homeCategory', 'homeLocation', 'homeUnit']);
   }
 
   Stream<List<Space>> watchSpaces() {
@@ -692,32 +835,64 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> saveContext(PlannerContext context) async {
-    final now = DateTime.now();
-    final existing = await (select(
-      contextRecords,
-    )..where((row) => row.id.equals(context.id))).getSingleOrNull();
-    await into(contextRecords).insertOnConflictUpdate(
-      ContextRecordsCompanion(
-        id: Value(context.id),
-        spaceId: Value(context.spaceId),
-        name: Value(context.name),
-        description: Value(context.description),
-        color: Value(context.colorValue),
-        icon: Value(context.icon),
-        imagePath: Value(context.imagePath),
-        position: Value(context.position),
-        createdAt: Value(existing?.createdAt ?? now),
-        updatedAt: Value(now),
-        deletedAt: Value(context.deletedAt),
-      ),
-    );
+    await transaction(() async {
+      final now = DateTime.now();
+      final spec = syncEntity('context');
+      final existing = await (select(
+        contextRecords,
+      )..where((row) => row.id.equals(context.id))).getSingleOrNull();
+      final before = existing == null ? null : spec.serialize(existing);
+      final imageMediaId = await _cacheImagePath(context.imagePath);
+      await into(contextRecords).insertOnConflictUpdate(
+        ContextRecordsCompanion(
+          id: Value(context.id),
+          spaceId: Value(context.spaceId),
+          name: Value(context.name),
+          description: Value(context.description),
+          color: Value(context.colorValue),
+          icon: Value(context.icon),
+          imagePath: Value(context.imagePath),
+          imageMediaId: Value(imageMediaId),
+          position: Value(context.position),
+          createdAt: Value(existing?.createdAt ?? now),
+          updatedAt: Value(now),
+          deletedAt: Value(context.deletedAt),
+        ),
+      );
+      await recordSyncAfter(spec, context.id, before: before);
+    });
   }
 
   Future<void> softDeleteContext(String id) {
     return transaction(() async {
       final now = DateTime.now();
+      final contextSpec = syncEntity('context');
+      final projectSpec = syncEntity('project');
+      final entrySpec = syncEntity('entry');
+      final shiftSpec = syncEntity('shiftPattern');
+      final habitSpec = syncEntity('habit');
+      final homeSpec = syncEntity('homeItem');
+      final shoppingSpec = syncEntity('shoppingItem');
+
+      final contextBefore = await readSyncRow(contextSpec, id);
       final projects = await (select(projectRecords)..where((row) => row.contextId.equals(id))).get();
       final projectIds = {for (final project in projects) project.id};
+      final patterns = await (select(shiftPatternRecords)..where((row) => row.contextId.equals(id))).get();
+      final habits = await (select(habitRecords)..where((row) => row.contextId.equals(id))).get();
+      final homeItems = await (select(homeItemRecords)..where((row) => row.contextId.equals(id))).get();
+      final shopping = await (select(shoppingItemRecords)..where((row) => row.contextId.equals(id))).get();
+      final contextEntries = await (select(
+        entryRecords,
+      )..where((row) => row.contextId.equals(id) & row.readOnly.equals(false))).get();
+      final projectEntries = projectIds.isEmpty
+          ? const <EntryRow>[]
+          : await (select(
+              entryRecords,
+            )..where((row) => row.projectId.isIn(projectIds) & row.readOnly.equals(false))).get();
+      final entryBefores = <String, Map<String, Object?>>{};
+      for (final row in [...contextEntries, ...projectEntries]) {
+        entryBefores[row.id] = entrySpec.serialize(row);
+      }
 
       // Tasks survive with their space; only the grouping is removed.
       await (update(entryRecords)..where((row) => row.contextId.equals(id) & row.readOnly.equals(false)))
@@ -746,7 +921,192 @@ class AppDatabase extends _$AppDatabase {
       await (update(contextRecords)..where((row) => row.id.equals(id))).write(
         ContextRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
       );
+
+      for (final entry in entryBefores.entries) {
+        await recordSyncAfter(entrySpec, entry.key, before: entry.value);
+      }
+      for (final row in projects) {
+        await recordSyncDelete(projectSpec, row.id, lastRow: projectSpec.serialize(row));
+      }
+      for (final row in patterns) {
+        await recordSyncDelete(shiftSpec, row.id, lastRow: shiftSpec.serialize(row));
+      }
+      for (final row in habits) {
+        await recordSyncDelete(habitSpec, row.id, lastRow: habitSpec.serialize(row));
+      }
+      for (final row in homeItems) {
+        await recordSyncAfter(homeSpec, row.id, before: homeSpec.serialize(row));
+      }
+      for (final row in shopping) {
+        await recordSyncAfter(shoppingSpec, row.id, before: shoppingSpec.serialize(row));
+      }
+      await recordSyncDelete(contextSpec, id, lastRow: contextBefore);
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Content-addressed media
+
+  /// Reads a local display file, validates it and ensures its cache entry. A
+  /// missing or unreadable image leaves the row saved without a media id; it
+  /// never fails the save.
+  Future<String?> _cacheImagePath(String? path) async {
+    if (path == null || path.trim().isEmpty) return null;
+    try {
+      final entry = await mediaStore.cacheFromFile(path);
+      if (entry == null) return null;
+      await _recordMediaCache(entry);
+      return entry.id;
+    } on MediaTooLargeException {
+      return null;
+    } on FileSystemException {
+      return null;
+    }
+  }
+
+  Future<void> _recordMediaCache(MediaCacheEntry entry, {DateTime? now}) async {
+    await into(mediaCacheRecords).insertOnConflictUpdate(
+      MediaCacheRecordsCompanion(
+        mediaId: Value(entry.id),
+        path: Value(entry.path),
+        mime: Value(entry.mime),
+        byteSize: Value(entry.byteSize),
+        createdAt: Value(now ?? DateTime.now().toUtc()),
+      ),
+    );
+  }
+
+  /// True when the row's media index entry exists and its cache file verifies.
+  Future<bool> hasCachedMedia(String mediaId) async {
+    if (!isMediaId(mediaId)) return false;
+    final row = await (select(
+      mediaCacheRecords,
+    )..where((entry) => entry.mediaId.equals(mediaId))).getSingleOrNull();
+    if (row == null) return false;
+    final file = File(await mediaStore.cachePath(mediaId));
+    if (!await file.exists()) return false;
+    try {
+      return MediaStore.hashBytes(await file.readAsBytes()) == mediaId;
+    } on FileSystemException {
+      return false;
+    }
+  }
+
+  /// Reads and verifies a cached image for the LAN media endpoint. Null means
+  /// the id is unknown or its file is gone; an oversized file is reported so
+  /// the endpoint can answer with a clear error instead of truncating.
+  Future<MediaBlob?> readMedia(String mediaId) async {
+    if (!isMediaId(mediaId)) return null;
+    final row = await (select(
+      mediaCacheRecords,
+    )..where((entry) => entry.mediaId.equals(mediaId))).getSingleOrNull();
+    if (row == null || row.mime != MediaStore.mime) return null;
+    // Serve only the content-addressed cache path for this id. The indexed path
+    // is bookkeeping, never an arbitrary file the peer can name.
+    final file = File(await mediaStore.cachePath(mediaId));
+    if (!await file.exists()) return null;
+    final length = await file.length();
+    if (length > MediaStore.maxBytes) throw MediaTooLargeException(length);
+    final bytes = await file.readAsBytes();
+    if (MediaStore.hashBytes(bytes) != mediaId) return null;
+    return MediaBlob(id: mediaId, mime: row.mime, bytes: bytes);
+  }
+
+  /// Stores an image received from a peer after verifying its content address.
+  Future<bool> installMedia(String mediaId, Uint8List bytes) async {
+    final entry = await mediaStore.storeVerified(mediaId, bytes);
+    if (entry == null) return false;
+    await _recordMediaCache(entry);
+    return true;
+  }
+
+  /// Image ids referenced by live rows but absent from the local cache. A pull
+  /// retries these on every pass, so a temporarily offline peer cannot strand
+  /// an image.
+  Future<Set<String>> pendingMediaIds() async {
+    final referenced = <String>{};
+    for (final table in <TableInfo>[contextRecords, projectRecords]) {
+      final rows = await customSelect(
+        'SELECT DISTINCT image_media_id AS id FROM ${table.actualTableName} '
+        'WHERE image_media_id IS NOT NULL AND deleted_at IS NULL',
+      ).get();
+      for (final row in rows) {
+        final id = row.readNullable<String>('id');
+        if (id != null && isMediaId(id)) referenced.add(id);
+      }
+    }
+    final pending = <String>{};
+    for (final id in referenced) {
+      if (!await hasCachedMedia(id)) pending.add(id);
+    }
+    return pending;
+  }
+
+  /// Sets the display path for one row as a local consequence of a merge. The
+  /// path is the shared cache file when the image has arrived, and null while
+  /// it is pending. No sync change is recorded.
+  Future<void> linkRowImagePath(String entity, String rowKey, String? mediaId) async {
+    final TableInfo table = entity == 'project' ? projectRecords : contextRecords;
+    String? path;
+    if (mediaId != null && isMediaId(mediaId)) path = await mediaStore.displayPath(mediaId);
+    await customUpdate(
+      'UPDATE ${table.actualTableName} SET image_path = ? WHERE id = ?',
+      variables: [Variable<String>(path), Variable.withString(rowKey)],
+      updates: {table},
+    );
+  }
+
+  /// Links every row that references [mediaIds] to a valid display path when
+  /// its current path is missing. This is the recovery step after media sync.
+  Future<int> linkMediaPaths(Iterable<String> mediaIds) async {
+    var changed = 0;
+    for (final mediaId in mediaIds.toSet()) {
+      if (!isMediaId(mediaId)) continue;
+      final cachePath = await mediaStore.displayPath(mediaId);
+      if (cachePath == null) continue;
+      for (final table in <TableInfo>[contextRecords, projectRecords]) {
+        final rows = await customSelect(
+          'SELECT id, image_path FROM ${table.actualTableName} WHERE image_media_id = ?',
+          variables: [Variable.withString(mediaId)],
+        ).get();
+        for (final row in rows) {
+          final current = row.readNullable<String>('image_path');
+          if (current != null && current.isNotEmpty) {
+            final file = File(current);
+            if (await file.exists()) {
+              try {
+                if (MediaStore.hashBytes(await file.readAsBytes()) == mediaId) continue;
+              } on FileSystemException {
+                // Fall through and relink to the verified cache copy.
+              }
+            }
+          }
+          await customUpdate(
+            'UPDATE ${table.actualTableName} SET image_path = ? WHERE id = ?',
+            variables: [Variable.withString(cachePath), Variable.withString(row.read<String>('id'))],
+            updates: {table},
+          );
+          changed++;
+        }
+      }
+    }
+    return changed;
+  }
+
+  /// Links every referenced image id. Used after a source replacement, where
+  /// all rows were written while the local cache already held their media.
+  Future<int> linkAllMediaPaths() async {
+    final ids = <String>{};
+    for (final table in <TableInfo>[contextRecords, projectRecords]) {
+      final rows = await customSelect(
+        'SELECT DISTINCT image_media_id AS id FROM ${table.actualTableName} WHERE image_media_id IS NOT NULL',
+      ).get();
+      for (final row in rows) {
+        final id = row.readNullable<String>('id');
+        if (id != null && isMediaId(id)) ids.add(id);
+      }
+    }
+    return linkMediaPaths(ids);
   }
 
   Stream<List<Project>> watchProjects({String? spaceId, String? contextId}) {
@@ -765,36 +1125,55 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> saveProject(Project project) async {
-    final now = DateTime.now();
-    final existing = await (select(
-      projectRecords,
-    )..where((row) => row.id.equals(project.id))).getSingleOrNull();
-    await into(projectRecords).insertOnConflictUpdate(
-      ProjectRecordsCompanion(
-        id: Value(project.id),
-        spaceId: Value(project.spaceId),
-        contextId: Value(project.contextId),
-        name: Value(project.name),
-        description: Value(project.description),
-        color: Value(project.colorValue),
-        icon: Value(project.icon),
-        imagePath: Value(project.imagePath),
-        position: Value(project.position),
-        createdAt: Value(existing?.createdAt ?? now),
-        updatedAt: Value(now),
-        deletedAt: Value(project.deletedAt),
-      ),
-    );
+    await transaction(() async {
+      final now = DateTime.now();
+      final spec = syncEntity('project');
+      final existing = await (select(
+        projectRecords,
+      )..where((row) => row.id.equals(project.id))).getSingleOrNull();
+      final before = existing == null ? null : spec.serialize(existing);
+      final imageMediaId = await _cacheImagePath(project.imagePath);
+      await into(projectRecords).insertOnConflictUpdate(
+        ProjectRecordsCompanion(
+          id: Value(project.id),
+          spaceId: Value(project.spaceId),
+          contextId: Value(project.contextId),
+          name: Value(project.name),
+          description: Value(project.description),
+          color: Value(project.colorValue),
+          icon: Value(project.icon),
+          imagePath: Value(project.imagePath),
+          imageMediaId: Value(imageMediaId),
+          position: Value(project.position),
+          createdAt: Value(existing?.createdAt ?? now),
+          updatedAt: Value(now),
+          deletedAt: Value(project.deletedAt),
+        ),
+      );
+      await recordSyncAfter(spec, project.id, before: before);
+    });
   }
 
   Future<void> softDeleteProject(String id) {
     return transaction(() async {
       final now = DateTime.now();
+      final projectSpec = syncEntity('project');
+      final projectBefore = await readSyncRow(projectSpec, id);
+      final entrySpec = syncEntity('entry');
+      final entries = await (select(
+        entryRecords,
+      )..where((row) => row.projectId.equals(id) & row.readOnly.equals(false))).get();
+      final entryBefores = {for (final row in entries) row.id: entrySpec.serialize(row)};
+
       await (update(entryRecords)..where((row) => row.projectId.equals(id) & row.readOnly.equals(false)))
           .write(EntryRecordsCompanion(projectId: Value(null), updatedAt: Value(now)));
       await (update(projectRecords)..where((row) => row.id.equals(id))).write(
         ProjectRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
       );
+      for (final entry in entries) {
+        await recordSyncAfter(entrySpec, entry.id, before: entryBefores[entry.id]);
+      }
+      await recordSyncDelete(projectSpec, id, lastRow: projectBefore);
     });
   }
 
@@ -815,7 +1194,9 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> saveHabit(Habit habit) async {
     final now = DateTime.now();
+    final spec = syncEntity('habit');
     final existing = await (select(habitRecords)..where((row) => row.id.equals(habit.id))).getSingleOrNull();
+    final before = existing == null ? null : spec.serialize(existing);
     await into(habitRecords).insertOnConflictUpdate(
       HabitRecordsCompanion(
         id: Value(habit.id),
@@ -834,13 +1215,17 @@ class AppDatabase extends _$AppDatabase {
         deletedAt: Value(habit.deletedAt),
       ),
     );
+    await recordSyncAfter(spec, habit.id, before: before);
   }
 
   Future<void> softDeleteHabit(String id) async {
+    final spec = syncEntity('habit');
+    final before = await readSyncRow(spec, id);
     final now = DateTime.now();
     await (update(habitRecords)..where((row) => row.id.equals(id))).write(
       HabitRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
     );
+    await recordSyncDelete(spec, id, lastRow: before);
   }
 
   Stream<Map<String, Set<LocalDate>>> watchHabitCompletions({String? habitId}) {
@@ -856,19 +1241,28 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> setHabitCompleted(String habitId, LocalDate date, {required bool completed}) async {
+    final spec = syncEntity('habitCompletion');
+    final existing = await (select(
+      habitCompletionRecords,
+    )..where((row) => row.habitId.equals(habitId) & row.dateKey.equals(date.key))).getSingleOrNull();
     if (completed) {
-      await into(habitCompletionRecords).insertOnConflictUpdate(
+      if (existing != null) return;
+      await into(habitCompletionRecords).insert(
         HabitCompletionRecordsCompanion.insert(
           habitId: habitId,
           dateKey: date.key,
           createdAt: DateTime.now(),
         ),
       );
+      await recordSyncAfter(spec, spec.rowKey({'habit_id': habitId, 'date_key': date.key}));
       return;
     }
+    if (existing == null) return;
+    final before = spec.serialize(existing);
     await (delete(
       habitCompletionRecords,
     )..where((row) => row.habitId.equals(habitId) & row.dateKey.equals(date.key))).go();
+    await recordSyncDelete(spec, spec.rowKey({'habit_id': habitId, 'date_key': date.key}), lastRow: before);
   }
 
   Stream<List<TimeEntry>> watchTimeEntriesForEntry(String entryId) {
@@ -923,16 +1317,20 @@ class AppDatabase extends _$AppDatabase {
         createdAt: entry.createdAt,
       ),
     );
+    await recordSyncAfter(syncEntity('timeEntry'), entry.id);
     return entry;
   }
 
   Future<TimeEntry?> stopTimeEntry(String entryId, {int? occurrenceDateKey, DateTime? at}) async {
     final open = await readOpenTimeEntry(entryId, occurrenceDateKey: occurrenceDateKey);
     if (open == null) return null;
+    final spec = syncEntity('timeEntry');
+    final before = await readSyncRow(spec, open.id);
     final now = (at ?? DateTime.now()).toUtc();
     await (update(
       timeEntryRecords,
     )..where((row) => row.id.equals(open.id))).write(TimeEntryRecordsCompanion(endedAt: Value(now)));
+    await recordSyncAfter(spec, open.id, before: before);
     return TimeEntry(
       id: open.id,
       entryId: open.entryId,
@@ -949,8 +1347,60 @@ class AppDatabase extends _$AppDatabase {
     return {for (final row in rows) row.key: row.value};
   }
 
-  Future<void> writeSetting(String key, String value) =>
-      into(settingRecords).insertOnConflictUpdate(SettingRecordsCompanion.insert(key: key, value: value));
+  Future<void> writeSetting(String key, String value) async {
+    if (key != 'weekStart') {
+      await into(
+        settingRecords,
+      ).insertOnConflictUpdate(SettingRecordsCompanion.insert(key: key, value: value));
+      return;
+    }
+    await transaction(() async {
+      final spec = syncEntity('setting');
+      final before = await readSyncRow(spec, key);
+      await into(
+        settingRecords,
+      ).insertOnConflictUpdate(SettingRecordsCompanion.insert(key: key, value: value));
+      await recordSyncAfter(spec, key, before: before);
+    });
+  }
+
+  static const syncDatasetSettingKey = 'syncDatasetId';
+
+  /// The logical plan shared by paired devices. It is created once and kept
+  /// device-local; backups never carry it, so a restore starts a new plan.
+  Future<String> ensureSyncDatasetId() async => (await syncDeviceState()).datasetId;
+
+  /// True when the user has planner data beyond the seeded spaces, default
+  /// tags and reference rows. Pairing uses this to decide whether replacing a
+  /// device would discard a real plan.
+  Future<bool> hasUserData() async {
+    final seededTags = [for (final tag in _defaultCategories) Variable.withString(tag.id)];
+    final placeholders = List.filled(seededTags.length, '?').join(', ');
+    final row = await customSelect('''
+      SELECT
+        EXISTS(SELECT 1 FROM entry_records) +
+        EXISTS(SELECT 1 FROM context_records) +
+        EXISTS(SELECT 1 FROM project_records) +
+        EXISTS(SELECT 1 FROM habit_records) +
+        EXISTS(SELECT 1 FROM habit_completion_records) +
+        EXISTS(SELECT 1 FROM time_entry_records) +
+        EXISTS(SELECT 1 FROM completion_records) +
+        EXISTS(SELECT 1 FROM reminder_records) +
+        EXISTS(SELECT 1 FROM shift_pattern_records) +
+        EXISTS(SELECT 1 FROM shift_slot_records) +
+        EXISTS(SELECT 1 FROM shift_exception_records) +
+        EXISTS(SELECT 1 FROM shift_checklist_item_records) +
+        EXISTS(SELECT 1 FROM shift_checklist_completion_records) +
+        EXISTS(SELECT 1 FROM home_item_records) +
+        EXISTS(SELECT 1 FROM home_item_location_records) +
+        EXISTS(SELECT 1 FROM shopping_item_records) +
+        EXISTS(SELECT 1 FROM home_purchase_records) +
+        EXISTS(SELECT 1 FROM maintenance_log_records) +
+        EXISTS(SELECT 1 FROM tag_records WHERE id NOT IN ($placeholders))
+        AS count
+      ''', variables: seededTags).getSingle();
+    return row.read<int>('count') > 0;
+  }
 
   Stream<List<EntryOccurrence>> watchEntriesBetween(LocalDate start, LocalDate end, String viewerTimeZone) {
     final query = _entriesQuery(start, end);
@@ -1138,7 +1588,7 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  Future<void> saveEntry(Entry entry, {bool allowReadOnly = false}) {
+  Future<void> saveEntry(Entry entry, {bool allowReadOnly = false, Set<String>? removedTagIds}) {
     return transaction(() async {
       final existing = await (select(
         entryRecords,
@@ -1146,14 +1596,14 @@ class AppDatabase extends _$AppDatabase {
       if (existing?.readOnly == true && !allowReadOnly) {
         throw StateError('Imported entries are read-only');
       }
+      final spec = syncEntity('entry');
+      final before = existing == null ? null : spec.serialize(existing);
       await into(entryRecords).insertOnConflictUpdate(_entryCompanion(entry));
-      await (delete(entryTagRecords)..where((row) => row.entryId.equals(entry.id))).go();
-      for (final tagId in entry.tagIds) {
-        await into(entryTagRecords).insert(
-          EntryTagRecordsCompanion.insert(entryId: entry.id, tagId: tagId),
-          mode: InsertMode.insertOrIgnore,
-        );
+      final after = await readSyncRow(spec, entry.id);
+      if (after != null) {
+        await recordSyncUpsert(spec, entry.id, before: before, after: after);
       }
+      await saveEntryTags(entry.id, entry.tagIds, removedIds: removedTagIds);
     });
   }
 
@@ -1172,7 +1622,9 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> saveTag(Tag tag) async {
     final now = DateTime.now();
+    final spec = syncEntity('tag');
     final existing = await (select(tagRecords)..where((row) => row.id.equals(tag.id))).getSingleOrNull();
+    final before = existing == null ? null : spec.serialize(existing);
     await into(tagRecords).insertOnConflictUpdate(
       TagRecordsCompanion(
         id: Value(tag.id),
@@ -1185,15 +1637,28 @@ class AppDatabase extends _$AppDatabase {
         updatedAt: Value(now),
       ),
     );
+    await recordSyncAfter(spec, tag.id, before: before);
   }
 
   Future<void> softDeleteTag(String id) {
     return transaction(() async {
       final now = DateTime.now();
-      await (delete(entryTagRecords)..where((row) => row.tagId.equals(id))).go();
+      final spec = syncEntity('tag');
+      final tagBefore = await readSyncRow(spec, id);
+      final linkSpec = syncEntity('entryTag');
+      final links = await (select(entryTagRecords)..where((row) => row.tagId.equals(id))).get();
+      for (final link in links) {
+        final key = linkSpec.rowKey({'entry_id': link.entryId, 'tag_id': link.tagId});
+        final before = linkSpec.serialize(link);
+        await (delete(
+          entryTagRecords,
+        )..where((row) => row.entryId.equals(link.entryId) & row.tagId.equals(link.tagId))).go();
+        await recordSyncDelete(linkSpec, key, lastRow: before);
+      }
       await (update(tagRecords)..where((row) => row.id.equals(id))).write(
         TagRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
       );
+      await recordSyncDelete(spec, id, lastRow: tagBefore);
     });
   }
 
@@ -1212,9 +1677,21 @@ class AppDatabase extends _$AppDatabase {
   Future<void> saveHomeCategory(HomeCategory category) async {
     await transaction(() async {
       final now = DateTime.now();
+      final spec = syncEntity('homeCategory');
       final existing = await (select(
         homeCategoryRecords,
       )..where((row) => row.id.equals(category.id))).getSingleOrNull();
+      final before = existing == null ? null : spec.serialize(existing);
+      final renamed = existing != null && existing.name != category.name;
+      final homeItems = renamed
+          ? await (select(homeItemRecords)..where((row) => row.categoryId.equals(category.id))).get()
+          : const <HomeItemRow>[];
+      final shopping = renamed
+          ? await (select(shoppingItemRecords)..where((row) => row.categoryId.equals(category.id))).get()
+          : const <ShoppingItemRow>[];
+      final homeBefores = {for (final row in homeItems) row.id: syncEntity('homeItem').serialize(row)};
+      final shoppingBefores = {for (final row in shopping) row.id: syncEntity('shoppingItem').serialize(row)};
+
       await into(homeCategoryRecords).insertOnConflictUpdate(
         HomeCategoryRecordsCompanion(
           id: Value(category.id),
@@ -1226,7 +1703,7 @@ class AppDatabase extends _$AppDatabase {
           updatedAt: Value(now),
         ),
       );
-      if (existing != null && existing.name != category.name) {
+      if (renamed) {
         await (update(homeItemRecords)..where((row) => row.categoryId.equals(category.id))).write(
           HomeItemRecordsCompanion(category: Value(category.name), updatedAt: Value(now)),
         );
@@ -1234,12 +1711,27 @@ class AppDatabase extends _$AppDatabase {
           ShoppingItemRecordsCompanion(category: Value(category.name), updatedAt: Value(now)),
         );
       }
+
+      for (final row in homeItems) {
+        await recordSyncAfter(syncEntity('homeItem'), row.id, before: homeBefores[row.id]);
+      }
+      for (final row in shopping) {
+        await recordSyncAfter(syncEntity('shoppingItem'), row.id, before: shoppingBefores[row.id]);
+      }
+      await recordSyncAfter(spec, category.id, before: before);
     });
   }
 
   Future<void> deleteHomeCategory(String id) async {
     await transaction(() async {
       final now = DateTime.now();
+      final spec = syncEntity('homeCategory');
+      final before = await readSyncRow(spec, id);
+      final homeItems = await (select(homeItemRecords)..where((row) => row.categoryId.equals(id))).get();
+      final shopping = await (select(shoppingItemRecords)..where((row) => row.categoryId.equals(id))).get();
+      final homeBefores = {for (final row in homeItems) row.id: syncEntity('homeItem').serialize(row)};
+      final shoppingBefores = {for (final row in shopping) row.id: syncEntity('shoppingItem').serialize(row)};
+
       await (update(homeItemRecords)..where((row) => row.categoryId.equals(id))).write(
         HomeItemRecordsCompanion(categoryId: Value(null), updatedAt: Value(now)),
       );
@@ -1249,6 +1741,14 @@ class AppDatabase extends _$AppDatabase {
       await (update(homeCategoryRecords)..where((row) => row.id.equals(id))).write(
         HomeCategoryRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
       );
+
+      for (final row in homeItems) {
+        await recordSyncAfter(syncEntity('homeItem'), row.id, before: homeBefores[row.id]);
+      }
+      for (final row in shopping) {
+        await recordSyncAfter(syncEntity('shoppingItem'), row.id, before: shoppingBefores[row.id]);
+      }
+      await recordSyncDelete(spec, id, lastRow: before);
     });
   }
 
@@ -1267,9 +1767,24 @@ class AppDatabase extends _$AppDatabase {
   Future<void> saveHomeLocation(HomeLocation location) async {
     await transaction(() async {
       final now = DateTime.now();
+      final spec = syncEntity('homeLocation');
       final existing = await (select(
         homeLocationRecords,
       )..where((row) => row.id.equals(location.id))).getSingleOrNull();
+      final before = existing == null ? null : spec.serialize(existing);
+      final renamed = existing != null && existing.name != location.name;
+      final links = renamed
+          ? await (select(homeItemLocationRecords)..where((row) => row.locationId.equals(location.id))).get()
+          : const <HomeItemLocationRow>[];
+      final homeIds = {for (final link in links) link.homeItemId};
+      final homeBefores = <String, Map<String, Object?>>{};
+      for (final homeId in homeIds) {
+        final row = await (select(
+          homeItemRecords,
+        )..where((item) => item.id.equals(homeId))).getSingleOrNull();
+        if (row != null) homeBefores[homeId] = syncEntity('homeItem').serialize(row);
+      }
+
       await into(homeLocationRecords).insertOnConflictUpdate(
         HomeLocationRecordsCompanion(
           id: Value(location.id),
@@ -1281,28 +1796,51 @@ class AppDatabase extends _$AppDatabase {
           updatedAt: Value(now),
         ),
       );
-      if (existing != null && existing.name != location.name) {
-        final links = await (select(
-          homeItemLocationRecords,
-        )..where((row) => row.locationId.equals(location.id))).get();
+      if (renamed) {
         for (final link in links) {
           await _refreshHomeItemLocationText(link.homeItemId, now);
         }
       }
+
+      for (final entry in homeBefores.entries) {
+        await recordSyncAfter(syncEntity('homeItem'), entry.key, before: entry.value);
+      }
+      await recordSyncAfter(spec, location.id, before: before);
     });
   }
 
   Future<void> deleteHomeLocation(String id) async {
     await transaction(() async {
       final now = DateTime.now();
+      final spec = syncEntity('homeLocation');
+      final before = await readSyncRow(spec, id);
       final links = await (select(homeItemLocationRecords)..where((row) => row.locationId.equals(id))).get();
+      final linkSpec = syncEntity('homeItemLocation');
+      final homeIds = {for (final link in links) link.homeItemId};
+      final homeBefores = <String, Map<String, Object?>>{};
+      for (final homeId in homeIds) {
+        final row = await (select(
+          homeItemRecords,
+        )..where((item) => item.id.equals(homeId))).getSingleOrNull();
+        if (row != null) homeBefores[homeId] = syncEntity('homeItem').serialize(row);
+      }
+
       await (delete(homeItemLocationRecords)..where((row) => row.locationId.equals(id))).go();
+      for (final link in links) {
+        final key = linkSpec.rowKey({'home_item_id': link.homeItemId, 'location_id': link.locationId});
+        await recordSyncDelete(linkSpec, key, lastRow: linkSpec.serialize(link));
+      }
       for (final link in links) {
         await _refreshHomeItemLocationText(link.homeItemId, now);
       }
       await (update(homeLocationRecords)..where((row) => row.id.equals(id))).write(
         HomeLocationRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
       );
+
+      for (final entry in homeBefores.entries) {
+        await recordSyncAfter(syncEntity('homeItem'), entry.key, before: entry.value);
+      }
+      await recordSyncDelete(spec, id, lastRow: before);
     });
   }
 
@@ -1321,9 +1859,17 @@ class AppDatabase extends _$AppDatabase {
   Future<void> saveHomeUnit(HomeUnit unit) async {
     await transaction(() async {
       final now = DateTime.now();
+      final spec = syncEntity('homeUnit');
       final existing = await (select(
         homeUnitRecords,
       )..where((row) => row.id.equals(unit.id))).getSingleOrNull();
+      final before = existing == null ? null : spec.serialize(existing);
+      final renamed = existing != null && existing.name != unit.name;
+      final homeItems = renamed
+          ? await (select(homeItemRecords)..where((row) => row.unitId.equals(unit.id))).get()
+          : const <HomeItemRow>[];
+      final homeBefores = {for (final row in homeItems) row.id: syncEntity('homeItem').serialize(row)};
+
       await into(homeUnitRecords).insertOnConflictUpdate(
         HomeUnitRecordsCompanion(
           id: Value(unit.id),
@@ -1335,23 +1881,36 @@ class AppDatabase extends _$AppDatabase {
           updatedAt: Value(now),
         ),
       );
-      if (existing != null && existing.name != unit.name) {
+      if (renamed) {
         await (update(homeItemRecords)..where((row) => row.unitId.equals(unit.id))).write(
           HomeItemRecordsCompanion(unit: Value(unit.name), updatedAt: Value(now)),
         );
       }
+
+      for (final row in homeItems) {
+        await recordSyncAfter(syncEntity('homeItem'), row.id, before: homeBefores[row.id]);
+      }
+      await recordSyncAfter(spec, unit.id, before: before);
     });
   }
 
   Future<void> deleteHomeUnit(String id) async {
     await transaction(() async {
       final now = DateTime.now();
+      final spec = syncEntity('homeUnit');
+      final before = await readSyncRow(spec, id);
+      final homeItems = await (select(homeItemRecords)..where((row) => row.unitId.equals(id))).get();
+      final homeBefores = {for (final row in homeItems) row.id: syncEntity('homeItem').serialize(row)};
       await (update(homeItemRecords)..where((row) => row.unitId.equals(id))).write(
         HomeItemRecordsCompanion(unitId: Value(null), updatedAt: Value(now)),
       );
       await (update(homeUnitRecords)..where((row) => row.id.equals(id))).write(
         HomeUnitRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
       );
+      for (final row in homeItems) {
+        await recordSyncAfter(syncEntity('homeItem'), row.id, before: homeBefores[row.id]);
+      }
+      await recordSyncDelete(spec, id, lastRow: before);
     });
   }
 
@@ -1385,9 +1944,23 @@ class AppDatabase extends _$AppDatabase {
   Future<void> saveHomeItem(HomeItem item, {bool updateGroup = false}) async {
     await transaction(() async {
       final now = DateTime.now();
+      final spec = syncEntity('homeItem');
+      final linkSpec = syncEntity('homeItemLocation');
       final existing = await (select(
         homeItemRecords,
       )..where((row) => row.id.equals(item.id))).getSingleOrNull();
+      final before = existing == null ? null : spec.serialize(existing);
+      final groupRows = updateGroup && item.groupId != null
+          ? await (select(
+              homeItemRecords,
+            )..where((row) => row.groupId.equals(item.groupId!) & row.id.equals(item.id).not())).get()
+          : const <HomeItemRow>[];
+      final groupBefores = {for (final row in groupRows) row.id: spec.serialize(row)};
+      final existingLinks = await (select(
+        homeItemLocationRecords,
+      )..where((row) => row.homeItemId.equals(item.id))).get();
+      final existingLocationIds = {for (final link in existingLinks) link.locationId};
+
       final groupId = item.groupId ?? item.id;
       var categoryId = item.categoryId;
       var unitId = item.unitId;
@@ -1416,7 +1989,7 @@ class AppDatabase extends _$AppDatabase {
       final unitName = await _homeUnitName(unitId, item.unit);
       final locationText = await _homeLocationText(locationIds, item.location);
       final minimum = item.minimumStock;
-      if (updateGroup && item.groupId != null) {
+      if (groupRows.isNotEmpty) {
         await (update(
           homeItemRecords,
         )..where((row) => row.groupId.equals(item.groupId!) & row.id.equals(item.id).not())).write(
@@ -1458,36 +2031,73 @@ class AppDatabase extends _$AppDatabase {
           updatedAt: Value(now),
         ),
       );
-      await (delete(homeItemLocationRecords)..where((row) => row.homeItemId.equals(item.id))).go();
-      for (final locationId in locationIds) {
+
+      final incomingLocationIds = locationIds.toSet();
+      for (final link in existingLinks) {
+        if (incomingLocationIds.contains(link.locationId)) continue;
+        final key = linkSpec.rowKey({'home_item_id': item.id, 'location_id': link.locationId});
+        final linkBefore = linkSpec.serialize(link);
+        await (delete(
+          homeItemLocationRecords,
+        )..where((row) => row.homeItemId.equals(item.id) & row.locationId.equals(link.locationId))).go();
+        await recordSyncDelete(linkSpec, key, lastRow: linkBefore);
+      }
+      for (final locationId in incomingLocationIds) {
+        if (existingLocationIds.contains(locationId)) continue;
         await into(homeItemLocationRecords).insert(
           HomeItemLocationRecordsCompanion.insert(homeItemId: item.id, locationId: locationId),
           mode: InsertMode.insertOrIgnore,
         );
+        final key = linkSpec.rowKey({'home_item_id': item.id, 'location_id': locationId});
+        final after = await readSyncRow(linkSpec, key);
+        if (after != null) await recordSyncUpsert(linkSpec, key, after: after);
       }
+
+      for (final row in groupRows) {
+        await recordSyncAfter(spec, row.id, before: groupBefores[row.id]);
+      }
+      await recordSyncAfter(spec, item.id, before: before);
     });
   }
 
   Future<void> archiveHomeItem(String id) async {
     final now = DateTime.now();
     await transaction(() async {
+      final spec = syncEntity('homeItem');
+      final before = await readSyncRow(spec, id);
+      final shopping = await (select(
+        shoppingItemRecords,
+      )..where((row) => row.homeItemId.equals(id) & row.deletedAt.isNull())).get();
+      final shoppingBefores = {for (final row in shopping) row.id: syncEntity('shoppingItem').serialize(row)};
       // A removed size must not keep receiving stock from a stale shopping line.
       await (update(shoppingItemRecords)..where((row) => row.homeItemId.equals(id) & row.deletedAt.isNull()))
           .write(ShoppingItemRecordsCompanion(homeItemId: const Value(null), updatedAt: Value(now)));
       await (update(homeItemRecords)..where((row) => row.id.equals(id))).write(
         HomeItemRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
       );
+      for (final row in shopping) {
+        await recordSyncAfter(syncEntity('shoppingItem'), row.id, before: shoppingBefores[row.id]);
+      }
+      await recordSyncDelete(spec, id, lastRow: before);
     });
   }
 
   Future<void> archiveHomeGroup(String groupId) async {
     final now = DateTime.now();
     await transaction(() async {
+      final spec = syncEntity('homeItem');
       final rows =
           await (select(homeItemRecords)..where(
                 (row) => (row.groupId.equals(groupId) | row.id.equals(groupId)) & row.deletedAt.isNull(),
               ))
               .get();
+      final shopping =
+          await (select(shoppingItemRecords)..where(
+                (row) => row.homeItemId.isIn([for (final item in rows) item.id]) & row.deletedAt.isNull(),
+              ))
+              .get();
+      final shoppingBefores = {for (final row in shopping) row.id: syncEntity('shoppingItem').serialize(row)};
+      final itemBefores = {for (final row in rows) row.id: spec.serialize(row)};
       for (final row in rows) {
         await (update(shoppingItemRecords)
               ..where((shopping) => shopping.homeItemId.equals(row.id) & shopping.deletedAt.isNull()))
@@ -1498,6 +2108,12 @@ class AppDatabase extends _$AppDatabase {
               (row) => (row.groupId.equals(groupId) | row.id.equals(groupId)) & row.deletedAt.isNull(),
             ))
             .write(HomeItemRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)));
+      }
+      for (final row in shopping) {
+        await recordSyncAfter(syncEntity('shoppingItem'), row.id, before: shoppingBefores[row.id]);
+      }
+      for (final row in rows) {
+        await recordSyncDelete(spec, row.id, lastRow: itemBefores[row.id]);
       }
     });
   }
@@ -1630,7 +2246,16 @@ class AppDatabase extends _$AppDatabase {
     final unitsByName = {
       for (final row in unitRows) ...{row.name.toLowerCase(): row, row.symbol.toLowerCase(): row},
     };
+    final homeSpec = syncEntity('homeItem');
+    final linkSpec = syncEntity('homeItemLocation');
     final items = await select(homeItemRecords).get();
+    final itemBefores = {for (final item in items) item.id: homeSpec.serialize(item)};
+    final linksBefore = await select(homeItemLocationRecords).get();
+    final beforeLinkKeys = {
+      for (final link in linksBefore)
+        linkSpec.rowKey({'home_item_id': link.homeItemId, 'location_id': link.locationId}): linkSpec
+            .serialize(link),
+    };
     for (final item in items) {
       final category = item.categoryId == null && item.category.trim().isNotEmpty
           ? categoriesByName[item.category.trim().toLowerCase()]
@@ -1661,6 +2286,24 @@ class AppDatabase extends _$AppDatabase {
         );
       }
     }
+
+    final linksAfter = await select(homeItemLocationRecords).get();
+    final afterLinkKeys = {
+      for (final link in linksAfter)
+        linkSpec.rowKey({'home_item_id': link.homeItemId, 'location_id': link.locationId}),
+    };
+    for (final link in linksAfter) {
+      final key = linkSpec.rowKey({'home_item_id': link.homeItemId, 'location_id': link.locationId});
+      if (beforeLinkKeys.containsKey(key)) continue;
+      await recordSyncAfter(linkSpec, key);
+    }
+    for (final entry in beforeLinkKeys.entries) {
+      if (afterLinkKeys.contains(entry.key)) continue;
+      await recordSyncDelete(linkSpec, entry.key, lastRow: entry.value);
+    }
+    for (final item in items) {
+      await recordSyncAfter(homeSpec, item.id, before: itemBefores[item.id]);
+    }
   }
 
   Stream<List<ShoppingItem>> watchShoppingItems() {
@@ -1679,9 +2322,11 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> saveShoppingItem(ShoppingItem item) async {
     final now = DateTime.now();
+    final spec = syncEntity('shoppingItem');
     final existing = await (select(
       shoppingItemRecords,
     )..where((row) => row.id.equals(item.id))).getSingleOrNull();
+    final before = existing == null ? null : spec.serialize(existing);
     var unit = item.unit;
     var packSize = item.packSize;
     var categoryId = item.categoryId;
@@ -1727,6 +2372,7 @@ class AppDatabase extends _$AppDatabase {
         updatedAt: Value(now),
       ),
     );
+    await recordSyncAfter(spec, item.id, before: before);
   }
 
   /// Moves a line one slot up or down inside the unchecked part of the list.
@@ -1734,6 +2380,7 @@ class AppDatabase extends _$AppDatabase {
   Future<void> moveShoppingItem(String id, int delta) async {
     await transaction(() async {
       final rows = await (select(shoppingItemRecords)..where((row) => row.deletedAt.isNull())).get();
+      final before = {for (final row in rows) row.id: syncEntity('shoppingItem').serialize(row)};
       final ordered = rows.toList()
         ..sort((a, b) {
           if (a.checked != b.checked) return a.checked ? 1 : -1;
@@ -1753,22 +2400,36 @@ class AppDatabase extends _$AppDatabase {
           ShoppingItemRecordsCompanion(position: Value(i), updatedAt: Value(now)),
         );
       }
+      for (final row in ordered) {
+        await recordSyncAfter(syncEntity('shoppingItem'), row.id, before: before[row.id]);
+      }
     });
   }
 
   Future<void> clearCheckedShopping({String? contextId}) async {
     final now = DateTime.now();
-    final query = update(shoppingItemRecords)
-      ..where((row) => row.checked.equals(true) & row.deletedAt.isNull());
-    if (contextId != null) query.where((row) => row.contextId.equals(contextId));
-    await query.write(ShoppingItemRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)));
+    final spec = syncEntity('shoppingItem');
+    var predicate = shoppingItemRecords.checked.equals(true) & shoppingItemRecords.deletedAt.isNull();
+    if (contextId != null) predicate = predicate & shoppingItemRecords.contextId.equals(contextId);
+    final query = select(shoppingItemRecords)..where((row) => predicate);
+    final rows = await query.get();
+    final befores = {for (final row in rows) row.id: spec.serialize(row)};
+    await (update(shoppingItemRecords)..where((row) => predicate)).write(
+      ShoppingItemRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+    );
+    for (final row in rows) {
+      await recordSyncDelete(spec, row.id, lastRow: befores[row.id]);
+    }
   }
 
   Future<void> deleteShoppingItem(String id) async {
     final now = DateTime.now();
+    final spec = syncEntity('shoppingItem');
+    final before = await readSyncRow(spec, id);
     await (update(shoppingItemRecords)..where((row) => row.id.equals(id))).write(
       ShoppingItemRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
     );
+    await recordSyncDelete(spec, id, lastRow: before);
   }
 
   /// Checking a linked shopping item updates the household quantity, the
@@ -1778,8 +2439,12 @@ class AppDatabase extends _$AppDatabase {
   Future<void> setShoppingChecked(String id, bool checked) {
     return transaction(() async {
       final now = DateTime.now();
+      final shoppingSpec = syncEntity('shoppingItem');
+      final homeSpec = syncEntity('homeItem');
+      final purchaseSpec = syncEntity('homePurchase');
       final row = await (select(shoppingItemRecords)..where((item) => item.id.equals(id))).getSingleOrNull();
       if (row == null || row.checked == checked) return;
+      final shoppingBefore = shoppingSpec.serialize(row);
 
       if (checked) {
         final homeId = row.homeItemId;
@@ -1788,6 +2453,7 @@ class AppDatabase extends _$AppDatabase {
             homeItemRecords,
           )..where((item) => item.id.equals(homeId) & item.deletedAt.isNull())).getSingleOrNull();
           if (home != null) {
+            final homeBefore = homeSpec.serialize(home);
             final quantity = (home.quantity + row.quantity).clamp(0.0, double.infinity).toDouble();
             await (update(homeItemRecords)..where((item) => item.id.equals(homeId))).write(
               HomeItemRecordsCompanion(
@@ -1796,21 +2462,32 @@ class AppDatabase extends _$AppDatabase {
                 updatedAt: Value(now),
               ),
             );
+            final purchaseId = const Uuid().v4();
             await into(homePurchaseRecords).insert(
               HomePurchaseRecordsCompanion.insert(
-                id: const Uuid().v4(),
+                id: purchaseId,
                 homeItemId: homeId,
                 shoppingItemId: Value(id),
                 quantity: row.quantity,
                 purchasedAt: now,
               ),
             );
+            await recordSyncAfter(purchaseSpec, purchaseId);
+            await recordSyncAfter(homeSpec, homeId, before: homeBefore);
           }
         }
       } else {
         final purchases = await (select(
           homePurchaseRecords,
         )..where((purchase) => purchase.shoppingItemId.equals(id))).get();
+        final homeIds = {for (final purchase in purchases) purchase.homeItemId};
+        final homeBefores = <String, Map<String, Object?>>{};
+        for (final homeId in homeIds) {
+          final home = await (select(
+            homeItemRecords,
+          )..where((item) => item.id.equals(homeId))).getSingleOrNull();
+          if (home != null) homeBefores[homeId] = homeSpec.serialize(home);
+        }
         for (final purchase in purchases) {
           final home = await (select(
             homeItemRecords,
@@ -1821,13 +2498,18 @@ class AppDatabase extends _$AppDatabase {
               HomeItemRecordsCompanion(quantity: Value(quantity), updatedAt: Value(now)),
             );
           }
+          await recordSyncDelete(purchaseSpec, purchase.id, lastRow: purchaseSpec.serialize(purchase));
           await (delete(homePurchaseRecords)..where((row) => row.id.equals(purchase.id))).go();
+        }
+        for (final homeId in homeIds) {
+          await recordSyncAfter(homeSpec, homeId, before: homeBefores[homeId]);
         }
       }
 
       await (update(shoppingItemRecords)..where((item) => item.id.equals(id))).write(
         ShoppingItemRecordsCompanion(checked: Value(checked), updatedAt: Value(now)),
       );
+      await recordSyncAfter(shoppingSpec, id, before: shoppingBefore);
     });
   }
 
@@ -1835,10 +2517,12 @@ class AppDatabase extends _$AppDatabase {
   Future<void> adjustHomeQuantity(String id, double delta, {String note = ''}) {
     return transaction(() async {
       final now = DateTime.now();
+      final homeSpec = syncEntity('homeItem');
       final home = await (select(
         homeItemRecords,
       )..where((item) => item.id.equals(id) & item.deletedAt.isNull())).getSingleOrNull();
       if (home == null) return;
+      final before = homeSpec.serialize(home);
       final quantity = (home.quantity + delta).clamp(0.0, double.infinity).toDouble();
       await (update(homeItemRecords)..where((item) => item.id.equals(id))).write(
         HomeItemRecordsCompanion(
@@ -1848,16 +2532,19 @@ class AppDatabase extends _$AppDatabase {
         ),
       );
       if (delta > 0) {
+        final purchaseId = const Uuid().v4();
         await into(homePurchaseRecords).insert(
           HomePurchaseRecordsCompanion.insert(
-            id: const Uuid().v4(),
+            id: purchaseId,
             homeItemId: id,
             quantity: delta,
             note: Value(note),
             purchasedAt: now,
           ),
         );
+        await recordSyncAfter(syncEntity('homePurchase'), purchaseId);
       }
+      await recordSyncAfter(homeSpec, id, before: before);
     });
   }
 
@@ -1876,24 +2563,49 @@ class AppDatabase extends _$AppDatabase {
     return items;
   }
 
-  Future<void> saveShiftChecklistItems(String patternId, List<ShiftChecklistItem> items) {
+  Future<void> saveShiftChecklistItems(
+    String patternId,
+    List<ShiftChecklistItem> items, {
+    Set<String>? previousIds,
+  }) {
     return transaction(() async {
+      final spec = syncEntity('shiftChecklistItem');
+      final completionSpec = syncEntity('shiftChecklistCompletion');
       final existing = await (select(
         shiftChecklistItemRecords,
       )..where((row) => row.patternId.equals(patternId))).get();
+      final byId = {for (final row in existing) row.id: row};
       final keepIds = items.map((item) => item.id).toSet();
-      final removedIds = [
+      final removed = [
         for (final row in existing)
-          if (!keepIds.contains(row.id)) row.id,
+          if (!keepIds.contains(row.id) && (previousIds == null || previousIds.contains(row.id))) row,
       ];
-      if (removedIds.isNotEmpty) {
-        await (delete(shiftChecklistCompletionRecords)..where((row) => row.itemId.isIn(removedIds))).go();
-        await (delete(shiftChecklistItemRecords)..where((row) => row.id.isIn(removedIds))).go();
+      for (final row in removed) {
+        final completions = await (select(
+          shiftChecklistCompletionRecords,
+        )..where((item) => item.itemId.equals(row.id))).get();
+        for (final completion in completions) {
+          final before = completionSpec.serialize(completion);
+          final key = completionSpec.rowKey({
+            'item_id': completion.itemId,
+            'date_key': completion.dateKey,
+            'slot_key': completion.slotKey,
+          });
+          await recordSyncDelete(completionSpec, key, lastRow: before);
+        }
+        if (completions.isNotEmpty) {
+          await (delete(shiftChecklistCompletionRecords)..where((item) => item.itemId.equals(row.id))).go();
+        }
+        final before = spec.serialize(row);
+        await (delete(shiftChecklistItemRecords)..where((item) => item.id.equals(row.id))).go();
+        await recordSyncDelete(spec, row.id, lastRow: before);
       }
+
       for (var index = 0; index < items.length; index++) {
         final item = items[index];
-        final exists = existing.any((row) => row.id == item.id);
-        if (exists) {
+        final existingRow = byId[item.id];
+        final before = existingRow == null ? null : spec.serialize(existingRow);
+        if (existingRow != null) {
           await (update(shiftChecklistItemRecords)..where((row) => row.id.equals(item.id))).write(
             ShiftChecklistItemRecordsCompanion(
               label: Value(item.label),
@@ -1901,17 +2613,21 @@ class AppDatabase extends _$AppDatabase {
               position: Value(index),
             ),
           );
-          continue;
+        } else {
+          await into(shiftChecklistItemRecords).insert(
+            ShiftChecklistItemRecordsCompanion(
+              id: Value(item.id),
+              patternId: Value(patternId),
+              label: Value(item.label),
+              dayIndex: Value(item.dayIndex),
+              position: Value(index),
+            ),
+          );
         }
-        await into(shiftChecklistItemRecords).insert(
-          ShiftChecklistItemRecordsCompanion(
-            id: Value(item.id),
-            patternId: Value(patternId),
-            label: Value(item.label),
-            dayIndex: Value(item.dayIndex),
-            position: Value(index),
-          ),
-        );
+        final after = await readSyncRow(spec, item.id);
+        if (after != null) {
+          await recordSyncUpsert(spec, item.id, before: before, after: after);
+        }
       }
     });
   }
@@ -1943,8 +2659,11 @@ class AppDatabase extends _$AppDatabase {
     required bool completed,
     required String slotKey,
   }) async {
+    final spec = syncEntity('shiftChecklistCompletion');
     if (completed) {
-      await into(shiftChecklistCompletionRecords).insertOnConflictUpdate(
+      final key = spec.rowKey({'item_id': itemId, 'date_key': date.key, 'slot_key': slotKey});
+      if (await readSyncRow(spec, key) != null) return;
+      await into(shiftChecklistCompletionRecords).insert(
         ShiftChecklistCompletionRecordsCompanion.insert(
           itemId: itemId,
           dateKey: date.key,
@@ -1952,15 +2671,29 @@ class AppDatabase extends _$AppDatabase {
           createdAt: DateTime.now(),
         ),
       );
+      await recordSyncAfter(spec, key);
       return;
     }
-    await (delete(shiftChecklistCompletionRecords)..where(
-          (row) =>
-              row.itemId.equals(itemId) &
-              row.dateKey.equals(date.key) &
-              (row.slotKey.equals(slotKey) | row.slotKey.equals('')),
-        ))
-        .go();
+    final rows =
+        await (select(shiftChecklistCompletionRecords)..where(
+              (row) =>
+                  row.itemId.equals(itemId) &
+                  row.dateKey.equals(date.key) &
+                  (row.slotKey.equals(slotKey) | row.slotKey.equals('')),
+            ))
+            .get();
+    for (final row in rows) {
+      final key = spec.rowKey({'item_id': row.itemId, 'date_key': row.dateKey, 'slot_key': row.slotKey});
+      final before = spec.serialize(row);
+      await (delete(shiftChecklistCompletionRecords)..where(
+            (item) =>
+                item.itemId.equals(row.itemId) &
+                item.dateKey.equals(row.dateKey) &
+                item.slotKey.equals(row.slotKey),
+          ))
+          .go();
+      await recordSyncDelete(spec, key, lastRow: before);
+    }
   }
 
   Future<LocalIdentity?> readIdentity() async {
@@ -2214,12 +2947,21 @@ class AppDatabase extends _$AppDatabase {
     }
 
     await transaction(() async {
-      await into(completionRecords).insertOnConflictUpdate(
-        CompletionRecordsCompanion.insert(entryId: id, dateKey: completionDate.key, createdAt: now),
-      );
+      final entrySpec = syncEntity('entry');
+      final entryBefore = await readSyncRow(entrySpec, id);
+      final completionSpec = syncEntity('completion');
+      final completionKey = completionSpec.rowKey({'entry_id': id, 'date_key': completionDate.key});
+      final existingCompletion = await readSyncRow(completionSpec, completionKey);
+      if (existingCompletion == null) {
+        await into(
+          completionRecords,
+        ).insert(CompletionRecordsCompanion.insert(entryId: id, dateKey: completionDate.key, createdAt: now));
+        await recordSyncAfter(completionSpec, completionKey);
+      }
+      final logId = const Uuid().v4();
       await into(maintenanceLogRecords).insert(
         MaintenanceLogRecordsCompanion.insert(
-          id: const Uuid().v4(),
+          id: logId,
           entryId: id,
           performedDateKey: completionDate.key,
           nextDueDateKey: nextDate.key,
@@ -2228,6 +2970,7 @@ class AppDatabase extends _$AppDatabase {
           createdAt: now,
         ),
       );
+      await recordSyncAfter(syncEntity('maintenanceLog'), logId);
       await (update(entryRecords)..where((entry) => entry.id.equals(id))).write(
         EntryRecordsCompanion(
           dateKey: Value(nextDate.key),
@@ -2239,8 +2982,11 @@ class AppDatabase extends _$AppDatabase {
           updatedAt: Value(now),
         ),
       );
+      await recordSyncAfter(entrySpec, id, before: entryBefore);
       if (calendarEvent != null) {
+        final eventBefore = await readSyncRow(entrySpec, calendarEvent.id);
         await into(entryRecords).insertOnConflictUpdate(_entryCompanion(calendarEvent));
+        await recordSyncAfter(entrySpec, calendarEvent.id, before: eventBefore);
       }
     });
     return nextDate;
@@ -2265,6 +3011,8 @@ class AppDatabase extends _$AppDatabase {
       startAt = instantAt(nextDue, row.startMinute!, row.timeZone!);
       endAt = instantAt(nextDue, row.endMinute!, row.timeZone!);
     }
+    final spec = syncEntity('entry');
+    final before = await readSyncRow(spec, entryId);
     await (update(entryRecords)..where((entry) => entry.id.equals(entryId))).write(
       EntryRecordsCompanion(
         dateKey: Value(nextDue.key),
@@ -2275,6 +3023,7 @@ class AppDatabase extends _$AppDatabase {
         updatedAt: Value(DateTime.now()),
       ),
     );
+    await recordSyncAfter(spec, entryId, before: before);
     return nextDue;
   }
 
@@ -2282,6 +3031,8 @@ class AppDatabase extends _$AppDatabase {
     final existing = await (select(entryRecords)..where((row) => row.id.equals(id))).getSingleOrNull();
     if (existing?.readOnly == true) throw StateError('Imported entries are read-only');
     if (status == EntryStatus.done) await stopTimeEntry(id);
+    final spec = syncEntity('entry');
+    final before = existing == null ? null : spec.serialize(existing);
     final now = DateTime.now();
     await (update(entryRecords)..where((row) => row.id.equals(id))).write(
       EntryRecordsCompanion(
@@ -2290,13 +3041,24 @@ class AppDatabase extends _$AppDatabase {
         updatedAt: Value(now),
       ),
     );
+    await recordSyncAfter(spec, id, before: before);
   }
 
   /// Deletes every user row and re-seeds the three spaces and default
   /// categories. Pairing identity is removed too; the caller must stop the
-  /// network services afterwards.
-  Future<void> clearAllData() {
-    return transaction(() async {
+  /// network services afterwards. Managed image files and the content cache are
+  /// removed after the database transaction commits.
+  Future<void> clearAllData() async {
+    final imagePaths = <String>{};
+    await transaction(() async {
+      for (final row in await select(contextRecords).get()) {
+        final path = row.imagePath;
+        if (path != null && path.isNotEmpty) imagePaths.add(path);
+      }
+      for (final row in await select(projectRecords).get()) {
+        final path = row.imagePath;
+        if (path != null && path.isNotEmpty) imagePaths.add(path);
+      }
       // Draft-v9 builds kept gadgets in a side table. Remove any leftover so
       // delete-all never leaves household history behind.
       await customStatement('DROP TABLE IF EXISTS gadget_records');
@@ -2327,11 +3089,28 @@ class AppDatabase extends _$AppDatabase {
       await delete(contextRecords).go();
       await delete(tagRecords).go();
       await delete(settingRecords).go();
+      await delete(mediaCacheRecords).go();
       await delete(remoteSnapshotRecords).go();
+      await delete(syncChangeRecords).go();
+      await delete(syncFieldVersionRecords).go();
+      await delete(syncTombstoneRecords).go();
+      await delete(syncPeerStateRecords).go();
+      await delete(syncDeviceStateRecords).go();
+      _syncHlcClock = null;
       await delete(pairedDeviceRecords).go();
       await delete(identityRecords).go();
       await seedDefaults();
     });
+    await mediaStore.clearCacheIfConfigured();
+    for (final path in imagePaths) {
+      if (MediaStore.isCachePath(path)) continue;
+      try {
+        final file = File(path);
+        if (await file.exists()) await file.delete();
+      } on FileSystemException {
+        // A leftover display file is harmless after the plan was cleared.
+      }
+    }
   }
 
   Future<Entry?> readEntry(String id) async {
@@ -2373,20 +3152,47 @@ class AppDatabase extends _$AppDatabase {
     return byEntry;
   }
 
-  Future<void> saveRemindersForEntry(String entryId, List<Reminder> reminders) {
+  Future<void> saveRemindersForEntry(
+    String entryId,
+    List<Reminder> reminders, {
+    Set<String>? removedReminderIds,
+  }) {
     return transaction(() async {
-      await (delete(reminderRecords)..where((row) => row.entryId.equals(entryId))).go();
-      for (final reminder in reminders) {
-        await into(reminderRecords).insert(
-          ReminderRecordsCompanion.insert(
-            id: reminder.id.isEmpty ? Reminder.idFor(entryId, reminder.offsetMinutes) : reminder.id,
-            entryId: entryId,
-            offsetMinutes: reminder.offsetMinutes,
+      final spec = syncEntity('reminder');
+      final idFor = {
+        for (final reminder in reminders)
+          reminder.id.isEmpty ? Reminder.idFor(entryId, reminder.offsetMinutes) : reminder.id: reminder,
+      };
+      final existing = await (select(reminderRecords)..where((row) => row.entryId.equals(entryId))).get();
+      final existingById = {for (final row in existing) row.id: row};
+      final toDelete = [
+        for (final row in existing)
+          if (!idFor.containsKey(row.id) &&
+              (removedReminderIds == null || removedReminderIds.contains(row.id)))
+            row,
+      ];
+      for (final row in toDelete) {
+        final before = spec.serialize(row);
+        await (delete(reminderRecords)..where((item) => item.id.equals(row.id))).go();
+        await recordSyncDelete(spec, row.id, lastRow: before);
+      }
+
+      for (final entry in idFor.entries) {
+        final id = entry.key;
+        final reminder = entry.value;
+        final existingRow = existingById[id];
+        final before = existingRow == null ? null : spec.serialize(existingRow);
+        await into(reminderRecords).insertOnConflictUpdate(
+          ReminderRecordsCompanion(
+            id: Value(id),
+            entryId: Value(entryId),
+            offsetMinutes: Value(reminder.offsetMinutes),
             timeMinute: Value(reminder.timeMinute),
             enabled: Value(reminder.enabled),
           ),
-          mode: InsertMode.insertOrReplace,
         );
+        final after = await readSyncRow(spec, id);
+        if (after != null) await recordSyncUpsert(spec, id, before: before, after: after);
       }
     });
   }
@@ -2396,37 +3202,49 @@ class AppDatabase extends _$AppDatabase {
   Future<void> setOccurrenceCompleted(String entryId, LocalDate date, {required bool completed}) async {
     final existing = await (select(entryRecords)..where((row) => row.id.equals(entryId))).getSingleOrNull();
     if (existing?.readOnly == true) throw StateError('Imported entries are read-only');
+    final spec = syncEntity('completion');
+    final key = spec.rowKey({'entry_id': entryId, 'date_key': date.key});
+    final existingCompletion = await readSyncRow(spec, key);
     if (completed) {
+      if (existingCompletion != null) return;
       await stopTimeEntry(entryId, occurrenceDateKey: date.key);
-      await into(completionRecords).insertOnConflictUpdate(
+      await into(completionRecords).insert(
         CompletionRecordsCompanion.insert(entryId: entryId, dateKey: date.key, createdAt: DateTime.now()),
       );
+      await recordSyncAfter(spec, key);
       return;
     }
 
+    if (existingCompletion == null) return;
     await (delete(
       completionRecords,
     )..where((row) => row.entryId.equals(entryId) & row.dateKey.equals(date.key))).go();
+    await recordSyncDelete(spec, key, lastRow: existingCompletion);
   }
 
   Future<void> softDeleteEntry(String id) async {
     final existing = await (select(entryRecords)..where((row) => row.id.equals(id))).getSingleOrNull();
     if (existing?.readOnly == true) throw StateError('Imported entries are read-only');
+    final spec = syncEntity('entry');
+    final before = existing == null ? null : spec.serialize(existing);
     final now = DateTime.now();
     await (update(entryRecords)..where((row) => row.id.equals(id))).write(
       EntryRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
     );
+    await recordSyncDelete(spec, id, lastRow: before);
   }
 
-  Future<void> saveShiftPattern(ShiftPattern pattern) {
+  Future<void> saveShiftPattern(ShiftPattern pattern, {ShiftPattern? previous}) {
     if (pattern.spaceId != 'work') {
       throw ArgumentError.value(pattern.spaceId, 'spaceId', 'Shifts belong to the Work space');
     }
     return transaction(() async {
       final now = DateTime.now();
+      final spec = syncEntity('shiftPattern');
       final existing = await (select(
         shiftPatternRecords,
       )..where((row) => row.id.equals(pattern.id))).getSingleOrNull();
+      final before = existing == null ? null : spec.serialize(existing);
       await into(shiftPatternRecords).insertOnConflictUpdate(
         ShiftPatternRecordsCompanion(
           id: Value(pattern.id),
@@ -2443,50 +3261,94 @@ class AppDatabase extends _$AppDatabase {
           updatedAt: Value(now),
         ),
       );
-
-      await (delete(shiftSlotRecords)..where((row) => row.patternId.equals(pattern.id))).go();
-      await (delete(shiftExceptionRecords)..where((row) => row.patternId.equals(pattern.id))).go();
-      await (delete(shiftPatternTagRecords)..where((row) => row.patternId.equals(pattern.id))).go();
-
-      for (final tagId in pattern.tagIds) {
-        await into(shiftPatternTagRecords).insert(
-          ShiftPatternTagRecordsCompanion.insert(patternId: pattern.id, tagId: tagId),
-          mode: InsertMode.insertOrIgnore,
-        );
+      final after = await readSyncRow(spec, pattern.id);
+      if (after != null) {
+        await recordSyncUpsert(spec, pattern.id, before: before, after: after);
       }
 
-      for (final slot in pattern.slots) {
-        await into(shiftSlotRecords).insert(
-          ShiftSlotRecordsCompanion.insert(
-            patternId: pattern.id,
-            dayIndex: slot.dayIndex,
-            label: Value(slot.label),
-            startMinute: slot.startMinute,
-            endMinute: slot.endMinute,
-          ),
-        );
-      }
+      await saveShiftSlots(
+        pattern.id,
+        pattern.slots,
+        previousIds: _previousShiftChildIds(
+          previous?.slots.map((slot) => slot.syncId),
+          previous?.slots.length ?? 0,
+        ),
+      );
+      await saveShiftExceptions(
+        pattern.id,
+        pattern.exceptions,
+        previousIds: _previousShiftChildIds(
+          previous?.exceptions.map((exception) => exception.syncId),
+          previous?.exceptions.length ?? 0,
+        ),
+      );
+      await saveShiftPatternTags(pattern.id, pattern.tagIds, previousIds: previous?.tagIds);
+    });
+  }
 
-      for (final exception in pattern.exceptions) {
-        await into(shiftExceptionRecords).insert(
-          ShiftExceptionRecordsCompanion.insert(
-            patternId: pattern.id,
-            dateKey: exception.date.key,
-            type: exception.type.name,
-            startMinute: Value(exception.startMinute),
-            endMinute: Value(exception.endMinute),
-            note: Value(exception.note),
-          ),
-        );
+  /// Names the shift child rows the caller knew about, or null for the legacy
+  /// replace-all path. A caller holding a pattern from before sync ids existed
+  /// cannot identify its rows, so keeping them would leave stale children.
+  Set<String>? _previousShiftChildIds(Iterable<String>? syncIds, int count) {
+    if (syncIds == null) return null;
+    final ids = {
+      for (final id in syncIds)
+        if (id.isNotEmpty) id,
+    };
+    if (ids.isEmpty && count > 0) return null;
+    return ids;
+  }
+
+  /// Replaces every exception on [date] for [patternId] with [exception].
+  ///
+  /// A null [exception] removes the override and lets the pattern's own slots
+  /// decide again. Slots, tags and checklist items are left untouched, so a
+  /// per-day edit never rewrites the pattern itself.
+  Future<void> setShiftDayOverride(String patternId, LocalDate date, ShiftException? exception) {
+    return transaction(() async {
+      final now = DateTime.now();
+      await (update(
+        shiftPatternRecords,
+      )..where((row) => row.id.equals(patternId))).write(ShiftPatternRecordsCompanion(updatedAt: Value(now)));
+
+      final spec = syncEntity('shiftException');
+      final existing = await (select(
+        shiftExceptionRecords,
+      )..where((row) => row.patternId.equals(patternId) & row.dateKey.equals(date.key))).get();
+      for (final row in existing) {
+        final before = spec.serialize(row);
+        await (delete(shiftExceptionRecords)..where((item) => item.id.equals(row.id))).go();
+        await recordSyncDelete(spec, row.syncId, lastRow: before);
       }
+      if (exception == null) return;
+
+      // The day sheet's action is one row per pattern and date, so concurrent
+      // edits of the same day resolve by HLC instead of creating duplicates.
+      final syncId = exception.syncId.isNotEmpty ? exception.syncId : 'day:$patternId:${date.key}';
+      await into(shiftExceptionRecords).insert(
+        ShiftExceptionRecordsCompanion.insert(
+          syncId: Value(syncId),
+          patternId: patternId,
+          dateKey: date.key,
+          type: exception.type.name,
+          startMinute: Value(exception.startMinute),
+          endMinute: Value(exception.endMinute),
+          note: Value(exception.note),
+        ),
+      );
+      final after = await readSyncRow(spec, syncId);
+      if (after != null) await recordSyncUpsert(spec, syncId, after: after);
     });
   }
 
   Future<void> softDeleteShiftPattern(String id) async {
+    final spec = syncEntity('shiftPattern');
+    final before = await readSyncRow(spec, id);
     final now = DateTime.now();
     await (update(shiftPatternRecords)..where((row) => row.id.equals(id))).write(
       ShiftPatternRecordsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
     );
+    await recordSyncDelete(spec, id, lastRow: before);
   }
 
   List<ShiftPattern> _patternsFromRows(Iterable<TypedResult> rows) {
@@ -2507,6 +3369,7 @@ class AppDatabase extends _$AppDatabase {
       final slotRow = row.readTableOrNull(shiftSlotRecords);
       if (slotRow != null) {
         (slots[patternRow.id] ??= <int, ShiftSlot>{})[slotRow.id] = ShiftSlot(
+          syncId: slotRow.syncId,
           dayIndex: slotRow.dayIndex,
           label: slotRow.label,
           startMinute: slotRow.startMinute,
@@ -2517,6 +3380,7 @@ class AppDatabase extends _$AppDatabase {
       final exceptionRow = row.readTableOrNull(shiftExceptionRecords);
       if (exceptionRow != null) {
         (exceptions[patternRow.id] ??= <int, ShiftException>{})[exceptionRow.id] = ShiftException(
+          syncId: exceptionRow.syncId,
           date: LocalDate.fromKey(exceptionRow.dateKey),
           type: ShiftExceptionType.values.byName(exceptionRow.type),
           startMinute: exceptionRow.startMinute,
@@ -3228,6 +4092,180 @@ class AppDatabase extends _$AppDatabase {
         'WHERE id = ?',
         [home.category, home.categoryId, home.icon, home.color, home.packSize, row.read<String>('id')],
       );
+    }
+  }
+
+  /// v14 adds the sync metadata tables, stable sync ids for shift slots and
+  /// exceptions, and a base version for every existing row.
+  Future<void> _migrateToV14(Migrator m) async {
+    Future<Set<String>> tables() async => (await customSelect(
+      "SELECT name FROM sqlite_master WHERE type = 'table'",
+    ).get()).map((row) => row.read<String>('name')).toSet();
+
+    Future<Set<String>> columnsOf(String table) async => (await customSelect(
+      'PRAGMA table_info($table)',
+    ).get()).map((row) => row.read<String>('name')).toSet();
+
+    var tableNames = await tables();
+    if (!tableNames.contains('sync_device_state_records')) {
+      await m.createTable(syncDeviceStateRecords);
+    }
+    if (!tableNames.contains('sync_change_records')) await m.createTable(syncChangeRecords);
+    if (!tableNames.contains('sync_field_version_records')) {
+      await m.createTable(syncFieldVersionRecords);
+    }
+    if (!tableNames.contains('sync_tombstone_records')) {
+      await m.createTable(syncTombstoneRecords);
+    }
+    if (!tableNames.contains('sync_peer_state_records')) {
+      await m.createTable(syncPeerStateRecords);
+    }
+
+    if (!tableNames.contains('shift_slot_records')) await m.createTable(shiftSlotRecords);
+    if (!tableNames.contains('shift_exception_records')) await m.createTable(shiftExceptionRecords);
+
+    tableNames = await tables();
+    if (tableNames.contains('shift_slot_records')) {
+      final columns = await columnsOf('shift_slot_records');
+      if (!columns.contains('sync_id')) {
+        await m.addColumn(shiftSlotRecords, shiftSlotRecords.syncId);
+      }
+    }
+    if (tableNames.contains('shift_exception_records')) {
+      final columns = await columnsOf('shift_exception_records');
+      if (!columns.contains('sync_id')) {
+        await m.addColumn(shiftExceptionRecords, shiftExceptionRecords.syncId);
+      }
+    }
+
+    await _backfillShiftSyncIds();
+    await _ensureShiftSyncIndexes();
+    await syncDeviceState();
+    await seedSyncFieldVersionsForAll();
+  }
+
+  /// v15 adds content-addressed image ids and the device-local media index.
+  /// Existing display files are hashed into the cache so the first sync after
+  /// the upgrade carries the images already on this device.
+  Future<void> _migrateToV15(Migrator m) async {
+    Future<Set<String>> tables() async => (await customSelect(
+      "SELECT name FROM sqlite_master WHERE type = 'table'",
+    ).get()).map((row) => row.read<String>('name')).toSet();
+
+    Future<Set<String>> columnsOf(String table) async => (await customSelect(
+      'PRAGMA table_info($table)',
+    ).get()).map((row) => row.read<String>('name')).toSet();
+
+    var tableNames = await tables();
+    if (tableNames.contains('context_records')) {
+      final columns = await columnsOf('context_records');
+      if (!columns.contains('image_media_id')) {
+        await m.addColumn(contextRecords, contextRecords.imageMediaId);
+      }
+    }
+    if (tableNames.contains('project_records')) {
+      final columns = await columnsOf('project_records');
+      if (!columns.contains('image_media_id')) {
+        await m.addColumn(projectRecords, projectRecords.imageMediaId);
+      }
+    }
+    if (!tableNames.contains('media_cache_records')) {
+      await m.createTable(mediaCacheRecords);
+    }
+
+    await _backfillMediaIds();
+    // Older sync versions could not seed contexts/projects because the media
+    // column was missing, so give every restored image and field a base
+    // version now that the schema is complete.
+    await seedSyncFieldVersionsForAll();
+  }
+
+  /// Hashes each existing context/project image into the content-addressed
+  /// cache. A missing or unreadable file leaves that row's media id null; one
+  /// bad file must never abort the upgrade.
+  Future<void> _backfillMediaIds() async {
+    final tableNames = (await customSelect(
+      "SELECT name FROM sqlite_master WHERE type = 'table'",
+    ).get()).map((row) => row.read<String>('name')).toSet();
+    for (final table in const ['context_records', 'project_records']) {
+      if (!tableNames.contains(table)) continue;
+      final columns = (await customSelect(
+        'PRAGMA table_info($table)',
+      ).get()).map((row) => row.read<String>('name')).toSet();
+      if (!columns.contains('image_path') || !columns.contains('image_media_id')) continue;
+      final rows = await customSelect(
+        'SELECT id, image_path FROM $table WHERE image_media_id IS NULL AND image_path IS NOT NULL',
+      ).get();
+      for (final row in rows) {
+        final path = row.readNullable<String>('image_path');
+        if (path == null || path.trim().isEmpty) continue;
+        try {
+          final entry = await mediaStore.cacheFromFile(path);
+          if (entry == null) continue;
+          await _recordMediaCache(entry);
+          await customStatement('UPDATE $table SET image_media_id = ? WHERE id = ?', [
+            entry.id,
+            row.read<String>('id'),
+          ]);
+        } on Object {
+          // A stale path, an oversized file or an unreadable disk is not a
+          // reason to fail the whole database upgrade.
+        }
+      }
+    }
+  }
+
+  Future<void> _backfillShiftSyncIds() async {
+    final tableNames = (await customSelect(
+      "SELECT name FROM sqlite_master WHERE type = 'table'",
+    ).get()).map((row) => row.read<String>('name')).toSet();
+    for (final table in const ['shift_slot_records', 'shift_exception_records']) {
+      if (!tableNames.contains(table)) continue;
+      final rows = await customSelect("SELECT id FROM $table WHERE sync_id IS NULL OR sync_id = ''").get();
+      for (final row in rows) {
+        await customStatement('UPDATE $table SET sync_id = ? WHERE id = ?', [
+          const Uuid().v4(),
+          row.read<int>('id'),
+        ]);
+      }
+    }
+  }
+
+  Future<void> _ensureShiftSyncIndexes() async {
+    final tableNames = (await customSelect(
+      "SELECT name FROM sqlite_master WHERE type = 'table'",
+    ).get()).map((row) => row.read<String>('name')).toSet();
+    if (tableNames.contains('shift_slot_records')) {
+      await customStatement(
+        'CREATE UNIQUE INDEX IF NOT EXISTS shift_slot_sync_id ON shift_slot_records(sync_id)',
+      );
+    }
+    if (tableNames.contains('shift_exception_records')) {
+      await customStatement(
+        'CREATE UNIQUE INDEX IF NOT EXISTS shift_exception_sync_id ON shift_exception_records(sync_id)',
+      );
+    }
+  }
+
+  Future<void> _addV14ColumnsEarly(Migrator m) async {
+    final tableNames = (await customSelect(
+      "SELECT name FROM sqlite_master WHERE type = 'table'",
+    ).get()).map((row) => row.read<String>('name')).toSet();
+    if (tableNames.contains('shift_slot_records')) {
+      final columns = (await customSelect(
+        'PRAGMA table_info(shift_slot_records)',
+      ).get()).map((row) => row.read<String>('name')).toSet();
+      if (!columns.contains('sync_id')) {
+        await m.addColumn(shiftSlotRecords, shiftSlotRecords.syncId);
+      }
+    }
+    if (tableNames.contains('shift_exception_records')) {
+      final columns = (await customSelect(
+        'PRAGMA table_info(shift_exception_records)',
+      ).get()).map((row) => row.read<String>('name')).toSet();
+      if (!columns.contains('sync_id')) {
+        await m.addColumn(shiftExceptionRecords, shiftExceptionRecords.syncId);
+      }
     }
   }
 

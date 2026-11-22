@@ -713,19 +713,19 @@ abstract class AppLocalizations {
   /// No description provided for @reminderMinutesBefore.
   ///
   /// In en, this message translates to:
-  /// **'{count} minutes before'**
+  /// **'{count, plural, =1{1 minute before} other{{count} minutes before}}'**
   String reminderMinutesBefore(int count);
 
   /// No description provided for @reminderHoursBefore.
   ///
   /// In en, this message translates to:
-  /// **'{count} hours before'**
+  /// **'{count, plural, =1{1 hour before} other{{count} hours before}}'**
   String reminderHoursBefore(int count);
 
   /// No description provided for @reminderDaysBefore.
   ///
   /// In en, this message translates to:
-  /// **'{count} days before'**
+  /// **'{count, plural, =1{1 day before} other{{count} days before}}'**
   String reminderDaysBefore(int count);
 
   /// No description provided for @reminders.
@@ -1580,6 +1580,60 @@ abstract class AppLocalizations {
   /// **'No exceptions.'**
   String get noExceptions;
 
+  /// No description provided for @adjustShifts.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust shifts'**
+  String get adjustShifts;
+
+  /// No description provided for @shiftDayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Day shifts'**
+  String get shiftDayTitle;
+
+  /// No description provided for @shiftDayUsual.
+  ///
+  /// In en, this message translates to:
+  /// **'Usual'**
+  String get shiftDayUsual;
+
+  /// No description provided for @shiftDayWorking.
+  ///
+  /// In en, this message translates to:
+  /// **'Working'**
+  String get shiftDayWorking;
+
+  /// No description provided for @shiftDayFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get shiftDayFree;
+
+  /// No description provided for @shiftDayFreeAllDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Free all day'**
+  String get shiftDayFreeAllDay;
+
+  /// No description provided for @shiftDayShiftCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} shifts'**
+  String shiftDayShiftCount(int count);
+
+  /// No description provided for @shiftDayMultipleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This day has more than one shift. Edit the pattern to change them.'**
+  String get shiftDayMultipleHint;
+
+  /// No description provided for @shiftTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'Shift times'**
+  String get shiftTimes;
+
   /// No description provided for @shiftChecklist.
   ///
   /// In en, this message translates to:
@@ -1814,6 +1868,12 @@ abstract class AppLocalizations {
   /// **'No paired devices yet.'**
   String get noPairedDevices;
 
+  /// No description provided for @noPairedDevicesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair a phone or computer to sync your plan here.'**
+  String get noPairedDevicesHint;
+
   /// No description provided for @unpair.
   ///
   /// In en, this message translates to:
@@ -1868,6 +1928,138 @@ abstract class AppLocalizations {
   /// **'{count} shopping items open'**
   String remoteShopping(int count);
 
+  /// No description provided for @remoteContexts.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} jobs, homes or people'**
+  String remoteContexts(int count);
+
+  /// No description provided for @remoteInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} inventory items'**
+  String remoteInventory(int count);
+
+  /// No description provided for @syncStatusNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Not synced yet'**
+  String get syncStatusNever;
+
+  /// No description provided for @syncStatusPulling.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing…'**
+  String get syncStatusPulling;
+
+  /// No description provided for @syncStatusLast.
+  ///
+  /// In en, this message translates to:
+  /// **'Last synced {time}'**
+  String syncStatusLast(String time);
+
+  /// No description provided for @syncStatusError.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync error: {error}'**
+  String syncStatusError(String error);
+
+  /// No description provided for @syncStatusReplacing.
+  ///
+  /// In en, this message translates to:
+  /// **'Replacing this device\'s plan…'**
+  String get syncStatusReplacing;
+
+  /// No description provided for @differentPlanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Different plan'**
+  String get differentPlanTitle;
+
+  /// No description provided for @differentPlanBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} keeps its own plan. Choose which plan this device should use.'**
+  String differentPlanBody(String name);
+
+  /// No description provided for @usePeerPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Use {name}\'s plan'**
+  String usePeerPlan(String name);
+
+  /// No description provided for @keepThisPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this plan'**
+  String get keepThisPlan;
+
+  /// No description provided for @keepThisPlanNote.
+  ///
+  /// In en, this message translates to:
+  /// **'To adopt this plan instead, open Sundial on {name} and choose “Replace this device from …”.'**
+  String keepThisPlanNote(String name);
+
+  /// No description provided for @replaceFromDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace this device from {name}'**
+  String replaceFromDevice(String name);
+
+  /// No description provided for @replaceWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace this device\'s plan?'**
+  String get replaceWarningTitle;
+
+  /// No description provided for @replaceWarningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The plan on {name} replaces this device\'s plan. Identity, pairing and device-local settings stay. A backup is written first when this device has data.'**
+  String replaceWarningBody(String name);
+
+  /// No description provided for @replacePinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'This device\'s PIN'**
+  String get replacePinLabel;
+
+  /// No description provided for @replaceAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get replaceAction;
+
+  /// No description provided for @replaceDone.
+  ///
+  /// In en, this message translates to:
+  /// **'The plan was replaced.'**
+  String get replaceDone;
+
+  /// No description provided for @replaceFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not replace the plan: {error}'**
+  String replaceFailed(String error);
+
+  /// No description provided for @knownDevicesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Known from your other devices'**
+  String get knownDevicesTitle;
+
+  /// No description provided for @knownDevicesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'These devices share a plan with a paired device. Pair them directly so their changes reach this device.'**
+  String get knownDevicesBody;
+
+  /// No description provided for @knownDeviceFingerprint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fingerprint {fingerprint}'**
+  String knownDeviceFingerprint(String fingerprint);
+
   /// No description provided for @serverOnPort.
   ///
   /// In en, this message translates to:
@@ -1897,6 +2089,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Device address'**
   String get manualAddress;
+
+  /// No description provided for @manualAddressHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the address and port shown on the other device. Use this when network discovery is blocked.'**
+  String get manualAddressHint;
 
   /// No description provided for @hostHint.
   ///
@@ -1991,7 +2189,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchHint.
   ///
   /// In en, this message translates to:
-  /// **'Search entries, tags and home items'**
+  /// **'Search entries, tags, items'**
   String get searchHint;
 
   /// No description provided for @searchPrompt.
@@ -2765,7 +2963,7 @@ abstract class AppLocalizations {
   /// No description provided for @noHomesHint.
   ///
   /// In en, this message translates to:
-  /// **'Add a home to organise inventory, gadgets and house projects.'**
+  /// **'Homes group house projects and tasks. Inventory and shopping work without one.'**
   String get noHomesHint;
 
   /// No description provided for @noPeople.
@@ -2857,6 +3055,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =0 {No habits} =1 {1 habit} other {{count} habits}}'**
   String habitCount(int count);
+
+  /// No description provided for @addTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a task'**
+  String get addTask;
 
   /// No description provided for @addTaskFor.
   ///
@@ -3368,6 +3572,12 @@ abstract class AppLocalizations {
   /// **'By day'**
   String get byDay;
 
+  /// No description provided for @noDataInRange.
+  ///
+  /// In en, this message translates to:
+  /// **'No data in this range.'**
+  String get noDataInRange;
+
   /// No description provided for @habitConsistency.
   ///
   /// In en, this message translates to:
@@ -3842,6 +4052,12 @@ abstract class AppLocalizations {
   /// **'Looking for Sundial devices on this network…'**
   String get scanningDevices;
 
+  /// No description provided for @searchingNearbyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep both devices on the same network. You can also enter the address manually.'**
+  String get searchingNearbyHint;
+
   /// No description provided for @noNearbyDevices.
   ///
   /// In en, this message translates to:
@@ -3872,10 +4088,136 @@ abstract class AppLocalizations {
   /// **'Pairing with {name}'**
   String pairingWith(String name);
 
+  /// No description provided for @sendPairingRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Send pairing request'**
+  String get sendPairingRequest;
+
+  /// No description provided for @sendPairingRequestHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The other device shows an approval card. Approve it there with that device\'s PIN.'**
+  String get sendPairingRequestHint;
+
+  /// No description provided for @waitingForApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for approval on {name}…'**
+  String waitingForApproval(String name);
+
+  /// No description provided for @pairingRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing request'**
+  String get pairingRequestTitle;
+
+  /// No description provided for @pairingRequestBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} ({username}) wants to pair with this device.'**
+  String pairingRequestBody(String name, String username);
+
+  /// No description provided for @pairingRequestCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Check this code on both devices'**
+  String get pairingRequestCode;
+
+  /// No description provided for @pairingRequestCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The codes must match before you approve. The PIN is never sent.'**
+  String get pairingRequestCodeHint;
+
+  /// No description provided for @pairingRequestFingerprint.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate fingerprint'**
+  String get pairingRequestFingerprint;
+
+  /// No description provided for @pairingPlanSame.
+  ///
+  /// In en, this message translates to:
+  /// **'Both devices use the same plan.'**
+  String get pairingPlanSame;
+
+  /// No description provided for @pairingPlanDifferent.
+  ///
+  /// In en, this message translates to:
+  /// **'These devices have different plans. Pairing stores the link; full sync will ask which plan to keep.'**
+  String get pairingPlanDifferent;
+
+  /// No description provided for @pairingApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing approved'**
+  String get pairingApproved;
+
+  /// No description provided for @pairingApprovedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the request on {name}. It will connect on its own.'**
+  String pairingApprovedHint(String name);
+
+  /// No description provided for @pairingApprovePinHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your PIN approves this request locally.'**
+  String get pairingApprovePinHint;
+
+  /// No description provided for @pairingRequestRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'The other device rejected the request.'**
+  String get pairingRequestRejected;
+
+  /// No description provided for @pairingRequestExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The request expired. Make sure Sundial is open on the other device and send it again.'**
+  String get pairingRequestExpired;
+
+  /// No description provided for @pairingFailedGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairing did not finish. Try again.'**
+  String get pairingFailedGeneric;
+
+  /// No description provided for @invalidHostPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid address and port.'**
+  String get invalidHostPort;
+
+  /// No description provided for @approve.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get approve;
+
+  /// No description provided for @reject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get reject;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
+
   /// No description provided for @syncExplainer.
   ///
   /// In en, this message translates to:
-  /// **'Sundial finds your other devices on the local network. Pairing stores a shared key once, so changing networks or IP addresses does not break the link. Sync stays read-only and never replaces your local plan.'**
+  /// **'Sundial finds your other devices on the local network. Pairing stores a shared key once, so changing networks or IP addresses does not break the link. Changes then replicate directly over the LAN; the first pairing asks which plan should survive.'**
   String get syncExplainer;
 
   /// No description provided for @pairSuccess.

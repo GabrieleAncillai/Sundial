@@ -5,8 +5,10 @@ import 'package:drift/drift.dart';
 import 'package:sundial_core/sundial_core.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../services/app_database.dart';
+import '../media/media_store.dart';
 
 class BackupFormatException implements Exception {
   const BackupFormatException(this.message);
@@ -35,7 +37,7 @@ class BackupService {
   BackupService(this._database, {Directory? mediaDirectory}) : _mediaDirectory = mediaDirectory;
 
   static const appTag = 'sundial';
-  static const currentSchemaVersion = 13;
+  static const currentSchemaVersion = 15;
 
   /// The oldest payload this build still upgrades. v1 and v2 are excluded on
   /// purpose: they predate timezone-aware entries and cannot be mapped safely.
@@ -50,6 +52,7 @@ class BackupService {
     'appLockPinHash',
     'appLockMisses',
     'appLockBlockedUntil',
+    'syncDatasetId',
   };
 
   final AppDatabase _database;
@@ -142,11 +145,51 @@ class BackupService {
     settings.sort((a, b) => a.key.compareTo(b.key));
 
     final media = <String, String>{};
+    Directory? mediaDirectory;
+    final mediaIds = <String>{};
+    final mediaIdByPath = <String, String>{};
+    final coveredIds = <String>{};
+    for (final row in contexts) {
+      final mediaId = row.imageMediaId;
+      if (mediaId != null) mediaIds.add(mediaId);
+      final path = row.imagePath;
+      if (mediaId == null || path == null || path.isEmpty) continue;
+      if (isMediaId(mediaId)) mediaIdByPath.putIfAbsent(path, () => mediaId);
+    }
+    for (final row in projects) {
+      final mediaId = row.imageMediaId;
+      if (mediaId != null) mediaIds.add(mediaId);
+      final path = row.imagePath;
+      if (mediaId == null || path == null || path.isEmpty) continue;
+      if (isMediaId(mediaId)) mediaIdByPath.putIfAbsent(path, () => mediaId);
+    }
     for (final path in [
       for (final row in contexts) row.imagePath,
       for (final row in projects) row.imagePath,
     ]) {
       if (path == null || path.isEmpty || media.containsKey(path)) continue;
+      final file = File(path);
+      if (!await file.exists()) continue;
+      final bytes = await file.readAsBytes();
+      media[path] = base64Encode(bytes);
+      if (mediaIdByPath[path] == MediaStore.hashBytes(bytes)) coveredIds.add(mediaIdByPath[path]!);
+    }
+    // A row whose display copy is gone still needs its cache bytes in the
+    // backup. The content-addressed cache is included under its own path; the
+    // import computes the id from the bytes, so the key itself never syncs.
+    for (final mediaId in mediaIds) {
+      if (!isMediaId(mediaId) || coveredIds.contains(mediaId)) continue;
+      final indexed = await (_database.select(
+        _database.mediaCacheRecords,
+      )..where((row) => row.mediaId.equals(mediaId))).getSingleOrNull();
+      final String path;
+      if (indexed != null) {
+        path = indexed.path;
+      } else {
+        mediaDirectory ??= await _mediaDir();
+        path = p.join(mediaDirectory.path, 'cache', '$mediaId.png');
+      }
+      if (media.containsKey(path)) continue;
       final file = File(path);
       if (!await file.exists()) continue;
       media[path] = base64Encode(await file.readAsBytes());
@@ -193,6 +236,7 @@ class BackupService {
             'color': row.color,
             'icon': row.icon,
             'imagePath': row.imagePath,
+            'imageMediaId': row.imageMediaId,
             'position': row.position,
             'createdAt': _date(row.createdAt),
             'updatedAt': _date(row.updatedAt),
@@ -210,6 +254,7 @@ class BackupService {
             'color': row.color,
             'icon': row.icon,
             'imagePath': row.imagePath,
+            'imageMediaId': row.imageMediaId,
             'position': row.position,
             'createdAt': _date(row.createdAt),
             'updatedAt': _date(row.updatedAt),
@@ -323,6 +368,7 @@ class BackupService {
         for (final row in slots)
           {
             'id': row.id,
+            'syncId': row.syncId.isEmpty ? const Uuid().v4() : row.syncId,
             'patternId': row.patternId,
             'dayIndex': row.dayIndex,
             'label': row.label,
@@ -334,6 +380,7 @@ class BackupService {
         for (final row in exceptions)
           {
             'id': row.id,
+            'syncId': row.syncId.isEmpty ? const Uuid().v4() : row.syncId,
             'patternId': row.patternId,
             'dateKey': row.dateKey,
             'type': row.type,
@@ -539,8 +586,12 @@ class BackupService {
     // JSON are read with `byName`/`fromJson` later, so a crafted or stale value
     // must be rejected here instead of corrupting a readable database.
     _validateEntries(entries);
+    Directory? mediaDirectory;
+    MediaStore? mediaStore;
     final mediaTargets = <String, String>{};
     final mediaBytes = <String, Uint8List>{};
+    final mediaHashes = <String, String>{};
+    final cachedMedia = <String, MediaCacheEntry>{};
     var mediaIndex = 0;
     for (final entry in media.entries) {
       final encoded = entry.value;
@@ -554,17 +605,26 @@ class BackupService {
       final name = p.basename(entry.key).isEmpty
           ? 'sticker-${mediaIndex++}.png'
           : 'backup-${mediaIndex++}-${p.basename(entry.key)}';
-      final target = p.join((await _mediaDir()).path, name);
+      mediaDirectory ??= await _mediaDir();
+      mediaStore ??= MediaStore(directory: mediaDirectory);
+      final target = p.join(mediaDirectory.path, name);
       mediaTargets[entry.key] = target;
       mediaBytes[target] = bytes;
+      mediaHashes[target] = MediaStore.hashBytes(bytes);
+      // Only PNGs are content-addressed; legacy payloads with other bytes keep
+      // their display file but travel without a media id.
+      if (bytes.length <= MediaStore.maxBytes && MediaStore.looksLikePng(bytes)) {
+        final cached = await mediaStore.cacheBytes(bytes);
+        if (cached != null) cachedMedia[cached.id] = cached;
+      }
     }
 
     // Write media before the database transaction. A write failure then leaves
     // the existing plan untouched, and a later transaction failure only leaves
     // unreferenced files behind for the prune below.
     if (mediaBytes.isNotEmpty) {
-      final directory = await _mediaDir();
-      if (!directory.existsSync()) await directory.create(recursive: true);
+      mediaDirectory ??= await _mediaDir();
+      if (!mediaDirectory.existsSync()) await mediaDirectory.create(recursive: true);
       for (final entry in mediaBytes.entries) {
         await File(entry.key).writeAsBytes(entry.value, flush: true);
       }
@@ -601,6 +661,22 @@ class BackupService {
       await _database.delete(_database.tagRecords).go();
       await _database.delete(_database.spaceRecords).go();
       await _database.delete(_database.settingRecords).go();
+      await _database.delete(_database.mediaCacheRecords).go();
+      await _database.delete(_database.remoteSnapshotRecords).go();
+
+      for (final cached in cachedMedia.values) {
+        await _database
+            .into(_database.mediaCacheRecords)
+            .insertOnConflictUpdate(
+              MediaCacheRecordsCompanion(
+                mediaId: Value(cached.id),
+                path: Value(cached.path),
+                mime: Value(cached.mime),
+                byteSize: Value(cached.byteSize),
+                createdAt: Value(DateTime.now().toUtc()),
+              ),
+            );
+      }
 
       for (final row in spaces) {
         await _database
@@ -619,6 +695,7 @@ class BackupService {
       }
 
       for (final row in contexts) {
+        final image = _importImage(row, mediaTargets, mediaHashes, cachedMedia);
         await _database
             .into(_database.contextRecords)
             .insert(
@@ -629,7 +706,8 @@ class BackupService {
                 description: Value(_optionalString(row, 'description') ?? ''),
                 color: Value(_integer(row, 'color')),
                 icon: Value(_optionalString(row, 'icon') ?? 'folder'),
-                imagePath: Value(_backupMediaPath(_optionalString(row, 'imagePath'), mediaTargets)),
+                imagePath: Value(image.path),
+                imageMediaId: Value(image.id),
                 position: Value(_optionalInteger(row, 'position') ?? 0),
                 createdAt: Value(_dateTime(row, 'createdAt')),
                 updatedAt: Value(_dateTime(row, 'updatedAt')),
@@ -639,6 +717,7 @@ class BackupService {
       }
 
       for (final row in projects) {
+        final image = _importImage(row, mediaTargets, mediaHashes, cachedMedia);
         await _database
             .into(_database.projectRecords)
             .insert(
@@ -650,7 +729,8 @@ class BackupService {
                 description: Value(_optionalString(row, 'description') ?? ''),
                 color: Value(_integer(row, 'color')),
                 icon: Value(_optionalString(row, 'icon') ?? 'folder'),
-                imagePath: Value(_backupMediaPath(_optionalString(row, 'imagePath'), mediaTargets)),
+                imagePath: Value(image.path),
+                imageMediaId: Value(image.id),
                 position: Value(_optionalInteger(row, 'position') ?? 0),
                 createdAt: Value(_dateTime(row, 'createdAt')),
                 updatedAt: Value(_dateTime(row, 'updatedAt')),
@@ -983,6 +1063,7 @@ class BackupService {
             .insert(
               ShiftSlotRecordsCompanion(
                 id: Value(_integer(row, 'id')),
+                syncId: Value(_optionalString(row, 'syncId') ?? const Uuid().v4()),
                 patternId: Value(_string(row, 'patternId')),
                 dayIndex: Value(_integer(row, 'dayIndex')),
                 label: Value(_string(row, 'label')),
@@ -998,6 +1079,7 @@ class BackupService {
             .insert(
               ShiftExceptionRecordsCompanion(
                 id: Value(_integer(row, 'id')),
+                syncId: Value(_optionalString(row, 'syncId') ?? const Uuid().v4()),
                 patternId: Value(_string(row, 'patternId')),
                 dateKey: Value(_integer(row, 'dateKey')),
                 type: Value(_string(row, 'type')),
@@ -1062,6 +1144,12 @@ class BackupService {
     await _database.seedHomeReferenceDefaults();
     await _database.repairHomeItemReferences();
 
+    // The restore replaced the plan. Start a new sync incarnation so no peer
+    // cursor can skip restored rows, then give every restored row a base
+    // version. The caller stops sync before this point.
+    await _database.resetSyncState(newDataset: true);
+    await _database.seedSyncFieldVersionsForAll();
+
     // The restore replaced the plan, so media that belonged to the old one is
     // no longer reachable. Best effort: a failure here only leaves unused files.
     await _pruneMedia(previousMedia, keep: mediaBytes.keys.toSet());
@@ -1087,8 +1175,11 @@ class BackupService {
       for (final path in previous) {
         if (keep.contains(path)) continue;
         final normalized = p.normalize(File(path).absolute.path);
-        // Never delete outside the managed media folder.
+        // Never delete outside the managed media folder, and never delete a
+        // content-addressed cache file: several rows may share it and delayed
+        // peers may still need that hash. v1 keeps the cache deliberately.
         if (!p.isWithin(root, normalized)) continue;
+        if (MediaStore.isCachePath(normalized)) continue;
         final file = File(normalized);
         if (await file.exists()) await file.delete();
       }
@@ -1142,6 +1233,29 @@ class BackupService {
     // stored path would let a crafted backup point at a local file that the
     // next export then reads.
     return targets[path];
+  }
+
+  /// Resolves the media id and display path for an imported context or
+  /// project. A v15 row carries its id; a v14 row gets the hash of the restored
+  /// bytes. Missing bytes leave the id pending instead of failing the import.
+  ({String? id, String? path}) _importImage(
+    Map<String, Object?> row,
+    Map<String, String> mediaTargets,
+    Map<String, String> mediaHashes,
+    Map<String, MediaCacheEntry> cachedMedia,
+  ) {
+    final target = _backupMediaPath(_optionalString(row, 'imagePath'), mediaTargets);
+    final rawId = _optionalString(row, 'imageMediaId');
+    final supplied = rawId != null && isMediaId(rawId) ? rawId : null;
+    if (supplied != null) {
+      String? path = target;
+      if (path == null || mediaHashes[path] != supplied) path = cachedMedia[supplied]?.path;
+      return (id: supplied, path: path);
+    }
+    if (target == null) return (id: null, path: null);
+    final hash = mediaHashes[target];
+    final cached = hash == null ? null : cachedMedia[hash];
+    return (id: cached?.id, path: target);
   }
 
   static String _date(DateTime value) => value.toUtc().toIso8601String();

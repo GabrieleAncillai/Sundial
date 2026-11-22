@@ -678,6 +678,7 @@ class McpServer {
     final kind = _enumArg(EntryKind.values, arguments['kind']) ?? existing.kind;
     final status = _enumArg(EntryStatus.values, arguments['status']) ?? existing.status;
     final tagIds = (arguments['tagIds'] as List?)?.whereType<String>().toSet() ?? existing.tagIds;
+    final removedTagIds = arguments.containsKey('tagIds') ? existing.tagIds.difference(tagIds) : null;
     final timed = !allDay && (startMinute != null || endMinute != null);
     final carriesEndDate = allDay || (startMinute != null && endMinute != null);
 
@@ -703,7 +704,7 @@ class McpServer {
     } on ArgumentError catch (error) {
       throw _RpcException(-32602, '$error');
     }
-    await _repository.saveEntry(updated);
+    await _repository.saveEntry(updated, removedTagIds: removedTagIds);
     // Status changes go through the same lifecycle path as the UI so a
     // maintenance date advances, a recurring series completes one occurrence,
     // and a running session stops.

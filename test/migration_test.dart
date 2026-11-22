@@ -1,8 +1,10 @@
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:drift/drift.dart' show Variable;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sundial/features/media/media_store.dart';
 import 'package:sundial/services/app_database.dart';
 import 'package:sundial/models/home_item.dart';
 import 'package:sundial/models/local_identity.dart';
@@ -14,6 +16,8 @@ import 'package:sundial_core/sundial_core.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqlite3/open.dart';
 import 'package:sqlite3/sqlite3.dart';
+
+import 'support/media_fixture.dart';
 
 void main() {
   setUpAll(() {
@@ -139,7 +143,7 @@ void main() {
     expect(columns.map((row) => row.data['name']), contains('time_zone'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 13);
+    expect(version.data.values.single, 15);
   });
 
   test('migrates real v2 data and keeps tags usable', () async {
@@ -201,7 +205,7 @@ void main() {
     expect((await database.watchTags().first).single.name, 'Tax');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 13);
+    expect(version.data.values.single, 15);
   });
 
   test('migrates real v3 data and exposes the v0.3 tables', () async {
@@ -255,7 +259,7 @@ void main() {
 
     await database.saveShiftChecklistItems('missing-pattern', const []);
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 13);
+    expect(version.data.values.single, 15);
   });
 
   test('migrates real v4 data and creates the pairing tables', () async {
@@ -409,7 +413,7 @@ void main() {
     expect(paired.port, 8766);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 13);
+    expect(version.data.values.single, 15);
   });
 
   test('migrates real v5 checklist rows to per-slot keys', () async {
@@ -479,7 +483,7 @@ void main() {
     expect(saved.windDownMinutes, 20);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 13);
+    expect(version.data.values.single, 15);
   });
 
   test('migrates real v6 rows to shopping order and purchase history', () async {
@@ -536,7 +540,7 @@ void main() {
     expect(history.single.note, 'Shop run');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 13);
+    expect(version.data.values.single, 15);
   });
 
   test('migrates real v7 rows to custom reminder times and remote snapshots', () async {
@@ -611,7 +615,7 @@ void main() {
     expect(await database.readRemoteSnapshots(), isEmpty);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 13);
+    expect(version.data.values.single, 15);
   });
 
   test('migrates real v8 rows to contexts, projects, habits and tracked tasks', () async {
@@ -686,7 +690,7 @@ void main() {
     expect((await database.readShiftChecklistItems('bar')).single.dayIndex, 2);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 13);
+    expect(version.data.values.single, 15);
   });
 
   test('repairs a database written by the draft v9 build', () async {
@@ -849,7 +853,7 @@ void main() {
     expect(nextDue, LocalDate.parse('2027-10-29'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 13);
+    expect(version.data.values.single, 15);
   });
 
   test('a v10 database gains habit weekdays and keeps writing', () async {
@@ -907,7 +911,7 @@ void main() {
     expect(updated.targetPerWeek, 3);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 13);
+    expect(version.data.values.single, 15);
   });
 
   test('repairs the draft leftovers a v1.2 build reported as v10', () async {
@@ -993,7 +997,7 @@ void main() {
     expect(draftTable, isEmpty);
 
     final version = await repaired.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 13);
+    expect(version.data.values.single, 15);
   });
 
   test('migrates v12 inventory text into variants and reference rows', () async {
@@ -1072,6 +1076,411 @@ void main() {
     expect((await database.watchHomeCategories().first), isNotEmpty);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 13);
+    expect(version.data.values.single, 15);
+  });
+  test('a v13 database gains sync ids, field versions and tombstones', () async {
+    final directory = await Directory.systemTemp.createTemp('sundial-v14-sync');
+    final path = p.join(directory.path, 'sundial.sqlite');
+    addTearDown(() => directory.delete(recursive: true));
+    final createdAt = DateTime.utc(2026, 11, 1).millisecondsSinceEpoch ~/ 1000;
+    final deletedAt = createdAt + 100;
+
+    final raw = sqlite3.open(path);
+    raw.execute('''
+      CREATE TABLE space_records (
+        id TEXT NOT NULL PRIMARY KEY,
+        name TEXT NOT NULL,
+        color INTEGER NOT NULL,
+        position INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER NULL
+      )
+    ''');
+    raw.execute('''
+      CREATE TABLE tag_records (
+        id TEXT NOT NULL PRIMARY KEY,
+        space_id TEXT NULL,
+        name TEXT NOT NULL,
+        color INTEGER NOT NULL,
+        icon TEXT NOT NULL DEFAULT 'folder',
+        position INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER NULL
+      )
+    ''');
+    raw.execute('''
+      CREATE TABLE entry_records (
+        id TEXT NOT NULL PRIMARY KEY,
+        space_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        notes TEXT NOT NULL DEFAULT '',
+        kind TEXT NOT NULL,
+        date_key INTEGER NULL,
+        end_date_key INTEGER NULL,
+        start_minute INTEGER NULL,
+        end_minute INTEGER NULL,
+        time_zone TEXT NULL,
+        context_id TEXT NULL,
+        project_id TEXT NULL,
+        icon TEXT NOT NULL DEFAULT '',
+        priority TEXT NOT NULL DEFAULT 'none',
+        start_at INTEGER NULL,
+        end_at INTEGER NULL,
+        all_day INTEGER NOT NULL DEFAULT 0,
+        status TEXT NOT NULL,
+        recurrence_json TEXT NULL,
+        source TEXT NULL,
+        external_id TEXT NULL,
+        read_only INTEGER NOT NULL DEFAULT 0,
+        last_completed_at INTEGER NULL,
+        repeat_after_completion_days INTEGER NULL,
+        completed_at INTEGER NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER NULL
+      )
+    ''');
+    raw.execute('''
+      CREATE TABLE entry_tag_records (
+        entry_id TEXT NOT NULL,
+        tag_id TEXT NOT NULL,
+        PRIMARY KEY (entry_id, tag_id)
+      )
+    ''');
+    raw.execute('''
+      CREATE TABLE home_item_records (
+        id TEXT NOT NULL PRIMARY KEY,
+        context_id TEXT NULL,
+        group_id TEXT NULL,
+        name TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        icon TEXT NOT NULL DEFAULT 'inventory',
+        color INTEGER NULL,
+        catalog_id TEXT NULL,
+        category TEXT NOT NULL DEFAULT '',
+        category_id TEXT NULL,
+        location TEXT NOT NULL DEFAULT '',
+        quantity REAL NOT NULL DEFAULT 0,
+        min_quantity REAL NULL,
+        reorder_level REAL NULL,
+        unit TEXT NOT NULL DEFAULT '',
+        unit_id TEXT NULL,
+        pack_size TEXT NOT NULL DEFAULT '',
+        expires_date_key INTEGER NULL,
+        notes TEXT NOT NULL DEFAULT '',
+        last_purchased_at INTEGER NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER NULL
+      )
+    ''');
+    raw.execute('''
+      CREATE TABLE home_item_location_records (
+        home_item_id TEXT NOT NULL,
+        location_id TEXT NOT NULL,
+        PRIMARY KEY (home_item_id, location_id)
+      )
+    ''');
+    raw.execute('''
+      CREATE TABLE shift_pattern_records (
+        id TEXT NOT NULL PRIMARY KEY,
+        space_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        context_id TEXT NULL,
+        time_zone TEXT NOT NULL DEFAULT 'UTC',
+        cycle_days INTEGER NOT NULL,
+        anchor_date_key INTEGER NOT NULL,
+        commute_minutes INTEGER NULL,
+        wind_down_minutes INTEGER NULL,
+        enabled INTEGER NOT NULL DEFAULT 1,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER NULL
+      )
+    ''');
+    raw.execute('''
+      CREATE TABLE shift_slot_records (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        pattern_id TEXT NOT NULL,
+        day_index INTEGER NOT NULL,
+        label TEXT NOT NULL DEFAULT '',
+        start_minute INTEGER NOT NULL,
+        end_minute INTEGER NOT NULL
+      )
+    ''');
+    raw.execute('''
+      CREATE TABLE shift_exception_records (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        pattern_id TEXT NOT NULL,
+        date_key INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        start_minute INTEGER NULL,
+        end_minute INTEGER NULL,
+        note TEXT NOT NULL DEFAULT ''
+      )
+    ''');
+    raw.execute('CREATE TABLE setting_records (key TEXT NOT NULL PRIMARY KEY, value TEXT NOT NULL)');
+
+    raw.execute(
+      'INSERT INTO space_records (id, name, color, position, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+      ['personal', 'Personal', 0xFFB07D5C, 0, createdAt, createdAt],
+    );
+    raw.execute('INSERT INTO tag_records (id, name, color, created_at, updated_at) VALUES (?, ?, ?, ?, ?)', [
+      'seed-health',
+      'Health',
+      0xFF34C759,
+      createdAt,
+      createdAt,
+    ]);
+    raw.execute(
+      'INSERT INTO entry_records '
+      '(id, space_id, title, notes, kind, date_key, icon, priority, all_day, status, read_only, '
+      'created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        'live',
+        'personal',
+        'Renew passport',
+        'Portal link',
+        'task',
+        20261109,
+        '',
+        'none',
+        1,
+        'open',
+        0,
+        createdAt,
+        createdAt,
+      ],
+    );
+    raw.execute(
+      'INSERT INTO entry_records '
+      '(id, space_id, title, notes, kind, date_key, icon, priority, all_day, status, read_only, '
+      'created_at, updated_at, deleted_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        'gone',
+        'personal',
+        'Old task',
+        '',
+        'task',
+        20261110,
+        '',
+        'none',
+        1,
+        'open',
+        0,
+        createdAt,
+        createdAt,
+        deletedAt,
+      ],
+    );
+    raw.execute('INSERT INTO entry_tag_records (entry_id, tag_id) VALUES (?, ?)', ['live', 'seed-health']);
+    raw.execute(
+      'INSERT INTO home_item_records '
+      '(id, group_id, name, category, location, quantity, min_quantity, unit, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['rice', 'rice', 'Rice', 'Food & pantry', 'Kitchen', 2.0, 1.0, 'kg', createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO home_item_records '
+      '(id, group_id, name, category, location, quantity, unit, created_at, updated_at, deleted_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['old-oat', 'old-oat', 'Oats', 'Food & pantry', 'Kitchen', 0.0, 'kg', createdAt, createdAt, deletedAt],
+    );
+    raw.execute(
+      'INSERT INTO shift_pattern_records '
+      '(id, space_id, name, time_zone, cycle_days, anchor_date_key, created_at, updated_at) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      ['rotation', 'personal', 'Rotation', 'Europe/Madrid', 7, 20261109, createdAt, createdAt],
+    );
+    raw.execute(
+      'INSERT INTO shift_slot_records (pattern_id, day_index, label, start_minute, end_minute) '
+      'VALUES (?, ?, ?, ?, ?)',
+      ['rotation', 0, 'Opening', 540, 780],
+    );
+    raw.execute(
+      'INSERT INTO shift_slot_records (pattern_id, day_index, label, start_minute, end_minute) '
+      'VALUES (?, ?, ?, ?, ?)',
+      ['rotation', 1, 'Closing', 900, 1320],
+    );
+    raw.execute(
+      'INSERT INTO shift_exception_records (pattern_id, date_key, type, start_minute, end_minute, note) '
+      'VALUES (?, ?, ?, ?, ?, ?)',
+      ['rotation', 20261114, 'free', null, null, 'Swap'],
+    );
+    raw.execute('INSERT INTO setting_records (key, value) VALUES (?, ?)', ['weekStart', '1']);
+    raw.execute('INSERT INTO setting_records (key, value) VALUES (?, ?)', ['themeMode', 'dark']);
+    raw.execute('PRAGMA user_version = 13');
+    raw.dispose();
+
+    final database = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(() async {
+      await database.close();
+    });
+
+    final state = await database.syncDeviceState();
+    expect(state.nodeId, isNotEmpty);
+    expect(state.datasetId, isNotEmpty);
+    expect(state.epoch, isNotEmpty);
+
+    final version = await database.customSelect('PRAGMA user_version').getSingle();
+    expect(version.data.values.single, 15);
+
+    final slots = await database.customSelect('SELECT sync_id FROM shift_slot_records').get();
+    expect(slots, hasLength(2));
+    final slotIds = slots.map((row) => row.read<String>('sync_id')).toList();
+    expect(slotIds, everyElement(isNotEmpty));
+    expect(slotIds.toSet(), hasLength(2));
+
+    final exceptions = await database.customSelect('SELECT sync_id FROM shift_exception_records').get();
+    expect(exceptions.single.read<String>('sync_id'), isNotEmpty);
+
+    final liveVersions = await database
+        .customSelect(
+          "SELECT field, version FROM sync_field_version_records WHERE entity = 'entry' AND row_key = 'live'",
+        )
+        .get();
+    expect(liveVersions.map((row) => row.read<String>('field')).toSet(), {
+      'title',
+      'notes',
+      'classification',
+      'presentation',
+      'timing',
+      'recurrence',
+      'status',
+      'maintenance',
+      'source',
+    });
+
+    final tombstones = await database
+        .customSelect("SELECT row_key, version FROM sync_tombstone_records WHERE entity = 'entry'")
+        .get();
+    expect(tombstones.map((row) => row.read<String>('row_key')), ['gone']);
+    final tombstoneVersion = tombstones.single.read<String>('version');
+    final goneVersions = await database
+        .customSelect(
+          "SELECT version FROM sync_field_version_records WHERE entity = 'entry' AND row_key = 'gone'",
+        )
+        .get();
+    for (final row in goneVersions) {
+      expect(tombstoneVersion.compareTo(row.read<String>('version')), greaterThan(0));
+    }
+
+    final settingVersions = await database
+        .customSelect("SELECT row_key FROM sync_field_version_records WHERE entity = 'setting'")
+        .get();
+    expect(settingVersions.map((row) => row.read<String>('row_key')), ['weekStart']);
+
+    final changes = await database
+        .customSelect('SELECT COUNT(*) AS count FROM sync_change_records')
+        .getSingle();
+    expect(changes.read<int>('count'), 0);
+
+    expect((await database.readEntry('live'))?.title, 'Renew passport');
+    expect((await database.readEntry('gone'))?.deletedAt, isNotNull);
+    expect((await database.watchHomeItems().first).single.name, 'Rice');
+    expect(slots, hasLength(2));
+  });
+
+  test('a v14 database backfills content-addressed media and tolerates bad files', () async {
+    final directory = await Directory.systemTemp.createTemp('sundial-v15-media');
+    final mediaDir = await Directory.systemTemp.createTemp('sundial-v15-media-cache');
+    final pictures = await Directory.systemTemp.createTemp('sundial-v15-pictures');
+    addTearDown(() async {
+      for (final item in [directory, mediaDir, pictures]) {
+        if (item.existsSync()) await item.delete(recursive: true);
+      }
+    });
+    final path = p.join(directory.path, 'sundial.sqlite');
+    final image = await writePng(pictures, 'house.png', tinyPng);
+    final corrupt = File(p.join(pictures.path, 'corrupt.png'))..writeAsBytesSync([1, 2, 3, 4]);
+
+    final created = AppDatabase(
+      NativeDatabase(File(path)),
+      defaultTimeZone: 'Europe/Madrid',
+      mediaStore: MediaStore(directory: mediaDir),
+    );
+    await created.seedDefaults();
+    await created.saveContext(
+      PlannerContext(
+        id: 'house',
+        spaceId: 'home',
+        name: 'House',
+        colorValue: 0xFF5B7F6B,
+        imagePath: image.path,
+      ),
+    );
+    await created.saveProject(
+      Project(
+        id: 'reno',
+        spaceId: 'home',
+        name: 'Renovation',
+        colorValue: 0xFF2FA98F,
+        imagePath: corrupt.path,
+      ),
+    );
+    await created.saveContext(
+      PlannerContext(
+        id: 'gone',
+        spaceId: 'home',
+        name: 'Gone',
+        colorValue: 0xFF000000,
+        imagePath: p.join(pictures.path, 'missing.png'),
+      ),
+    );
+    await created.close();
+
+    // Rewind the file to the v14 shape: no media id columns, no cache index and
+    // no cache files. The display files stay, as they did in the old release.
+    final raw = sqlite3.open(path);
+    raw.execute('ALTER TABLE context_records DROP COLUMN image_media_id');
+    raw.execute('ALTER TABLE project_records DROP COLUMN image_media_id');
+    raw.execute('DROP TABLE media_cache_records');
+    raw.execute("DELETE FROM sync_field_version_records WHERE field = 'image'");
+    raw.execute('PRAGMA user_version = 14');
+    raw.dispose();
+    final cache = Directory(p.join(mediaDir.path, 'cache'));
+    if (cache.existsSync()) await cache.delete(recursive: true);
+
+    final database = AppDatabase(
+      NativeDatabase(File(path)),
+      defaultTimeZone: 'Europe/Madrid',
+      mediaStore: MediaStore(directory: mediaDir),
+    );
+    addTearDown(database.close);
+
+    final version = await database.customSelect('PRAGMA user_version').getSingle();
+    expect(version.data.values.single, 15);
+
+    final rows = await database
+        .customSelect('SELECT id, image_media_id FROM context_records ORDER BY id')
+        .get();
+    final ids = {for (final row in rows) row.read<String>('id'): row.readNullable<String>('image_media_id')};
+    expect(ids['house'], MediaStore.hashBytes(tinyPng));
+    expect(ids['gone'], isNull);
+    final project = await database
+        .customSelect(
+          'SELECT image_media_id FROM project_records WHERE id = ?',
+          variables: [Variable.withString('reno')],
+        )
+        .getSingle();
+    // A corrupt legacy file must not fail the upgrade; it simply has no id.
+    expect(project.readNullable<String>('image_media_id'), isNull);
+
+    final cached = await database.select(database.mediaCacheRecords).get();
+    expect(cached.single.mediaId, MediaStore.hashBytes(tinyPng));
+    expect(File(cached.single.path).readAsBytesSync(), tinyPng);
+
+    final mediaVersions = await database
+        .customSelect(
+          "SELECT version FROM sync_field_version_records WHERE entity = 'context' AND row_key = 'house' AND field = 'image'",
+        )
+        .get();
+    expect(mediaVersions, hasLength(1));
+
+    expect((await database.watchContexts().first).map((item) => item.id), containsAll(['house', 'gone']));
   });
 }
