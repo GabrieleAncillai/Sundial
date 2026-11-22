@@ -16,10 +16,11 @@ import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../../calendar/widgets/day_timeline.dart';
 import '../../calendar/widgets/month_calendar.dart';
+import '../widgets/week_agenda.dart';
 import '../widgets/week_day_strip.dart';
 import '../widgets/week_time_grid.dart';
 
-enum _PlanView { month, timeline }
+enum _PlanView { month, week, day }
 
 class PlanPage extends ConsumerStatefulWidget {
   const PlanPage({super.key});
@@ -31,8 +32,11 @@ class PlanPage extends ConsumerStatefulWidget {
 class _PlanPageState extends ConsumerState<PlanPage> with SingleTickerProviderStateMixin {
   late LocalDate _selected;
   late LocalDate _visibleMonth;
-  bool _expanded = true;
+  _PlanView _view = _PlanView.month;
+  _PlanView _collapsedView = _PlanView.day;
   late final AnimationController _fold;
+
+  bool get _expanded => _view == _PlanView.month;
 
   @override
   void initState() {
@@ -60,13 +64,19 @@ class _PlanPageState extends ConsumerState<PlanPage> with SingleTickerProviderSt
     final contexts = ref.watch(contextsProvider(null)).value ?? const <PlannerContext>[];
     final weekStart = settings.weekStart;
     final desktop = MediaQuery.sizeOf(context).width >= 1024;
+    // A phone that was showing Day keeps a valid desktop selection after a
+    // resize, where the switch only offers Month and Week.
+    final view = desktop && _view == _PlanView.day ? _PlanView.week : _view;
 
     // The month surface always fetches every possible grid row, so flipping
     // between months never shows an empty tail.
     final monthFirst = _visibleMonth.startOfWeek(weekStart);
     final monthRange = (start: monthFirst, end: monthFirst.addDays(41));
-    final timelineStart = desktop ? _selected.startOfWeek(weekStart) : _selected;
-    final timelineRange = (start: timelineStart, end: desktop ? timelineStart.addDays(6) : timelineStart);
+    final timelineStart = view == _PlanView.day ? _selected : _selected.startOfWeek(weekStart);
+    final timelineRange = (
+      start: timelineStart,
+      end: view == _PlanView.day ? timelineStart : timelineStart.addDays(6),
+    );
 
     final monthEntriesState = ref.watch(entriesProvider(monthRange));
     final monthShiftsState = ref.watch(shiftsProvider(monthRange));
@@ -100,19 +110,19 @@ class _PlanPageState extends ConsumerState<PlanPage> with SingleTickerProviderSt
       child: Column(
         children: [
           _PlanHeader(
-            title: _title(context, desktop),
-            previousTooltip: _expanded
-                ? l10n.previousMonth
-                : desktop
-                ? l10n.previousWeek
-                : l10n.previousDay,
-            nextTooltip: _expanded
-                ? l10n.nextMonth
-                : desktop
-                ? l10n.nextWeek
-                : l10n.nextDay,
-            onPrevious: () => _step(desktop, -1),
-            onNext: () => _step(desktop, 1),
+            title: _title(context, view),
+            previousTooltip: switch (view) {
+              _PlanView.month => l10n.previousMonth,
+              _PlanView.week => l10n.previousWeek,
+              _PlanView.day => l10n.previousDay,
+            },
+            nextTooltip: switch (view) {
+              _PlanView.month => l10n.nextMonth,
+              _PlanView.week => l10n.nextWeek,
+              _PlanView.day => l10n.nextDay,
+            },
+            onPrevious: () => _step(view, -1),
+            onNext: () => _step(view, 1),
           ),
           if (entriesError != null)
             Padding(
@@ -130,6 +140,7 @@ class _PlanPageState extends ConsumerState<PlanPage> with SingleTickerProviderSt
               builder: (context, constraints) {
                 final timeline = _timelinePanel(
                   context,
+                  view: _expanded ? _collapsedView : view,
                   desktop: desktop,
                   entries: timelineEntries,
                   shifts: timelineShifts,
@@ -154,7 +165,7 @@ class _PlanPageState extends ConsumerState<PlanPage> with SingleTickerProviderSt
                   fit: StackFit.expand,
                   children: [
                     KeyedSubtree(
-                      key: ValueKey(desktop ? 'plan-week' : 'plan-day'),
+                      key: ValueKey(view == _PlanView.day ? 'plan-day' : 'plan-week'),
                       child: ExcludeSemantics(
                         excluding: _expanded,
                         child: IgnorePointer(ignoring: _expanded, child: timeline),
@@ -203,12 +214,12 @@ class _PlanPageState extends ConsumerState<PlanPage> with SingleTickerProviderSt
           ),
           const SizedBox(height: 8),
           _PlanToolbar(
-            expanded: _expanded,
+            view: view,
             desktop: desktop,
-            onCollapse: () => _setExpanded(false),
-            onExpand: () => _setExpanded(true),
+            onCollapse: () => _setView(_collapsedView),
+            onExpand: () => _setView(_PlanView.month),
             onToday: () => _goToToday(today),
-            onViewChanged: (view) => _setExpanded(view == _PlanView.month),
+            onViewChanged: _setView,
             onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
           ),
         ],
@@ -253,6 +264,7 @@ class _PlanPageState extends ConsumerState<PlanPage> with SingleTickerProviderSt
 
   Widget _timelinePanel(
     BuildContext context, {
+    required _PlanView view,
     required bool desktop,
     required List<EntryOccurrence> entries,
     required List<ShiftOccurrence> shifts,
@@ -272,86 +284,99 @@ class _PlanPageState extends ConsumerState<PlanPage> with SingleTickerProviderSt
         border: Border.all(color: c.border),
       ),
       padding: EdgeInsets.fromLTRB(10, 10, 10, desktop ? 6 : 8),
-      child: desktop
-          ? WeekTimeGrid(
-              weekStart: _selected.startOfWeek(ref.read(settingsProvider).weekStart),
-              entries: entries,
-              shifts: shifts,
-              spaces: spaces,
-              contexts: contexts,
-              timeZone: timeZone,
-              now: now,
-              onOpen: (occurrence) => showEntryEditor(
-                context,
-                entry: occurrence.entry,
-                initialDate: occurrence.date,
+      child: switch (view) {
+        _PlanView.week when desktop => WeekTimeGrid(
+          weekStart: _selected.startOfWeek(ref.read(settingsProvider).weekStart),
+          entries: entries,
+          shifts: shifts,
+          spaces: spaces,
+          contexts: contexts,
+          timeZone: timeZone,
+          now: now,
+          onOpen: (occurrence) =>
+              showEntryEditor(context, entry: occurrence.entry, initialDate: occurrence.date, spaces: spaces),
+          onCreate: (date, start, end) => showEntryEditor(
+            context,
+            initialDate: date,
+            initialStartMinute: start,
+            initialEndMinute: end,
+            spaces: spaces,
+          ),
+          onMove: (occurrence, date, start, end) => _move(context, occurrence, date, start, end),
+          onResize: (occurrence, end) => _resize(context, occurrence, end),
+        ),
+        _PlanView.week => SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: WeekAgenda(
+            start: _selected.startOfWeek(weekStart),
+            today: today,
+            entries: entries,
+            shifts: shifts,
+            spaces: spaces,
+            contexts: contexts,
+          ),
+        ),
+        _PlanView.day => Column(
+          children: [
+            WeekDayStrip(selected: _selected, today: today, weekStart: weekStart, onSelected: _select),
+            const SizedBox(height: 4),
+            Expanded(
+              child: DayTimeline(
+                fill: true,
+                day: _selected,
+                entries: entries,
+                shifts: shifts,
                 spaces: spaces,
+                contexts: contexts,
+                onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
               ),
-              onCreate: (date, start, end) => showEntryEditor(
-                context,
-                initialDate: date,
-                initialStartMinute: start,
-                initialEndMinute: end,
-                spaces: spaces,
-              ),
-              onMove: (occurrence, date, start, end) => _move(context, occurrence, date, start, end),
-              onResize: (occurrence, end) => _resize(context, occurrence, end),
-            )
-          : Column(
-              children: [
-                WeekDayStrip(selected: _selected, today: today, weekStart: weekStart, onSelected: _select),
-                const SizedBox(height: 4),
-                Expanded(
-                  child: DayTimeline(
-                    fill: true,
-                    day: _selected,
-                    entries: entries,
-                    shifts: shifts,
-                    spaces: spaces,
-                    contexts: contexts,
-                    onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
-                  ),
-                ),
-              ],
             ),
+          ],
+        ),
+        _PlanView.month => const SizedBox.shrink(),
+      },
     );
   }
 
-  String _title(BuildContext context, bool desktop) {
-    if (_expanded) return formatMonthYear(context, _visibleMonth.toDateTime());
-    if (desktop) {
-      final start = _selected.startOfWeek(ref.read(settingsProvider).weekStart);
-      final end = start.addDays(6);
-      return '${formatShortDate(context, start.toDateTime())} – '
-          '${formatShortDate(context, end.toDateTime())}';
+  String _title(BuildContext context, _PlanView view) {
+    if (view == _PlanView.month) return formatMonthYear(context, _visibleMonth.toDateTime());
+    if (view == _PlanView.day) {
+      final locale = Localizations.localeOf(context).toLanguageTag();
+      return '${DateFormat.EEEE(locale).format(_selected.toDateTime())} · '
+          '${formatShortDate(context, _selected.toDateTime())}';
     }
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    return '${DateFormat.EEEE(locale).format(_selected.toDateTime())} · '
-        '${formatShortDate(context, _selected.toDateTime())}';
+    final start = _selected.startOfWeek(ref.read(settingsProvider).weekStart);
+    final end = start.addDays(6);
+    return '${formatShortDate(context, start.toDateTime())} – '
+        '${formatShortDate(context, end.toDateTime())}';
   }
 
-  void _setExpanded(bool value) {
-    if (_expanded == value) return;
-    setState(() => _expanded = value);
+  void _setView(_PlanView view) {
+    if (_view == view) return;
+    setState(() {
+      _view = view;
+      if (view != _PlanView.month) _collapsedView = view;
+    });
+    final expanded = view == _PlanView.month;
     if (MediaQuery.disableAnimationsOf(context)) {
-      _fold.value = value ? 1 : 0;
-    } else if (value) {
+      _fold.value = expanded ? 1 : 0;
+    } else if (expanded) {
       _fold.forward();
     } else {
       _fold.reverse();
     }
   }
 
-  void _step(bool desktop, int direction) {
+  void _step(_PlanView view, int direction) {
     setState(() {
-      if (_expanded) {
+      if (view == _PlanView.month) {
         final index = _visibleMonth.year * 12 + _visibleMonth.month - 1 + direction;
         final month = LocalDate(index ~/ 12, index % 12 + 1, 1);
         final day = _selected.day.clamp(1, month.daysInMonth);
         _visibleMonth = month;
         _selected = LocalDate(month.year, month.month, day);
       } else {
-        _selected = desktop
+        _selected = view == _PlanView.week
             ? _selected.startOfWeek(ref.read(settingsProvider).weekStart).addDays(7 * direction)
             : _selected.addDays(direction);
         _visibleMonth = LocalDate(_selected.year, _selected.month, 1);
@@ -580,7 +605,7 @@ class _PlanHeader extends StatelessWidget {
 
 class _PlanToolbar extends StatelessWidget {
   const _PlanToolbar({
-    required this.expanded,
+    required this.view,
     required this.desktop,
     required this.onCollapse,
     required this.onExpand,
@@ -589,7 +614,7 @@ class _PlanToolbar extends StatelessWidget {
     required this.onAdd,
   });
 
-  final bool expanded;
+  final _PlanView view;
   final bool desktop;
   final VoidCallback onCollapse;
   final VoidCallback onExpand;
@@ -602,6 +627,7 @@ class _PlanToolbar extends StatelessWidget {
     final c = context.mc;
     final l10n = context.l10n;
     final narrow = MediaQuery.sizeOf(context).width < 520;
+    final expanded = view == _PlanView.month;
 
     final today = narrow
         ? GlassIconButton(icon: Icons.today_outlined, tooltip: l10n.jumpToToday, size: 32, onTap: onToday)
@@ -650,6 +676,36 @@ class _PlanToolbar extends StatelessWidget {
             today,
           ];
 
+    final segments = SundialSegmented<_PlanView>(
+      segments: [
+        SundialSegment(value: _PlanView.month, label: l10n.monthView),
+        SundialSegment(value: _PlanView.week, label: l10n.weekView),
+        if (!desktop) SundialSegment(value: _PlanView.day, label: l10n.dayView),
+      ],
+      selected: view,
+      onChanged: onViewChanged,
+      compact: true,
+    );
+
+    // Three segments plus the navigation controls need the full width on a
+    // phone, so the switch gets its own row below them.
+    if (narrow) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              ...controls,
+              const Spacer(),
+              GlassIconButton(icon: Icons.add, tooltip: l10n.addEntry, size: 34, onTap: onAdd),
+            ],
+          ),
+          const SizedBox(height: 6),
+          segments,
+        ],
+      );
+    }
+
     return Row(
       children: [
         Expanded(
@@ -658,15 +714,7 @@ class _PlanToolbar extends StatelessWidget {
             child: Row(mainAxisSize: MainAxisSize.min, children: controls),
           ),
         ),
-        SundialSegmented<_PlanView>(
-          segments: [
-            SundialSegment(value: _PlanView.month, label: l10n.monthView),
-            SundialSegment(value: _PlanView.timeline, label: desktop ? l10n.weekView : l10n.dayView),
-          ],
-          selected: expanded ? _PlanView.month : _PlanView.timeline,
-          onChanged: onViewChanged,
-          compact: true,
-        ),
+        segments,
         Expanded(
           child: Align(
             alignment: Alignment.centerRight,

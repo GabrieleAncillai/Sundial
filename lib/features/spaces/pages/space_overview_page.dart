@@ -5,6 +5,7 @@ import 'package:sundial_core/sundial_core.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/icons/sundial_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
+import '../../../screens/entry_editor.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
@@ -134,15 +135,27 @@ class SpaceOverviewPage extends ConsumerWidget {
                   : isPersonal
                   ? l10n.noPeopleHint
                   : l10n.noHomesHint,
-              action: FilledButton.tonalIcon(
-                onPressed: () => showContextEditor(
-                  context,
-                  spaceId: spaceId,
-                  title: addTitle,
-                  recommendedIcons: recommended,
-                ),
-                icon: const Icon(Icons.add, size: 18),
-                label: Text(l10n.addFirstContext),
+              action: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FilledButton.tonalIcon(
+                    onPressed: () =>
+                        showEntryEditor(context, initialDate: today, initialSpaceId: spaceId, spaces: spaces),
+                    icon: const Icon(Icons.add_task, size: 18),
+                    label: Text(l10n.addTask),
+                  ),
+                  const SizedBox(height: 6),
+                  TextButton.icon(
+                    onPressed: () => showContextEditor(
+                      context,
+                      spaceId: spaceId,
+                      title: addTitle,
+                      recommendedIcons: recommended,
+                    ),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: Text(l10n.addFirstContext),
+                  ),
+                ],
               ),
             ),
           )
