@@ -335,10 +335,9 @@ gate, not a defense against someone holding the unlocked device.
 
 ### 5.4 LAN sync: pull-only replicas (schema v15, protocol 4)
 
-Each app owns its copy of the planner. The decision in
-`docs/refs/SYNC_REWORK.md` supersedes the earlier query-only rule: paired
-devices hold full replicas and merge with a field-level LWW map plus
-tombstones. Phases 2 and 3 shipped on 2026-11-21: schema v14, the merge
+Each app owns its copy of the planner. The replica-sync decision supersedes
+the earlier query-only rule: paired devices hold full replicas and merge with
+a field-level LWW map plus tombstones. Phases 2 and 3 shipped on 2026-11-21: schema v14, the merge
 mapping, local change capture, the replica store/apply engine, signed
 snapshot/changes endpoints, scheduled pulls, source replacement and the Devices
 sync UI. Media sync (Design B) shipped on top of it with schema v15 and

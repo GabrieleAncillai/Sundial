@@ -1,7 +1,7 @@
 # Sundial completion plan
 
 Status: active. Baseline v0.9 plus the schema v14 sync foundation. The sync
-rework in `docs/refs/SYNC_REWORK.md` supersedes the query-only sync scope;
+rework supersedes the query-only sync scope;
 Phase 0 (manual address), Phase 1 (pairing request, PIN approval, plan
 handshake), Phase 2 (v14 schema, replica store, signed snapshot/changes
 transport) and Phase 3 (scheduled pulls, source replacement, Devices status

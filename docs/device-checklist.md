@@ -20,7 +20,7 @@ bundle on the same LAN. This pass covered the walkthrough fixes and the v14
 replica path, not the notification, reboot or battery items.
 
 - [x] Today, search, reminder labels, stats, tags, settings, phone Plan modes
-      and space pages match the fixes in `docs/refs/THINGS_TO_FIX.md` at 360 dp.
+      and space pages match the fixes recorded in `docs/progress.md` at 360 dp.
 - [x] Spanish navigation, Devices, nearby pairing and device-address screens
       fit at 360 dp.
 - [x] The Spanish search hint fits after the second shortening.

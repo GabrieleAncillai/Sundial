@@ -4,9 +4,8 @@ Keep this file current. A fresh context window should be able to resume from it.
 
 ## Current milestone
 
-The sync rework is underway. Phase 0 through Phase 5 of
-`docs/refs/SYNC_REWORK.md` shipped on 2026-11-21, including content-addressed
-media sync. The remaining work is the real-device multi-device and image pass,
+The sync rework is underway. Phase 0 through Phase 5 of the sync rework
+shipped on 2026-11-21, including content-addressed media sync. The remaining work is the real-device multi-device and image pass,
 removing the transitional read-only snapshot path, and the optional Phase 4
 background listener.
 
@@ -43,7 +42,7 @@ background listener.
   space) and keeps “Create the first one” as the secondary action. The Home hint
   now says inventory and shopping work without a home context.
 - **Docs.** `README.md` describes the phone week agenda. The P3 entries are
-  marked fixed in `docs/refs/THINGS_TO_FIX.md`.
+  marked fixed in this log.
 - **Validation.** `flutter analyze --no-fatal-infos` clean; 379 app tests and
   107 core tests pass; format check clean; Linux debug and Android debug
   builds pass. New coverage in `test/things_to_fix_p3_test.dart`.

@@ -500,7 +500,7 @@ shared key. Use a standard pairing pattern; do not invent cryptography.
 
 ### 10.3 LAN sync is a pull-only replica
 
-> Updated 2026-11-21: `docs/refs/SYNC_REWORK.md` supersedes the earlier
+> Updated 2026-11-21: the replica-sync decision supersedes the earlier
 > query-only rule. Phase 2 through Phase 5 shipped the v14 replica schema, the
 > store/engine, signed snapshot/changes/media endpoints, scheduled pulls,
 > staged source replacement, the Devices sync UI and protocol 4

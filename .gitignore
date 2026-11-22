@@ -48,6 +48,9 @@ app.*.map.json
 # Not published
 /doc-personal/
 
+# Local walkthrough, design and reference notes
+/docs/refs/
+
 # Kotlin/Gradle local state
 android/.kotlin/
 
