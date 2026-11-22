@@ -29,6 +29,7 @@ class DayTimeline extends ConsumerStatefulWidget {
     required this.spaces,
     required this.contexts,
     required this.onAdd,
+    this.onShifts,
     this.fill = false,
   });
 
@@ -38,6 +39,9 @@ class DayTimeline extends ConsumerStatefulWidget {
   final List<Space> spaces;
   final List<PlannerContext> contexts;
   final VoidCallback onAdd;
+
+  /// Opens the per-day shift sheet. Null when there is no pattern to adjust.
+  final VoidCallback? onShifts;
 
   /// Fill the available height instead of a card-sized viewport. The Plan page
   /// uses this for its collapsed phone day, where the timeline owns the screen.
@@ -245,6 +249,15 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
                   style: SundialType.title(15, color: c.text),
                 ),
               ),
+              if (widget.onShifts != null) ...[
+                GlassIconButton(
+                  icon: Icons.work_outline,
+                  tooltip: l10n.adjustShifts,
+                  size: 34,
+                  onTap: widget.onShifts!,
+                ),
+                const SizedBox(width: 8),
+              ],
               GlassIconButton(icon: Icons.add, tooltip: l10n.addOnThisDay, size: 34, onTap: widget.onAdd),
             ],
           ),

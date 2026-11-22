@@ -39,6 +39,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
   late final TextEditingController _commuteController;
   late final TextEditingController _windDownController;
   List<_ChecklistDraft> _checklist = <_ChecklistDraft>[];
+  Set<String> _initialChecklistIds = <String>{};
   bool _checklistLoading = false;
   late String _deviceTimeZone;
   late String _baseline;
@@ -64,6 +65,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       for (final slot in pattern?.slots ?? const <ShiftSlot>[])
         _SlotDraft(
           id: _nextDraftId++,
+          syncId: slot.syncId.isEmpty ? const Uuid().v4() : slot.syncId,
           dayIndex: slot.dayIndex,
           label: slot.label,
           startMinute: slot.startMinute,
@@ -89,6 +91,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
               dayIndex: item.dayIndex != null && item.dayIndex! < _cycleDays ? item.dayIndex : null,
             ),
         ];
+        _initialChecklistIds = items.map((item) => item.id).toSet();
         _checklistLoading = false;
         _baseline = _fingerprint();
       });
@@ -223,6 +226,11 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       child: SundialPage(
         title: widget.pattern == null ? l10n.newShiftPattern : l10n.editShiftPattern,
         actions: [
+          GlassIconButton(
+            icon: Icons.check_rounded,
+            tooltip: l10n.savePattern,
+            onTap: _saving ? null : _save,
+          ),
           if (widget.pattern != null)
             GlassIconButton(
               icon: Icons.delete_outline,
@@ -233,12 +241,12 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.only(bottom: 20),
+            padding: const EdgeInsets.fromLTRB(0, 8, 0, 20),
             children: [
-              TextFormField(
+              SundialTextField(
                 controller: _nameController,
+                label: l10n.patternName,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(labelText: l10n.patternName, border: const OutlineInputBorder()),
                 validator: (value) => value == null || value.trim().isEmpty ? l10n.patternNameRequired : null,
               ),
               if (contexts.isNotEmpty) ...[
@@ -399,11 +407,11 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Expanded(
-                              child: TextFormField(
+                              child: SundialTextField(
                                 key: ValueKey('checklist-${_checklist[index].id}'),
                                 initialValue: _checklist[index].label,
+                                label: l10n.checklistItemLabel,
                                 textCapitalization: TextCapitalization.sentences,
-                                decoration: InputDecoration(labelText: l10n.checklistItemLabel),
                                 onChanged: (value) =>
                                     _checklist[index] = _checklist[index].copyWith(label: value),
                               ),
@@ -513,6 +521,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
             ),
           for (final slot in daySlots) _buildSlot(slot),
           TextButton.icon(
+            key: ValueKey('day-$index-add-slot'),
             onPressed: () => _addSlot(index),
             icon: const Icon(Icons.add, size: 17),
             label: Text(l10n.addSlot),
@@ -537,10 +546,10 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
           Row(
             children: [
               Expanded(
-                child: TextFormField(
+                child: SundialTextField(
                   key: ValueKey('slot-label-${slot.id}'),
                   initialValue: slot.label,
-                  decoration: InputDecoration(labelText: l10n.slotLabel, isDense: true),
+                  label: l10n.slotLabel,
                   onChanged: (value) => slot.label = value,
                 ),
               ),
@@ -644,16 +653,51 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
 
   void _addSlot(int dayIndex) {
     setState(() {
-      _slots.add(
-        _SlotDraft(
-          id: _nextDraftId++,
-          dayIndex: dayIndex,
-          label: '',
-          startMinute: 9 * 60,
-          endMinute: 17 * 60,
-        ),
-      );
+      // A new day starts from the nearest earlier day that already has slots, so
+      // a repeating week does not have to be retyped. Adding another slot to a
+      // day that already has one keeps the neutral default times.
+      final source = _seedSlotsFor(dayIndex);
+      if (source.isEmpty) {
+        _slots.add(
+          _SlotDraft(
+            id: _nextDraftId++,
+            syncId: const Uuid().v4(),
+            dayIndex: dayIndex,
+            label: '',
+            startMinute: 9 * 60,
+            endMinute: 17 * 60,
+          ),
+        );
+        return;
+      }
+      for (final slot in source) {
+        _slots.add(
+          _SlotDraft(
+            id: _nextDraftId++,
+            syncId: const Uuid().v4(),
+            dayIndex: dayIndex,
+            label: slot.label,
+            startMinute: slot.startMinute,
+            endMinute: slot.endMinute,
+          ),
+        );
+      }
     });
+  }
+
+  /// Slots to copy into an empty day, taken from the closest earlier day that
+  /// has any. Day 1 and days before the first populated day fall back to the
+  /// defaults. A day that already has slots gets a plain new slot instead.
+  List<_SlotDraft> _seedSlotsFor(int dayIndex) {
+    if (_slots.any((slot) => slot.dayIndex == dayIndex)) return const [];
+    for (var index = dayIndex - 1; index >= 0; index--) {
+      final slots = [
+        for (final slot in _slots)
+          if (slot.dayIndex == index) slot,
+      ]..sort((a, b) => a.startMinute.compareTo(b.startMinute));
+      if (slots.isNotEmpty) return slots;
+    }
+    return const [];
   }
 
   void _applySlotTime(_SlotDraft slot, bool isStart, int value) {
@@ -700,6 +744,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
         slots: [
           for (final draft in _slots)
             ShiftSlot(
+              syncId: draft.syncId,
               dayIndex: draft.dayIndex,
               label: draft.label,
               startMinute: draft.startMinute,
@@ -760,7 +805,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
       enabled: widget.pattern?.enabled ?? true,
     );
     try {
-      await ref.read(repositoryProvider).saveShiftPattern(saved);
+      await ref.read(repositoryProvider).saveShiftPattern(saved, previous: widget.pattern);
       await ref.read(repositoryProvider).saveShiftChecklistItems(saved.id, [
         for (final draft in _checklist)
           if (draft.label.trim().isNotEmpty)
@@ -770,7 +815,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
               label: draft.label.trim(),
               dayIndex: draft.dayIndex,
             ),
-      ]);
+      ], previousIds: _initialChecklistIds);
     } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -828,6 +873,7 @@ const _unset = Object();
 class _SlotDraft {
   _SlotDraft({
     required this.id,
+    required this.syncId,
     required this.dayIndex,
     required this.label,
     required this.startMinute,
@@ -835,6 +881,7 @@ class _SlotDraft {
   });
 
   final int id;
+  final String syncId;
   final int dayIndex;
   String label;
   int startMinute;
@@ -1025,6 +1072,7 @@ class _ExceptionDialogState extends State<_ExceptionDialog> {
   void _save() {
     Navigator.of(context).pop(
       ShiftException(
+        syncId: const Uuid().v4(),
         date: _date,
         type: _type,
         startMinute: _type == ShiftExceptionType.free ? null : _startMinute,

@@ -19,6 +19,7 @@ class CalendarDayDetail extends StatelessWidget {
     required this.spaces,
     required this.contexts,
     required this.onAdd,
+    this.onShifts,
   });
 
   final LocalDate date;
@@ -27,6 +28,9 @@ class CalendarDayDetail extends StatelessWidget {
   final List<Space> spaces;
   final List<PlannerContext> contexts;
   final VoidCallback onAdd;
+
+  /// Opens the per-day shift sheet. Null when there is no pattern to adjust.
+  final VoidCallback? onShifts;
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +48,15 @@ class CalendarDayDetail extends StatelessWidget {
             Expanded(
               child: Text(title, style: SundialType.title(15, color: c.text)),
             ),
+            if (onShifts != null) ...[
+              GlassIconButton(
+                icon: Icons.work_outline,
+                tooltip: context.l10n.adjustShifts,
+                size: 34,
+                onTap: onShifts!,
+              ),
+              const SizedBox(width: 8),
+            ],
             GlassIconButton(icon: Icons.add, tooltip: context.l10n.addOnThisDay, size: 34, onTap: onAdd),
           ],
         ),

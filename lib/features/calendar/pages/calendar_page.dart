@@ -12,6 +12,7 @@ import '../../../state/settings_controller.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
 import '../../shifts/shift_palette.dart';
+import '../../shifts/widgets/shift_day_sheet.dart';
 import '../widgets/day_detail.dart';
 import '../widgets/day_timeline.dart';
 import '../widgets/month_grid.dart';
@@ -63,6 +64,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final shiftsState = ref.watch(shiftsProvider(range));
     final entries = entriesState.value ?? const <EntryOccurrence>[];
     final shifts = shiftsState.value ?? const <ShiftOccurrence>[];
+    final patterns = ref.watch(shiftPatternsProvider).value ?? const <ShiftPattern>[];
+    final canAdjustShifts = patterns.any((pattern) => pattern.enabled);
 
     final visibleEntries = entries.where((entry) {
       if (entry.entry.spaceId != 'work') return true;
@@ -117,6 +120,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               spaces: spaces,
               contexts: contexts,
               onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
+              onShifts: canAdjustShifts ? () => showShiftDaySheet(context: context, date: _selected) : null,
             ),
           )
         else ...[
@@ -151,6 +155,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               spaces: spaces,
               contexts: contexts,
               onAdd: () => showEntryEditor(context, initialDate: _selected, spaces: spaces),
+              onShifts: canAdjustShifts ? () => showShiftDaySheet(context: context, date: _selected) : null,
             ),
           ),
         ],
