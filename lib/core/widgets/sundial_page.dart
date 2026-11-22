@@ -131,7 +131,7 @@ class SundialPageHeader extends StatelessWidget {
                 const SizedBox(height: 1),
                 Text(
                   subtitle!,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: SundialType.body(12, color: c.textSecondary),
                 ),

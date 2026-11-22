@@ -82,6 +82,7 @@ class _StatsPageState extends ConsumerState<StatsPage> {
     }).length;
     final shifts = ref.watch(shiftsProvider((start: start, end: end))).value ?? const <ShiftOccurrence>[];
     final shiftTime = shifts.fold(Duration.zero, (sum, shift) => sum + shift.endAt.difference(shift.startAt));
+    final dailyValues = _dailyValues(start, end, occurrences);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -211,7 +212,10 @@ class _StatsPageState extends ConsumerState<StatsPage> {
               children: [
                 SectionLabel(l10n.byDay),
                 const SizedBox(height: 10),
-                _BarChart(values: _dailyValues(start, end, occurrences)),
+                if (dailyValues.every((value) => value == 0))
+                  Text(l10n.noDataInRange, style: SundialType.body(12.5, color: c.textTertiary))
+                else
+                  _BarChart(values: dailyValues),
               ],
             ),
           ),

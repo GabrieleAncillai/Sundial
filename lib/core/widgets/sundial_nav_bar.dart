@@ -149,15 +149,22 @@ class _NavItem extends StatelessWidget {
           children: [
             Icon(selected ? item.selectedIcon : item.icon, size: 21, color: tint),
             const SizedBox(height: 3),
-            Text(
-              item.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textScaler: TextScaler.noScaling,
-              style: SundialType.label(
-                10.5,
-                color: tint,
-              ).copyWith(fontWeight: selected ? FontWeight.w800 : FontWeight.w700),
+            // Labels honour accessibility scaling up to a cap, then shrink to
+            // the slot rather than truncating a long word such as
+            // "Estadísticas" on a six-tab phone bar.
+            MediaQuery.withClampedTextScaling(
+              maxScaleFactor: 1.3,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  item.label,
+                  maxLines: 1,
+                  style: SundialType.label(
+                    10.5,
+                    color: tint,
+                  ).copyWith(fontWeight: selected ? FontWeight.w800 : FontWeight.w700),
+                ),
+              ),
             ),
           ],
         ),

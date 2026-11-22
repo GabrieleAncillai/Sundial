@@ -119,6 +119,7 @@ class SettingsNavRow extends StatelessWidget implements SettingsTitledRow {
     required this.title,
     this.subtitle,
     this.value,
+    this.valueBelow = false,
     this.onTap,
   });
 
@@ -127,6 +128,11 @@ class SettingsNavRow extends StatelessWidget implements SettingsTitledRow {
   final String title;
   final String? subtitle;
   final String? value;
+
+  /// Puts the value under the title instead of taking width from the trailing
+  /// edge. Long values such as a time-zone id would otherwise squeeze the
+  /// subtitle into an ellipsis.
+  final bool valueBelow;
   final VoidCallback? onTap;
 
   @override
@@ -148,6 +154,15 @@ class SettingsNavRow extends StatelessWidget implements SettingsTitledRow {
                     title,
                     style: SundialType.body(14, weight: FontWeight.w700, color: c.text),
                   ),
+                  if (value != null && valueBelow) ...[
+                    const SizedBox(height: 1),
+                    Text(
+                      value!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: SundialType.label(11.5, color: c.textTertiary),
+                    ),
+                  ],
                   if (subtitle != null) ...[
                     const SizedBox(height: 1),
                     Text(
@@ -160,7 +175,7 @@ class SettingsNavRow extends StatelessWidget implements SettingsTitledRow {
                 ],
               ),
             ),
-            if (value != null) ...[
+            if (value != null && !valueBelow) ...[
               const SizedBox(width: 8),
               Text(value!, style: SundialType.label(11.5, color: c.textTertiary)),
             ],

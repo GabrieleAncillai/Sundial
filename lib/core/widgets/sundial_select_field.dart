@@ -5,6 +5,7 @@ import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
 import 'app_sheet.dart';
 import 'sundial_field_clear.dart';
+import 'sundial_field_label.dart';
 import 'sundial_search_field.dart';
 import 'pressable.dart';
 
@@ -62,12 +63,7 @@ class SundialSelectField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 7),
-          child: ExcludeSemantics(
-            child: Text(label, style: SundialType.label(11.5, color: c.textTertiary)),
-          ),
-        ),
+        SundialFieldLabel(label),
         Semantics(
           enabled: active,
           child: Pressable(

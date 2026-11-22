@@ -57,7 +57,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
     final l10n = context.l10n;
     final c = context.mc;
     return AppSheet(
-      title: widget.tag == null ? l10n.addCategory : l10n.editCategory,
+      title: widget.tag == null ? l10n.addTag : l10n.editTag,
       children: [
         Form(
           key: _formKey,
@@ -68,7 +68,7 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
                 controller: _nameController,
                 autofocus: true,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(labelText: l10n.categoryName),
+                decoration: InputDecoration(labelText: l10n.tagName),
                 validator: (value) => value == null || value.trim().isEmpty ? l10n.tagNameRequired : null,
               ),
               const SizedBox(height: 12),

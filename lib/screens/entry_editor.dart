@@ -136,6 +136,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
   bool _remindersLoaded = true;
   bool _remindersLoadFailed = false;
   List<Reminder> _disabledReminders = const <Reminder>[];
+  Set<String> _initialReminderIds = <String>{};
   bool _saving = false;
 
   List<Space> get _spaces => widget.spaces.isEmpty ? _editorFallbackSpaces : widget.spaces;
@@ -255,6 +256,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
             if (reminder.enabled && reminder.timeMinute != null) reminder.timeMinute!,
         };
         _disabledReminders = reminders.where((reminder) => !reminder.enabled).toList();
+        _initialReminderIds = reminders.map((reminder) => reminder.id).toSet();
         _remindersLoaded = true;
       });
     } catch (error) {
@@ -402,7 +404,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
               ],
               const SizedBox(height: 12),
               if (availableTags.isNotEmpty) ...[
-                Text(l10n.categories, style: SundialType.label(12.5, color: c.textSecondary)),
+                Text(l10n.tagsManager, style: SundialType.label(12.5, color: c.textSecondary)),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 6,
@@ -786,10 +788,10 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
 
     try {
       final repository = ref.read(repositoryProvider);
-      await repository.saveEntry(resolved);
+      await repository.saveEntry(resolved, removedTagIds: base?.tagIds.difference(_tagIds));
       // A failed reminder read must not silently erase reminders on save.
       if (!_remindersLoadFailed) {
-        await repository.saveRemindersForEntry(resolved.id, [
+        final reminders = [
           ..._disabledReminders,
           for (final offset in _reminderOffsets)
             Reminder(id: Reminder.idFor(resolved.id, offset), entryId: resolved.id, offsetMinutes: offset),
@@ -800,7 +802,13 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
               offsetMinutes: 0,
               timeMinute: minute,
             ),
-        ]);
+        ];
+        final finalIds = reminders.map((reminder) => reminder.id).toSet();
+        await repository.saveRemindersForEntry(
+          resolved.id,
+          reminders,
+          removedReminderIds: _initialReminderIds.difference(finalIds),
+        );
       }
       if (!_remindersLoadFailed && (_reminderOffsets.isNotEmpty || _reminderTimes.isNotEmpty)) {
         final allowed = await ref.read(notificationServiceProvider).ensurePermissions();

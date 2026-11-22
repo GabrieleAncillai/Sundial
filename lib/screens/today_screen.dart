@@ -76,27 +76,9 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(child: _TodayHeader(date: today)),
-              SundialSegmented<_TodayMode>(
-                segments: [
-                  SundialSegment(value: _TodayMode.list, label: l10n.listView, icon: Icons.checklist),
-                  SundialSegment(
-                    value: _TodayMode.timeline,
-                    label: l10n.timelineView,
-                    icon: Icons.view_day_outlined,
-                  ),
-                ],
-                selected: _mode,
-                onChanged: (value) => setState(() => _mode = value),
-                compact: true,
-              ),
-            ],
-          ),
+          _TodayTopBar(date: today, mode: _mode, onModeChanged: (value) => setState(() => _mode = value)),
           const SizedBox(height: 14),
-          _ProgressCard(done: done, total: total),
+          if (total > 0) _ProgressCard(done: done, total: total),
           if (shifts.isNotEmpty) ...[
             const SizedBox(height: 14),
             SectionLabel(l10n.shiftsSection),
@@ -173,6 +155,49 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
   }
 }
 
+class _TodayTopBar extends StatelessWidget {
+  const _TodayTopBar({required this.date, required this.mode, required this.onModeChanged});
+
+  final LocalDate date;
+  final _TodayMode mode;
+  final ValueChanged<_TodayMode> onModeChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final header = _TodayHeader(date: date);
+    final switcher = SundialSegmented<_TodayMode>(
+      segments: [
+        SundialSegment(value: _TodayMode.list, label: l10n.listView, icon: Icons.checklist),
+        SundialSegment(value: _TodayMode.timeline, label: l10n.timelineView, icon: Icons.view_day_outlined),
+      ],
+      selected: mode,
+      onChanged: onModeChanged,
+      compact: true,
+    );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // The full weekday does not fit beside the view switch on a 360 dp
+        // phone. Stack the switch below the header there instead of letting
+        // the display type wrap mid-word or shrinking accessibility text.
+        if (constraints.maxWidth < 420) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [header, const SizedBox(height: 10), switcher],
+          );
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(child: header),
+            switcher,
+          ],
+        );
+      },
+    );
+  }
+}
+
 class _TodayHeader extends StatelessWidget {
   const _TodayHeader({required this.date});
 
@@ -217,7 +242,7 @@ class _ProgressCard extends StatelessWidget {
               Text(context.l10n.progressToday, style: SundialType.label(11.5, color: c.textSecondary)),
               const Spacer(),
               Text(
-                total == 0 ? context.l10n.noPlanToday : context.l10n.doneOfTotal(done, total),
+                context.l10n.doneOfTotal(done, total),
                 style: SundialType.label(11.5, color: c.textSecondary),
               ),
             ],
@@ -258,7 +283,6 @@ class _TodayList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final c = context.mc;
     final grouped = <String, List<Widget>>{};
     for (final occurrence in occurrences) {
@@ -304,9 +328,6 @@ class _TodayList extends StatelessWidget {
         ..add(const SizedBox(height: 7))
         ..addAll(items);
     }
-    if (shifts.isEmpty && children.isEmpty) {
-      return Text(l10n.noPlanToday, style: SundialType.body(12.5, color: c.textTertiary));
-    }
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children);
   }
 }
@@ -331,7 +352,6 @@ class _TodayTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.mc;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -356,11 +376,6 @@ class _TodayTimeline extends StatelessWidget {
             onAdd: () => showEntryEditor(context, initialDate: date, spaces: spaces),
           ),
         ),
-        if (occurrences.isEmpty && shifts.isEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Text(context.l10n.noPlanToday, style: SundialType.body(12.5, color: c.textTertiary)),
-          ),
         if (shifts.isNotEmpty) const SizedBox(height: 4),
       ],
     );

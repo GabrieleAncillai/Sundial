@@ -24,20 +24,20 @@ class TagsPage extends ConsumerWidget {
     final spaceNames = {for (final space in spaces) space.id: space.name};
 
     return SundialPage(
-      title: l10n.categories,
+      title: l10n.tagsManager,
       floatingAction: SundialAddButton(
-        tooltip: l10n.addCategory,
+        tooltip: l10n.addTag,
         onTap: () => showTagEditor(context, spaces: spaces),
       ),
       child: tags.isEmpty
           ? AppEmptyState(
               icon: Icons.sell_outlined,
-              title: l10n.noCategories,
+              title: l10n.noTags,
               message: l10n.tagsManagerSubtitle,
               action: FilledButton.tonalIcon(
                 onPressed: () => showTagEditor(context, spaces: spaces),
                 icon: const Icon(Icons.add, size: 18),
-                label: Text(l10n.addCategory),
+                label: Text(l10n.addTag),
               ),
             )
           : ListView(

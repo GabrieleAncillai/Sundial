@@ -67,6 +67,25 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     });
   }
 
+  /// Keeps the empty prompt visible when the keyboard shrinks the page. The
+  /// content scrolls instead of overflowing, and the compact halo fits the
+  /// shorter viewport.
+  Widget _emptyState({required IconData icon, required String title, String? message}) {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: AppEmptyState(
+            icon: icon,
+            title: title,
+            message: message,
+            compact: constraints.maxHeight < 280,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -88,7 +107,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           const SizedBox(height: 12),
           Expanded(
             child: _query.isEmpty
-                ? AppEmptyState(icon: Icons.search, title: l10n.search, message: l10n.searchPrompt)
+                ? _emptyState(icon: Icons.search, title: l10n.search, message: l10n.searchPrompt)
                 : FutureBuilder<SearchResults>(
                     future: _results,
                     builder: (context, snapshot) {
@@ -96,7 +115,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                         return const Center(child: CircularProgressIndicator());
                       }
                       if (snapshot.hasError) {
-                        return AppEmptyState(
+                        return _emptyState(
                           icon: Icons.error_outline,
                           title: l10n.search,
                           message: '${snapshot.error}',
@@ -105,7 +124,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                       final results = snapshot.data;
                       if (results == null) return const SizedBox.shrink();
                       if (results.isEmpty) {
-                        return AppEmptyState(
+                        return _emptyState(
                           icon: Icons.search_off,
                           title: l10n.searchNoResults(_query),
                           message: l10n.searchPrompt,

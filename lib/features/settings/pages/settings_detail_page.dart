@@ -136,6 +136,7 @@ class SettingsDetailPage extends ConsumerWidget {
                   value: settings.timezoneOverride.isEmpty
                       ? ref.watch(deviceTimeZoneProvider)
                       : settings.timezoneOverride,
+                  valueBelow: true,
                   onTap: () => _pickTimeZone(context, ref, settings),
                 ),
                 SettingsNavRow(
@@ -348,7 +349,7 @@ class SettingsDetailPage extends ConsumerWidget {
               children: [
                 SettingsNavRow(
                   icon: Icons.sell_outlined,
-                  title: l10n.categories,
+                  title: l10n.tagsManager,
                   subtitle: l10n.tagsManagerSubtitle,
                   onTap: () =>
                       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const TagsPage())),
@@ -539,10 +540,12 @@ class SettingsDetailPage extends ConsumerWidget {
     if (confirmed != true) return;
 
     try {
+      // A restore replaces the plan. Stop pulls first so a peer cannot read a
+      // half-restored database, and restart them once the import commits.
+      await ref.read(syncServiceProvider).stop();
       await ref.read(backupServiceProvider).importJson(source);
       await ref.read(settingsProvider.notifier).reload();
       await ref.read(reminderCoordinatorProvider).reschedule();
-      await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
       messenger.showSnackBar(SnackBar(content: Text(l10n.backupImported)));
     } on BackupVersionException {
       messenger.showSnackBar(SnackBar(content: Text(l10n.backupFuture)));
@@ -550,6 +553,8 @@ class SettingsDetailPage extends ConsumerWidget {
       messenger.showSnackBar(SnackBar(content: Text(l10n.backupInvalid)));
     } catch (error) {
       messenger.showSnackBar(SnackBar(content: Text(l10n.backupFailed('$error'))));
+    } finally {
+      await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
     }
   }
 
