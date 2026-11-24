@@ -1238,6 +1238,10 @@ status. The important architecture additions are:
   play from bundled WAV assets: Android through a small `SoundPool`
   `MethodChannel`, Linux through `aplay`, with system sounds as fallback.
   Scheduled reminders use one Android notification channel per alarm sound.
+- Overflow menus share `SundialMenuButton`/`SundialMenuAction` in
+  `lib/core/widgets/sundial_menu.dart`: a context header, tinted icon tiles,
+  grouped sections, disabled and checkable rows, and a danger treatment for
+  destructive actions. All ten list and export menus use it in Classic and Aero.
 - Preferences expose a searchable IANA time-zone picker. The chosen zone is the
   planning zone for new timed entries; display still follows the device zone.
 - The entry editor derives the task shape from clearable start/end fields:

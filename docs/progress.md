@@ -13,6 +13,27 @@ Aero 2.0 shipped on 2026-11-23 as a first-class, brightness-aware style system;
 see the new entry below and `docs/aero-2.md`. The earlier “stop gate” notes are
 historical.
 
+## 2026-11-24 Shared context menu kit
+
+- **Menus.** Added `SundialMenuButton`/`SundialMenuAction` in
+  `lib/core/widgets/sundial_menu.dart`. Menu rows carry a tinted icon tile, a
+  context header with title and caption, hairline section dividers, disabled
+  and checkable states, and a danger treatment for destructive actions. The
+  stock Material popup keeps focus, keyboard, dismissal and semantics; only the
+  item recipe and the popup theme changed.
+- **Call sites.** Tags, shift patterns, shift checklists, inventory products and
+  sizes, shopping rows, reference rows, maintenance gadgets, the item palette
+  menu and the stats export menu all use the shared component. Each list menu
+  names the row it was opened from.
+- **Theme.** Popup menus now use the card radius, a border in both styles, the
+  shared shadow token, a stronger elevation and balanced vertical padding.
+- **Evidence.** `test/sundial_menu_test.dart` covers the header, icons, section
+  divider, danger colour, disabled action, optional leading action and Aero.
+  Screenshots: `docs/screenshots/v2-context-menu-mobile.png` and
+  `docs/screenshots/v2-aero-context-menu-mobile.png`.
+- **Verification.** `flutter analyze --no-fatal-infos` clean; 397 app tests pass
+  (including the five new menu tests); the two screenshot tests render.
+
 ## 2026-11-23 Aero 2.0 style system shipped
 
 - **Architecture.** Added `SundialStyle` / `SundialStyleTheme` and the

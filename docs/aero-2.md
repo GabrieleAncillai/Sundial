@@ -174,6 +174,20 @@ dialogs and the rail. Large surfaces use `RoundedSuperellipseBorder`.
 - Inset pearl groove, glossy aqua fill, one top highlight. Shared
   `SundialProgressBar` used by Today and Stats.
 
+### Menu
+
+- Shared `SundialMenuButton` and `SundialMenuAction` in
+  `lib/core/widgets/sundial_menu.dart`.
+- Surface: pearl with the Aero glass rim, 18 px radius and the shared shadow.
+  The menu opens below its trigger instead of over it.
+- Rows: 30 px tinted icon tile (accent soft, danger soft for destructive
+  actions), 13.5 label and an optional checkmark. Groups are separated by a
+  hairline divider.
+- Header: a non-interactive context title and caption with a hairline base, so
+  a menu names the row it belongs to.
+- The Material route is unchanged, so focus, keyboard navigation, dismissal and
+  screen-reader semantics keep working.
+
 ## Gloss, blur and motion rules
 
 - One specular highlight per surface, aligned to the top-left light.
@@ -204,7 +218,7 @@ are used by scheduled reminders.
 | Type scale and per-style families | `lib/theme/app_typography.dart` |
 | Procedural sky, horizon, bokeh, seam-safe `AeroMotion` phases and glass surface | `lib/core/widgets/app_background.dart` |
 | Glossy glyphs and original sundial mark | `lib/core/icons/aero_glyph.dart` |
-| Shared card, nav, sheet, switch, segmented, field and progress recipes | `lib/core/widgets/` |
+| Shared card, nav, sheet, menu, switch, segmented, field and progress recipes | `lib/core/widgets/` |
 | Settings Style/Brightness rows and search | `lib/features/settings/` |
 | Screenshots | `tool/screenshots/screenshot_test.dart` |
 
@@ -218,6 +232,8 @@ Rendered from the real app, not concept compositions:
 - `docs/screenshots/v2-aero-settings-mobile.png` (phone, light)
 - `docs/screenshots/v2-aero-appearance-mobile.png` (phone, light; Style and
   Brightness rows)
+- `docs/screenshots/v2-context-menu-mobile.png` (Classic inventory menu)
+- `docs/screenshots/v2-aero-context-menu-mobile.png` (Aero inventory menu)
 - `docs/screenshots/nav-responsive-360-430.png` (nav close-up: 360 dp icon-only
   and 430 dp labeled)
 

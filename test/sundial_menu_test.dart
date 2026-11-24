@@ -26,7 +26,9 @@ void main() {
     );
   }
 
-  testWidgets('the menu shows its context header, icons, a section divider and danger styling', (tester) async {
+  testWidgets('the menu shows its context header, icons, a section divider and danger styling', (
+    tester,
+  ) async {
     String? selected;
     await tester.pumpWidget(
       host(
@@ -70,7 +72,12 @@ void main() {
         SundialTheme.light,
         onSelected: (_) {},
         actions: const [
-          SundialMenuAction(value: 'delete', label: 'Delete', icon: Icons.delete_outline, dividerBefore: true),
+          SundialMenuAction(
+            value: 'delete',
+            label: 'Delete',
+            icon: Icons.delete_outline,
+            dividerBefore: true,
+          ),
         ],
       ),
     );
@@ -80,6 +87,24 @@ void main() {
 
     expect(find.text('Delete'), findsOneWidget);
     expect(find.byType(PopupMenuDivider), findsNothing);
+  });
+
+  testWidgets('a selected action carries a checkmark', (tester) async {
+    await tester.pumpWidget(
+      host(
+        SundialTheme.light,
+        onSelected: (_) {},
+        actions: const [
+          SundialMenuAction(value: 'week', label: 'Week', icon: Icons.calendar_view_week, selected: true),
+        ],
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Week'), findsOneWidget);
+    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
   });
 
   testWidgets('a disabled action stays visible but cannot be chosen', (tester) async {

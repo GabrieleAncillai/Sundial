@@ -435,6 +435,35 @@ void main() {
       home: const MaintenancePage(),
     );
   });
+
+  testWidgets('render mobile context menu', (tester) async {
+    await _renderShell(
+      tester,
+      'v2-context-menu-mobile.png',
+      database,
+      view: _phone,
+      home: const HomeInventoryPage(),
+      act: (tester) async {
+        await tester.tap(find.byIcon(Icons.more_horiz).first);
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render Aero context menu', (tester) async {
+    await _renderShell(
+      tester,
+      'v2-aero-context-menu-mobile.png',
+      database,
+      view: _phone,
+      settings: const AppSettings(visualStyle: SundialVisualStyle.aero),
+      home: const HomeInventoryPage(),
+      act: (tester) async {
+        await tester.tap(find.byIcon(Icons.more_horiz).first);
+        await tester.pumpAndSettle();
+      },
+    );
+  });
 }
 
 Future<void> _loadFonts() async {
