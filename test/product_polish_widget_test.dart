@@ -182,11 +182,12 @@ void main() {
     expect(find.text('Data and backup'), findsOneWidget);
     expect(find.text('Online functionalities'), findsOneWidget);
     expect(find.text('About'), findsOneWidget);
-    expect(find.text('Theme'), findsOneWidget);
+    expect(find.text('Style'), findsOneWidget);
+    expect(find.text('Brightness'), findsOneWidget);
 
     await tester.tap(find.text('Preferences'));
     await tester.pumpAndSettle();
-    expect(find.text('Theme'), findsNothing);
+    expect(find.text('Style'), findsNothing);
     expect(find.text('Language'), findsOneWidget);
 
     await tester.tap(find.text('Data and backup'));
@@ -215,7 +216,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final sidebarBack = tester.getCenter(find.byIcon(Icons.chevron_left));
-      final paneRow = tester.getCenter(find.text('Theme'));
+      final paneRow = tester.getCenter(find.text('Style'));
       expect(
         sidebarBack.dx < paneRow.dx,
         side == SundialNavSide.left,

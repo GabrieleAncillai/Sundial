@@ -248,15 +248,7 @@ class _ProgressCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 9),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(SundialRadii.xs),
-            child: LinearProgressIndicator(
-              value: ratio,
-              minHeight: 8,
-              backgroundColor: c.surfaceHigh,
-              color: c.accent,
-            ),
-          ),
+          SundialProgressBar(value: ratio, height: 8),
           if (total > 0 && done == total) ...[
             const SizedBox(height: 8),
             Text(context.l10n.allDone, style: SundialType.body(11.5, color: c.success)),

@@ -36,6 +36,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get close => 'Close';
 
   @override
+  String get moreActions => 'More actions';
+
+  @override
   String get cancel => 'Cancel';
 
   @override
@@ -311,6 +314,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeDark => 'Dark';
+
+  @override
+  String get style => 'Style';
+
+  @override
+  String get styleClassic => 'Classic';
+
+  @override
+  String get styleAero => 'Aero';
+
+  @override
+  String get brightness => 'Brightness';
 
   @override
   String get language => 'Language';
@@ -884,6 +899,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get checklistItemLabel => 'Checklist item';
+
+  @override
+  String get checklistAppliesTo => 'Applies to';
 
   @override
   String get noChecklistItems => 'No checklist items yet.';

@@ -2,32 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../models/app_settings.dart';
-import 'app_colors.dart';
 import 'app_radii.dart';
 import 'app_typography.dart';
+import 'sundial_style.dart';
 
 class SundialTheme {
   SundialTheme._();
 
-  static ThemeData get light => _build(Brightness.light, SundialColors.light);
-  static ThemeData get dark => _build(Brightness.dark, SundialColors.dark);
+  static ThemeData get light => _build(SundialStyle.classic(Brightness.light));
+  static ThemeData get dark => _build(SundialStyle.classic(Brightness.dark));
 
   static ThemeData forSettings(AppSettings settings, Brightness brightness) {
-    // OLED paints black behind the content; Aero's pearl palette would become
-    // unreadable there, so OLED opts out of the Aero surface treatment.
-    final aero = settings.isAero && settings.backgroundStyle != SundialBackgroundStyle.oled;
-    final effective = aero ? Brightness.light : brightness;
-    final base = aero
-        ? SundialColors.aero
-        : effective == Brightness.dark
-        ? SundialColors.dark
-        : SundialColors.light;
-    final accent = _accentFor(settings.accentScheme, effective, aero: aero);
-    return _build(effective, base.withAccent(accent));
+    // OLED paints black behind the content; the light Aero sky would become
+    // unreadable there, so OLED always resolves to the dark style.
+    final effective = settings.backgroundStyle == SundialBackgroundStyle.oled ? Brightness.dark : brightness;
+    var style = SundialStyle.resolve(
+      settings.visualStyle,
+      effective,
+      performanceMode: settings.performanceMode,
+    );
+    if (settings.visualStyle == SundialVisualStyle.classic) {
+      style = style.withColors(style.colors.withAccent(_accentFor(settings.accentScheme, effective)));
+    }
+    return _build(style);
   }
 
-  static Color _accentFor(SundialAccentScheme scheme, Brightness brightness, {required bool aero}) {
-    if (aero) return SundialColors.aero.accent;
+  /// Builds a style directly. Used by tests and the screenshot harness.
+  static ThemeData forStyle(
+    SundialVisualStyle visualStyle,
+    Brightness brightness, {
+    bool performanceMode = false,
+    SundialAccentScheme accentScheme = SundialAccentScheme.sage,
+  }) {
+    var style = SundialStyle.resolve(visualStyle, brightness, performanceMode: performanceMode);
+    if (visualStyle == SundialVisualStyle.classic) {
+      style = style.withColors(style.colors.withAccent(_accentFor(accentScheme, brightness)));
+    }
+    return _build(style);
+  }
+
+  static Color _accentFor(SundialAccentScheme scheme, Brightness brightness) {
     final dark = brightness == Brightness.dark;
     return switch (scheme) {
       SundialAccentScheme.sage => dark ? const Color(0xFF8FB39D) : const Color(0xFF4F6D5A),
@@ -52,7 +66,10 @@ class SundialTheme {
     );
   }
 
-  static ThemeData _build(Brightness brightness, SundialColors c) {
+  static ThemeData _build(SundialStyle style) {
+    final c = style.colors;
+    final brightness = style.brightness;
+    final aero = style.hasControlGradient;
     final scheme = ColorScheme.fromSeed(seedColor: c.accent, brightness: brightness).copyWith(
       primary: c.accent,
       onPrimary: c.onAccent,
@@ -82,17 +99,25 @@ class SundialTheme {
       onErrorContainer: c.danger,
     );
 
-    final text = SundialType.textTheme(c.text, c.textSecondary);
+    final text = SundialType.textTheme(c.text, c.textSecondary, fontFamily: style.bodyFontFamily);
+    // Explicit component styles are separate TextStyles, so they need the
+    // resolved family too. Relying on inheritance leaves Material buttons on
+    // the platform default face.
+    TextStyle font(TextStyle value) => value.copyWith(fontFamily: style.bodyFontFamily);
+    final buttonShape = StadiumBorder(
+      side: aero ? BorderSide(color: style.highlight.withValues(alpha: 0.30)) : BorderSide.none,
+    );
+    final fieldRadius = BorderRadius.circular(SundialRadii.md);
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
-      fontFamily: SundialType.family,
-      scaffoldBackgroundColor: Colors.transparent,
-      canvasColor: c.pageBg,
+      fontFamily: style.bodyFontFamily,
       textTheme: text,
       primaryTextTheme: text,
+      scaffoldBackgroundColor: Colors.transparent,
+      canvasColor: c.pageBg,
       splashFactory: NoSplash.splashFactory,
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
@@ -100,7 +125,7 @@ class SundialTheme {
       dividerColor: c.border,
       disabledColor: c.textTertiary,
       visualDensity: VisualDensity.standard,
-      extensions: [c],
+      extensions: [c, SundialStyleTheme(style)],
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
@@ -110,7 +135,7 @@ class SundialTheme {
         systemOverlayStyle: systemBars(brightness),
         foregroundColor: c.text,
         iconTheme: IconThemeData(color: c.text, size: 22),
-        titleTextStyle: SundialType.headline(20, color: c.text),
+        titleTextStyle: font(SundialType.headline(20, color: c.text)),
       ),
       cardTheme: CardThemeData(
         color: c.surface,
@@ -120,7 +145,7 @@ class SundialTheme {
         margin: EdgeInsets.zero,
         shape: SundialShapes.rounded(
           radius: SundialRadii.lg,
-          side: BorderSide(color: c.border),
+          side: BorderSide(color: aero ? style.rim : c.border),
         ),
       ),
       bottomSheetTheme: BottomSheetThemeData(
@@ -130,7 +155,10 @@ class SundialTheme {
         modalBarrierColor: Colors.black.withValues(alpha: 0.38),
         elevation: 0,
         constraints: const BoxConstraints(maxWidth: 620),
-        shape: SundialShapes.sheetTop(radius: SundialRadii.xxl),
+        shape: SundialShapes.sheetTop(
+          radius: SundialRadii.xxl,
+          side: aero ? BorderSide(color: style.rim) : BorderSide.none,
+        ),
         dragHandleColor: c.borderStrong,
         dragHandleSize: const Size(40, 4),
         showDragHandle: true,
@@ -140,14 +168,17 @@ class SundialTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         constraints: const BoxConstraints(minWidth: 280, maxWidth: 440),
-        shape: SundialShapes.rounded(radius: SundialRadii.xl),
-        titleTextStyle: SundialType.headline(19, color: c.text),
-        contentTextStyle: SundialType.body(14, color: c.textSecondary),
+        shape: SundialShapes.rounded(
+          radius: SundialRadii.xl,
+          side: aero ? BorderSide(color: style.rim) : BorderSide.none,
+        ),
+        titleTextStyle: font(SundialType.headline(19, color: c.text)),
+        contentTextStyle: font(SundialType.body(14, color: c.textSecondary)),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: c.surfaceHigh,
-        contentTextStyle: SundialType.body(13.5, color: c.text),
+        contentTextStyle: font(SundialType.body(13.5, color: c.text)),
         actionTextColor: c.accent,
         elevation: 0,
         shape: SundialShapes.rounded(radius: SundialRadii.md),
@@ -161,7 +192,7 @@ class SundialTheme {
         height: 68,
         indicatorShape: SundialShapes.rounded(radius: SundialRadii.md),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        labelTextStyle: WidgetStatePropertyAll(SundialType.label(10.5, color: c.textSecondary)),
+        labelTextStyle: WidgetStatePropertyAll(font(SundialType.label(10.5, color: c.textSecondary))),
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
             size: 22,
@@ -170,25 +201,33 @@ class SundialTheme {
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          backgroundColor: c.accent,
-          foregroundColor: c.onAccent,
-          disabledBackgroundColor: c.surfaceHigh,
-          disabledForegroundColor: c.textTertiary,
-          minimumSize: const Size(0, 48),
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-          shape: const StadiumBorder(),
-          textStyle: SundialType.label(14, color: c.onAccent),
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.disabled) ? c.surfaceHigh : c.accent,
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.disabled) ? c.textTertiary : c.onAccent,
+          ),
+          elevation: WidgetStatePropertyAll(aero ? 3 : 0),
+          shadowColor: WidgetStatePropertyAll(aero ? c.accent.withValues(alpha: 0.35) : Colors.transparent),
+          surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+          minimumSize: const WidgetStatePropertyAll(Size(0, 48)),
+          padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 22, vertical: 14)),
+          shape: WidgetStatePropertyAll(buttonShape),
+          side: WidgetStatePropertyAll(
+            aero ? BorderSide(color: style.highlight.withValues(alpha: 0.30)) : BorderSide.none,
+          ),
+          textStyle: WidgetStatePropertyAll(font(SundialType.label(14, color: c.onAccent))),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: c.text,
-          side: BorderSide(color: c.borderStrong),
-          minimumSize: const Size(0, 46),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          shape: const StadiumBorder(),
-          textStyle: SundialType.label(13.5, color: c.text),
+        style: ButtonStyle(
+          foregroundColor: WidgetStatePropertyAll(c.text),
+          side: WidgetStatePropertyAll(BorderSide(color: aero ? style.rim : c.borderStrong)),
+          minimumSize: const WidgetStatePropertyAll(Size(0, 46)),
+          padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 20, vertical: 12)),
+          shape: WidgetStatePropertyAll(buttonShape),
+          textStyle: WidgetStatePropertyAll(font(SundialType.label(13.5, color: c.text))),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -197,7 +236,7 @@ class SundialTheme {
           minimumSize: const Size(0, 44),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           shape: const StadiumBorder(),
-          textStyle: SundialType.label(13.5, color: c.accent),
+          textStyle: font(SundialType.label(13.5, color: c.accent)),
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
@@ -208,29 +247,26 @@ class SundialTheme {
         fillColor: c.surfaceAlt,
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: SundialType.body(14, color: c.textTertiary),
-        labelStyle: SundialType.body(13.5, color: c.textSecondary),
-        floatingLabelStyle: SundialType.label(12.5, color: c.accent),
-        errorStyle: SundialType.body(12, color: c.danger),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(SundialRadii.md),
-          borderSide: BorderSide.none,
-        ),
+        hintStyle: font(SundialType.body(14, color: c.textTertiary)),
+        labelStyle: font(SundialType.body(13.5, color: c.textSecondary)),
+        floatingLabelStyle: font(SundialType.label(12.5, color: c.accent)),
+        errorStyle: font(SundialType.body(12, color: c.danger)),
+        border: OutlineInputBorder(borderRadius: fieldRadius, borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(SundialRadii.md),
-          borderSide: BorderSide(color: c.border),
+          borderRadius: fieldRadius,
+          borderSide: BorderSide(color: aero ? style.rim : c.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(SundialRadii.md),
-          borderSide: BorderSide(color: c.accent, width: 1.4),
+          borderRadius: fieldRadius,
+          borderSide: BorderSide(color: c.accent, width: 1.6),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(SundialRadii.md),
+          borderRadius: fieldRadius,
           borderSide: BorderSide(color: c.danger),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(SundialRadii.md),
-          borderSide: BorderSide(color: c.danger, width: 1.4),
+          borderRadius: fieldRadius,
+          borderSide: BorderSide(color: c.danger, width: 1.6),
         ),
       ),
       dividerTheme: DividerThemeData(color: c.border, thickness: 1, space: 1),
@@ -239,7 +275,7 @@ class SundialTheme {
           (states) => states.contains(WidgetState.selected) ? c.accent : Colors.transparent,
         ),
         checkColor: WidgetStatePropertyAll(c.onAccent),
-        side: BorderSide(color: c.borderStrong, width: 1.5),
+        side: BorderSide(color: aero ? style.rim : c.borderStrong, width: 1.5),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(SundialRadii.xxs)),
       ),
       switchTheme: SwitchThemeData(
@@ -257,30 +293,41 @@ class SundialTheme {
         backgroundColor: c.surfaceAlt,
         selectedColor: c.accentSoft,
         disabledColor: c.surfaceAlt,
-        side: BorderSide(color: c.border),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(SundialRadii.xs)),
-        labelStyle: SundialType.label(12.5, color: c.textSecondary),
-        secondaryLabelStyle: SundialType.label(12.5, color: c.accent),
+        side: BorderSide(color: aero ? style.rim : c.border),
+        shape: aero
+            ? const StadiumBorder()
+            : RoundedRectangleBorder(borderRadius: BorderRadius.circular(SundialRadii.xs)),
+        labelStyle: font(SundialType.label(12.5, color: c.textSecondary)),
+        secondaryLabelStyle: font(SundialType.label(12.5, color: c.accent)),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       ),
       popupMenuTheme: PopupMenuThemeData(
         color: c.surface,
         surfaceTintColor: Colors.transparent,
-        elevation: 8,
-        shape: SundialShapes.rounded(radius: SundialRadii.md),
-        textStyle: SundialType.body(14, color: c.text),
+        shadowColor: c.shadow,
+        elevation: 12,
+        menuPadding: const EdgeInsets.symmetric(vertical: 6),
+        shape: SundialShapes.rounded(
+          radius: SundialRadii.md,
+          side: BorderSide(color: aero ? style.rim : c.border),
+        ),
+        textStyle: font(SundialType.body(14, color: c.text)),
       ),
       listTileTheme: ListTileThemeData(
         iconColor: c.textSecondary,
         textColor: c.text,
-        titleTextStyle: SundialType.body(15, color: c.text),
-        subtitleTextStyle: SundialType.body(12.5, color: c.textSecondary),
+        titleTextStyle: font(SundialType.body(15, color: c.text)),
+        subtitleTextStyle: font(SundialType.body(12.5, color: c.textSecondary)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(color: c.accent, linearTrackColor: c.surfaceHigh),
       tooltipTheme: TooltipThemeData(
-        decoration: BoxDecoration(color: c.surfaceHigh, borderRadius: BorderRadius.circular(SundialRadii.xs)),
-        textStyle: SundialType.body(12, color: c.text),
+        decoration: BoxDecoration(
+          color: c.surfaceHigh,
+          borderRadius: BorderRadius.circular(SundialRadii.xs),
+          border: aero ? Border.all(color: style.rim) : null,
+        ),
+        textStyle: font(SundialType.body(12, color: c.text)),
       ),
       timePickerTheme: TimePickerThemeData(
         backgroundColor: c.surface,
@@ -299,7 +346,7 @@ class SundialTheme {
           (states) => states.contains(WidgetState.selected) ? c.accent : c.textSecondary,
         ),
         dayPeriodBorderSide: BorderSide(color: c.border),
-        helpTextStyle: SundialType.kicker(color: c.textSecondary),
+        helpTextStyle: font(SundialType.kicker(color: c.textSecondary)),
         entryModeIconColor: c.textSecondary,
         cancelButtonStyle: TextButton.styleFrom(foregroundColor: c.textSecondary),
         confirmButtonStyle: TextButton.styleFrom(foregroundColor: c.accent),

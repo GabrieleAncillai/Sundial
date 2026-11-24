@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/sundial_style.dart';
+import '../icons/aero_glyph.dart';
 import 'sundial_field_clear.dart';
 
 class SundialSearchField extends StatelessWidget {
@@ -26,17 +28,24 @@ class SundialSearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
+    final shape = BorderRadius.circular(SundialRadii.pill);
     return Container(
       height: 50,
       padding: const EdgeInsets.only(left: 16, right: 6),
       decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: BorderRadius.circular(SundialRadii.pill),
-        border: Border.all(color: c.border),
+        color: style.hasFieldGradient ? null : c.surface,
+        gradient: style.fieldGradient,
+        borderRadius: shape,
+        border: Border.all(color: style.hasFieldGradient ? style.rim : c.border),
+        boxShadow: style.hasFieldGradient ? style.chromeShadows.take(1).toList() : null,
       ),
+      foregroundDecoration: style.hasFieldGradient && style.gloss
+          ? BoxDecoration(borderRadius: shape, gradient: style.glossGradient)
+          : null,
       child: Row(
         children: [
-          Icon(Icons.search, size: 18, color: c.textTertiary),
+          AeroGlyph(icon: Icons.search, size: 18, color: c.textTertiary),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(

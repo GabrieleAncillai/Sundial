@@ -8,11 +8,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sundial/theme/aero_colors.dart';
 
-/// Renders the three Aero 2.0 concept screens required before approval.
+/// Historical renderer for the three Aero 2.0 concept screens used at the
+/// approval gate.
 ///
-/// These are standalone compositions that use the approved-token candidate and
-/// shared recipes from `docs/aero-2.md`. They do not import or restyle the app
-/// screens, because the Aero direction is still a stop gate.
+/// The shipped style is now implemented in `lib/theme/sundial_style.dart` and
+/// the shared kit. This file stays only as a record of the approved direction;
+/// real-app evidence comes from `screenshot_test.dart`.
 void main() {
   setUpAll(_loadFonts);
 
@@ -34,21 +35,29 @@ Future<void> _render(WidgetTester tester, String name, Size size, double dpr, Ae
   tester.view.devicePixelRatio = dpr;
   addTearDown(tester.view.reset);
   final key = GlobalKey();
-  await tester.pumpWidget(
-    RepaintBoundary(
-      key: key,
-      child: _ConceptApp(tokens: tokens, width: size.width, height: size.height, name: name),
-    ),
-  );
-  await tester.pumpAndSettle();
-  final boundary = tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
-  await tester.runAsync(() async {
-    final image = await boundary.toImage(pixelRatio: dpr);
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
-    final dir = Directory('docs/screenshots')..createSync(recursive: true);
-    File('${dir.path}/$name').writeAsBytesSync(bytes!.buffer.asUint8List());
-  });
+  // Capture the concept art with the same soft shadows the app paints.
+  // flutter_test normally removes the shadow blur.
+  final shadowsDisabled = debugDisableShadows;
+  debugDisableShadows = false;
+  try {
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: key,
+        child: _ConceptApp(tokens: tokens, width: size.width, height: size.height, name: name),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final boundary = tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
+    await tester.runAsync(() async {
+      final image = await boundary.toImage(pixelRatio: dpr);
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      final dir = Directory('docs/screenshots')..createSync(recursive: true);
+      File('${dir.path}/$name').writeAsBytesSync(bytes!.buffer.asUint8List());
+    });
+  } finally {
+    debugDisableShadows = shadowsDisabled;
+  }
   await tester.pumpWidget(const SizedBox.shrink());
 }
 

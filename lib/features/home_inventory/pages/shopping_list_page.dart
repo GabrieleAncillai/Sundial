@@ -454,19 +454,29 @@ class _ShoppingRow extends StatelessWidget {
               ),
             ),
           ),
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_horiz, color: c.textTertiary),
+          SundialMenuButton<String>(
+            tooltip: l10n.moreActions,
+            headerTitle: name,
+            headerCaption: quantityLabel,
             onSelected: (value) => switch (value) {
               'up' => onMoveUp?.call(),
               'down' => onMoveDown?.call(),
               'edit' => onEdit(),
               _ => onDelete(),
             },
-            itemBuilder: (context) => [
-              if (onMoveUp != null) PopupMenuItem(value: 'up', child: Text(l10n.moveUp)),
-              if (onMoveDown != null) PopupMenuItem(value: 'down', child: Text(l10n.moveDown)),
-              PopupMenuItem(value: 'edit', child: Text(l10n.edit)),
-              PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+            actions: [
+              if (onMoveUp != null)
+                SundialMenuAction(value: 'up', label: l10n.moveUp, icon: Icons.arrow_upward_rounded),
+              if (onMoveDown != null)
+                SundialMenuAction(value: 'down', label: l10n.moveDown, icon: Icons.arrow_downward_rounded),
+              SundialMenuAction(value: 'edit', label: l10n.edit, icon: Icons.edit_outlined),
+              SundialMenuAction(
+                value: 'delete',
+                label: l10n.delete,
+                icon: Icons.delete_outline_rounded,
+                destructive: true,
+                dividerBefore: true,
+              ),
             ],
           ),
         ],

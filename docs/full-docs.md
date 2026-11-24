@@ -1226,9 +1226,14 @@ status. The important architecture additions are:
 
 ### V2 product deltas
 
-- Aero is a component treatment, not only a palette: `SoftCard`, the nav bar,
-  segmented controls and glass icon buttons gain a glossy gradient, cyan edge
-  and soft glow. Selecting Aero also selects the Aero interaction-sound pack.
+- Aero is a named, brightness-aware style pack, not only a palette: `SoftCard`,
+  the nav bar, segmented controls, fields, switches, progress, calendar blocks
+  and glass icon buttons gain the shared glass/gloss recipes. Aero also has its
+  own Open Sans face, procedural sky/bokeh environment and original sundial
+  mark. Selecting Aero selects the Aero interaction-sound pack but leaves sounds
+  off. The contract and extension guide are in
+  [aero-2.md](aero-2.md); the implementation is
+  `lib/theme/sundial_style.dart`.
 - Interaction sounds and alarm previews are optional and off by default. Sounds
   play from bundled WAV assets: Android through a small `SoundPool`
   `MethodChannel`, Linux through `aplay`, with system sounds as fallback.
@@ -1253,7 +1258,9 @@ status. The important architecture additions are:
   `v1.4-plan-day-mobile.png`, `v1.4-plan-month-dark-desktop.png`,
   `v1.0-stats-desktop.png`, `v1.0-personal-mobile.png`,
   `v1.0-settings-mobile.png`, `v1.0-appearance-mobile.png`,
-  `v1.2-today-aero.png`, `v1.2-preferences-mobile.png` and
+  `v1.2-today-aero.png`, `v2-aero-today-dark.png`,
+  `v2-aero-plan-desktop.png`, `v2-aero-settings-mobile.png`,
+  `v2-aero-appearance-mobile.png`, `v1.2-preferences-mobile.png` and
   `v1.3-settings-desktop.png`.
 
 ### Compliance v2 (2026-11-13)
@@ -1326,6 +1333,7 @@ paths the audit found unsafe. The row-by-row status is in
   `app_theme.dart`; screens consume tokens instead of raw numbers. The revised
   screens are in `docs/screenshots/v1.5-radii-*.png`.
 
-Still open: Aero 2.0 approval and rollout (`docs/aero-2.md`), LAN rebind after a
-network change, timezone-aware Plan drags for entries stored in another zone,
-and the user's real-device checklist.
+Still open: the user's real-device Aero visual and blur-performance pass
+(`docs/device-checklist.md`), LAN rebind after a network change,
+timezone-aware Plan drags for entries stored in another zone, and the remaining
+device checklist items.

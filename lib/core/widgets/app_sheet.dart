@@ -3,10 +3,10 @@ import 'dart:ui' show ImageFilter, TileMode;
 
 import 'package:flutter/material.dart';
 
-import '../settings_scope.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/sundial_style.dart';
 
 /// The width at which Sundial swaps a phone sheet for a floating desktop dialog.
 /// Mirrors the shell breakpoint in `lib/app/app_shell.dart`.
@@ -228,9 +228,10 @@ class AppSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     final media = MediaQuery.of(context);
     final wide = media.size.width >= appSheetCompactBreakpoint;
-    final aero = AppSettingsScope.maybeOf(context)?.isAero ?? false;
+    final aero = style.hasSurfaceGradient;
     final available = math.max(0.0, media.size.height - media.viewInsets.bottom);
     final content = Column(
       mainAxisSize: MainAxisSize.min,
@@ -269,21 +270,24 @@ class AppSheet extends StatelessWidget {
         shape: wide
             ? SundialShapes.rounded(
                 radius: SundialRadii.xl,
-                side: BorderSide(color: aero ? c.glassEdge : c.border),
+                side: BorderSide(color: aero ? style.rim : c.border),
               )
             : SundialShapes.sheetTop(
                 radius: SundialRadii.xxl,
-                side: BorderSide(color: aero ? c.glassEdge : Colors.transparent),
+                side: BorderSide(color: aero ? style.rim : Colors.transparent),
               ),
         color: aero ? null : c.surface,
-        gradient: aero
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [c.surface, c.surfaceAlt],
-              )
-            : null,
+        gradient: aero ? style.surfaceGradient : null,
+        shadows: aero ? style.chromeShadows : null,
       ),
+      foregroundDecoration: aero && style.gloss
+          ? ShapeDecoration(
+              shape: (wide
+                  ? SundialShapes.rounded(radius: SundialRadii.xl)
+                  : SundialShapes.sheetTop(radius: SundialRadii.xxl)),
+              gradient: style.glossGradient,
+            )
+          : null,
       child: scroll ? SingleChildScrollView(child: content) : content,
     );
   }

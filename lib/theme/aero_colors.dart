@@ -67,8 +67,8 @@ abstract final class AeroColors {
   static const light = AeroTokens(
     skyTop: Color(0xFFDDF3FF),
     skyBottom: Color(0xFFA9D8F5),
-    pearl: Color(0xFFF7FCFF),
-    pearlAlt: Color(0xFFEAF7FF),
+    pearl: Color(0xFFF2FAFF),
+    pearlAlt: Color(0xFFE2F4FF),
     ink: Color(0xFF102A43),
     inkMuted: Color(0xFF4C6780),
     // The decorative aqua is too light for text or a 3:1 rim on pearl; the deep

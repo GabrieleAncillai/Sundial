@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../core/icons/aero_glyph.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
+import '../../../theme/sundial_style.dart';
 
 /// A row that settings search can scroll to by [title].
 abstract interface class SettingsTitledRow {
@@ -303,11 +305,26 @@ class _SettingsIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     return Container(
       width: 32,
       height: 32,
-      decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(SundialRadii.xs)),
-      child: Icon(icon, size: 17, color: c.accent),
+      decoration: BoxDecoration(
+        color: style.hasSurfaceGradient ? null : c.accentSoft,
+        gradient: style.hasSurfaceGradient
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color.lerp(Colors.white, c.accentSoft, 0.18)!, c.accentSoft],
+              )
+            : null,
+        borderRadius: BorderRadius.circular(SundialRadii.xs),
+        border: style.hasSurfaceGradient ? Border.all(color: style.rim) : null,
+        boxShadow: style.hasSurfaceGradient && style.cardShadows.isNotEmpty
+            ? style.cardShadows.take(1).toList()
+            : null,
+      ),
+      child: AeroGlyph(icon: icon, size: 17, color: c.accent),
     );
   }
 }

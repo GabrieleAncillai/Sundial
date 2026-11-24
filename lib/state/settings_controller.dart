@@ -4,6 +4,7 @@ import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
 import '../models/app_settings.dart';
+import '../models/visual_style.dart';
 import '../services/planner_repository.dart';
 import 'providers.dart';
 
@@ -23,33 +24,18 @@ class SettingsController extends Notifier<AppSettings> {
   }
 
   Future<void> setThemeMode(ThemeMode value) async {
-    final variant = switch (value) {
-      ThemeMode.light => SundialThemeVariant.light,
-      ThemeMode.dark => SundialThemeVariant.dark,
-      ThemeMode.system => SundialThemeVariant.system,
-    };
-    state = state.copyWith(themeMode: value, themeVariant: variant);
+    state = state.copyWith(themeMode: value);
     await _repository.writeSetting(SettingsKeys.themeMode, value.name);
-    await _repository.writeSetting(SettingsKeys.themeVariant, variant.name);
   }
 
-  Future<void> setThemeVariant(SundialThemeVariant value) async {
-    final mode = switch (value) {
-      SundialThemeVariant.light => ThemeMode.light,
-      SundialThemeVariant.dark => ThemeMode.dark,
-      SundialThemeVariant.system => ThemeMode.system,
-      SundialThemeVariant.aero => ThemeMode.light,
-    };
+  Future<void> setVisualStyle(SundialVisualStyle value) async {
     state = state.copyWith(
-      themeVariant: value,
-      themeMode: mode,
-      soundPack: value == SundialThemeVariant.aero ? SundialSoundPack.aero : state.soundPack,
+      visualStyle: value,
+      soundPack: value == SundialVisualStyle.aero ? SundialSoundPack.aero : state.soundPack,
     );
-    await _repository.writeSetting(SettingsKeys.themeVariant, value.name);
-    if (value == SundialThemeVariant.aero) {
+    await _repository.writeSetting(SettingsKeys.visualStyle, value.name);
+    if (value == SundialVisualStyle.aero) {
       await _repository.writeSetting(SettingsKeys.soundPack, SundialSoundPack.aero.name);
-    } else {
-      await _repository.writeSetting(SettingsKeys.themeMode, mode.name);
     }
   }
 

@@ -7,6 +7,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
+import '../core/icons/aero_glyph.dart';
 import '../core/layout/sundial_layout.dart';
 import '../core/sound/sound_service.dart';
 import '../core/widgets/ui_kit.dart';
@@ -30,6 +31,7 @@ import '../state/settings_controller.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_typography.dart';
+import '../theme/sundial_style.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
@@ -273,7 +275,6 @@ class _AppShellState extends ConsumerState<AppShell>
           body: AppBackground(
             style: settings.backgroundStyle,
             customColor: Color(settings.backgroundCustomColor),
-            aero: settings.isAero,
             performanceMode: settings.performanceMode,
             child: SafeArea(
               bottom: false,
@@ -325,20 +326,25 @@ class _AppShellState extends ConsumerState<AppShell>
           child: Row(
             children: [
               if (!desktop) ...[
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: c.accent,
-                    borderRadius: BorderRadius.circular(SundialRadii.sm),
-                  ),
-                  child: Icon(Icons.event_note, size: 21, color: c.onAccent),
-                ),
+                const SundialLogo(size: 38),
                 const SizedBox(width: 10),
-                Text(l10n.appName, style: SundialType.headline(21, color: c.text)),
-              ],
-              const Spacer(),
+                Expanded(
+                  child: Text(
+                    l10n.appName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: SundialType.headline(21, color: c.text),
+                  ),
+                ),
+              ] else
+                const Spacer(),
               if (!desktop) ...[
+                SundialAddButton(
+                  tooltip: l10n.addEntry,
+                  size: 40,
+                  onTap: () => showEntryEditor(context, spaces: spaces),
+                ),
+                const SizedBox(width: 8),
                 GlassIconButton(icon: Icons.search, tooltip: l10n.search, onTap: _openSearch),
                 const SizedBox(width: 8),
                 GlassIconButton(
@@ -381,28 +387,13 @@ class _AppShellState extends ConsumerState<AppShell>
         ),
         if (!desktop)
           Padding(
-            padding: EdgeInsets.fromLTRB(10, 8, 10, 10 + MediaQuery.paddingOf(context).bottom),
-            child: Row(
-              children: [
-                Expanded(
-                  child: SundialNavBar(
-                    index: _index,
-                    onSelected: _selectTab,
-                    items: [
-                      for (final item in _destinations)
-                        (
-                          icon: item.icon,
-                          selectedIcon: item.selectedIcon,
-                          label: _label(context, item.label),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SundialAddButton(
-                  tooltip: l10n.addEntry,
-                  onTap: () => showEntryEditor(context, spaces: spaces),
-                ),
+            padding: EdgeInsets.fromLTRB(8, 8, 8, 12 + MediaQuery.paddingOf(context).bottom),
+            child: SundialNavBar(
+              index: _index,
+              onSelected: _selectTab,
+              items: [
+                for (final item in _destinations)
+                  (icon: item.icon, selectedIcon: item.selectedIcon, label: _label(context, item.label)),
               ],
             ),
           ),
@@ -480,100 +471,93 @@ class _SideRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.mc;
     final l10n = context.l10n;
-    return Container(
-      width: kSidebarWidth,
-      margin: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-      decoration: BoxDecoration(
-        color: c.navBg,
-        borderRadius: BorderRadius.circular(SundialRadii.xl),
-        border: Border.all(color: c.border),
-        boxShadow: [BoxShadow(color: c.shadow, blurRadius: 26, offset: const Offset(0, 12))],
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 12, 10),
-            child: Row(
-              children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: c.accent,
-                    borderRadius: BorderRadius.circular(SundialRadii.sm),
-                  ),
-                  child: Icon(Icons.event_note, size: 21, color: c.onAccent),
+    final style = context.style;
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: SizedBox(
+        width: kSidebarWidth,
+        child: GlassSurface(
+          radius: SundialRadii.xl,
+          tint: style.hasChromeGradient ? null : c.navBg,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 12, 10),
+                child: Row(
+                  children: [
+                    const SundialLogo(size: 38),
+                    const SizedBox(width: 10),
+                    Text(l10n.appName, style: SundialType.headline(20, color: c.text)),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                Text(l10n.appName, style: SundialType.headline(20, color: c.text)),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: SundialSearchField(
-                    controller: searchController,
-                    focusNode: searchFocus,
-                    hint: l10n.search,
-                    onChanged: (_) {},
-                    onSubmitted: onSearchSubmitted,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                IconButton(
-                  onPressed: onFilter,
-                  tooltip: l10n.filterByTag,
-                  icon: Badge(
-                    isLabelVisible: filterCount > 0,
-                    label: Text('$filterCount'),
-                    child: const Icon(Icons.filter_alt_outlined, size: 19),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 4),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              children: [
-                for (var itemIndex = 0; itemIndex < items.length; itemIndex++)
-                  _RailItem(
-                    item: items[itemIndex],
-                    selected: itemIndex == index,
-                    onTap: () => onSelected(itemIndex),
-                  ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: onAdd,
-                icon: const Icon(Icons.add, size: 19),
-                label: Text(l10n.addEntry),
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
-            child: _RailItem(
-              item: const _Destination(
-                label: _Label.stats,
-                icon: Icons.settings_outlined,
-                selectedIcon: Icons.settings,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SundialSearchField(
+                        controller: searchController,
+                        focusNode: searchFocus,
+                        hint: l10n.search,
+                        onChanged: (_) {},
+                        onSubmitted: onSearchSubmitted,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      onPressed: onFilter,
+                      tooltip: l10n.filterByTag,
+                      icon: Badge(
+                        isLabelVisible: filterCount > 0,
+                        label: Text('$filterCount'),
+                        child: const Icon(Icons.filter_alt_outlined, size: 19),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              labelOverride: l10n.settings,
-              selected: false,
-              onTap: onSettings,
-            ),
+              const SizedBox(height: 4),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  children: [
+                    for (var itemIndex = 0; itemIndex < items.length; itemIndex++)
+                      _RailItem(
+                        item: items[itemIndex],
+                        selected: itemIndex == index,
+                        onTap: () => onSelected(itemIndex),
+                      ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: onAdd,
+                    icon: const Icon(Icons.add, size: 19),
+                    label: Text(l10n.addEntry),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
+                child: _RailItem(
+                  item: const _Destination(
+                    label: _Label.stats,
+                    icon: Icons.settings_outlined,
+                    selectedIcon: Icons.settings,
+                  ),
+                  labelOverride: l10n.settings,
+                  selected: false,
+                  onTap: onSettings,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -590,6 +574,7 @@ class _RailItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     final label = labelOverride ?? _AppShellState._label(context, item.label);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -600,15 +585,38 @@ class _RailItem extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? c.accentSoft : Colors.transparent,
+            color: selected && !style.hasSelectedGradient ? c.accentSoft : Colors.transparent,
+            gradient: selected ? style.selectedGradient : null,
             borderRadius: BorderRadius.circular(SundialRadii.md),
-            border: selected ? Border.all(color: c.accent.withValues(alpha: 0.2)) : null,
+            border: selected
+                ? Border.all(
+                    color: style.hasSelectedGradient
+                        ? c.accent.withValues(alpha: 0.42)
+                        : c.accent.withValues(alpha: 0.2),
+                  )
+                : null,
+            boxShadow: selected && style.hasSelectedGradient && !style.performanceMode
+                ? [
+                    BoxShadow(
+                      color: c.accent.withValues(alpha: 0.16),
+                      blurRadius: 12,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
           ),
+          foregroundDecoration: selected && style.hasSelectedGradient && style.gloss
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(SundialRadii.md),
+                  gradient: style.glossGradient,
+                )
+              : null,
           child: Row(
             children: [
-              Icon(
-                selected ? item.selectedIcon : item.icon,
+              AeroGlyph(
+                icon: selected ? item.selectedIcon : item.icon,
                 size: 20,
+                selected: selected,
                 color: selected ? c.accent : c.textSecondary,
               ),
               const SizedBox(width: 11),

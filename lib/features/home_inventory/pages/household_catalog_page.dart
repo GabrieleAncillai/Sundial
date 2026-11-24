@@ -13,6 +13,7 @@ import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
+import '../../../theme/sundial_style.dart';
 import '../widgets/home_art.dart';
 import '../widgets/home_item_sheet.dart';
 import '../widgets/shopping_item_sheet.dart';
@@ -221,6 +222,7 @@ class _FilterPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     return Pressable(
       onTap: onTap,
       semanticButton: true,
@@ -229,10 +231,26 @@ class _FilterPill extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? c.accentSoft : c.surfaceAlt,
+          color: selected
+              ? (style.hasSelectedGradient ? null : c.accentSoft)
+              : (style.hasSelectedGradient ? null : c.surfaceAlt),
+          gradient: style.hasSelectedGradient
+              ? (selected ? style.selectedGradient : style.fieldGradient)
+              : null,
           borderRadius: BorderRadius.circular(SundialRadii.pill),
-          border: Border.all(color: selected ? c.accent.withValues(alpha: 0.35) : c.border),
+          border: Border.all(
+            color: selected
+                ? c.accent.withValues(alpha: style.hasSelectedGradient ? 0.42 : 0.35)
+                : (style.hasSelectedGradient ? style.rim : c.border),
+          ),
+          boxShadow: selected && style.hasSelectedGradient ? style.cardShadows.take(1).toList() : null,
         ),
+        foregroundDecoration: selected && style.hasSelectedGradient && style.gloss
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(SundialRadii.pill),
+                gradient: style.glossGradient,
+              )
+            : null,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

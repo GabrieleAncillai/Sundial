@@ -156,12 +156,20 @@ class _PatternRow extends StatelessWidget {
               ),
             ),
           ),
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_horiz, color: c.textTertiary),
+          SundialMenuButton<String>(
+            tooltip: l10n.moreActions,
+            headerTitle: pattern.name,
+            headerCaption: subtitle,
             onSelected: (value) => value == 'edit' ? onTap() : onDelete(),
-            itemBuilder: (context) => [
-              PopupMenuItem(value: 'edit', child: Text(l10n.edit)),
-              PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+            actions: [
+              SundialMenuAction(value: 'edit', label: l10n.edit, icon: Icons.edit_outlined),
+              SundialMenuAction(
+                value: 'delete',
+                label: l10n.delete,
+                icon: Icons.delete_outline_rounded,
+                destructive: true,
+                dividerBefore: true,
+              ),
             ],
           ),
         ],

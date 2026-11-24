@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/sundial_style.dart';
 import 'app_sheet.dart';
 import 'sundial_field_clear.dart';
 import 'sundial_field_label.dart';
@@ -58,8 +59,10 @@ class SundialSelectField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     final active = enabled && onTap != null;
     final canClear = active && onClear != null;
+    final shape = BorderRadius.circular(SundialRadii.md);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -71,10 +74,14 @@ class SundialSelectField extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.fromLTRB(13, 11, 11, 11),
               decoration: BoxDecoration(
-                color: c.surfaceAlt,
-                borderRadius: BorderRadius.circular(SundialRadii.md),
-                border: Border.all(color: c.border),
+                color: style.hasFieldGradient ? null : c.surfaceAlt,
+                gradient: style.fieldGradient,
+                borderRadius: shape,
+                border: Border.all(color: style.hasFieldGradient ? style.rim : c.border),
               ),
+              foregroundDecoration: style.hasFieldGradient && style.gloss
+                  ? BoxDecoration(borderRadius: shape, gradient: style.glossGradient)
+                  : null,
               child: Row(
                 children: [
                   if (leading != null) ...[

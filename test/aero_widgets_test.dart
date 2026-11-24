@@ -6,6 +6,7 @@ import 'package:sundial/models/app_settings.dart';
 import 'package:sundial/theme/app_colors.dart';
 import 'package:sundial/theme/app_radii.dart';
 import 'package:sundial/theme/app_theme.dart';
+import 'package:sundial/theme/sundial_style.dart';
 
 Widget _host({required Widget child, AppSettings? settings}) {
   final theme = settings == null ? SundialTheme.light : SundialTheme.forSettings(settings, Brightness.light);
@@ -26,7 +27,7 @@ ShapeDecoration _cardDecoration(WidgetTester tester) {
 
 void main() {
   testWidgets('an aero SoftCard paints a gradient, gloss and glow', (tester) async {
-    const settings = AppSettings(themeVariant: SundialThemeVariant.aero);
+    const settings = AppSettings(visualStyle: SundialVisualStyle.aero);
     await tester.pumpWidget(
       _host(
         settings: settings,
@@ -47,7 +48,7 @@ void main() {
   });
 
   testWidgets('aero with performance mode keeps the gradient but drops gloss and glow', (tester) async {
-    const settings = AppSettings(themeVariant: SundialThemeVariant.aero, performanceMode: true);
+    const settings = AppSettings(visualStyle: SundialVisualStyle.aero, performanceMode: true);
     await tester.pumpWidget(
       _host(
         settings: settings,

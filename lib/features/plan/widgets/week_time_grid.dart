@@ -14,6 +14,7 @@ import '../../shifts/shift_block_painter.dart';
 import '../../shifts/shift_palette.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
+import '../../../theme/sundial_style.dart';
 
 /// A mouse press-drag creates an event immediately. Touch and pen hold first so
 /// a scroll gesture never starts a creation. Trackpads are deliberately absent:
@@ -916,16 +917,25 @@ class _EntryCard extends StatelessWidget {
         shadow: shadow,
       );
     }
+    final style = context.style;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
-        color: c.surface,
+        color: style.hasSurfaceGradient ? null : c.surface,
+        gradient: style.surfaceGradient,
         borderRadius: BorderRadius.circular(SundialRadii.xs),
-        border: Border(left: BorderSide(color: color, width: 3)),
-        boxShadow: shadow
+        border: style.hasSurfaceGradient
+            ? Border.all(color: style.rim.withValues(alpha: 0.5))
+            : Border(left: BorderSide(color: color, width: 3)),
+        boxShadow: style.hasSurfaceGradient
+            ? (shadow ? style.chromeShadows.take(1).toList() : style.cardShadows.take(1).toList())
+            : shadow
             ? [BoxShadow(color: c.shadow, blurRadius: 12, offset: const Offset(0, 4))]
             : [BoxShadow(color: c.shadow.withValues(alpha: 0.5), blurRadius: 4, offset: const Offset(0, 1))],
       ),
+      foregroundDecoration: style.hasSurfaceGradient && style.gloss
+          ? BoxDecoration(borderRadius: BorderRadius.circular(SundialRadii.xs), gradient: style.glossGradient)
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1067,14 +1077,23 @@ class _AllDayChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     final color = c.forSpace(occurrence.entry.spaceId);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
+          color: style.hasSurfaceGradient ? null : color.withValues(alpha: 0.12),
+          gradient: style.hasSurfaceGradient
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [color.withValues(alpha: 0.20), style.colors.surface],
+                )
+              : null,
           borderRadius: BorderRadius.circular(SundialRadii.marker),
+          border: style.hasSurfaceGradient ? Border.all(color: color.withValues(alpha: 0.28)) : null,
         ),
         child: Text(
           occurrence.entry.title,

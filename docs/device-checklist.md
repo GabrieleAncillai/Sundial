@@ -39,6 +39,29 @@ replica path, not the notification, reboot or battery items.
 Desktop screenshots are unavailable in this Wayland session; the desktop pass
 was launch, logs and database verification.
 
+## Appearance and Aero 2.0
+
+- [ ] Open Settings → Appearance and confirm the separate **Style**
+      (Classic/Aero) and **Brightness** (System/Light/Dark) rows.
+- [ ] Switch Classic → Aero in light and dark. Confirm the sky, glass chrome,
+      glossy cards, nav pill, progress and original sundial mark render.
+- [ ] On a 360 dp phone, confirm the six-tab bar drops its labels, shows the
+      larger icons, and keeps the selected lens inside the glass shelf at Today
+      and the last tab. Long-press a tab and confirm its tooltip label appears.
+- [ ] On a 430 dp phone (or resize a desktop window above the 60 dp slot
+      breakpoint), confirm labels return and "Estadísticas" stays inside the
+      selected lens.
+- [ ] Leave the Aero background running for several minutes and confirm the
+      sky and bokeh loop does not visibly jump.
+- [ ] Scroll a long Today list and the month/week Plan at 360 dp. Check the
+      Aero text remains readable over the environment.
+- [ ] Turn Performance mode on. Confirm blur, bubbles and gloss transitions
+      stop while selected states remain visible.
+- [ ] Select OLED black with Aero. Confirm the app resolves to the dark Aero
+      surface and stays readable.
+- [ ] Rotate or reopen the app and confirm the selected style and brightness
+      survive a restart.
+
 ## Emulator baseline (already verified)
 
 On 2026-11-09, on a Pixel 9 emulator (Google Play image) with a debug build of

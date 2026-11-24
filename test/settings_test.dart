@@ -11,6 +11,7 @@ import 'package:sundial/services/app_database.dart';
 import 'package:sundial/state/providers.dart';
 import 'package:sundial/state/settings_controller.dart';
 import 'package:sundial/theme/app_theme.dart';
+import 'package:sundial/theme/sundial_style.dart';
 import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
@@ -19,6 +20,24 @@ void main() {
   setUpAll(() {
     open.overrideFor(OperatingSystem.linux, () => DynamicLibrary.open('libsqlite3.so.0'));
     tzdata.initializeTimeZones();
+  });
+
+  test('migrates the legacy Aero theme variant to the named style', () {
+    final aero = AppSettings.fromMap({SettingsKeys.themeVariant: 'aero'});
+    expect(aero.visualStyle, SundialVisualStyle.aero);
+    expect(aero.themeMode, ThemeMode.light);
+
+    final legacyDark = AppSettings.fromMap({SettingsKeys.themeVariant: 'dark'});
+    expect(legacyDark.visualStyle, SundialVisualStyle.classic);
+    expect(legacyDark.themeMode, ThemeMode.dark);
+
+    final explicit = AppSettings.fromMap({
+      SettingsKeys.themeVariant: 'aero',
+      SettingsKeys.visualStyle: 'classic',
+      SettingsKeys.themeMode: 'dark',
+    });
+    expect(explicit.visualStyle, SundialVisualStyle.classic);
+    expect(explicit.themeMode, ThemeMode.dark);
   });
 
   test('parses stored settings with safe defaults', () {
@@ -87,24 +106,25 @@ void main() {
   });
 
   test('OLED forces a readable dark palette', () {
-    const settings = AppSettings(
-      themeVariant: SundialThemeVariant.light,
-      backgroundStyle: SundialBackgroundStyle.oled,
-    );
+    const settings = AppSettings(themeMode: ThemeMode.light, backgroundStyle: SundialBackgroundStyle.oled);
     expect(settings.resolvedThemeMode, ThemeMode.dark);
     expect(SundialTheme.forSettings(settings, Brightness.dark).brightness, Brightness.dark);
   });
 
-  test('OLED overrides the Aero light palette', () {
-    const aero = AppSettings(themeVariant: SundialThemeVariant.aero);
-    expect(SundialTheme.forSettings(aero, Brightness.dark).brightness, Brightness.light);
+  test('Aero follows brightness and OLED forces dark', () {
+    const aeroLight = AppSettings(visualStyle: SundialVisualStyle.aero, themeMode: ThemeMode.light);
+    expect(SundialTheme.forSettings(aeroLight, Brightness.light).brightness, Brightness.light);
+
+    const aeroDark = AppSettings(visualStyle: SundialVisualStyle.aero, themeMode: ThemeMode.dark);
+    expect(SundialTheme.forSettings(aeroDark, Brightness.dark).brightness, Brightness.dark);
 
     const aeroOled = AppSettings(
-      themeVariant: SundialThemeVariant.aero,
+      visualStyle: SundialVisualStyle.aero,
+      themeMode: ThemeMode.light,
       backgroundStyle: SundialBackgroundStyle.oled,
     );
     expect(aeroOled.resolvedThemeMode, ThemeMode.dark);
-    expect(SundialTheme.forSettings(aeroOled, Brightness.dark).brightness, Brightness.dark);
+    expect(SundialTheme.forSettings(aeroOled, Brightness.light).brightness, Brightness.dark);
   });
 
   test('work and quiet windows use the device timezone', () {

@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sundial/core/i18n/l10n.dart';
+import 'package:sundial/core/icons/aero_glyph.dart';
 import 'package:sundial/core/widgets/sundial_nav_bar.dart';
 import 'package:sundial/core/widgets/sundial_page.dart';
 import 'package:sundial/features/settings/widgets/settings_rows.dart';
@@ -98,7 +99,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
   });
 
-  testWidgets('Spanish bottom navigation labels fit a six-tab bar', (tester) async {
+  testWidgets('Spanish bottom navigation labels fit a six-tab bar with room', (tester) async {
     final l10n = AppLocalizationsEs();
     final items = <SundialNavItem>[
       (icon: Icons.today_outlined, selectedIcon: Icons.today, label: l10n.todayTab),
@@ -108,18 +109,19 @@ void main() {
       (icon: Icons.calendar_month_outlined, selectedIcon: Icons.calendar_month, label: l10n.planTab),
       (icon: Icons.insights_outlined, selectedIcon: Icons.insights, label: l10n.statsTab),
     ];
-    const barWidth = 278.0;
-    const slot = barWidth / 6;
+    const barWidth = 414.0;
+    const slot = (barWidth - SundialNavBar.shelfPadding * 2) / 6;
 
     await tester.pumpWidget(
       widgetHost(
         Center(
           child: SizedBox(
             width: barWidth,
-            height: 64,
+            height: SundialNavBar.height,
             child: SundialNavBar(index: 0, onSelected: (_) {}, items: items),
           ),
         ),
+        size: const Size(430, 770),
         locale: const Locale('es'),
       ),
     );
@@ -132,6 +134,47 @@ void main() {
     }
     expect(tester.takeException(), isNull);
 
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('a narrow six-tab bar uses larger icons and no labels', (tester) async {
+    final l10n = AppLocalizationsEs();
+    final items = <SundialNavItem>[
+      (icon: Icons.today_outlined, selectedIcon: Icons.today, label: l10n.todayTab),
+      (icon: Icons.work_outline, selectedIcon: Icons.work, label: l10n.workTab),
+      (icon: Icons.home_outlined, selectedIcon: Icons.home, label: l10n.homeTab),
+      (icon: Icons.people_outline, selectedIcon: Icons.people, label: l10n.personalTab),
+      (icon: Icons.calendar_month_outlined, selectedIcon: Icons.calendar_month, label: l10n.planTab),
+      (icon: Icons.insights_outlined, selectedIcon: Icons.insights, label: l10n.statsTab),
+    ];
+    const barWidth = 344.0;
+    final semantics = tester.ensureSemantics();
+
+    await tester.pumpWidget(
+      widgetHost(
+        Center(
+          child: SizedBox(
+            width: barWidth,
+            height: SundialNavBar.height,
+            child: SundialNavBar(index: 0, onSelected: (_) {}, items: items),
+          ),
+        ),
+        locale: const Locale('es'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    for (final item in items) {
+      expect(find.text(item.label), findsNothing, reason: item.label);
+      expect(find.bySemanticsLabel(item.label), findsOneWidget, reason: item.label);
+    }
+    final glyphs = tester.widgetList<AeroGlyph>(find.byType(AeroGlyph));
+    expect(glyphs, hasLength(items.length));
+    expect(glyphs.every((glyph) => glyph.size == SundialNavBar.iconOnlySize), isTrue);
+    expect(tester.takeException(), isNull);
+
+    semantics.dispose();
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(seconds: 1));
   });

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
+import '../../../theme/sundial_style.dart';
 
 /// A calendar block for an entry that has a start time but no end time.
 ///
@@ -45,6 +46,7 @@ class OpenEndEntryBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     final radius = dense ? 8.0 : 10.0;
     return SizedBox(
       height: height,
@@ -53,23 +55,30 @@ class OpenEndEntryBlock extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.fromLTRB(dense ? 6 : 9, 4, dense ? 6 : 9, dense ? 5 : 6),
           decoration: BoxDecoration(
-            color: c.surface,
+            color: style.hasSurfaceGradient ? null : c.surface,
+            gradient: style.hasSurfaceGradient ? style.surfaceGradient : null,
             borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
-            border: outlined
-                ? Border(
-                    top: BorderSide(color: color.withValues(alpha: 0.45)),
-                    left: BorderSide(color: color.withValues(alpha: 0.45)),
-                    right: BorderSide(color: color.withValues(alpha: 0.45)),
-                  )
+            border: style.hasSurfaceGradient
+                ? Border.all(color: style.rim.withValues(alpha: 0.55))
+                : outlined
+                ? Border.all(color: color.withValues(alpha: 0.45))
                 : Border(left: BorderSide(color: color, width: 3)),
-            boxShadow: [
-              BoxShadow(
-                color: c.shadow.withValues(alpha: shadow ? 0.5 : 0.35),
-                blurRadius: shadow ? 12 : 4,
-                offset: Offset(0, shadow ? 4 : 1),
-              ),
-            ],
+            boxShadow: style.hasSurfaceGradient
+                ? (shadow ? style.chromeShadows.take(1).toList() : style.cardShadows.take(1).toList())
+                : [
+                    BoxShadow(
+                      color: c.shadow.withValues(alpha: shadow ? 0.5 : 0.35),
+                      blurRadius: shadow ? 12 : 4,
+                      offset: Offset(0, shadow ? 4 : 1),
+                    ),
+                  ],
           ),
+          foregroundDecoration: style.hasSurfaceGradient && style.gloss
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
+                  gradient: style.glossGradient,
+                )
+              : null,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

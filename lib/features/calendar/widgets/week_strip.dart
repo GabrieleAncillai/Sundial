@@ -7,6 +7,7 @@ import '../../../core/widgets/pressable.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
+import '../../../theme/sundial_style.dart';
 
 class WeekStrip extends StatelessWidget {
   const WeekStrip({
@@ -70,6 +71,7 @@ class _WeekDay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     final isSelected = date == selected;
     final isToday = date == today;
     final ink = isSelected ? c.onAccent : c.text;
@@ -88,12 +90,22 @@ class _WeekDay extends StatelessWidget {
           height: height,
           margin: const EdgeInsets.symmetric(horizontal: 2),
           decoration: BoxDecoration(
-            color: isSelected ? c.accent : c.surfaceAlt,
+            color: isSelected
+                ? (style.hasControlGradient ? null : c.accent)
+                : (style.hasControlGradient ? style.colors.surfaceAlt : c.surfaceAlt),
+            gradient: isSelected && style.hasControlGradient ? style.controlGradient : null,
             borderRadius: BorderRadius.circular(SundialRadii.md),
             border: isToday && !isSelected
                 ? Border.all(color: c.accent.withValues(alpha: 0.55), width: 1.3)
-                : null,
+                : (style.hasControlGradient ? Border.all(color: style.rim) : null),
+            boxShadow: isSelected && style.hasControlGradient ? style.cardShadows.take(1).toList() : null,
           ),
+          foregroundDecoration: isSelected && style.hasControlGradient && style.gloss
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(SundialRadii.md),
+                  gradient: style.glossGradient,
+                )
+              : null,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

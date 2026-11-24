@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
-import '../settings_scope.dart';
+import '../../theme/sundial_style.dart';
+import '../icons/aero_glyph.dart';
 
 /// A tap target that responds like the reference rows: a small scale on press,
 /// fast in and soft out.
@@ -84,9 +85,8 @@ class GlassIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
-    final settings = AppSettingsScope.maybeOf(context);
-    final aero = settings?.isAero ?? false;
-    final reduced = settings?.performanceMode ?? false;
+    final style = context.style;
+    final aero = style.hasChromeGradient;
     final button = Pressable(
       onTap: onTap,
       semanticLabel: tooltip,
@@ -97,18 +97,9 @@ class GlassIconButton extends StatelessWidget {
         decoration: aero
             ? BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.white, c.surfaceAlt],
-                ),
-                border: Border.all(color: c.accent.withValues(alpha: 0.32)),
-                boxShadow: reduced
-                    ? [BoxShadow(color: c.shadow, blurRadius: 10, offset: const Offset(0, 3))]
-                    : [
-                        BoxShadow(color: c.shadow, blurRadius: 14, offset: const Offset(0, 5)),
-                        BoxShadow(color: c.accent.withValues(alpha: 0.16), blurRadius: 16),
-                      ],
+                gradient: style.chromeGradient,
+                border: Border.all(color: style.rim),
+                boxShadow: style.chromeShadows,
               )
             : BoxDecoration(
                 shape: BoxShape.circle,
@@ -119,23 +110,15 @@ class GlassIconButton extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            if (aero && !reduced)
+            if (aero && style.gloss)
               Positioned.fill(
                 child: IgnorePointer(
                   child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.white.withValues(alpha: 0.55), Colors.white.withValues(alpha: 0)],
-                        stops: const [0, 0.55],
-                      ),
-                    ),
+                    decoration: BoxDecoration(shape: BoxShape.circle, gradient: style.glossGradient),
                   ),
                 ),
               ),
-            Icon(icon, size: size * 0.46, color: onTap == null ? c.textTertiary : c.text),
+            AeroGlyph(icon: icon, size: size * 0.46, color: onTap == null ? c.textTertiary : c.text),
             if (badge != null) Positioned(top: 2, right: 2, child: badge!),
           ],
         ),
@@ -166,6 +149,8 @@ class GlassPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
+    final shape = BorderRadius.circular(height / 2);
     return Pressable(
       onTap: onTap,
       semanticButton: true,
@@ -175,10 +160,29 @@ class GlassPill extends StatelessWidget {
         padding: padding,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? c.accentSoft : c.surface,
-          borderRadius: BorderRadius.circular(height / 2),
-          border: Border.all(color: selected ? c.accent.withValues(alpha: 0.5) : c.border),
+          color: selected && !style.hasSelectedGradient
+              ? c.accentSoft
+              : (style.hasChromeGradient ? null : c.surface),
+          gradient: selected ? style.selectedGradient : null,
+          borderRadius: shape,
+          border: Border.all(
+            color: selected
+                ? c.accent.withValues(alpha: style.hasSelectedGradient ? 0.46 : 0.5)
+                : (style.hasSelectedGradient ? style.rim : c.border),
+          ),
+          boxShadow: selected && style.hasSelectedGradient && !style.performanceMode
+              ? [
+                  BoxShadow(
+                    color: c.accent.withValues(alpha: 0.14),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : null,
         ),
+        foregroundDecoration: selected && style.hasSelectedGradient && style.gloss
+            ? BoxDecoration(borderRadius: shape, gradient: style.glossGradient)
+            : null,
         child: child,
       ),
     );

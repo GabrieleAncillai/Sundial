@@ -7,6 +7,7 @@ import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
+import '../../../core/icons/aero_glyph.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../features/export/export_files.dart';
 import '../../../models/app_settings.dart';
@@ -16,6 +17,7 @@ import '../../../state/settings_controller.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
+import '../../../theme/sundial_style.dart';
 import '../report_data.dart';
 import '../report_writer.dart';
 
@@ -509,16 +511,30 @@ class _ExportButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return PopupMenuButton<String>(
+    return SundialMenuButton<String>(
       tooltip: l10n.exportReport,
+      icon: Icons.ios_share_outlined,
+      iconColor: context.mc.text,
       onSelected: onSelected,
-      itemBuilder: (context) => [
-        PopupMenuItem(value: 'summary', child: Text(l10n.exportSummaryReport)),
-        PopupMenuItem(value: 'detailed', child: Text(l10n.exportDetailedReport)),
-        PopupMenuItem(value: 'summaryCsv', child: Text(l10n.exportSummaryCsv)),
-        PopupMenuItem(value: 'detailedCsv', child: Text(l10n.exportDetailedCsv)),
+      actions: [
+        SundialMenuAction(value: 'summary', label: l10n.exportSummaryReport, icon: Icons.summarize_outlined),
+        SundialMenuAction(
+          value: 'detailed',
+          label: l10n.exportDetailedReport,
+          icon: Icons.format_list_bulleted_rounded,
+        ),
+        SundialMenuAction(
+          value: 'summaryCsv',
+          label: l10n.exportSummaryCsv,
+          icon: Icons.table_view_outlined,
+          dividerBefore: true,
+        ),
+        SundialMenuAction(
+          value: 'detailedCsv',
+          label: l10n.exportDetailedCsv,
+          icon: Icons.table_view_outlined,
+        ),
       ],
-      icon: Icon(Icons.ios_share_outlined, color: context.mc.text),
     );
   }
 }
@@ -534,17 +550,23 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     return Container(
       padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
       decoration: BoxDecoration(
-        color: c.surface,
+        color: style.hasSurfaceGradient ? null : c.surface,
+        gradient: style.hasSurfaceGradient ? style.surfaceGradient : null,
         borderRadius: BorderRadius.circular(SundialRadii.lg),
-        border: Border.all(color: c.border),
+        border: Border.all(color: style.hasSurfaceGradient ? style.rim : c.border),
+        boxShadow: style.hasSurfaceGradient ? style.cardShadows : null,
       ),
+      foregroundDecoration: style.hasSurfaceGradient && style.gloss
+          ? BoxDecoration(borderRadius: BorderRadius.circular(SundialRadii.lg), gradient: style.glossGradient)
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 19, color: accent),
+          AeroGlyph(icon: icon, size: 19, color: accent),
           const SizedBox(height: 9),
           Text(value, style: SundialType.headline(23, color: c.text)),
           const SizedBox(height: 1),
@@ -643,15 +665,7 @@ class _BreakdownRow extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(SundialRadii.marker),
-            child: LinearProgressIndicator(
-              value: ratio.clamp(0, 1),
-              minHeight: 4,
-              backgroundColor: c.surfaceHigh,
-              color: color,
-            ),
-          ),
+          SundialProgressBar(value: ratio.clamp(0, 1), height: 4, color: color),
         ],
       ),
     );
@@ -700,15 +714,7 @@ class _HabitRow extends StatelessWidget {
           ),
           SizedBox(
             width: 100,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(SundialRadii.marker),
-              child: LinearProgressIndicator(
-                value: ratio,
-                minHeight: 5,
-                backgroundColor: c.surfaceHigh,
-                color: Color(habit.colorValue),
-              ),
-            ),
+            child: SundialProgressBar(value: ratio, height: 5, color: Color(habit.colorValue)),
           ),
           const SizedBox(width: 8),
           Text('${(ratio * 100).round()}%', style: SundialType.label(10, color: c.textTertiary)),

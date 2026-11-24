@@ -10,6 +10,7 @@ import '../../../core/widgets/pressable.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
+import '../../../theme/sundial_style.dart';
 import '../../shifts/shift_palette.dart';
 
 /// A full-surface month grid with one cell per day and chips for everything
@@ -214,6 +215,7 @@ class _DayCellState extends State<_DayCell> {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     final date = widget.date;
     final inMonth = date.month == widget.month.month && date.year == widget.month.year;
     final isSelected = date == widget.selected;
@@ -263,7 +265,18 @@ class _DayCellState extends State<_DayCell> {
                           width: 23,
                           height: 23,
                           alignment: Alignment.center,
-                          decoration: BoxDecoration(color: c.accent, shape: BoxShape.circle),
+                          decoration: BoxDecoration(
+                            color: style.hasControlGradient ? null : c.accent,
+                            gradient: style.controlGradient,
+                            shape: BoxShape.circle,
+                            border: style.hasControlGradient
+                                ? Border.all(color: style.highlight.withValues(alpha: 0.5))
+                                : null,
+                            boxShadow: style.hasControlGradient ? style.cardShadows.take(1).toList() : null,
+                          ),
+                          foregroundDecoration: style.hasControlGradient && style.gloss
+                              ? BoxDecoration(shape: BoxShape.circle, gradient: style.glossGradient)
+                              : null,
                           child: Text('${date.day}', style: SundialType.label(11, color: c.onAccent)),
                         )
                       else
@@ -350,6 +363,7 @@ class _EventChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     final startAt = item.startAt;
     // A timed entry or overnight shift repeats on every day it covers. Show
     // the clock time only on the day it actually starts.
@@ -368,9 +382,23 @@ class _EventChip extends StatelessWidget {
           height: height,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: item.soft,
+            color: style.hasSurfaceGradient ? null : item.soft,
+            gradient: style.hasSurfaceGradient
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [item.soft, style.colors.surface],
+                  )
+                : null,
             borderRadius: BorderRadius.circular(SundialRadii.marker),
+            border: style.hasSurfaceGradient ? Border.all(color: item.color.withValues(alpha: 0.24)) : null,
           ),
+          foregroundDecoration: style.hasSurfaceGradient && style.gloss
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(SundialRadii.marker),
+                  gradient: style.glossGradient,
+                )
+              : null,
           child: LayoutBuilder(
             builder: (context, constraints) {
               // Phone cells are too narrow to spend on a clock label. The

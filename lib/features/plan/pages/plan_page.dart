@@ -14,6 +14,7 @@ import '../../../state/settings_controller.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
+import '../../../theme/sundial_style.dart';
 import '../../calendar/widgets/day_timeline.dart';
 import '../../calendar/widgets/month_calendar.dart';
 import '../widgets/week_agenda.dart';
@@ -238,13 +239,19 @@ class _PlanPageState extends ConsumerState<PlanPage> with SingleTickerProviderSt
     required String timeZone,
   }) {
     final c = context.mc;
+    final style = context.style;
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: c.surface,
+        color: style.hasSurfaceGradient ? null : c.surface,
+        gradient: style.hasSurfaceGradient ? style.surfaceGradient : null,
         borderRadius: BorderRadius.circular(SundialRadii.lg),
-        border: Border.all(color: c.border),
+        border: Border.all(color: style.hasSurfaceGradient ? style.rim : c.border),
+        boxShadow: style.hasSurfaceGradient ? style.cardShadows : null,
       ),
+      foregroundDecoration: style.hasSurfaceGradient && style.gloss
+          ? BoxDecoration(borderRadius: BorderRadius.circular(SundialRadii.lg), gradient: style.glossGradient)
+          : null,
       child: MonthCalendar(
         month: _visibleMonth,
         selected: _selected,
@@ -276,13 +283,19 @@ class _PlanPageState extends ConsumerState<PlanPage> with SingleTickerProviderSt
     required int weekStart,
   }) {
     final c = context.mc;
+    final style = context.style;
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: c.surface,
+        color: style.hasSurfaceGradient ? null : c.surface,
+        gradient: style.hasSurfaceGradient ? style.surfaceGradient : null,
         borderRadius: BorderRadius.circular(SundialRadii.lg),
-        border: Border.all(color: c.border),
+        border: Border.all(color: style.hasSurfaceGradient ? style.rim : c.border),
+        boxShadow: style.hasSurfaceGradient ? style.cardShadows : null,
       ),
+      foregroundDecoration: style.hasSurfaceGradient && style.gloss
+          ? BoxDecoration(borderRadius: BorderRadius.circular(SundialRadii.lg), gradient: style.glossGradient)
+          : null,
       padding: EdgeInsets.fromLTRB(10, 10, 10, desktop ? 6 : 8),
       child: switch (view) {
         _PlanView.week when desktop => WeekTimeGrid(

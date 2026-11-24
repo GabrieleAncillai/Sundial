@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 
-/// The bundled reference typeface and Sundial's type scale.
+/// The bundled typefaces and Sundial's type scale.
 ///
-/// Nunito is the face GymMane uses for its small-app shell. Sundial keeps one
-/// family across display, body and labels so the hierarchy comes from weight,
-/// size and spacing rather than a second font.
+/// Classic uses Nunito, the face GymMane uses for its small-app shell. Aero
+/// uses Open Sans, the humanist Web 2.0 face closest to the Segoe/Frutiger
+/// lineage that is available under the SIL Open Font License. Styles created
+/// here leave `fontFamily` unset so they inherit the resolved theme family.
 class SundialType {
   SundialType._();
 
   static const family = 'Nunito';
+  static const aeroFamily = 'Open Sans';
 
   static TextStyle _style(
     double size, {
@@ -16,14 +18,7 @@ class SundialType {
     double height = 1.25,
     double? spacing,
     Color? color,
-  }) => TextStyle(
-    fontFamily: family,
-    fontSize: size,
-    fontWeight: weight,
-    height: height,
-    letterSpacing: spacing,
-    color: color,
-  );
+  }) => TextStyle(fontSize: size, fontWeight: weight, height: height, letterSpacing: spacing, color: color);
 
   static TextStyle display(double size, {FontWeight weight = FontWeight.w800, Color? color}) =>
       _style(size, weight: weight, height: 1.08, spacing: -0.6, color: color);
@@ -43,8 +38,8 @@ class SundialType {
   static TextStyle kicker({Color? color}) =>
       _style(10.5, weight: FontWeight.w800, height: 1.2, spacing: 1.4, color: color);
 
-  static TextTheme textTheme(Color text, Color muted) {
-    return TextTheme(
+  static TextTheme textTheme(Color text, Color muted, {String? fontFamily}) {
+    final theme = TextTheme(
       displayLarge: display(34, color: text),
       displayMedium: display(30, color: text),
       displaySmall: display(26, color: text),
@@ -61,5 +56,6 @@ class SundialType {
       labelMedium: label(12, color: muted),
       labelSmall: _style(10.5, weight: FontWeight.w800, spacing: 1.2, color: muted),
     );
+    return fontFamily == null ? theme : theme.apply(fontFamily: fontFamily);
   }
 }

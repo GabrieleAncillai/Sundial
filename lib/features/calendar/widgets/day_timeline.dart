@@ -12,6 +12,7 @@ import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
+import '../../../theme/sundial_style.dart';
 import '../../calendar/widgets/open_end_entry_block.dart';
 import '../../shifts/shift_block_layout.dart';
 import '../../shifts/shift_block_painter.dart';
@@ -108,6 +109,7 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     final l10n = context.l10n;
     final timeZone = ref.watch(deviceTimeZoneProvider);
     final now = ref.watch(nowProvider);
@@ -271,10 +273,27 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: c.softForSpace(entry.entry.spaceId),
+                    color: style.hasSurfaceGradient ? null : c.softForSpace(entry.entry.spaceId),
+                    gradient: style.hasSurfaceGradient
+                        ? LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [c.softForSpace(entry.entry.spaceId), style.colors.surface],
+                          )
+                        : null,
                     borderRadius: BorderRadius.circular(SundialRadii.xs),
-                    border: Border.all(color: c.forSpace(entry.entry.spaceId).withValues(alpha: 0.2)),
+                    border: Border.all(
+                      color: c
+                          .forSpace(entry.entry.spaceId)
+                          .withValues(alpha: style.hasSurfaceGradient ? 0.34 : 0.2),
+                    ),
                   ),
+                  foregroundDecoration: style.hasSurfaceGradient && style.gloss
+                      ? BoxDecoration(
+                          borderRadius: BorderRadius.circular(SundialRadii.xs),
+                          gradient: style.glossGradient,
+                        )
+                      : null,
                   child: Text(
                     entry.entry.title,
                     style: SundialType.body(11.5, weight: FontWeight.w700, color: c.text),
@@ -337,7 +356,14 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
         decoration: BoxDecoration(
-          color: c.warning.withValues(alpha: 0.10),
+          color: context.style.hasSurfaceGradient ? null : c.warning.withValues(alpha: 0.10),
+          gradient: context.style.hasSurfaceGradient
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [c.warning.withValues(alpha: 0.16), context.style.colors.surface],
+                )
+              : null,
           borderRadius: BorderRadius.circular(SundialRadii.xs),
           border: Border.all(color: c.warning.withValues(alpha: 0.5)),
         ),
@@ -453,11 +479,20 @@ class _DayTimelineState extends ConsumerState<DayTimeline> {
         height: blockHeight,
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
         decoration: BoxDecoration(
-          color: c.surface,
+          color: context.style.hasSurfaceGradient ? null : c.surface,
+          gradient: context.style.hasSurfaceGradient ? context.style.surfaceGradient : null,
           borderRadius: BorderRadius.circular(SundialRadii.xs),
           border: Border.all(color: color.withValues(alpha: 0.45)),
-          boxShadow: [BoxShadow(color: c.shadow, blurRadius: 8, offset: const Offset(0, 3))],
+          boxShadow: context.style.hasSurfaceGradient
+              ? context.style.cardShadows.take(1).toList()
+              : [BoxShadow(color: c.shadow, blurRadius: 8, offset: const Offset(0, 3))],
         ),
+        foregroundDecoration: context.style.hasSurfaceGradient && context.style.gloss
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(SundialRadii.xs),
+                gradient: context.style.glossGradient,
+              )
+            : null,
         child: Text(
           entry.entry.title,
           maxLines: 2,

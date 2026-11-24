@@ -19,9 +19,10 @@ and fixes the audit's data-integrity and security defects (entry shape
 preservation, read-only imports, one completion path, v10 repair, backup media,
 private LAN binding, MCP rebinding, scoped home data, stats reconciliation and
 more). The row-by-row status is in
-[docs/compliance-matrix.md](docs/compliance-matrix.md). Aero 2.0 is a proposal
-awaiting approval in [docs/aero-2.md](docs/aero-2.md), not a shipped theme.
-Reboot rescheduling is blocked by EMUI and documented as an OEM limitation.
+[docs/compliance-matrix.md](docs/compliance-matrix.md). Aero 2.0 is shipped as a
+first-class, brightness-aware style system; Classic remains the reference shell.
+The manual and extension guide is [docs/aero-2.md](docs/aero-2.md). Reboot
+rescheduling is blocked by EMUI and documented as an OEM limitation.
 
 ## Docs
 
@@ -32,7 +33,8 @@ Reboot rescheduling is blocked by EMUI and documented as an OEM limitation.
   findings.
 - [Compliance v2 matrix](docs/compliance-matrix.md): what the current branch
   verifies and what remains open.
-- [Aero 2.0 brief](docs/aero-2.md): proposal and approval gate.
+- [Aero 2.0 style system](docs/aero-2.md): shipped light/dark style, manual and
+  extension guide for future styles.
 - [Full docs](docs/full-docs.md): architecture, data model, feature areas,
   roadmap and decisions.
 - [Reference map](docs/reference-map.md): the exact GymMane and Streak files to
@@ -67,9 +69,9 @@ Reboot rescheduling is blocked by EMUI and documented as an OEM limitation.
   selected-day timeline, with drag-to-move, resize and drag-to-create on the
   grid.
 - A stats dashboard and Clockify-style summary/detailed PDF reports plus CSV.
-- Sectioned settings with search, Aero/light/dark/system themes, accent schemes,
-  dots/grid/OLED/plain/custom backgrounds, text size, date format, navigation
-  side and performance mode.
+- Sectioned settings with search, Classic/Aero styles, System/Light/Dark
+  brightness, Aero light and dark, accent schemes, dots/grid/OLED/plain/custom
+  backgrounds, text size, date format, navigation side and performance mode.
 - Default categories with icons (Health, Fitness, Mindfulness, Productivity,
   Learning, Finance), editable through the category manager.
 - Local media stickers for jobs, homes, people and projects, with crop,

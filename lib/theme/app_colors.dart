@@ -130,19 +130,21 @@ class SundialColors extends ThemeExtension<SundialColors> {
     shadow: Color(0x66000000),
   );
 
-  static const aero = SundialColors(
-    pageBg: Color(0xFFDFF3FF),
-    surface: Color(0xFFF9FDFF),
-    surfaceAlt: Color(0xFFEAF7FE),
-    surfaceHigh: Color(0xFFD8EFFC),
-    navBg: Color(0xF2F4FBFF),
-    border: Color(0xFFBFE4F5),
+  /// Aero light. Derived from the contrast-checked tokens in
+  /// `aero_colors.dart`; see `docs/aero-2.md`.
+  static const aeroLight = SundialColors(
+    pageBg: Color(0xFFDDF3FF),
+    surface: Color(0xFFF2FAFF),
+    surfaceAlt: Color(0xFFE2F4FF),
+    surfaceHigh: Color(0xFFD4EDFC),
+    navBg: Color(0xF2F7FCFF),
+    border: Color(0xFFB9E2F4),
     borderStrong: Color(0xFF8FCBE8),
-    text: Color(0xFF083247),
-    textSecondary: Color(0xFF356579),
-    textTertiary: Color(0xFF6A93A5),
-    accent: Color(0xFF0A8FCF),
-    accentSoft: Color(0x260A8FCF),
+    text: Color(0xFF102A43),
+    textSecondary: Color(0xFF4C6780),
+    textTertiary: Color(0xFF56738A),
+    accent: Color(0xFF0B6E8A),
+    accentSoft: Color(0xFFD6F3FC),
     onAccent: Color(0xFFFFFFFF),
     personal: Color(0xFF2FA98F),
     personalSoft: Color(0x262FA98F),
@@ -150,17 +152,54 @@ class SundialColors extends ThemeExtension<SundialColors> {
     workSoft: Color(0x262F7ED8),
     home: Color(0xFF4FB56B),
     homeSoft: Color(0x264FB56B),
-    danger: Color(0xFFC63B3B),
-    dangerSoft: Color(0x26C63B3B),
-    warning: Color(0xFFB27413),
-    warningSoft: Color(0x26B27413),
-    success: Color(0xFF2E8B57),
-    successSoft: Color(0x262E8B57),
+    danger: Color(0xFFB23A3A),
+    dangerSoft: Color(0x26B23A3A),
+    warning: Color(0xFF8A6100),
+    warningSoft: Color(0x268A6100),
+    success: Color(0xFF2F7D4F),
+    successSoft: Color(0x262F7D4F),
     info: Color(0xFF2574A9),
-    glass: Color(0xCCFFFFFF),
-    glassEdge: Color(0x66FFFFFF),
-    shadow: Color(0x1A1B6D92),
+    glass: Color(0x9EFFFFFF),
+    glassEdge: Color(0xCCFFFFFF),
+    shadow: Color(0x1A102A43),
   );
+
+  /// Aero dark. The same material hierarchy at night: deep sky, pearl navy
+  /// cards and cyan-glass chrome.
+  static const aeroDark = SundialColors(
+    pageBg: Color(0xFF071A2B),
+    surface: Color(0xFF132B3E),
+    surfaceAlt: Color(0xFF17354B),
+    surfaceHigh: Color(0xFF1D4059),
+    navBg: Color(0xE6132B3E),
+    border: Color(0xFF2A4D66),
+    borderStrong: Color(0xFF3D6580),
+    text: Color(0xFFEAF6FF),
+    textSecondary: Color(0xFF9DB8CC),
+    textTertiary: Color(0xFF8FAEC2),
+    accent: Color(0xFF8CE7FF),
+    accentSoft: Color(0xFF0E3E52),
+    onAccent: Color(0xFF03212E),
+    personal: Color(0xFF6FE0C2),
+    personalSoft: Color(0x296FE0C2),
+    work: Color(0xFF7FB8FF),
+    workSoft: Color(0x297FB8FF),
+    home: Color(0xFF8FE3B0),
+    homeSoft: Color(0x298FE3B0),
+    danger: Color(0xFFFFB4B4),
+    dangerSoft: Color(0x29FFB4B4),
+    warning: Color(0xFFFFD166),
+    warningSoft: Color(0x29FFD166),
+    success: Color(0xFF8FE3B0),
+    successSoft: Color(0x298FE3B0),
+    info: Color(0xFF8CD4FF),
+    glass: Color(0x940E283C),
+    glassEdge: Color(0x4D78D2F0),
+    shadow: Color(0x66000000),
+  );
+
+  /// Kept for older call sites; Aero is now brightness-aware.
+  static const aero = aeroLight;
 
   /// Applies one of the accent presets without touching the space colours.
   SundialColors withAccent(Color accent, {Color? onAccent}) => copyWith(

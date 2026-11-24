@@ -146,6 +146,12 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get close;
 
+  /// No description provided for @moreActions.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get moreActions;
+
   /// No description provided for @cancel.
   ///
   /// In en, this message translates to:
@@ -631,6 +637,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get themeDark;
+
+  /// No description provided for @style.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get style;
+
+  /// No description provided for @styleClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get styleClassic;
+
+  /// No description provided for @styleAero.
+  ///
+  /// In en, this message translates to:
+  /// **'Aero'**
+  String get styleAero;
+
+  /// No description provided for @brightness.
+  ///
+  /// In en, this message translates to:
+  /// **'Brightness'**
+  String get brightness;
 
   /// No description provided for @language.
   ///
@@ -1657,6 +1687,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Checklist item'**
   String get checklistItemLabel;
+
+  /// No description provided for @checklistAppliesTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to'**
+  String get checklistAppliesTo;
 
   /// No description provided for @noChecklistItems.
   ///

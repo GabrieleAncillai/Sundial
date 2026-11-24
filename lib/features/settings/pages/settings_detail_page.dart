@@ -9,6 +9,7 @@ import '../../../core/time/time_field.dart';
 import '../../../core/timezone/timezone_picker.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../models/app_settings.dart';
+import '../../../models/visual_style.dart';
 import '../../../state/providers.dart';
 import '../../../state/settings_controller.dart';
 import '../../backup/backup_files.dart';
@@ -66,17 +67,31 @@ class SettingsDetailPage extends ConsumerWidget {
               title: l10n.appearanceSection,
               children: [
                 SettingsChoiceRow(
-                  icon: Icons.brightness_6_outlined,
-                  title: l10n.theme,
-                  choice: SundialSegmented<SundialThemeVariant>(
+                  icon: Icons.palette_outlined,
+                  title: l10n.style,
+                  choice: SundialSegmented<SundialVisualStyle>(
                     segments: [
-                      SundialSegment(value: SundialThemeVariant.system, label: l10n.themeSystem),
-                      SundialSegment(value: SundialThemeVariant.light, label: l10n.themeLight),
-                      SundialSegment(value: SundialThemeVariant.dark, label: l10n.themeDark),
-                      SundialSegment(value: SundialThemeVariant.aero, label: l10n.themeAero),
+                      SundialSegment(value: SundialVisualStyle.classic, label: l10n.styleClassic),
+                      SundialSegment(value: SundialVisualStyle.aero, label: l10n.styleAero),
                     ],
-                    selected: settings.themeVariant,
-                    onChanged: controller.setThemeVariant,
+                    selected: settings.visualStyle,
+                    onChanged: controller.setVisualStyle,
+                    compact: true,
+                  ),
+                ),
+                SettingsChoiceRow(
+                  icon: Icons.brightness_6_outlined,
+                  title: l10n.brightness,
+                  choice: SundialSegmented<ThemeMode>(
+                    segments: [
+                      SundialSegment(value: ThemeMode.system, label: l10n.themeSystem),
+                      SundialSegment(value: ThemeMode.light, label: l10n.themeLight),
+                      SundialSegment(value: ThemeMode.dark, label: l10n.themeDark),
+                    ],
+                    selected: settings.resolvedThemeMode == ThemeMode.dark
+                        ? ThemeMode.dark
+                        : settings.themeMode,
+                    onChanged: controller.setThemeMode,
                     compact: true,
                   ),
                 ),

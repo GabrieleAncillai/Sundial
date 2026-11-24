@@ -51,6 +51,7 @@ flutter:
     - assets/sounds/
     - assets/sounds/aero/
     - assets/sounds/soft/
+    - assets/fonts/OpenSans/OFL.txt
   fonts:
     - family: Nunito
       fonts:
@@ -72,3 +73,16 @@ flutter:
           weight: 800
         - asset: assets/fonts/Nunito-Black.ttf
           weight: 900
+    - family: Open Sans
+      fonts:
+        - asset: assets/fonts/OpenSans/OpenSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/OpenSans/OpenSans-Italic.ttf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/OpenSans/OpenSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/OpenSans/OpenSans-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/OpenSans/OpenSans-ExtraBold.ttf
+          weight: 800

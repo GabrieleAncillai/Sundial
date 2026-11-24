@@ -36,6 +36,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get close => 'Cerrar';
 
   @override
+  String get moreActions => 'Más acciones';
+
+  @override
   String get cancel => 'Cancelar';
 
   @override
@@ -311,6 +314,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get themeDark => 'Oscuro';
+
+  @override
+  String get style => 'Estilo';
+
+  @override
+  String get styleClassic => 'Clásico';
+
+  @override
+  String get styleAero => 'Aero';
+
+  @override
+  String get brightness => 'Brillo';
 
   @override
   String get language => 'Idioma';
@@ -890,6 +905,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get checklistItemLabel => 'Tarea de la lista';
+
+  @override
+  String get checklistAppliesTo => 'Se aplica a';
 
   @override
   String get noChecklistItems => 'Todavía no hay tareas.';

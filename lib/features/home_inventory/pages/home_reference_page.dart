@@ -285,12 +285,20 @@ class _ReferenceRow extends StatelessWidget {
               ),
             ),
           ),
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_horiz, color: c.textTertiary),
+          SundialMenuButton<String>(
+            tooltip: context.l10n.moreActions,
+            headerTitle: title,
+            headerCaption: subtitle,
             onSelected: (value) => value == 'edit' ? onEdit() : onDelete(),
-            itemBuilder: (context) => [
-              PopupMenuItem(value: 'edit', child: Text(context.l10n.edit)),
-              PopupMenuItem(value: 'delete', child: Text(context.l10n.delete)),
+            actions: [
+              SundialMenuAction(value: 'edit', label: context.l10n.edit, icon: Icons.edit_outlined),
+              SundialMenuAction(
+                value: 'delete',
+                label: context.l10n.delete,
+                icon: Icons.delete_outline_rounded,
+                destructive: true,
+                dividerBefore: true,
+              ),
             ],
           ),
         ],

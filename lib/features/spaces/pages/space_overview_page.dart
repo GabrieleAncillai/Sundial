@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
+import '../../../core/icons/aero_glyph.dart';
 import '../../../core/icons/sundial_icons.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../screens/entry_editor.dart';
@@ -10,6 +11,7 @@ import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
+import '../../../theme/sundial_style.dart';
 import '../../entries/widgets/task_card.dart';
 import '../../home_inventory/pages/home_inventory_page.dart';
 import '../../home_inventory/pages/maintenance_page.dart';
@@ -29,6 +31,7 @@ class SpaceOverviewPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final c = context.mc;
+    final style = context.style;
     final timeZone = ref.watch(deviceTimeZoneProvider);
     final today = localDateAt(ref.watch(nowProvider), timeZone);
     final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
@@ -71,15 +74,30 @@ class SpaceOverviewPage extends ConsumerWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: Color(space.colorValue).withValues(alpha: 0.14),
+                color: style.hasSurfaceGradient ? null : Color(space.colorValue).withValues(alpha: 0.14),
+                gradient: style.hasSurfaceGradient
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(space.colorValue).withValues(alpha: 0.30),
+                          Color(space.colorValue).withValues(alpha: 0.08),
+                        ],
+                      )
+                    : null,
                 borderRadius: BorderRadius.circular(SundialRadii.md),
+                border: style.hasSurfaceGradient
+                    ? Border.all(color: Color(space.colorValue).withValues(alpha: 0.34))
+                    : null,
+                boxShadow: style.hasSurfaceGradient ? style.cardShadows : null,
               ),
-              child: Icon(
-                isWork
+              child: AeroGlyph(
+                icon: isWork
                     ? Icons.work_outline
                     : isPersonal
                     ? Icons.people_outline
                     : Icons.home_outlined,
+                size: 24,
                 color: Color(space.colorValue),
               ),
             ),
@@ -311,12 +329,14 @@ class _CountPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
       decoration: BoxDecoration(
-        color: c.surface,
+        color: style.hasSurfaceGradient ? null : c.surface,
+        gradient: style.hasSurfaceGradient ? style.fieldGradient : null,
         borderRadius: BorderRadius.circular(SundialRadii.pill),
-        border: Border.all(color: c.border),
+        border: Border.all(color: style.hasSurfaceGradient ? style.rim : c.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -346,6 +366,7 @@ class _ContextCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     final accent = Color(item.colorValue);
     return Pressable(
       onTap: onTap,
@@ -355,11 +376,21 @@ class _ContextCard extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [accent.withValues(alpha: 0.13), c.surface],
+            colors: [
+              accent.withValues(alpha: style.hasSurfaceGradient ? 0.20 : 0.13),
+              style.hasSurfaceGradient ? style.colors.surface : c.surface,
+            ],
           ),
           borderRadius: BorderRadius.circular(SundialRadii.lg),
-          border: Border.all(color: accent.withValues(alpha: 0.28)),
+          border: Border.all(color: accent.withValues(alpha: style.hasSurfaceGradient ? 0.36 : 0.28)),
+          boxShadow: style.hasSurfaceGradient ? style.cardShadows : null,
         ),
+        foregroundDecoration: style.hasSurfaceGradient && style.gloss
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(SundialRadii.lg),
+                gradient: style.glossGradient,
+              )
+            : null,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -414,13 +445,9 @@ class _ProjectChip extends StatelessWidget {
     final c = context.mc;
     return Pressable(
       onTap: onTap,
-      child: Container(
+      child: SoftCard(
         padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
-        decoration: BoxDecoration(
-          color: c.surface,
-          borderRadius: BorderRadius.circular(SundialRadii.md),
-          border: Border.all(color: c.border),
-        ),
+        radius: SundialRadii.md,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -453,25 +480,30 @@ class _QuickLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     return Pressable(
       onTap: onTap,
-      child: Container(
+      child: SoftCard(
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: c.surface,
-          borderRadius: BorderRadius.circular(SundialRadii.md),
-          border: Border.all(color: c.border),
-        ),
+        radius: SundialRadii.md,
         child: Row(
           children: [
             Container(
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: c.accentSoft,
+                color: style.hasSurfaceGradient ? null : c.accentSoft,
+                gradient: style.hasSurfaceGradient
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color.lerp(Colors.white, c.accentSoft, 0.22)!, c.accentSoft],
+                      )
+                    : null,
                 borderRadius: BorderRadius.circular(SundialRadii.sm),
+                border: style.hasSurfaceGradient ? Border.all(color: style.rim) : null,
               ),
-              child: Icon(icon, size: 19, color: c.accent),
+              child: AeroGlyph(icon: icon, size: 19, color: c.accent),
             ),
             const SizedBox(width: 11),
             Expanded(

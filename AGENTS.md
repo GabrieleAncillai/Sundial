@@ -990,9 +990,12 @@ These are settled. Do not reopen them without the user asking.
 7. **Real-device testing:** the user has an Android device and will test
    reminders, notifications, reboot and timezone behavior.
 8. **Visual language:** GymMane for the shell, settings and type; Streak for the
-   calendar, sheets and motion. There is no separate Sundial visual identity until
-   the user explicitly defines one. "Sundial style" means the adapted reference
-   language, not stock Material defaults.
+   calendar, sheets and motion. On 2026-11-23 the user explicitly approved Aero
+   2.0 as a second, first-class visual style. Classic remains the GymMane/Streak
+   reference language; Aero is the Frutiger-Aero-inspired style pack. Both are
+   data-driven through `SundialStyle` in `lib/theme/sundial_style.dart`. Do not
+   add per-screen style-name branches; add a generic style field or feature
+   getter instead. See `docs/aero-2.md`.
 
 Remaining implementation choices (decide, document, keep moving): default week
 start, default reminder lead times, exact home-inventory fields, and the first

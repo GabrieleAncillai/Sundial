@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/sundial_style.dart';
 import 'app_background.dart';
 import 'pressable.dart';
 import 'sundial_content_pane.dart';
@@ -67,8 +68,13 @@ class SundialPage extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.fromLTRB(20, 10, 20, 12 + MediaQuery.paddingOf(context).bottom),
                     decoration: BoxDecoration(
-                      color: c.surface,
-                      border: Border(top: BorderSide(color: c.border)),
+                      color: context.style.hasChromeGradient ? null : c.surface,
+                      gradient: context.style.chromeGradient,
+                      border: Border(
+                        top: BorderSide(
+                          color: context.style.hasChromeGradient ? context.style.rim : c.border,
+                        ),
+                      ),
                     ),
                     child: bottomBar,
                   ),
@@ -98,6 +104,7 @@ class SundialPageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     return Row(
       children: [
         if (onBack != null) ...[
@@ -109,9 +116,14 @@ class SundialPageHeader extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: c.surface,
-                border: Border.all(color: c.border),
+                color: style.hasChromeGradient ? null : c.surface,
+                gradient: style.chromeGradient,
+                border: Border.all(color: style.hasChromeGradient ? style.rim : c.border),
+                boxShadow: style.hasChromeGradient ? style.chromeShadows : null,
               ),
+              foregroundDecoration: style.hasChromeGradient && style.gloss
+                  ? BoxDecoration(shape: BoxShape.circle, gradient: style.glossGradient)
+                  : null,
               child: Icon(Icons.chevron_left, size: 22, color: c.text),
             ),
           ),
@@ -147,15 +159,23 @@ class SundialPageHeader extends StatelessWidget {
 
 /// A round filled action used for "add" and primary page actions.
 class SundialAddButton extends StatelessWidget {
-  const SundialAddButton({super.key, required this.onTap, required this.tooltip, this.icon = Icons.add});
+  const SundialAddButton({
+    super.key,
+    required this.onTap,
+    required this.tooltip,
+    this.icon = Icons.add,
+    this.size = 54,
+  });
 
   final VoidCallback onTap;
   final String tooltip;
   final IconData icon;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     return Tooltip(
       message: tooltip,
       child: Pressable(
@@ -164,16 +184,29 @@ class SundialAddButton extends StatelessWidget {
         semanticButton: true,
         scale: 0.92,
         child: Container(
-          width: 54,
-          height: 54,
+          width: size,
+          height: size,
           decoration: BoxDecoration(
-            color: c.accent,
+            color: style.hasControlGradient ? null : c.accent,
+            gradient: style.controlGradient,
             shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(color: c.accent.withValues(alpha: 0.28), blurRadius: 18, offset: const Offset(0, 8)),
-            ],
+            border: style.hasControlGradient
+                ? Border.all(color: style.highlight.withValues(alpha: 0.45))
+                : null,
+            boxShadow: style.hasControlGradient
+                ? style.chromeShadows
+                : [
+                    BoxShadow(
+                      color: c.accent.withValues(alpha: 0.28),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
           ),
-          child: Icon(icon, size: 26, color: c.onAccent),
+          foregroundDecoration: style.hasControlGradient && style.gloss
+              ? BoxDecoration(shape: BoxShape.circle, gradient: style.glossGradient)
+              : null,
+          child: Icon(icon, size: size * 0.48, color: c.onAccent),
         ),
       ),
     );

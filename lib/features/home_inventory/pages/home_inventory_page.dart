@@ -14,6 +14,7 @@ import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
+import '../../../theme/sundial_style.dart';
 import '../home_scope.dart';
 import '../pages/home_reference_page.dart';
 import '../pages/household_catalog_page.dart';
@@ -327,8 +328,10 @@ class _ProductCard extends ConsumerWidget {
                   ),
                 ),
               ),
-              PopupMenuButton<String>(
-                icon: Icon(Icons.more_horiz, color: c.textTertiary),
+              SundialMenuButton<String>(
+                tooltip: l10n.moreActions,
+                headerTitle: homeItemDisplayName(group.lead, locale),
+                headerCaption: categoryText.isEmpty ? null : categoryText,
                 onSelected: (value) async {
                   switch (value) {
                     case 'variant':
@@ -344,11 +347,24 @@ class _ProductCard extends ConsumerWidget {
                       await showHomeItemSheet(context, item: group.lead, updateGroup: true);
                   }
                 },
-                itemBuilder: (context) => [
-                  PopupMenuItem(value: 'edit', child: Text(l10n.editProduct)),
-                  PopupMenuItem(value: 'variant', child: Text(l10n.addAnotherSize)),
-                  PopupMenuItem(value: 'history', child: Text(l10n.purchaseHistory)),
-                  PopupMenuItem(value: 'archive', child: Text(l10n.remove)),
+                actions: [
+                  SundialMenuAction(value: 'edit', label: l10n.editProduct, icon: Icons.edit_outlined),
+                  SundialMenuAction(
+                    value: 'variant',
+                    label: l10n.addAnotherSize,
+                    icon: Icons.add_box_outlined,
+                  ),
+                  SundialMenuAction(
+                    value: 'history',
+                    label: l10n.purchaseHistory,
+                    icon: Icons.history_rounded,
+                  ),
+                  SundialMenuAction(
+                    value: 'archive',
+                    label: l10n.remove,
+                    icon: Icons.archive_outlined,
+                    dividerBefore: true,
+                  ),
                 ],
               ),
             ],
@@ -459,8 +475,9 @@ class _VariantRow extends ConsumerWidget {
             tooltip: l10n.increaseQuantity,
             onTap: () => ref.read(repositoryProvider).adjustHomeQuantity(variant.id, 1),
           ),
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_horiz, color: c.textTertiary),
+          SundialMenuButton<String>(
+            tooltip: l10n.moreActions,
+            headerTitle: homeItemDisplayName(variant, locale),
             onSelected: (value) async {
               if (value == 'edit') {
                 await showHomeItemSheet(context, item: variant);
@@ -477,10 +494,15 @@ class _VariantRow extends ConsumerWidget {
                 ),
               );
             },
-            itemBuilder: (context) => [
-              PopupMenuItem(value: 'edit', child: Text(l10n.edit)),
-              PopupMenuItem(value: 'history', child: Text(l10n.purchaseHistory)),
-              PopupMenuItem(value: 'archive', child: Text(l10n.remove)),
+            actions: [
+              SundialMenuAction(value: 'edit', label: l10n.edit, icon: Icons.edit_outlined),
+              SundialMenuAction(value: 'history', label: l10n.purchaseHistory, icon: Icons.history_rounded),
+              SundialMenuAction(
+                value: 'archive',
+                label: l10n.remove,
+                icon: Icons.archive_outlined,
+                dividerBefore: true,
+              ),
             ],
           ),
         ],
@@ -600,6 +622,7 @@ class _FilterPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     return Pressable(
       onTap: onTap,
       semanticButton: true,
@@ -608,10 +631,26 @@ class _FilterPill extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? c.accentSoft : c.surfaceAlt,
+          color: selected
+              ? (style.hasSelectedGradient ? null : c.accentSoft)
+              : (style.hasSelectedGradient ? null : c.surfaceAlt),
+          gradient: style.hasSelectedGradient
+              ? (selected ? style.selectedGradient : style.fieldGradient)
+              : null,
           borderRadius: BorderRadius.circular(SundialRadii.pill),
-          border: Border.all(color: selected ? c.accent.withValues(alpha: 0.35) : c.border),
+          border: Border.all(
+            color: selected
+                ? c.accent.withValues(alpha: style.hasSelectedGradient ? 0.42 : 0.35)
+                : (style.hasSelectedGradient ? style.rim : c.border),
+          ),
+          boxShadow: selected && style.hasSelectedGradient ? style.cardShadows.take(1).toList() : null,
         ),
+        foregroundDecoration: selected && style.hasSelectedGradient && style.gloss
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(SundialRadii.pill),
+                gradient: style.glossGradient,
+              )
+            : null,
         child: Text(label, style: SundialType.label(12, color: selected ? c.accent : c.textSecondary)),
       ),
     );

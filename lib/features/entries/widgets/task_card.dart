@@ -12,6 +12,7 @@ import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
+import '../../../theme/sundial_style.dart';
 
 /// A friendly task row used by Today, space overviews and project screens.
 ///
@@ -28,6 +29,7 @@ class TaskCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final c = context.mc;
+    final style = context.style;
     final now = ref.watch(nowProvider);
     final timeZone = ref.watch(deviceTimeZoneProvider);
     final contexts = ref.watch(contextsProvider(null)).value ?? const <PlannerContext>[];
@@ -48,10 +50,18 @@ class TaskCard extends ConsumerWidget {
       child: Container(
         padding: EdgeInsets.fromLTRB(compact ? 10 : 12, compact ? 9 : 11, 10, compact ? 9 : 11),
         decoration: BoxDecoration(
-          color: c.surface,
+          color: style.hasSurfaceGradient ? null : c.surface,
+          gradient: style.surfaceGradient,
           borderRadius: BorderRadius.circular(SundialRadii.lg),
-          border: Border.all(color: c.border),
+          border: Border.all(color: style.hasSurfaceGradient ? style.rim : c.border),
+          boxShadow: style.hasSurfaceGradient ? style.cardShadows : null,
         ),
+        foregroundDecoration: style.hasSurfaceGradient && style.gloss
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(SundialRadii.lg),
+                gradient: style.glossGradient,
+              )
+            : null,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -267,6 +277,8 @@ class _Check extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.mc;
+    final style = context.style;
     return Pressable(
       onTap: onTap,
       semanticButton: true,
@@ -276,11 +288,37 @@ class _Check extends StatelessWidget {
         height: 24,
         margin: const EdgeInsets.only(top: 1),
         decoration: BoxDecoration(
-          color: completed ? color : Colors.transparent,
+          color: completed && !style.hasControlGradient
+              ? color
+              : (style.hasControlGradient && !completed ? null : Colors.transparent),
+          gradient: completed && style.hasControlGradient
+              ? LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color.lerp(color, Colors.white, 0.28)!, color],
+                )
+              : null,
           shape: BoxShape.circle,
-          border: Border.all(color: completed ? color : context.mc.borderStrong, width: 1.7),
+          border: Border.all(
+            color: completed ? color : (style.hasControlGradient ? style.rim : c.borderStrong),
+            width: 1.7,
+          ),
+          boxShadow: completed && style.hasControlGradient && !style.performanceMode
+              ? [BoxShadow(color: color.withValues(alpha: 0.28), blurRadius: 8, offset: const Offset(0, 2))]
+              : null,
         ),
-        child: completed ? const Icon(Icons.check, size: 15, color: Colors.white) : null,
+        foregroundDecoration: completed && style.hasControlGradient && style.gloss
+            ? const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0x66FFFFFF), Color(0x00FFFFFF)],
+                  stops: [0, 0.55],
+                ),
+              )
+            : null,
+        child: completed ? Icon(Icons.check, size: 15, color: c.onAccent) : null,
       ),
     );
   }

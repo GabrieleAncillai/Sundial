@@ -220,8 +220,10 @@ class _GadgetRow extends ConsumerWidget {
               icon: Icon(Icons.check_circle_outline, color: c.home),
               onPressed: () => showLogMaintenanceSheet(context, gadget: gadget, today: today),
             ),
-            PopupMenuButton<String>(
-              icon: Icon(Icons.more_horiz, color: c.textTertiary),
+            SundialMenuButton<String>(
+              tooltip: l10n.moreActions,
+              headerTitle: gadget.title,
+              headerCaption: l10n.gadgetEveryDays(interval),
               onSelected: (value) async {
                 switch (value) {
                   case 'edit':
@@ -234,11 +236,21 @@ class _GadgetRow extends ConsumerWidget {
                     await _delete(context, ref);
                 }
               },
-              itemBuilder: (context) => [
-                PopupMenuItem(value: 'edit', child: Text(l10n.edit)),
-                PopupMenuItem(value: 'reschedule', child: Text(l10n.reschedule)),
-                PopupMenuItem(value: 'history', child: Text(l10n.serviceHistory)),
-                PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+              actions: [
+                SundialMenuAction(value: 'edit', label: l10n.edit, icon: Icons.edit_outlined),
+                SundialMenuAction(
+                  value: 'reschedule',
+                  label: l10n.reschedule,
+                  icon: Icons.event_repeat_rounded,
+                ),
+                SundialMenuAction(value: 'history', label: l10n.serviceHistory, icon: Icons.history_rounded),
+                SundialMenuAction(
+                  value: 'delete',
+                  label: l10n.delete,
+                  icon: Icons.delete_outline_rounded,
+                  destructive: true,
+                  dividerBefore: true,
+                ),
               ],
             ),
           ],

@@ -140,12 +140,20 @@ class _TagRow extends StatelessWidget {
               ),
             ),
           ),
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_horiz, color: c.textTertiary),
+          SundialMenuButton<String>(
+            tooltip: l10n.moreActions,
+            headerTitle: tag.name,
+            headerCaption: spaceName,
             onSelected: (value) => value == 'edit' ? onEdit() : onDelete(),
-            itemBuilder: (context) => [
-              PopupMenuItem(value: 'edit', child: Text(l10n.edit)),
-              PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
+            actions: [
+              SundialMenuAction(value: 'edit', label: l10n.edit, icon: Icons.edit_outlined),
+              SundialMenuAction(
+                value: 'delete',
+                label: l10n.delete,
+                icon: Icons.delete_outline_rounded,
+                destructive: true,
+                dividerBefore: true,
+              ),
             ],
           ),
         ],

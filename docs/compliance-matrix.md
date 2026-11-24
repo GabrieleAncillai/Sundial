@@ -113,7 +113,8 @@ product-polish claims as proof.
 |---|---|---|
 | Root settings menu with search field | Met (existing) | `settings_page.dart` |
 | Search finds individual settings | Met | row-level index; the matching row is scrolled into view and flashed (`settings_section_test.dart`) |
-| Theme System/Light/Dark/Aero | Met (existing) | `AppSettings`, theme |
+| Style Classic/Aero + Brightness System/Light/Dark | Met | `AppSettings.visualStyle`/`themeMode`, settings rows and legacy `themeVariant` migration (`settings_test.dart`) |
+| Aero 2.0 light/dark, glass, type and original iconography | Met | `lib/theme/sundial_style.dart`, `aero_colors.dart`, `aero_glyph.dart`, shared kit; `docs/aero-2.md` |
 | Background dots/grid/OLED/custom/plain | Met (existing) | `AppBackground` |
 | OLED is readable in light mode | Met | OLED forces the dark palette, including when Aero is selected (`settings_test.dart`) |
 | Text size | Met (existing) | `textScale` |
@@ -186,9 +187,9 @@ product-polish claims as proof.
 
 These are not claimed as met:
 
-1. Aero 2.0 is not approved or rolled out. The existing Aero remains frozen;
-   see `docs/aero-2.md`. Concepts, tokens and the contrast report are ready and
-   waiting for the user's sign-off.
+1. Aero 2.0 is implemented and covered by token, contrast, widget and real-app
+   screenshot tests. The remaining item is the user's real-device visual and
+   blur-performance pass, recorded in `docs/device-checklist.md`.
 2. Habit history is a 12-week read-only view; there is no infinite archive or
    per-habit export.
 3. Real-device notification, reboot, battery, LAN, MCP, sound and widget checks

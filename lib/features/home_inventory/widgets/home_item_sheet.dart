@@ -189,9 +189,10 @@ class _HomeItemSheetState extends ConsumerState<HomeItemSheet> {
               ),
             ),
             if (!_productFieldsLocked)
-              PopupMenuButton<String>(
+              SundialMenuButton<String>(
                 tooltip: l10n.edit,
-                icon: Icon(Icons.palette_outlined, color: c.textSecondary),
+                icon: Icons.palette_outlined,
+                iconColor: c.textSecondary,
                 onSelected: (value) async {
                   if (value == 'icon') {
                     final picked = await showIconPicker(
@@ -204,9 +205,13 @@ class _HomeItemSheetState extends ConsumerState<HomeItemSheet> {
                   }
                   await _pickColor();
                 },
-                itemBuilder: (context) => [
-                  PopupMenuItem(value: 'icon', child: Text(l10n.chooseIcon)),
-                  PopupMenuItem(value: 'color', child: Text(l10n.tagColor)),
+                actions: [
+                  SundialMenuAction(
+                    value: 'icon',
+                    label: l10n.chooseIcon,
+                    icon: Icons.emoji_emotions_outlined,
+                  ),
+                  SundialMenuAction(value: 'color', label: l10n.tagColor, icon: Icons.palette_outlined),
                 ],
               ),
           ],

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/sundial_style.dart';
+import '../icons/aero_glyph.dart';
 
 /// A calm empty state with a soft halo, a title, one supporting line and an
 /// optional action. The reference uses the same shape for every "nothing here
@@ -25,6 +27,7 @@ class AppEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     final halo = compact ? 68.0 : 96.0;
     return Center(
       child: Padding(
@@ -32,17 +35,20 @@ class AppEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: halo,
-              height: halo,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [c.accent.withValues(alpha: 0.16), c.accent.withValues(alpha: 0.02)],
+            if (style.iconTreatment == SundialIconTreatment.glossy)
+              AeroGlyph(icon: icon, size: compact ? 30 : 40, tile: true)
+            else
+              Container(
+                width: halo,
+                height: halo,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [c.accent.withValues(alpha: 0.16), c.accent.withValues(alpha: 0.02)],
+                  ),
                 ),
+                child: Icon(icon, size: compact ? 30 : 40, color: c.accent),
               ),
-              child: Icon(icon, size: compact ? 30 : 40, color: c.accent),
-            ),
             SizedBox(height: compact ? 14 : 22),
             Text(
               title,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
+import 'visual_style.dart';
 
 abstract final class SettingsKeys {
   static const themeMode = 'themeMode';
@@ -25,6 +26,9 @@ abstract final class SettingsKeys {
   static const quietHoursStart = 'quietHoursStart';
   static const quietHoursEnd = 'quietHoursEnd';
 
+  static const visualStyle = 'visualStyle';
+
+  /// Legacy key. Read only to migrate installs that predate named styles.
   static const themeVariant = 'themeVariant';
   static const colorScheme = 'colorScheme';
   static const backgroundStyle = 'backgroundStyle';
@@ -40,8 +44,6 @@ abstract final class SettingsKeys {
   static const alarmSound = 'alarmSound';
   static const timezoneOverride = 'timezoneOverride';
 }
-
-enum SundialThemeVariant { system, light, dark, aero }
 
 enum SundialAccentScheme { sage, ocean, sunset, violet, mono }
 
@@ -78,7 +80,7 @@ class AppSettings {
     this.quietHoursEnabled = false,
     this.quietHoursStartMinute = 22 * 60,
     this.quietHoursEndMinute = 7 * 60,
-    this.themeVariant = SundialThemeVariant.system,
+    this.visualStyle = SundialVisualStyle.classic,
     this.accentScheme = SundialAccentScheme.sage,
     this.backgroundStyle = SundialBackgroundStyle.dots,
     this.backgroundCustomColor = 0xFFF6F4EF,
@@ -131,7 +133,7 @@ class AppSettings {
   final int quietHoursStartMinute;
   final int quietHoursEndMinute;
 
-  final SundialThemeVariant themeVariant;
+  final SundialVisualStyle visualStyle;
   final SundialAccentScheme accentScheme;
   final SundialBackgroundStyle backgroundStyle;
   final int backgroundCustomColor;
@@ -164,15 +166,8 @@ class AppSettings {
     // OLED paints black behind the content; a light palette would become
     // unreadable, so OLED is always a dark surface.
     if (backgroundStyle == SundialBackgroundStyle.oled) return ThemeMode.dark;
-    return switch (themeVariant) {
-      SundialThemeVariant.light => ThemeMode.light,
-      SundialThemeVariant.dark => ThemeMode.dark,
-      SundialThemeVariant.aero => ThemeMode.light,
-      SundialThemeVariant.system => ThemeMode.system,
-    };
+    return themeMode;
   }
-
-  bool get isAero => themeVariant == SundialThemeVariant.aero;
 
   bool get canUseNetwork => onlineEnabled;
 
@@ -200,12 +195,8 @@ class AppSettings {
     }
 
     return AppSettings(
-      themeMode: switch (values[SettingsKeys.themeMode]) {
-        'light' => ThemeMode.light,
-        'dark' => ThemeMode.dark,
-        _ => ThemeMode.system,
-      },
-      themeVariant: _themeVariant(values),
+      themeMode: _themeMode(values),
+      visualStyle: _visualStyle(values),
       accentScheme: _accentScheme(values[SettingsKeys.colorScheme]),
       backgroundStyle: _backgroundStyle(values[SettingsKeys.backgroundStyle]),
       backgroundCustomColor: int.tryParse(values[SettingsKeys.backgroundCustomColor] ?? '') ?? 0xFFF6F4EF,
@@ -253,18 +244,33 @@ class AppSettings {
     return parsed.clamp(1, 20);
   }
 
-  static SundialThemeVariant _themeVariant(Map<String, String> values) {
-    final explicit = values[SettingsKeys.themeVariant];
+  static ThemeMode _themeMode(Map<String, String> values) {
+    final explicit = values[SettingsKeys.themeMode];
     if (explicit != null) {
-      for (final variant in SundialThemeVariant.values) {
-        if (variant.name == explicit) return variant;
+      return switch (explicit) {
+        'light' => ThemeMode.light,
+        'dark' => ThemeMode.dark,
+        _ => ThemeMode.system,
+      };
+    }
+    // Legacy rows used `themeVariant` for both brightness and the Aero flag.
+    return switch (values[SettingsKeys.themeVariant]) {
+      'light' => ThemeMode.light,
+      'dark' => ThemeMode.dark,
+      'aero' => ThemeMode.light,
+      _ => ThemeMode.system,
+    };
+  }
+
+  static SundialVisualStyle _visualStyle(Map<String, String> values) {
+    final explicit = values[SettingsKeys.visualStyle];
+    if (explicit != null) {
+      for (final style in SundialVisualStyle.values) {
+        if (style.name == explicit) return style;
       }
     }
-    return switch (values[SettingsKeys.themeMode]) {
-      'light' => SundialThemeVariant.light,
-      'dark' => SundialThemeVariant.dark,
-      _ => SundialThemeVariant.system,
-    };
+    // Aero used to be a theme variant. Preserve that choice on upgrade.
+    return values[SettingsKeys.themeVariant] == 'aero' ? SundialVisualStyle.aero : SundialVisualStyle.classic;
   }
 
   static SundialAccentScheme _accentScheme(String? value) {
@@ -346,7 +352,7 @@ class AppSettings {
     bool? quietHoursEnabled,
     int? quietHoursStartMinute,
     int? quietHoursEndMinute,
-    SundialThemeVariant? themeVariant,
+    SundialVisualStyle? visualStyle,
     SundialAccentScheme? accentScheme,
     SundialBackgroundStyle? backgroundStyle,
     int? backgroundCustomColor,
@@ -381,7 +387,7 @@ class AppSettings {
     quietHoursEnabled: quietHoursEnabled ?? this.quietHoursEnabled,
     quietHoursStartMinute: quietHoursStartMinute ?? this.quietHoursStartMinute,
     quietHoursEndMinute: quietHoursEndMinute ?? this.quietHoursEndMinute,
-    themeVariant: themeVariant ?? this.themeVariant,
+    visualStyle: visualStyle ?? this.visualStyle,
     accentScheme: accentScheme ?? this.accentScheme,
     backgroundStyle: backgroundStyle ?? this.backgroundStyle,
     backgroundCustomColor: backgroundCustomColor ?? this.backgroundCustomColor,

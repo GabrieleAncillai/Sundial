@@ -8,6 +8,7 @@ import '../../../core/widgets/pressable.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
+import '../../../theme/sundial_style.dart';
 
 /// A six-week month grid with per-day markers.
 class MonthGrid extends StatelessWidget {
@@ -104,6 +105,7 @@ class _DayCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
+    final style = context.style;
     final inMonth = date.month == month.month && date.year == month.year;
     final isSelected = date == selected;
     final isToday = date == today;
@@ -128,12 +130,20 @@ class _DayCell extends StatelessWidget {
           height: height,
           margin: const EdgeInsets.all(1.5),
           decoration: BoxDecoration(
-            color: isSelected ? c.accent : null,
+            color: isSelected && !style.hasControlGradient ? c.accent : null,
+            gradient: isSelected && style.hasControlGradient ? style.controlGradient : null,
             borderRadius: BorderRadius.circular(SundialRadii.sm),
             border: isToday && !isSelected
                 ? Border.all(color: c.accent.withValues(alpha: 0.55), width: 1.3)
                 : null,
+            boxShadow: isSelected && style.hasControlGradient ? style.cardShadows.take(1).toList() : null,
           ),
+          foregroundDecoration: isSelected && style.hasControlGradient && style.gloss
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(SundialRadii.sm),
+                  gradient: style.glossGradient,
+                )
+              : null,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

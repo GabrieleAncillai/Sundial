@@ -82,8 +82,8 @@ Every space is an overview of user-created contexts:
 Root settings screen is a menu with a search field. Each section opens its own
 screen.
 
-- **Appearance**: theme (System, Light, Dark, Aero), colour scheme,
-  background (dots, grid, OLED, plain, custom), text size.
+- **Appearance**: style (Classic, Aero), brightness (System, Light, Dark),
+  colour scheme, background (dots, grid, OLED, plain, custom), text size.
 - **Preferences**: language, date format, week start, navigation side,
   performance mode, reminder defaults, work/quiet hours, sleep buffers.
 - **Data and backup**: export/import backup, automatic backups, import/export

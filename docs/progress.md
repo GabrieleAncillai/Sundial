@@ -9,6 +9,48 @@ shipped on 2026-11-21, including content-addressed media sync. The remaining wor
 removing the transitional read-only snapshot path, and the optional Phase 4
 background listener.
 
+Aero 2.0 shipped on 2026-11-23 as a first-class, brightness-aware style system;
+see the new entry below and `docs/aero-2.md`. The earlier “stop gate” notes are
+historical.
+
+## 2026-11-23 Aero 2.0 style system shipped
+
+- **Architecture.** Added `SundialStyle` / `SundialStyleTheme` and the
+  `SundialVisualStyle { classic, aero }` enum. Brightness is now `themeMode`;
+  the legacy `themeVariant = aero` row migrates to `visualStyle = aero` with
+  light brightness. Components branch on feature getters such as
+  `hasSurfaceGradient`, not on a style name, so a future Cyberpunk pack is a
+  data change plus one environment painter.
+- **Palette and type.** Aero light/dark palettes derived from the checked
+  tokens; Open Sans (OFL) for Aero, Nunito for Classic. All component text
+  styles carry the resolved family.
+- **Environment and components.** Procedural sky, horizon, water bands and
+  drifting bokeh; glass rail/nav/sheets/fields; glossy cards, task rows,
+  calendar blocks, month/week date cells, switches, segmented controls,
+  progress and add button; original sundial orb mark and glossy glyphs.
+- **Settings.** Separate Style and Brightness rows, Aero light and dark, legacy
+  migration, updated English/Spanish ARB strings and search keywords.
+- **Evidence.** `test/style_system_test.dart`, expanded
+  `test/aero_contrast_test.dart`, updated `test/aero_widgets_test.dart`, and
+  five real-app screenshots (`v1.2-today-aero.png`, `v2-aero-today-dark.png`,
+  `v2-aero-plan-desktop.png`, `v2-aero-settings-mobile.png`,
+  `v2-aero-appearance-mobile.png`).
+- **Verification.** `flutter analyze` clean; 388 app tests and 107 core tests
+  pass; Linux debug and Android debug APKs build.
+- **Follow-up (2026-11-23).** The ambient loop now completes whole motion cycles
+  over a 256 s loop (`AeroMotion`), removing the visible cut at the repeat seam.
+  The bottom tab row is inset so the selected lens stays inside the shelf's
+  rounded corners; the lens uses the 24 dp card radius, spans its slot and fits
+  the longest Spanish label. Below a 60 dp slot the six-tab bar drops labels and
+  grows the icons from 22 to 26 dp, keeping the name in semantics and a tooltip.
+  The docs screenshot harness now captures with production shadow blur
+  (`debugDisableShadows = false`), because Flutter's test binding otherwise
+  removes the blur and makes shadows look harder than the running app.
+  `test/aero_background_test.dart`, the nav-lens geometry test and the compact
+  nav test cover the fixes; 392 app tests pass.
+- **Open.** The user's real-device visual and blur-performance pass is in
+  `docs/device-checklist.md`. The Aero sound pack is unchanged.
+
 ## 2026-11-21 Device verification and tree cleanup
 
 - **Phone pass.** HUAWEI MAR-LX3A, Android 10, debug 0.9.0 at 360 dp. Verified

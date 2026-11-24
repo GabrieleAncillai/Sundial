@@ -25,6 +25,7 @@ import 'package:sundial/services/notification_service.dart';
 import 'package:sundial/state/providers.dart';
 import 'package:sundial/state/settings_controller.dart';
 import 'package:sundial/theme/app_theme.dart';
+import 'package:sundial/theme/sundial_style.dart';
 import 'package:sundial_core/sundial_core.dart';
 import 'package:sqlite3/open.dart';
 
@@ -144,7 +145,7 @@ void main() {
       database,
       view: _desktop,
       brightness: Brightness.dark,
-      settings: const AppSettings(themeMode: ThemeMode.dark, themeVariant: SundialThemeVariant.dark),
+      settings: const AppSettings(themeMode: ThemeMode.dark),
       act: (tester) async {
         await tester.tap(find.text('Plan'));
         await tester.pumpAndSettle();
@@ -267,7 +268,62 @@ void main() {
       'v1.2-today-aero.png',
       database,
       view: _phone,
-      settings: const AppSettings(themeVariant: SundialThemeVariant.aero),
+      settings: const AppSettings(visualStyle: SundialVisualStyle.aero),
+    );
+  });
+
+  testWidgets('render Aero dark Today', (tester) async {
+    await _renderShell(
+      tester,
+      'v2-aero-today-dark.png',
+      database,
+      view: _phone,
+      brightness: Brightness.dark,
+      settings: const AppSettings(visualStyle: SundialVisualStyle.aero, themeMode: ThemeMode.dark),
+    );
+  });
+
+  testWidgets('render Aero desktop Plan', (tester) async {
+    await _renderShell(
+      tester,
+      'v2-aero-plan-desktop.png',
+      database,
+      view: _desktop,
+      settings: const AppSettings(visualStyle: SundialVisualStyle.aero),
+      act: (tester) async {
+        await tester.tap(find.text('Plan'));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render Aero settings mobile', (tester) async {
+    await _renderShell(
+      tester,
+      'v2-aero-settings-mobile.png',
+      database,
+      view: _phone,
+      settings: const AppSettings(visualStyle: SundialVisualStyle.aero),
+      act: (tester) async {
+        await tester.tap(find.byIcon(Icons.settings_outlined));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render Aero appearance settings', (tester) async {
+    await _renderShell(
+      tester,
+      'v2-aero-appearance-mobile.png',
+      database,
+      view: _phone,
+      settings: const AppSettings(visualStyle: SundialVisualStyle.aero),
+      act: (tester) async {
+        await tester.tap(find.byIcon(Icons.settings_outlined));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Appearance'));
+        await tester.pumpAndSettle();
+      },
     );
   });
 
@@ -402,6 +458,18 @@ Future<void> _loadFonts() async {
     loader.addFont(rootBundle.load('assets/fonts/$file'));
   }
   await loader.load();
+
+  final aeroLoader = FontLoader('Open Sans');
+  for (final file in [
+    'OpenSans-Regular.ttf',
+    'OpenSans-Italic.ttf',
+    'OpenSans-SemiBold.ttf',
+    'OpenSans-Bold.ttf',
+    'OpenSans-ExtraBold.ttf',
+  ]) {
+    aeroLoader.addFont(rootBundle.load('assets/fonts/OpenSans/$file'));
+  }
+  await aeroLoader.load();
 }
 
 Future<void> _renderShell(
@@ -419,45 +487,58 @@ Future<void> _renderShell(
   addTearDown(tester.view.reset);
 
   final key = GlobalKey();
-  await tester.pumpWidget(
-    RepaintBoundary(
-      key: key,
-      child: ProviderScope(
-        overrides: [
-          databaseProvider.overrideWithValue(database),
-          notificationServiceProvider.overrideWithValue(
-            // ignore: invalid_use_of_visible_for_testing_member
-            NotificationService.withPlugin(FlutterLocalNotificationsPlugin()),
-          ),
-          initialSettingsProvider.overrideWithValue(settings),
-          deviceTimeZoneProvider.overrideWith(() => DeviceTimeZoneController(initial: 'Europe/Madrid')),
-          nowProvider.overrideWithValue(_now),
-        ],
-        child: AppSettingsScope(
-          settings: settings,
-          child: MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: SundialTheme.forSettings(settings, brightness),
-            locale: const Locale('en'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: home ?? const AppShell(),
+  // flutter_test disables shadow blur by default, so docs screenshots show
+  // harder shadows than the running app. Capture with production shadows and
+  // restore the binding's value afterwards.
+  final shadowsDisabled = debugDisableShadows;
+  debugDisableShadows = false;
+  try {
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: key,
+        child: ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(database),
+            notificationServiceProvider.overrideWithValue(
+              // ignore: invalid_use_of_visible_for_testing_member
+              NotificationService.withPlugin(FlutterLocalNotificationsPlugin()),
+            ),
+            initialSettingsProvider.overrideWithValue(settings),
+            deviceTimeZoneProvider.overrideWith(() => DeviceTimeZoneController(initial: 'Europe/Madrid')),
+            nowProvider.overrideWithValue(_now),
+          ],
+          child: AppSettingsScope(
+            settings: settings,
+            child: MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: SundialTheme.forSettings(settings, brightness),
+              locale: const Locale('en'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(disableAnimations: true),
+                child: child ?? const SizedBox.shrink(),
+              ),
+              home: home ?? const AppShell(),
+            ),
           ),
         ),
       ),
-    ),
-  );
-  await tester.pumpAndSettle();
-  if (act != null) await act(tester);
+    );
+    await tester.pumpAndSettle();
+    if (act != null) await act(tester);
 
-  final boundary = tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
-  await tester.runAsync(() async {
-    final image = await boundary.toImage(pixelRatio: 2);
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
-    final dir = Directory('docs/screenshots')..createSync(recursive: true);
-    File('${dir.path}/$name').writeAsBytesSync(bytes!.buffer.asUint8List());
-  });
+    final boundary = tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
+    await tester.runAsync(() async {
+      final image = await boundary.toImage(pixelRatio: 2);
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      final dir = Directory('docs/screenshots')..createSync(recursive: true);
+      File('${dir.path}/$name').writeAsBytesSync(bytes!.buffer.asUint8List());
+    });
+  } finally {
+    debugDisableShadows = shadowsDisabled;
+  }
 
   // AppShell owns a periodic clock; drop the tree so the timer is cancelled.
   await tester.pumpWidget(const SizedBox.shrink());

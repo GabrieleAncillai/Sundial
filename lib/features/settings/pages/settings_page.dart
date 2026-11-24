@@ -272,9 +272,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   List<_SettingLink> _entries(AppLocalizations l10n) => [
     _SettingLink(
       icon: Icons.palette_outlined,
-      title: l10n.theme,
+      title: l10n.style,
       subtitle: l10n.appearanceSection,
-      keywords: 'theme system light dark aero tema',
+      keywords: 'style classic aero frutiger tema estilo',
+      section: SettingsDetailSection.appearance,
+    ),
+    _SettingLink(
+      icon: Icons.brightness_6_outlined,
+      title: l10n.brightness,
+      subtitle: l10n.appearanceSection,
+      keywords: 'brightness system light dark theme brillo claro oscuro',
       section: SettingsDetailSection.appearance,
     ),
     _SettingLink(

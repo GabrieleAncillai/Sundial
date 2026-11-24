@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
-import '../settings_scope.dart';
+import '../../theme/sundial_style.dart';
 
 class SundialSegment<T> {
   const SundialSegment({required this.value, required this.label, this.icon});
@@ -33,15 +33,17 @@ class SundialSegmented<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
-    final settings = AppSettingsScope.maybeOf(context);
-    final aero = settings?.isAero ?? false;
-    final reduced = settings?.performanceMode ?? false;
+    final style = context.style;
+    final aero = style.hasSelectedGradient;
+    final reduced = style.performanceMode;
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: aero ? c.glass : c.surfaceAlt,
+        color: aero ? null : c.surfaceAlt,
+        gradient: aero ? style.chromeGradient : null,
         borderRadius: BorderRadius.circular(SundialRadii.pill),
-        border: Border.all(color: c.border),
+        border: Border.all(color: aero ? style.rim : c.border),
+        boxShadow: aero && !reduced ? style.chromeShadows.take(1).toList() : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -56,13 +58,7 @@ class SundialSegmented<T> extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 16, vertical: compact ? 7 : 9),
                 decoration: BoxDecoration(
                   color: segment.value == selected && !aero ? c.surface : Colors.transparent,
-                  gradient: segment.value == selected && aero
-                      ? LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.white, c.surfaceAlt],
-                        )
-                      : null,
+                  gradient: segment.value == selected && aero ? style.selectedGradient : null,
                   borderRadius: BorderRadius.circular(SundialRadii.pill),
                   boxShadow: segment.value == selected
                       ? [
@@ -77,13 +73,8 @@ class SundialSegmented<T> extends StatelessWidget {
                 foregroundDecoration: segment.value == selected && aero
                     ? BoxDecoration(
                         borderRadius: BorderRadius.circular(SundialRadii.pill),
-                        border: Border.all(color: c.accent.withValues(alpha: 0.30)),
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.white.withValues(alpha: 0.55), Colors.white.withValues(alpha: 0)],
-                          stops: const [0, 0.45],
-                        ),
+                        border: Border.all(color: c.accent.withValues(alpha: 0.38)),
+                        gradient: style.glossGradient,
                       )
                     : null,
                 child: Row(

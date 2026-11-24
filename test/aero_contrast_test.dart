@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sundial/theme/aero_colors.dart';
+import 'package:sundial/theme/app_colors.dart';
 
 void main() {
   void expectContrast(String name, double actual, double minimum) {
@@ -26,6 +27,32 @@ void main() {
     expectContrast('accent rim / pearl', AeroColors.contrast(t.accent, t.pearl), 3);
     expectContrast('accent rim / sky bottom', AeroColors.contrast(t.accent, t.skyBottom), 3);
     expectContrast('ink / sky bottom', AeroColors.contrast(t.ink, t.skyBottom), 4.5);
+  });
+
+  test('shipped Aero light palette meets WCAG AA', () {
+    const c = SundialColors.aeroLight;
+    expectContrast('shipped body ink / pearl', AeroColors.contrast(c.text, c.surface), 7);
+    expectContrast('shipped muted ink / pearl', AeroColors.contrast(c.textSecondary, c.surface), 4.5);
+    expectContrast('shipped tertiary ink / pearl', AeroColors.contrast(c.textTertiary, c.surface), 4.5);
+    expectContrast('shipped accent / pearl', AeroColors.contrast(c.accent, c.surface), 4.5);
+    expectContrast('shipped on accent / accent', AeroColors.contrast(c.onAccent, c.accent), 4.5);
+    expectContrast('shipped ink / accent soft', AeroColors.contrast(c.text, c.accentSoft), 4.5);
+    expectContrast('shipped danger / pearl', AeroColors.contrast(c.danger, c.surface), 4.5);
+    expectContrast('shipped warning / pearl', AeroColors.contrast(c.warning, c.surface), 4.5);
+    expectContrast('shipped success / pearl', AeroColors.contrast(c.success, c.surface), 4.5);
+  });
+
+  test('shipped Aero dark palette meets WCAG AA', () {
+    const c = SundialColors.aeroDark;
+    expectContrast('shipped body ink / pearl', AeroColors.contrast(c.text, c.surface), 7);
+    expectContrast('shipped muted ink / pearl', AeroColors.contrast(c.textSecondary, c.surface), 4.5);
+    expectContrast('shipped tertiary ink / pearl', AeroColors.contrast(c.textTertiary, c.surface), 4.5);
+    expectContrast('shipped accent / pearl', AeroColors.contrast(c.accent, c.surface), 4.5);
+    expectContrast('shipped on accent / accent', AeroColors.contrast(c.onAccent, c.accent), 4.5);
+    expectContrast('shipped ink / accent soft', AeroColors.contrast(c.text, c.accentSoft), 4.5);
+    expectContrast('shipped danger / pearl', AeroColors.contrast(c.danger, c.surface), 4.5);
+    expectContrast('shipped warning / pearl', AeroColors.contrast(c.warning, c.surface), 4.5);
+    expectContrast('shipped success / pearl', AeroColors.contrast(c.success, c.surface), 4.5);
   });
 
   test('Aero dark tokens meet WCAG AA', () {

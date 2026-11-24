@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sundial/core/layout/sundial_layout.dart';
 import 'package:sundial/core/widgets/ui_kit.dart';
+import 'package:sundial/models/visual_style.dart';
 import 'package:sundial/theme/app_colors.dart';
 import 'package:sundial/theme/app_radii.dart';
 import 'package:sundial/theme/app_theme.dart';
@@ -137,6 +138,41 @@ void main() {
     await tester.tap(find.text('Week'));
     await tester.pumpAndSettle();
     expect(selected, 1);
+  });
+
+  testWidgets('the selected lens stays inside the floating shelf on a phone', (tester) async {
+    const items = <SundialNavItem>[
+      (icon: Icons.today_outlined, selectedIcon: Icons.today, label: 'Today'),
+      (icon: Icons.work_outline, selectedIcon: Icons.work, label: 'Work'),
+      (icon: Icons.home_outlined, selectedIcon: Icons.home, label: 'Home'),
+      (icon: Icons.people_outline, selectedIcon: Icons.people, label: 'Personal'),
+      (icon: Icons.calendar_month_outlined, selectedIcon: Icons.calendar_month, label: 'Plan'),
+      (icon: Icons.insights_outlined, selectedIcon: Icons.insights, label: 'Stats'),
+    ];
+    Widget host(int index) => MaterialApp(
+      theme: SundialTheme.forStyle(SundialVisualStyle.aero, Brightness.dark),
+      home: Scaffold(
+        body: Center(
+          child: SizedBox(
+            width: 344,
+            height: SundialNavBar.height,
+            child: SundialNavBar(index: index, onSelected: (_) {}, items: items),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(host(0));
+    final bar = tester.getRect(find.byType(SundialNavBar));
+    final first = tester.getRect(find.byKey(const ValueKey('nav-selected-lens')));
+    expect(first.left - bar.left, closeTo(SundialNavBar.shelfPadding, 0.01));
+    expect(first.top - bar.top, closeTo(6, 0.01));
+    expect(bar.bottom - first.bottom, closeTo(6, 0.01));
+
+    await tester.pumpWidget(host(items.length - 1));
+    await tester.pumpAndSettle();
+    final last = tester.getRect(find.byKey(const ValueKey('nav-selected-lens')));
+    expect(bar.right - last.right, closeTo(SundialNavBar.shelfPadding, 0.01));
   });
 
   testWidgets('a pushed page uses the custom header, not an AppBar', (tester) async {
