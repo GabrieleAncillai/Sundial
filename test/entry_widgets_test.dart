@@ -155,6 +155,33 @@ void main() {
     expect((tile.decoration! as BoxDecoration).color, const Color(0xFFC25B3F).withValues(alpha: 0.16));
   });
 
+  testWidgets('a shift rail is clipped to the card at full height', (tester) async {
+    final pattern = ShiftPattern(
+      id: 'pizzeria',
+      spaceId: 'work',
+      name: 'Pizzeria',
+      timeZone: 'Europe/Madrid',
+      cycleDays: 7,
+      anchorDate: monday,
+      slots: const [ShiftSlot(dayIndex: 0, startMinute: 15 * 60, endMinute: 23 * 60)],
+    );
+    final occurrence = pattern.occurrencesBetween(monday, monday, viewerTimeZone: 'Europe/Madrid').single;
+
+    await tester.pumpWidget(host(ShiftTile(occurrence: occurrence)));
+
+    final cardFinder = find.descendant(of: find.byType(ShiftTile), matching: find.byType(Container)).first;
+    final card = tester.widget<Container>(cardFinder);
+    expect(card.clipBehavior, Clip.antiAlias);
+
+    final railFinder = find.descendant(of: find.byType(ShiftTile), matching: find.byType(ColoredBox));
+    final stackFinder = find.descendant(of: find.byType(ShiftTile), matching: find.byType(Stack));
+    final rail = tester.getRect(railFinder);
+    final content = tester.getRect(stackFinder);
+    expect(rail.top, content.top);
+    expect(rail.bottom, content.bottom);
+    expect(rail.left, content.left);
+  });
+
   testWidgets('a shift renders in the viewer timezone', (tester) async {
     final pattern = ShiftPattern(
       id: 'night',

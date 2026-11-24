@@ -184,44 +184,47 @@ class ShiftTile extends ConsumerWidget {
       label: '$title, ${formatShiftTime(context, occurrence, viewerTimeZone)}',
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: fill,
           borderRadius: BorderRadius.circular(SundialRadii.md),
           border: Border.all(color: color.withValues(alpha: 0.18)),
         ),
-        child: Row(
+        // The accent rail is a background layer clipped by the card shape, so
+        // its corners follow the card's curve at any height instead of being
+        // rounded on their own 4px-wide box.
+        child: Stack(
           children: [
-            Container(
-              width: 4,
-              height: 54,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(SundialRadii.md)),
+            PositionedDirectional(start: 0, top: 0, bottom: 0, width: 4, child: ColoredBox(color: color)),
+            Padding(
+              padding: const EdgeInsetsDirectional.only(start: 16),
+              child: Row(
+                children: [
+                  Icon(Icons.work_outline, size: 27, color: color.withValues(alpha: 0.8)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: SundialType.body(13.5, weight: FontWeight.w700, color: c.text),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            formatShiftTime(context, occurrence, viewerTimeZone),
+                            style: SundialType.body(11.5, color: c.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
               ),
             ),
-            const SizedBox(width: 12),
-            Icon(Icons.work_outline, size: 27, color: color.withValues(alpha: 0.8)),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: SundialType.body(13.5, weight: FontWeight.w700, color: c.text),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      formatShiftTime(context, occurrence, viewerTimeZone),
-                      style: SundialType.body(11.5, color: c.textSecondary),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
           ],
         ),
       ),
