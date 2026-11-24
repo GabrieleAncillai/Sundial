@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Sundial icon concept C — gold S with sun</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#0D5B78"/>
+      <stop offset="0.55" stop-color="#083A50"/>
+      <stop offset="1" stop-color="#031A27"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0" stop-color="#FFF3C4"/>
+      <stop offset="0.45" stop-color="#FFD166"/>
+      <stop offset="1" stop-color="#E99622"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.34" cy="0.28" r="0.9">
+      <stop offset="0" stop-color="#FFFDF4"/>
+      <stop offset="0.28" stop-color="#FFEBA8"/>
+      <stop offset="0.62" stop-color="#FFD166"/>
+      <stop offset="0.86" stop-color="#F2A93B"/>
+      <stop offset="1" stop-color="#D98218"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFD166" stop-opacity="0.32"/>
+      <stop offset="1" stop-color="#FFD166" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="36"/>
+    </filter>
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+    <clipPath id="tile"><rect width="1024" height="1024" rx="230"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+    <circle cx="512" cy="512" r="430" fill="url(#glow)" filter="url(#blur)"/>
+
+    <g>
+      <path d="M660 402 C660 300 396 300 396 410 C396 506 660 516 660 630 C660 742 396 742 396 650"
+            fill="none" stroke="#02141F" stroke-width="104" stroke-linecap="round" stroke-linejoin="round" opacity="0.32" transform="translate(14 18)" filter="url(#soft)"/>
+      <path d="M660 402 C660 300 396 300 396 410 C396 506 660 516 660 630 C660 742 396 742 396 650"
+            fill="none" stroke="url(#gold)" stroke-width="100" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M660 402 C660 300 396 300 396 410 C396 506 660 516 660 630 C660 742 396 742 396 650"
+            fill="none" stroke="#FFF9DE" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity="0.45" transform="translate(-4 -6)"/>
+    </g>
+
+    <circle cx="744" cy="286" r="104" fill="#FFD166" opacity="0.28" filter="url(#soft)"/>
+    <circle cx="744" cy="286" r="82" fill="url(#sun)"/>
+    <circle cx="744" cy="286" r="124" fill="none" stroke="#FFE7A0" stroke-opacity="0.25" stroke-width="5"/>
+  </g>
+</svg>

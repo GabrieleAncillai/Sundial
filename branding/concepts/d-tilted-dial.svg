@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Sundial icon concept D — tilted dial with gnomon</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0" stop-color="#EAF9FF"/>
+      <stop offset="0.55" stop-color="#C9EDFB"/>
+      <stop offset="1" stop-color="#8FCBE8"/>
+    </linearGradient>
+    <linearGradient id="plate" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0" stop-color="#0C5A76"/>
+      <stop offset="0.6" stop-color="#073B52"/>
+      <stop offset="1" stop-color="#04202F"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.36" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#FFFEF8"/>
+      <stop offset="0.4" stop-color="#FFE9A2"/>
+      <stop offset="1" stop-color="#EF9F28"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="34"/>
+    </filter>
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+    <clipPath id="tile"><rect width="1024" height="1024" rx="230"/></clipPath>
+    <clipPath id="plateClip"><ellipse cx="512" cy="652" rx="356" ry="198" transform="rotate(-10 512 652)"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+    <circle cx="300" cy="160" r="430" fill="url(#glow)" filter="url(#blur)"/>
+
+    <ellipse cx="512" cy="704" rx="362" ry="206" transform="rotate(-10 512 704)" fill="#052638" opacity="0.28" filter="url(#soft)"/>
+    <ellipse cx="512" cy="676" rx="356" ry="198" transform="rotate(-10 512 676)" fill="#042433"/>
+    <ellipse cx="512" cy="652" rx="356" ry="198" transform="rotate(-10 512 652)" fill="url(#plate)"/>
+    <ellipse cx="512" cy="652" rx="356" ry="198" transform="rotate(-10 512 652)" fill="none" stroke="#F2FBFF" stroke-opacity="0.9" stroke-width="6"/>
+
+    <g clip-path="url(#plateClip)" stroke="#B6EEFF" stroke-opacity="0.26" stroke-width="5" stroke-linecap="round">
+      <path d="M512 652 L846 620"/>
+      <path d="M512 652 L862 684"/>
+      <path d="M512 652 L790 760"/>
+      <path d="M512 652 L650 810"/>
+      <path d="M512 652 L270 610"/>
+      <path d="M512 652 L300 720"/>
+    </g>
+    <g clip-path="url(#plateClip)">
+      <path d="M532 652 L874 700 L640 790 Z" fill="#021824" opacity="0.55"/>
+    </g>
+
+    <circle cx="318" cy="346" r="108" fill="#FFD166" opacity="0.3" filter="url(#soft)"/>
+    <circle cx="318" cy="346" r="84" fill="url(#sun)"/>
+
+    <path d="M512 652 L512 366 L596 618 Z" fill="#F2FBFF"/>
+    <path d="M512 366 L596 618 L566 628 Z" fill="#0A4B64" opacity="0.45"/>
+    <path d="M512 366 L512 652" stroke="#FFFFFF" stroke-width="4"/>
+    <path d="M500 646 L536 644 L520 676 Z" fill="#021B28" opacity="0.4"/>
+
+    <path d="M254 248 C350 154 620 134 770 224 C630 186 422 198 254 248 Z" fill="#FFFFFF" opacity="0.4"/>
+  </g>
+</svg>

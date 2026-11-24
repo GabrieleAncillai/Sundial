@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Sundial icon concept E — polished in-app orb mark</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#0D5674"/>
+      <stop offset="0.55" stop-color="#083B52"/>
+      <stop offset="1" stop-color="#031A27"/>
+    </linearGradient>
+    <radialGradient id="orb" cx="0.34" cy="0.26" r="0.92">
+      <stop offset="0" stop-color="#F4FEFF"/>
+      <stop offset="0.25" stop-color="#C6F5FC"/>
+      <stop offset="0.55" stop-color="#5FD0E6"/>
+      <stop offset="0.82" stop-color="#1B94B9"/>
+      <stop offset="1" stop-color="#0A5877"/>
+    </radialGradient>
+    <radialGradient id="sun" cx="0.36" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#FFFDF4"/>
+      <stop offset="0.4" stop-color="#FFE79B"/>
+      <stop offset="1" stop-color="#F1A02A"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#A8F1FF" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#A8F1FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bottomShade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#02202F" stop-opacity="0"/>
+      <stop offset="1" stop-color="#02202F" stop-opacity="0.5"/>
+    </linearGradient>
+    <filter id="blur" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30"/>
+    </filter>
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+    <clipPath id="tile"><rect width="1024" height="1024" rx="230"/></clipPath>
+    <clipPath id="orbClip"><circle cx="512" cy="512" r="344"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+    <circle cx="300" cy="160" r="420" fill="url(#glow)" filter="url(#blur)"/>
+
+    <circle cx="512" cy="528" r="354" fill="#021723" opacity="0.5" filter="url(#blur)"/>
+    <circle cx="512" cy="512" r="344" fill="url(#orb)"/>
+    <circle cx="512" cy="512" r="344" fill="url(#bottomShade)"/>
+    <circle cx="512" cy="512" r="344" fill="none" stroke="#FFFFFF" stroke-opacity="0.72" stroke-width="6"/>
+    <path d="M210 676 A344 344 0 0 0 814 676" fill="none" stroke="#E9FCFF" stroke-opacity="0.28" stroke-width="10"/>
+
+    <g clip-path="url(#orbClip)">
+      <circle cx="512" cy="539" r="206" fill="#FFFFFF" opacity="0.14"/>
+      <circle cx="512" cy="539" r="206" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="11"/>
+
+      <path d="M512 376 L650 614 L498 614 Z" fill="#083247" opacity="0.58"/>
+      <path d="M512 376 L650 614 L600 614 Z" fill="#04222F" opacity="0.2"/>
+      <path d="M512 376 L512 614" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="4"/>
+
+      <circle cx="458" cy="451" r="76" fill="#FFD166" opacity="0.3" filter="url(#soft)"/>
+      <circle cx="458" cy="451" r="70" fill="url(#sun)"/>
+      <circle cx="436" cy="430" r="17" fill="#FFFFFF" opacity="0.55" filter="url(#soft)"/>
+    </g>
+
+    <path d="M248 286 C344 176 626 148 786 252 C640 206 426 218 248 286 Z" fill="#FFFFFF" opacity="0.16"/>
+    <ellipse cx="390" cy="284" rx="152" ry="58" fill="#FFFFFF" opacity="0.3" transform="rotate(-24 390 284)" filter="url(#soft)"/>
+    <circle cx="512" cy="742" r="8" fill="#FFFFFF" opacity="0.35"/>
+    <circle cx="652" cy="718" r="6" fill="#FFFFFF" opacity="0.22"/>
+    <circle cx="374" cy="718" r="6" fill="#FFFFFF" opacity="0.22"/>
+  </g>
+</svg>

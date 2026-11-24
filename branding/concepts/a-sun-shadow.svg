@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Sundial icon concept A — sun with carved S shadow</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#0D5B78"/>
+      <stop offset="0.55" stop-color="#083A50"/>
+      <stop offset="1" stop-color="#031A27"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.34" cy="0.28" r="0.9">
+      <stop offset="0" stop-color="#FFFDF4"/>
+      <stop offset="0.28" stop-color="#FFEBA8"/>
+      <stop offset="0.62" stop-color="#FFD166"/>
+      <stop offset="0.86" stop-color="#F2A93B"/>
+      <stop offset="1" stop-color="#D98218"/>
+    </radialGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7A3D00" stop-opacity="0"/>
+      <stop offset="1" stop-color="#7A3D00" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="sInk" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#0A4B64"/>
+      <stop offset="1" stop-color="#031A27"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFD166" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#FFD166" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="36"/>
+    </filter>
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+    <clipPath id="tile"><rect width="1024" height="1024" rx="230"/></clipPath>
+    <clipPath id="sunClip"><circle cx="512" cy="512" r="288"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+    <circle cx="512" cy="512" r="430" fill="url(#glow)" filter="url(#blur)"/>
+
+    <circle cx="512" cy="512" r="306" fill="#021723" opacity="0.45" filter="url(#soft)"/>
+    <circle cx="512" cy="512" r="288" fill="url(#sun)"/>
+    <circle cx="512" cy="512" r="288" fill="url(#shade)"/>
+    <circle cx="512" cy="512" r="288" fill="none" stroke="#FFF6D8" stroke-opacity="0.7" stroke-width="5"/>
+    <path d="M256 652 A288 288 0 0 0 768 652" fill="none" stroke="#FFFDF4" stroke-opacity="0.26" stroke-width="9"/>
+    <ellipse cx="406" cy="360" rx="142" ry="74" fill="#FFFFFF" opacity="0.25" transform="rotate(-26 406 360)" filter="url(#soft)"/>
+
+    <g clip-path="url(#sunClip)">
+      <path d="M664 402 C664 306 398 306 398 412 C398 506 664 516 664 628 C664 738 398 738 398 648"
+            fill="none" stroke="url(#sInk)" stroke-width="84" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M664 402 C664 306 398 306 398 412 C398 506 664 516 664 628 C664 738 398 738 398 648"
+            fill="none" stroke="#02141F" stroke-width="84" stroke-linecap="round" stroke-linejoin="round" opacity="0.2" transform="translate(0 7)"/>
+    </g>
+  </g>
+</svg>
