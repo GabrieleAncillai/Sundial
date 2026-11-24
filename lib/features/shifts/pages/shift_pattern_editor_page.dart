@@ -398,57 +398,7 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
                   style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 )
               else
-                for (var index = 0; index < _checklist.length; index++)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Column(
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Expanded(
-                              child: SundialTextField(
-                                key: ValueKey('checklist-${_checklist[index].id}'),
-                                initialValue: _checklist[index].label,
-                                label: l10n.checklistItemLabel,
-                                textCapitalization: TextCapitalization.sentences,
-                                onChanged: (value) =>
-                                    _checklist[index] = _checklist[index].copyWith(label: value),
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: index == 0 ? null : () => _moveChecklistItem(index, -1),
-                              icon: const Icon(Icons.keyboard_arrow_up),
-                              tooltip: l10n.moveUp,
-                            ),
-                            IconButton(
-                              onPressed: index == _checklist.length - 1
-                                  ? null
-                                  : () => _moveChecklistItem(index, 1),
-                              icon: const Icon(Icons.keyboard_arrow_down),
-                              tooltip: l10n.moveDown,
-                            ),
-                            IconButton(
-                              onPressed: () => _removeChecklistItem(index),
-                              icon: const Icon(Icons.remove_circle_outline),
-                              tooltip: l10n.delete,
-                            ),
-                          ],
-                        ),
-                        DropdownButtonFormField<int?>(
-                          initialValue: _checklist[index].dayIndex,
-                          decoration: InputDecoration(labelText: l10n.shiftChecklists),
-                          items: [
-                            DropdownMenuItem<int?>(value: null, child: Text(l10n.allDays)),
-                            for (var day = 0; day < _cycleDays; day++)
-                              DropdownMenuItem<int?>(value: day, child: Text(l10n.checklistForDay(day + 1))),
-                          ],
-                          onChanged: (value) =>
-                              _checklist[index] = _checklist[index].copyWith(dayIndex: value),
-                        ),
-                      ],
-                    ),
-                  ),
+                for (var index = 0; index < _checklist.length; index++) _buildChecklistItem(index),
               const SizedBox(height: 20),
               _SectionHeader(title: l10n.preview),
               if (preview != null && conflicts.isNotEmpty)
@@ -529,6 +479,97 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
         ],
       ),
     );
+  }
+
+  Widget _buildChecklistItem(int index) {
+    final l10n = context.l10n;
+    final c = context.mc;
+    final item = _checklist[index];
+    return Container(
+      key: ValueKey('checklist-card-${item.id}'),
+      margin: const EdgeInsets.only(top: 6),
+      padding: const EdgeInsets.fromLTRB(10, 6, 4, 10),
+      decoration: BoxDecoration(
+        color: c.surfaceAlt,
+        borderRadius: BorderRadius.circular(SundialRadii.sm),
+        border: Border.all(color: c.border),
+      ),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: SundialTextField(
+                  key: ValueKey('checklist-${item.id}'),
+                  initialValue: item.label,
+                  label: l10n.checklistItemLabel,
+                  hintText: l10n.checklistItemHint,
+                  textCapitalization: TextCapitalization.sentences,
+                  onChanged: (value) => _checklist[index] = _checklist[index].copyWith(label: value),
+                ),
+              ),
+              SundialMenuButton<String>(
+                key: ValueKey('checklist-menu-${item.id}'),
+                tooltip: l10n.moreActions,
+                headerTitle: item.label.trim().isEmpty ? null : item.label,
+                headerCaption: item.dayIndex == null
+                    ? l10n.allDays
+                    : l10n.checklistForDay(item.dayIndex! + 1),
+                onSelected: (value) => switch (value) {
+                  'up' => _moveChecklistItem(index, -1),
+                  'down' => _moveChecklistItem(index, 1),
+                  _ => _removeChecklistItem(index),
+                },
+                actions: [
+                  if (index > 0)
+                    SundialMenuAction(value: 'up', label: l10n.moveUp, icon: Icons.arrow_upward_rounded),
+                  if (index < _checklist.length - 1)
+                    SundialMenuAction(
+                      value: 'down',
+                      label: l10n.moveDown,
+                      icon: Icons.arrow_downward_rounded,
+                    ),
+                  SundialMenuAction(
+                    value: 'delete',
+                    label: l10n.delete,
+                    icon: Icons.delete_outline_rounded,
+                    destructive: true,
+                    dividerBefore: true,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SundialSelectField(
+            key: ValueKey('checklist-day-${item.id}'),
+            label: l10n.checklistAppliesTo,
+            valueLabel: item.dayIndex == null ? l10n.allDays : l10n.checklistForDay(item.dayIndex! + 1),
+            leading: const Icon(Icons.repeat_rounded),
+            onTap: () => _pickChecklistDay(index),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickChecklistDay(int index) async {
+    final l10n = context.l10n;
+    // A null result would double as "sheet dismissed", so the every-day
+    // choice travels as -1 and is mapped back afterwards.
+    final picked = await showSundialSelectSheet<int>(
+      context: context,
+      title: l10n.checklistAppliesTo,
+      selected: _checklist[index].dayIndex ?? -1,
+      options: [
+        SundialSelectOption(value: -1, label: l10n.allDays),
+        for (var day = 0; day < _cycleDays; day++)
+          SundialSelectOption(value: day, label: l10n.checklistForDay(day + 1)),
+      ],
+    );
+    if (picked == null || !mounted || index >= _checklist.length) return;
+    setState(() => _checklist[index] = _checklist[index].copyWith(dayIndex: picked < 0 ? null : picked));
   }
 
   Widget _buildSlot(_SlotDraft slot) {

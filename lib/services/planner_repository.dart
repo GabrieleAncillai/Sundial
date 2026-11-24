@@ -111,6 +111,9 @@ class PlannerRepository {
   Future<List<ShiftChecklistItem>> readShiftChecklistItems(String patternId) =>
       _database.readShiftChecklistItems(patternId);
 
+  Stream<List<ShiftChecklistItem>> watchShiftChecklistItems(String patternId) =>
+      _database.watchShiftChecklistItems(patternId);
+
   Future<void> saveShiftChecklistItems(
     String patternId,
     List<ShiftChecklistItem> items, {

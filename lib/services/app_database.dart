@@ -2563,6 +2563,17 @@ class AppDatabase extends _$AppDatabase {
     return items;
   }
 
+  /// Live checklist items for a pattern. The Today and calendar views use this
+  /// so an item added in the pattern editor appears without remounting them.
+  Stream<List<ShiftChecklistItem>> watchShiftChecklistItems(String patternId) {
+    final query = select(shiftChecklistItemRecords)..where((row) => row.patternId.equals(patternId));
+    return query.watch().map((rows) {
+      final items = rows.map(_checklistItemFromRow).toList()
+        ..sort((a, b) => a.position.compareTo(b.position));
+      return items;
+    });
+  }
+
   Future<void> saveShiftChecklistItems(
     String patternId,
     List<ShiftChecklistItem> items, {

@@ -31,12 +31,12 @@ class ShiftChecklistSection extends ConsumerStatefulWidget {
 }
 
 class _ShiftChecklistSectionState extends ConsumerState<ShiftChecklistSection> {
-  Future<(List<ShiftChecklistItem>, Set<String>)>? _future;
+  Future<Set<String>>? _doneFuture;
 
   @override
   void initState() {
     super.initState();
-    _future = _load();
+    _doneFuture = _loadDone();
   }
 
   @override
@@ -44,24 +44,15 @@ class _ShiftChecklistSectionState extends ConsumerState<ShiftChecklistSection> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.patternId != widget.patternId ||
         oldWidget.date != widget.date ||
-        oldWidget.slotKey != widget.slotKey ||
-        oldWidget.dayIndex != widget.dayIndex) {
-      setState(() => _future = _load());
+        oldWidget.slotKey != widget.slotKey) {
+      setState(() => _doneFuture = _loadDone());
     }
   }
 
-  Future<(List<ShiftChecklistItem>, Set<String>)> _load() async {
-    final repository = ref.read(repositoryProvider);
-    final items = (await repository.readShiftChecklistItems(
-      widget.patternId,
-    )).where((item) => item.dayIndex == null || item.dayIndex == widget.dayIndex).toList();
-    if (items.isEmpty) return (items, <String>{});
-    final done = await repository.readShiftChecklistCompletions(
-      widget.patternId,
-      widget.date,
-      slotKey: widget.slotKey,
-    );
-    return (items, done);
+  Future<Set<String>> _loadDone() {
+    return ref
+        .read(repositoryProvider)
+        .readShiftChecklistCompletions(widget.patternId, widget.date, slotKey: widget.slotKey);
   }
 
   Future<void> _toggle(ShiftChecklistItem item, bool completed) async {
@@ -70,7 +61,7 @@ class _ShiftChecklistSectionState extends ConsumerState<ShiftChecklistSection> {
           .read(repositoryProvider)
           .setShiftChecklistCompleted(item.id, widget.date, completed: completed, slotKey: widget.slotKey);
       if (!mounted) return;
-      setState(() => _future = _load());
+      setState(() => _doneFuture = _loadDone());
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -82,12 +73,16 @@ class _ShiftChecklistSectionState extends ConsumerState<ShiftChecklistSection> {
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
-    return FutureBuilder<(List<ShiftChecklistItem>, Set<String>)>(
-      future: _future,
+    final items =
+        (ref.watch(shiftChecklistItemsProvider(widget.patternId)).value ?? const <ShiftChecklistItem>[])
+            .where((item) => item.dayIndex == null || item.dayIndex == widget.dayIndex)
+            .toList();
+    if (items.isEmpty) return const SizedBox.shrink();
+
+    return FutureBuilder<Set<String>>(
+      future: _doneFuture,
       builder: (context, snapshot) {
-        final data = snapshot.data;
-        if (data == null || data.$1.isEmpty) return const SizedBox.shrink();
-        final (items, done) = data;
+        final done = snapshot.data ?? const <String>{};
         final completed = items.where((item) => done.contains(item.id)).length;
 
         return Padding(

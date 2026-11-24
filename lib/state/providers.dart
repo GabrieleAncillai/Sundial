@@ -20,6 +20,7 @@ import '../models/time_entry.dart';
 import '../models/local_identity.dart';
 import '../models/paired_device.dart';
 import '../models/shopping_item.dart';
+import '../models/shift_checklist.dart';
 import '../models/app_settings.dart';
 import '../state/settings_controller.dart';
 import '../services/app_database.dart';
@@ -211,6 +212,10 @@ final shiftsProvider = StreamProvider.family<List<ShiftOccurrence>, DateRange>((
 
 final shiftPatternsProvider = StreamProvider<List<ShiftPattern>>(
   (ref) => ref.watch(repositoryProvider).watchShiftPatterns(),
+);
+
+final shiftChecklistItemsProvider = StreamProvider.family<List<ShiftChecklistItem>, String>(
+  (ref, patternId) => ref.watch(repositoryProvider).watchShiftChecklistItems(patternId),
 );
 
 final identityServiceProvider = Provider<IdentityService>(

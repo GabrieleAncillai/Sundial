@@ -348,6 +348,75 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
   });
 
+  testWidgets('checklist items keep their field, actions and day select apart', (tester) async {
+    tester.view.physicalSize = const Size(360, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final database = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(database.close);
+    await database.seedDefaults();
+    final pattern = ShiftPattern(
+      id: 'rotation',
+      spaceId: 'work',
+      name: 'Rotation',
+      timeZone: 'Europe/Madrid',
+      cycleDays: 7,
+      anchorDate: LocalDate.parse('2026-11-09'),
+    );
+    await database.saveShiftPattern(pattern);
+    await database.saveShiftChecklistItems('rotation', const [
+      ShiftChecklistItem(id: 'stock', patternId: 'rotation', label: 'Stock the fridge'),
+    ]);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          databaseProvider.overrideWithValue(database),
+          deviceTimeZoneProvider.overrideWith(() => DeviceTimeZoneController(initial: 'Europe/Madrid')),
+          nowProvider.overrideWithValue(DateTime.utc(2026, 11, 9, 8)),
+          initialSettingsProvider.overrideWithValue(const AppSettings()),
+        ],
+        child: MaterialApp(
+          theme: SundialTheme.light,
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ShiftPatternEditorPage(pattern: pattern),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final appliesTo = find.text('Applies to');
+    await tester.scrollUntilVisible(appliesTo, 200, scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
+
+    final itemLabel = tester.getRect(find.text('Checklist item'));
+    final itemField = tester.getRect(
+      find.descendant(
+        of: find.byKey(const ValueKey('checklist-stock')),
+        matching: find.byType(TextFormField),
+      ),
+    );
+    final dayLabel = tester.getRect(appliesTo);
+    final dayValue = tester.getRect(find.text('Every day'));
+
+    expect(itemLabel.bottom, lessThanOrEqualTo(itemField.top));
+    expect(itemField.bottom, lessThanOrEqualTo(dayLabel.top));
+    expect(dayLabel.bottom, lessThanOrEqualTo(dayValue.top));
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('Every day'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Checklist for day 2').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Checklist for day 2'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
   testWidgets('field captions sit above their controls at phone width', (tester) async {
     tester.view.physicalSize = const Size(360, 900);
     tester.view.devicePixelRatio = 1;

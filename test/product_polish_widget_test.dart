@@ -141,6 +141,40 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
   });
 
+  testWidgets('Today shows checklist items saved after it opened', (tester) async {
+    await database.saveShiftPattern(
+      ShiftPattern(
+        id: 'shift',
+        spaceId: 'work',
+        name: 'Evening',
+        timeZone: 'Europe/Madrid',
+        cycleDays: 7,
+        anchorDate: today,
+        slots: const [ShiftSlot(dayIndex: 0, startMinute: 15 * 60, endMinute: 23 * 60, label: 'Floor')],
+      ),
+    );
+
+    await tester.pumpWidget(host(const TodayScreen()));
+    await tester.pumpAndSettle();
+    expect(find.text('Count the till'), findsNothing);
+
+    // The pattern editor saves items while Today stays mounted underneath.
+    await database.saveShiftChecklistItems('shift', const [
+      ShiftChecklistItem(id: 'item', patternId: 'shift', label: 'Count the till'),
+    ]);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Count the till'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Count the till'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
   testWidgets('stats opens on a month and accepts a quarter range', (tester) async {
     await tester.pumpWidget(host(const StatsPage()));
     await tester.pumpAndSettle();
