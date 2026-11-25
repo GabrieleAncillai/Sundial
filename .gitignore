@@ -51,6 +51,12 @@ app.*.map.json
 # Local walkthrough, design and reference notes
 /docs/refs/
 
+# Local run configuration. Contains device PINs; never commit.
+/docs/*.local.md
+
+# Local scratch output from design and inspection tooling.
+/.tmp/
+
 # Kotlin/Gradle local state
 android/.kotlin/
 
