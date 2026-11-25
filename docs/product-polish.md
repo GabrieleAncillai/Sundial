@@ -239,8 +239,7 @@ V2 deltas shipped on top of the v1 surface:
 - `showAppSheet` becomes a bottom sheet on compact widths and a blurred
   floating dialog on wide widths. A shared searchable selector replaces the
   stock dropdowns in the entry, shift, project and category forms.
-- Screenshot evidence: `docs/screenshots/v1.2-today-aero.png` and
-  `docs/screenshots/v1.2-preferences-mobile.png`.
+
 
 Known follow-ups:
 
@@ -254,13 +253,8 @@ Known follow-ups:
 - The old app-lock implementation and its tests have been deleted. Legacy
   settings rows are ignored; the backup service keeps stripping the old
   salt/hash keys so an older database cannot leak them.
-- Screenshots from the rendering harness are in `docs/screenshots/`:
-  `v1.0-today-list-light.png`, `v1.0-today-timeline-light.png`,
-  `v1.0-work-desktop.png`, `v1.4-plan-month-desktop.png`,
-  `v1.4-plan-week-desktop.png`, `v1.4-plan-month-mobile.png`,
-  `v1.4-plan-day-mobile.png`, `v1.4-plan-month-dark-desktop.png`,
-  `v1.0-stats-desktop.png`, `v1.0-personal-mobile.png`,
-  `v1.0-settings-mobile.png` and `v1.0-appearance-mobile.png`.
+Current visual evidence lives in [aero-2.md](aero-2.md#screenshots); the older
+v1.x captures were removed in the 2026-11-24 docs cleanup.
 - The screenshot pass exposed and fixed three UI defects: entry blocks
   overflowing narrow 30-minute desktop slots, all-day chips clipping in the
   week grid, and scheduled tasks being displayed as deadlines outside Today.

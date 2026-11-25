@@ -1132,8 +1132,6 @@ device zone when building the new queue. All-day reminders are counted from
 09:00 on the all-day date in the device zone, which is why a date never shifts
 but its reminder time can follow travel.
 
-**Screenshots:** `docs/screenshots/v0.9-settings-hours-light.png` and
-`v0.9-reminders-light.png`.
 
 **Limitations:** MCP streamable HTTP is one SSE message per request, not a
 long-lived bidirectional stream; there are no server-initiated messages, and
@@ -1301,17 +1299,15 @@ status. The important architecture additions are:
 - `showAppSheet` is a bottom sheet below 900 logical pixels and a blurred
   floating dialog above it. The shared `SundialSelectField`/`showSundialSelectSheet`
   replace stock dropdowns in the entry, shift, project and category forms.
-- Rendered evidence lives in [screenshots/](screenshots/):
-  `v1.0-today-list-light.png`, `v1.0-today-timeline-light.png`,
-  `v1.0-work-desktop.png`, `v1.4-plan-month-desktop.png`,
-  `v1.4-plan-week-desktop.png`, `v1.4-plan-month-mobile.png`,
-  `v1.4-plan-day-mobile.png`, `v1.4-plan-month-dark-desktop.png`,
-  `v1.0-stats-desktop.png`, `v1.0-personal-mobile.png`,
-  `v1.0-settings-mobile.png`, `v1.0-appearance-mobile.png`,
-  `v1.2-today-aero.png`, `v2-aero-today-dark.png`,
-  `v2-aero-plan-desktop.png`, `v2-aero-settings-mobile.png`,
-  `v2-aero-appearance-mobile.png`, `v1.2-preferences-mobile.png` and
-  `v1.3-settings-desktop.png`.
+- Rendered evidence lives in [screenshots/](screenshots/): the current Aero
+  captures (`v2-aero-today-dark.png`, `v2-aero-plan-desktop.png`,
+  `v2-aero-settings-mobile.png`, `v2-aero-settings-desktop.png`,
+  `v2-aero-appearance-mobile.png`), the Classic/Aero menu captures
+  (`v2-context-menu-mobile.png`, `v2-aero-context-menu-mobile.png`,
+  `v2-aero-dark-context-menu-mobile.png`), the sync log
+  (`v2-sync-debug-mobile.png`), responsive navigation
+  (`nav-responsive-360-430.png`) and the Home feature set
+  (`v1.6-home-*.png`).
 
 ### Compliance v2 (2026-11-13)
 
@@ -1380,8 +1376,9 @@ paths the audit found unsafe. The row-by-row status is in
   74 px tile as on a card. Cards, sheets, dialogs, menus, snack bars and the
   navigation bar use `RoundedSuperellipseBorder`, keeping the icon's continuous
   curvature instead of a circular arc. Component shapes are set once in
-  `app_theme.dart`; screens consume tokens instead of raw numbers. The revised
-  screens are in `docs/screenshots/v1.5-radii-*.png`.
+  `app_theme.dart`; screens consume tokens instead of raw numbers. The shared
+  widget tests exercise the same radii, and the current Aero captures show them
+  in place.
 
 Still open: the user's real-device Aero visual and blur-performance pass
 (`docs/device-checklist.md`), LAN rebind after a network change,

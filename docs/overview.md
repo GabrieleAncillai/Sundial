@@ -74,7 +74,8 @@ covered. The constraint audit is in [compliance-audit.md](compliance-audit.md).
   acceptance criteria.
 - [Compliance audit](compliance-audit.md): constraint status and open findings.
 - [Reference map](reference-map.md): where to look in GymMane and Streak.
-- [Screenshots](screenshots/): the v0.6 visual foundation rendered from the app.
+- [Screenshots](screenshots/): the current Aero, menu and Home captures rendered
+  from the app.
 - [Contributing](../CONTRIBUTING.md): setup, layout, house style and tests.
 - [Agent brief](../AGENTS.md): self-contained kickoff prompt for a coding agent.
 

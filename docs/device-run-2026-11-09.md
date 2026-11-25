@@ -1,10 +1,11 @@
 # Sundial device run — 2026-11-09
 
 > Historical note: this run was recorded while the project was codenamed Mane.
-> The application id in the table and the raw notification/alarm logs under
-> `screenshots/device-run-2026-11-09/` reflect the build tested at the time.
-> The current application id is `io.github.sundial` and current resource names
-> use `sundial_*`.
+> The application id and raw notification/alarm resource names in this report
+> reflect the build tested at the time. The original captures were removed in
+> the 2026-11-24 docs cleanup; the findings below remain as the record. The
+> current application id is `io.github.sundial` and current resource names use
+> `sundial_*`.
 
 Real-device verification of the v1.0 checklist. This run found and fixed two
 defects in the app-lock and notification paths, then found and fixed a CSV import
@@ -156,31 +157,10 @@ flutter build linux --debug                                        # ok
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk flutter build apk --debug  # ok
 ```
 
-The APK was reinstalled and launched; the final state shows the preserved plan
-(`88-final-launch.png`).
+The APK was reinstalled and launched; the final state showed the preserved plan.
 
 ## Screenshots
 
-All files are in `docs/screenshots/device-run-2026-11-09/`. The numbers are the
-capture order, not a claim that every frame is unique evidence.
-
-- App lock: `36-cold-start-lock-fixed.png`, `40-lock-over-settings-fixed.png`,
-  `47-lock-before-lockout.png`, `48-lockout-captured.png`,
-  `49-unlocked-after-lockout.png`.
-- Notifications: `31-notification-2005.png`,
-  `32-notification-expanded.png`, `34-notification-2010.png`,
-  `35-notification-group-expanded.png`, `43-after-snooze-fixed.png`,
-  `50-notification-closed-app.png`, `52-tap-while-closed-opened.png`,
-  `58-tap-while-open.png`, `60-mark-complete-rendered.png`.
-- Reboot: `53-after-reboot.png`, `54-current-state.png`,
-  `56-after-autolaunch-change.png`.
-- Timezone: `63-madrid.png`, `64-madrid-entry-created.png`,
-  `65-new-york.png`, `66-new-york-week.png`, `67-madrid-return.png`.
-- LAN and pairing: `68-phone-identity.png` through `79-unpaired.png`.
-- Backup: `80-backup-export.png`, `81-after-clear.png`,
-  `82-backup-imported.png`, `83-csv-import.png` (pre-fix).
-- CSV fix: `84-post-fix-launch.png`, `85-csv-settings.png`,
-  `86-csv-import-sheet.png`, `87-csv-import-report.png`.
-- Final launch: `88-final-launch.png`.
-- Raw notification evidence: `alarms-before-delivery.txt`,
-  `notification-channel.txt`.
+The original captures from this run were removed in the 2026-11-24 docs
+cleanup because the run is superseded by `device-run-2026-11-24.md`. This
+report keeps the findings and the command-backed validation.

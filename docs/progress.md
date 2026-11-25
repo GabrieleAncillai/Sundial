@@ -81,9 +81,9 @@ historical.
   Android debug APK builds pass. A real Linux launch with a temporary
   `XDG_DATA_HOME` wrote the eight Classic hicolor files, confirming the startup
   path loads the bundled sets and writes the user override. The
-  `v1.0-appearance-mobile.png` and `v2-aero-appearance-mobile.png` shots were
-  regenerated with the picker. The screenshot harness now precaches bundled
-  images so screenshots show real artwork.
+  `v2-aero-appearance-mobile.png` shot was regenerated with the picker. The
+  screenshot harness now precaches bundled images so screenshots show real
+  artwork.
 - **Remaining device checks.** Switch aliases on the physical Android device,
   confirm the launcher refresh and Android 13 monochrome themed icon. On Linux,
   switch Classic ↔ Aero, log out/in, and confirm the dock/app-menu icon. See
@@ -240,7 +240,7 @@ historical.
   migration, updated English/Spanish ARB strings and search keywords.
 - **Evidence.** `test/style_system_test.dart`, expanded
   `test/aero_contrast_test.dart`, updated `test/aero_widgets_test.dart`, and
-  five real-app screenshots (`v1.2-today-aero.png`, `v2-aero-today-dark.png`,
+  four real-app screenshots (`v2-aero-today-dark.png`,
   `v2-aero-plan-desktop.png`, `v2-aero-settings-mobile.png`,
   `v2-aero-appearance-mobile.png`).
 - **Verification.** `flutter analyze` clean; 388 app tests and 107 core tests
@@ -617,8 +617,6 @@ are deleted; legacy settings rows are ignored and still excluded from backups.
   without per-page layout code. The settings pane now uses the same widget.
 - The Plan page opts out because the month and week grids are canvases that
   need the full width. The shared width lives in `kContentMaxWidth`.
-- Updated screenshots: `v1.0-stats-desktop.png` and
-  `v1.5-radii-work-desktop.png`.
 - Validation: analyze clean, 249 app tests, 95 core tests.
 
 ## 2026-11-16 plan month surface and fold
@@ -641,9 +639,6 @@ are deleted; legacy settings rows are ignored and still excluded from backups.
   label on narrow cells so the title keeps the space.
 - `plan_page_test.dart` covers the month-to-week and month-to-day folds,
   including a mid-animation height assertion.
-- Screenshots: `v1.4-plan-month-desktop.png`, `v1.4-plan-week-desktop.png`,
-  `v1.4-plan-month-mobile.png`, `v1.4-plan-day-mobile.png` and
-  `v1.4-plan-month-dark-desktop.png`.
 - Validation: analyze clean, 248 app tests, 95 core tests, Linux debug and
   Android debug APK pass.
 
@@ -682,8 +677,7 @@ are deleted; legacy settings rows are ignored and still excluded from backups.
 - Cross-pattern overlaps stay allowed and intentional; the editor still blocks
   overlaps inside one pattern.
 - Validation: analyze clean, 245 app tests, 95 core tests, Linux debug and
-  Android debug APK pass. Updated screenshot:
-  `docs/screenshots/v1.0-plan-overlap-desktop.png`.
+  Android debug APK pass.
 
 ## 2026-11-13 compliance v2
 
@@ -739,16 +733,14 @@ debug APK all pass. `docs/compliance-matrix.md` records the row-by-row status,
 including what is still open.
 
 Aero 2.0 is a stop gate. `docs/aero-2.md` now carries the token candidate in
-`lib/theme/aero_colors.dart`, three rendered concept screens
-(`docs/screenshots/aero2-*.png`, `tool/screenshots/aero_concept_test.dart`) and
-a WCAG contrast table enforced by `test/aero_contrast_test.dart`. The shipped
-Aero surface is frozen until the user approves the direction; nothing in the app
-imports the new tokens yet.
+`lib/theme/aero_colors.dart` and a WCAG contrast table enforced by
+`test/aero_contrast_test.dart`. The concept renderer and its captures were
+removed during the 2026-11-24 docs cleanup; the shipped style and its curated
+captures are documented in `docs/aero-2.md`. The shipped Aero surface was frozen
+until the user approved the direction.
 
 Screenshot evidence is rendered by `tool/screenshots/screenshot_test.dart` into
-`docs/screenshots/v1.0-*.png` plus the v2 captures
-`docs/screenshots/v1.2-today-aero.png` and
-`docs/screenshots/v1.2-preferences-mobile.png`. That pass fixed narrow desktop entry blocks,
+the curated `docs/screenshots/` set. That pass fixed narrow desktop entry blocks,
 clipped all-day chips, scheduled tasks shown as deadlines, and the day timeline
 opening at midnight; it now self-scrolls near the current hour and draws a
 separate due marker for deadlines.
@@ -768,8 +760,7 @@ The v1.0 device/accessibility/release items from the earlier program remain in
   prompt is skipped when nothing changed, and saving or deleting still closes
   the page without a second confirmation.
 - Validation: analyze clean, 219 app tests, 95 core tests, Linux debug and
-  Android debug APK pass. Updated screenshots: `v1.0-today-list-light.png`,
-  `v1.0-today-timeline-light.png` and `v1.0-plan-desktop.png`.
+  Android debug APK pass.
 
 ## 2026-11-14 overlapping shift lanes
 
@@ -784,8 +775,7 @@ The v1.0 device/accessibility/release items from the earlier program remain in
   layouts.
 - Cross-pattern overlaps stay allowed (they can be temporary or intentional),
   but the calendar now shows the collision rather than silently stacking it.
-- Validation: analyze clean, 231 app tests, 95 core tests. Screenshot:
-  `docs/screenshots/v1.0-plan-overlap-desktop.png`.
+- Validation: analyze clean, 231 app tests, 95 core tests.
 
 ## 2026-11-14 desktop settings master-detail
 
@@ -797,8 +787,7 @@ The v1.0 device/accessibility/release items from the earlier program remain in
   opens the matching section with the row highlighted.
 - Appearance, Preferences, Data and About reuse the existing page bodies through
   an embedded mode, so there is one implementation of every setting.
-- Validation: analyze clean, 230 app tests, 95 core tests. Screenshot:
-  `docs/screenshots/v1.3-settings-desktop.png`.
+- Validation: analyze clean, 230 app tests, 95 core tests.
 
 ## Reference notes
 
@@ -1008,8 +997,7 @@ The v1.0 device/accessibility/release items from the earlier program remain in
 ### v0.7
 
 - Day timeline: 24-hour view in Calendar's Day mode, shifts drawn behind
-  entries, all-day chips above it, a now line and per-shift checklists. The
-  screenshot is `docs/screenshots/v0.7-calendar-day-light.png`.
+  entries, all-day chips above it, a now line and per-shift checklists.
 - Multi-day timed entries: `endDate` is now valid for timed rows, end instants
   resolve on the end date, and the expander emits each displayed day (including
   overnight tails).
@@ -1067,8 +1055,7 @@ The v1.0 device/accessibility/release items from the earlier program remain in
   adapted from Streak's `pin_pad.dart`, a two-step setup page, a 30-second
   resume grace and a 30-second lockout after five misses. The About/data
   section documents that the lock is optional and has no recovery code.
-- Screenshots: `docs/screenshots/v0.8-shopping-light.png`,
-  `v0.8-maintenance-light.png` and `v0.8-pin-setup-light.png`.
+
 - Tests: 121 app/database/widget tests and 82 core tests.
 - Validation: format check clean, analyze clean, both suites pass, Linux debug
   and Android debug APK build.
@@ -1095,8 +1082,7 @@ The v1.0 device/accessibility/release items from the earlier program remain in
 - Android notification actions: snooze (10 minutes) and complete. The payload
   carries the occurrence date, so completing one recurring occurrence is
   correct; cold-start actions are handled at bootstrap.
-- Screenshots: `docs/screenshots/v0.9-settings-hours-light.png` and
-  `v0.9-reminders-light.png`.
+
 - Tests: 131 app/database/widget tests and 85 core tests.
 - Validation: format check clean, analyze clean, both suites pass, Linux debug
   and Android debug APK build.

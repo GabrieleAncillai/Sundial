@@ -266,17 +266,21 @@ icon.
 
 ## Screenshots
 
-Rendered from the real app, not concept compositions:
+Rendered from the real app, not concept compositions. This is the curated set;
+historical v0.x/v1.x captures were removed on 2026-11-24 to keep the repository
+small. The Home feature captures (`v1.6-home-*.png`) remain as current feature
+evidence.
 
-- `docs/screenshots/v1.2-today-aero.png` (phone, light)
 - `docs/screenshots/v2-aero-today-dark.png` (phone, dark)
 - `docs/screenshots/v2-aero-plan-desktop.png` (desktop, light)
 - `docs/screenshots/v2-aero-settings-mobile.png` (phone, light)
+- `docs/screenshots/v2-aero-settings-desktop.png` (desktop, dark)
 - `docs/screenshots/v2-aero-appearance-mobile.png` (phone, light; Style,
   App icon and Brightness rows)
 - `docs/screenshots/v2-context-menu-mobile.png` (Classic inventory menu)
 - `docs/screenshots/v2-aero-context-menu-mobile.png` (Aero inventory menu)
 - `docs/screenshots/v2-aero-dark-context-menu-mobile.png` (Aero dark inventory menu)
+- `docs/screenshots/v2-sync-debug-mobile.png` (developer sync log)
 - `docs/screenshots/nav-responsive-360-430.png` (nav close-up: 360 dp icon-only
   and 430 dp labeled)
 
@@ -311,9 +315,9 @@ candidate `AeroColors` tokens and the shipped `SundialColors.aeroLight` /
 ## Verification
 
 - `flutter analyze --no-fatal-infos`: clean.
-- `flutter test`: 397 tests pass (including the style, contrast, widget, motion
+- `flutter test`: 435 tests pass (including the style, contrast, widget, motion
   seam, nav-lens, compact-nav and menu coverage).
-- `(cd packages/sundial_core && dart test)`: 107 tests pass.
+- `(cd packages/sundial_core && dart test)`: 113 tests pass.
 - `flutter build linux --debug`: pass.
 - `flutter build apk --debug` (Java 21): pass.
 - Screenshot harness: `expect` the five Aero screenshots above, with production
