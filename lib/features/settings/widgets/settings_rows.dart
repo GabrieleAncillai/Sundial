@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/icons/aero_glyph.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_radii.dart';
@@ -146,7 +147,7 @@ class SettingsNavRow extends StatelessWidget implements SettingsTitledRow {
         padding: const EdgeInsets.fromLTRB(14, 11, 12, 11),
         child: Row(
           children: [
-            _SettingsIcon(icon: icon),
+            SettingsIcon(icon: icon),
             const SizedBox(width: 13),
             Expanded(
               child: Column(
@@ -213,12 +214,17 @@ class SettingsSwitchRow extends StatelessWidget implements SettingsTitledRow {
   Widget build(BuildContext context) {
     final c = context.mc;
     return Pressable(
-      onTap: onChanged == null ? null : () => onChanged!(!value),
+      onTap: onChanged == null
+          ? null
+          : () {
+              playUiSound(context, value ? UiSound.toggleOff : UiSound.toggleOn);
+              onChanged!(!value);
+            },
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
         child: Row(
           children: [
-            _SettingsIcon(icon: icon),
+            SettingsIcon(icon: icon),
             const SizedBox(width: 13),
             Expanded(
               child: Column(
@@ -269,7 +275,7 @@ class SettingsChoiceRow extends StatelessWidget implements SettingsTitledRow {
         children: [
           Row(
             children: [
-              _SettingsIcon(icon: icon),
+              SettingsIcon(icon: icon),
               const SizedBox(width: 13),
               Expanded(
                 child: Column(
@@ -297,8 +303,8 @@ class SettingsChoiceRow extends StatelessWidget implements SettingsTitledRow {
   }
 }
 
-class _SettingsIcon extends StatelessWidget {
-  const _SettingsIcon({required this.icon});
+class SettingsIcon extends StatelessWidget {
+  const SettingsIcon({super.key, required this.icon});
 
   final IconData icon;
 

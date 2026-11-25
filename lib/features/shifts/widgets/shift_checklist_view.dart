@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
 import '../../../models/shift_checklist.dart';
@@ -61,9 +62,11 @@ class _ShiftChecklistSectionState extends ConsumerState<ShiftChecklistSection> {
           .read(repositoryProvider)
           .setShiftChecklistCompleted(item.id, widget.date, completed: completed, slotKey: widget.slotKey);
       if (!mounted) return;
+      playUiSound(context, completed ? UiSound.check : UiSound.uncheck);
       setState(() => _doneFuture = _loadDone());
     } catch (error) {
       if (!mounted) return;
+      playUiSound(context, UiSound.error);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(context.l10n.couldNotSave('$error'))));

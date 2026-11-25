@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../core/time/time_field.dart';
 import '../../../core/timezone/timezone_picker.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -821,10 +822,12 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     if (!_formKey.currentState!.validate()) return;
     final pattern = _preview();
     if (pattern == null) {
+      playUiSound(context, UiSound.error);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.invalidTimeZone)));
       return;
     }
     if (pattern.findConflicts().isNotEmpty) {
+      playUiSound(context, UiSound.error);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.conflictsFound)));
       return;
     }
@@ -860,12 +863,14 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
+      playUiSound(context, UiSound.error);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(context.l10n.couldNotSave('$error'))));
       return;
     }
     if (!mounted) return;
+    playUiSound(context, UiSound.confirm);
     _leave();
   }
 
@@ -891,7 +896,9 @@ class _ShiftPatternEditorPageState extends ConsumerState<ShiftPatternEditorPage>
     );
     if (confirmed != true || !mounted) return;
     await ref.read(repositoryProvider).deleteShiftPattern(pattern.id);
-    if (mounted) _leave();
+    if (!mounted) return;
+    playUiSound(context, UiSound.remove);
+    _leave();
   }
 }
 

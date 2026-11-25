@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -10,18 +11,56 @@ import 'package:path_provider/path_provider.dart';
 import '../../models/app_settings.dart';
 import '../../state/settings_controller.dart';
 
-/// Short feedback blips tied to user actions.
+/// Semantic feedback cues tied to user actions.
+///
+/// The names are the asset file names and the Android raw-resource suffixes.
+/// Keep them in sync with `tool/generate_sounds.dart`.
 enum UiSound {
+  /// A generic press on a small control.
   tap('tap'),
+
+  /// Switching a shell destination.
+  nav('nav'),
+
+  /// A sheet or editor opens.
+  open('open'),
+
+  /// A sheet, page or editor closes.
+  back('back'),
+
+  /// Choosing one option in a segmented control.
+  select('select'),
+
   toggleOn('toggle_on'),
   toggleOff('toggle_off'),
+
+  /// A task or habit is completed.
+  complete('complete'),
+
+  /// A completed task is reopened.
+  uncomplete('uncomplete'),
+
+  /// A checklist item or shopping line is ticked.
+  check('check'),
+
+  /// A checklist item or shopping line is unticked.
+  uncheck('uncheck'),
+
+  /// A save, import or other successful write.
   confirm('confirm'),
-  back('back'),
+
+  /// A delete or archive.
+  remove('remove'),
+
+  /// A timer starts, pauses or finishes.
+  start('start'),
+  pause('pause'),
+  finish('finish'),
+
   error('error');
 
   const UiSound(this.file);
 
-  /// Snake-case name shared by the asset path and the Android raw resource.
   final String file;
 }
 
@@ -40,24 +79,43 @@ class SoundController {
 
   final Map<String, String> _cachedPaths = <String, String>{};
   final Map<String, Future<String?>> _pendingPaths = <String, Future<String?>>{};
+  final Map<UiSound, DateTime> _lastPlayed = <UiSound, DateTime>{};
   bool _linuxAudioDisabled = false;
   bool _androidChannelDisabled = false;
 
-  /// Returns immediately when sounds are off. [force] is for explicit previews.
+  /// The bundled path for [sound] in [pack], shared with the asset tests.
+  static String assetFor(UiSound sound, SundialSoundPack pack) =>
+      '$_assetRoot/${pack.name}/${sound.file}.wav';
+
+  /// Plays a cue. Repeated identical cues within 35 ms are dropped so a nested
+  /// tap target cannot double-fire. [force] is for explicit previews and for
+  /// the switch that turns sounds on.
   void play(UiSound sound, {bool force = false}) {
     final settings = _readSettings();
     if (settings == null) return;
     if (!force && !settings.soundsEnabled) return;
 
+    final now = DateTime.now();
+    final last = _lastPlayed[sound];
+    if (!force && last != null && now.difference(last) < const Duration(milliseconds: 35)) return;
+    _lastPlayed[sound] = now;
+
     final fallback = sound == UiSound.error ? SystemSoundType.alert : SystemSoundType.click;
-    final pack = settings.soundPack.name;
     unawaited(
       _dispatch(
-        '$_assetRoot/$pack/${sound.file}.wav',
+        assetFor(sound, settings.soundPack),
         fallback: fallback,
-        androidArgs: <String, String>{'file': sound.file, 'pack': pack},
+        androidArgs: <String, String>{'file': sound.file, 'pack': settings.soundPack.name},
       ),
     );
+  }
+
+  /// Loads the selected pack ahead of the first interaction so it does not
+  /// arrive late. Called on startup and when the pack or switch changes.
+  void preload() {
+    final settings = _readSettings();
+    if (settings == null || !settings.soundsEnabled) return;
+    unawaited(_preloadPack(settings.soundPack));
   }
 
   /// Plays the selected alarm sample regardless of the interaction-sound switch.
@@ -75,6 +133,7 @@ class SoundController {
   void dispose() {
     _cachedPaths.clear();
     _pendingPaths.clear();
+    _lastPlayed.clear();
   }
 
   AppSettings? _readSettings() {
@@ -83,6 +142,39 @@ class SoundController {
     } catch (error) {
       debugPrint('Sound settings unavailable: $error');
       return null;
+    }
+  }
+
+  Future<void> _preloadPack(SundialSoundPack pack) async {
+    try {
+      if (kIsWeb) return;
+      switch (defaultTargetPlatform) {
+        case TargetPlatform.android:
+          await _preloadAndroid(pack);
+        case TargetPlatform.linux:
+          await Future.wait<String?>([
+            for (final sound in UiSound.values) _cachedAssetPath(assetFor(sound, pack)),
+          ]);
+        default:
+          return;
+      }
+    } catch (error) {
+      debugPrint('Sound preload failed: $error');
+    }
+  }
+
+  Future<void> _preloadAndroid(SundialSoundPack pack) async {
+    if (_androidChannelDisabled) return;
+    try {
+      await _androidChannel.invokeMethod<int>('preload', <String, Object>{
+        'pack': pack.name,
+        'files': <String>[for (final sound in UiSound.values) sound.file],
+      });
+    } on MissingPluginException {
+      _androidChannelDisabled = true;
+      debugPrint('Sound channel unavailable; using system sounds.');
+    } catch (error) {
+      debugPrint('Android sound preload failed: $error');
     }
   }
 
@@ -166,12 +258,12 @@ class SoundController {
       if (!await soundsDirectory.exists()) {
         await soundsDirectory.create(recursive: true);
       }
-      // Keep the pack in the file name so aero and soft never collide.
+      // Keep the pack in the file name so aero and soft never collide. Rewrite
+      // on every session: the temporary directory survives app updates, and a
+      // stale copy would otherwise keep playing the previous cue.
       final file = File(p.join(soundsDirectory.path, asset.replaceAll('/', '_')));
-      if (!await file.exists()) {
-        final data = await rootBundle.load(asset);
-        await file.writeAsBytes(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes), flush: true);
-      }
+      final data = await rootBundle.load(asset);
+      await file.writeAsBytes(data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes), flush: true);
       _cachedPaths[asset] = file.path;
       return file.path;
     } catch (error) {
@@ -186,3 +278,15 @@ final soundControllerProvider = Provider<SoundController>((ref) {
   ref.onDispose(controller.dispose);
   return controller;
 });
+
+/// Plays a cue from a widget that is not a [ConsumerState].
+///
+/// Widget tests and the first frames before `ProviderScope` settles have no
+/// scope; those calls are intentionally silent rather than throwing.
+void playUiSound(BuildContext context, UiSound sound, {bool force = false}) {
+  try {
+    ProviderScope.containerOf(context, listen: false).read(soundControllerProvider).play(sound, force: force);
+  } catch (_) {
+    // No ProviderScope in scope: this is a test-only or early-lifecycle frame.
+  }
+}

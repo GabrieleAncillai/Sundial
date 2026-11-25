@@ -860,7 +860,7 @@ class _EntryEditorSheetState extends ConsumerState<EntryEditorSheet> {
     try {
       await ref.read(repositoryProvider).deleteEntry(entry.id);
       await ref.read(reminderCoordinatorProvider).reschedule();
-      ref.read(soundControllerProvider).play(UiSound.back);
+      ref.read(soundControllerProvider).play(UiSound.remove);
     } catch (error) {
       ref.read(soundControllerProvider).play(UiSound.error);
       if (!mounted) return;

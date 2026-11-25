@@ -7,6 +7,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/sundial_style.dart';
+import '../sound/sound_service.dart';
 
 /// The width at which Sundial swaps a phone sheet for a floating desktop dialog.
 /// Mirrors the shell breakpoint in `lib/app/app_shell.dart`.
@@ -28,6 +29,7 @@ Future<T?> showAppSheet<T>({
   bool enableDrag = true,
   bool useSafeArea = true,
 }) {
+  playUiSound(context, UiSound.open);
   if (MediaQuery.sizeOf(context).width < appSheetCompactBreakpoint) {
     return _showCompactSheet<T>(
       context: context,

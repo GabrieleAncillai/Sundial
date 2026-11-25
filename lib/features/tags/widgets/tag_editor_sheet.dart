@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../core/icons/sundial_icons.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
@@ -203,12 +204,14 @@ class _TagEditorSheetState extends ConsumerState<TagEditorSheet> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
+      playUiSound(context, UiSound.error);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(context.l10n.couldNotSave('$error'))));
       return;
     }
     if (!mounted) return;
+    playUiSound(context, UiSound.confirm);
     Navigator.of(context).pop();
   }
 }

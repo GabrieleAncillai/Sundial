@@ -4,6 +4,7 @@ import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../core/icons/sundial_icons.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../data/home_reference_defaults.dart';
 import '../../../models/home_item.dart';
@@ -159,8 +160,7 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
                                 item: group.items[index],
                                 contextId: widget.contextId,
                               ),
-                              onDelete: () =>
-                                  ref.read(repositoryProvider).deleteShoppingItem(group.items[index].id),
+                              onDelete: () => _delete(context, ref, group.items[index].id),
                               onMoveUp: () =>
                                   ref.read(repositoryProvider).moveShoppingItem(group.items[index].id, -1),
                               onMoveDown: () =>
@@ -205,7 +205,7 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
                               item: bought[index],
                               contextId: widget.contextId,
                             ),
-                            onDelete: () => ref.read(repositoryProvider).deleteShoppingItem(bought[index].id),
+                            onDelete: () => _delete(context, ref, bought[index].id),
                           ),
                         ],
                       ],
@@ -290,6 +290,12 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
     return ordered;
   }
 
+  Future<void> _delete(BuildContext context, WidgetRef ref, String id) async {
+    await ref.read(repositoryProvider).deleteShoppingItem(id);
+    if (!context.mounted) return;
+    playUiSound(context, UiSound.remove);
+  }
+
   Future<void> _setChecked(
     BuildContext context,
     WidgetRef ref,
@@ -300,6 +306,7 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
   ) async {
     await ref.read(repositoryProvider).setShoppingChecked(item.id, checked);
     if (!context.mounted) return;
+    playUiSound(context, checked ? UiSound.check : UiSound.uncheck);
     final linked = homeById[item.homeItemId];
     if (checked && linked != null) {
       final locale = Localizations.localeOf(context);
@@ -350,6 +357,7 @@ class _ShoppingListPageState extends ConsumerState<ShoppingListPage> {
     );
     if (confirmed == true) {
       await ref.read(repositoryProvider).clearCheckedShopping(contextId: widget.contextId);
+      if (context.mounted) playUiSound(context, UiSound.remove);
     }
   }
 }

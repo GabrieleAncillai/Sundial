@@ -226,7 +226,7 @@ class TaskCard extends ConsumerWidget {
     final completed = occurrence?.completed ?? entry.isDone;
     final repository = ref.read(repositoryProvider);
     await repository.setCompletion(_asOccurrence(timeZone), completed: !completed);
-    ref.read(soundControllerProvider).play(completed ? UiSound.toggleOff : UiSound.toggleOn);
+    ref.read(soundControllerProvider).play(completed ? UiSound.uncomplete : UiSound.complete);
   }
 
   Future<void> _toggleClock(WidgetRef ref, String timeZone) async {
@@ -241,7 +241,7 @@ class TaskCard extends ConsumerWidget {
     } else {
       await repository.clockIn(occ);
     }
-    ref.read(soundControllerProvider).play(running ? UiSound.toggleOff : UiSound.toggleOn);
+    ref.read(soundControllerProvider).play(running ? UiSound.pause : UiSound.start);
   }
 
   Future<void> _finish(WidgetRef ref, String timeZone) async {
@@ -249,7 +249,7 @@ class TaskCard extends ConsumerWidget {
     final occ = _asOccurrence(timeZone);
     await ref.read(repositoryProvider).finishTracked(occ, at: DateTime.now().toUtc());
     await ref.read(reminderCoordinatorProvider).reschedule();
-    ref.read(soundControllerProvider).play(UiSound.confirm);
+    ref.read(soundControllerProvider).play(UiSound.finish);
   }
 
   String _timeLabel(BuildContext context, DateTime startAt, DateTime? endAt, String timeZone) {

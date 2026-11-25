@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radii.dart';
 import '../../theme/sundial_style.dart';
+import '../sound/sound_service.dart';
 
 /// The reference switch: a small track with a sliding thumb, not a Material
 /// switch. Aero adds a glossy aqua track and a pearl thumb with a specular
@@ -76,7 +77,12 @@ class TinySwitch extends StatelessWidget {
       label: semanticLabel,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: enabled ? () => onChanged!(!value) : null,
+        onTap: enabled
+            ? () {
+                playUiSound(context, value ? UiSound.toggleOff : UiSound.toggleOn);
+                onChanged!(!value);
+              }
+            : null,
         child: Opacity(opacity: enabled ? 1 : 0.45, child: control),
       ),
     );

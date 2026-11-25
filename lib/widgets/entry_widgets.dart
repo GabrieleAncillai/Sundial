@@ -4,6 +4,7 @@ import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
 import '../core/i18n/recurrence_label.dart';
+import '../core/sound/sound_service.dart';
 import '../core/widgets/ui_kit.dart';
 import '../features/shifts/shift_palette.dart';
 import '../screens/entry_editor.dart';
@@ -107,8 +108,11 @@ class EntryTile extends ConsumerWidget {
                             .read(repositoryProvider)
                             .setOccurrenceCompleted(entry.id, occurrence.date, value == true);
                       }
+                      if (!context.mounted) return;
+                      playUiSound(context, value == true ? UiSound.complete : UiSound.uncomplete);
                     } catch (error) {
                       if (!context.mounted) return;
+                      playUiSound(context, UiSound.error);
                       ScaffoldMessenger.of(
                         context,
                       ).showSnackBar(SnackBar(content: Text(context.l10n.couldNotComplete('$error'))));

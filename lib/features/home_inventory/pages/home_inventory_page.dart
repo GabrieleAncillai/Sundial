@@ -4,6 +4,7 @@ import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../data/home_reference_defaults.dart';
 import '../../../models/home_item.dart';
@@ -400,6 +401,7 @@ class _ProductCard extends ConsumerWidget {
     );
     if (confirmed == true) {
       await ref.read(repositoryProvider).archiveHomeGroup(group.id);
+      if (context.mounted) playUiSound(context, UiSound.remove);
     }
   }
 }
@@ -468,12 +470,18 @@ class _VariantRow extends ConsumerWidget {
           _QtyButton(
             icon: Icons.remove,
             tooltip: l10n.decreaseQuantity,
-            onTap: () => ref.read(repositoryProvider).adjustHomeQuantity(variant.id, -1),
+            onTap: () {
+              playUiSound(context, UiSound.toggleOff);
+              ref.read(repositoryProvider).adjustHomeQuantity(variant.id, -1);
+            },
           ),
           _QtyButton(
             icon: Icons.add,
             tooltip: l10n.increaseQuantity,
-            onTap: () => ref.read(repositoryProvider).adjustHomeQuantity(variant.id, 1),
+            onTap: () {
+              playUiSound(context, UiSound.toggleOn);
+              ref.read(repositoryProvider).adjustHomeQuantity(variant.id, 1);
+            },
           ),
           SundialMenuButton<String>(
             tooltip: l10n.moreActions,
@@ -530,6 +538,7 @@ class _VariantRow extends ConsumerWidget {
     } else {
       await ref.read(repositoryProvider).archiveHomeGroup(variant.productGroupId);
     }
+    if (context.mounted) playUiSound(context, UiSound.remove);
   }
 }
 

@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../core/time/time_field.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../models/maintenance_log.dart';
@@ -155,9 +156,11 @@ class _LogServiceSheetState extends ConsumerState<_LogServiceSheet> {
       if (!mounted) return;
       if (next == null) {
         setState(() => _busy = false);
+        playUiSound(context, UiSound.error);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.couldNotLogService)));
         return;
       }
+      playUiSound(context, UiSound.complete);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.serviceLogged(formatFullDate(context, next.toDateTime())))));
@@ -165,6 +168,7 @@ class _LogServiceSheetState extends ConsumerState<_LogServiceSheet> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _busy = false);
+      playUiSound(context, UiSound.error);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.couldNotSave('$error'))));
     }
   }
@@ -266,9 +270,11 @@ class _RescheduleSheetState extends ConsumerState<_RescheduleSheet> {
       if (!mounted) return;
       if (next == null) {
         setState(() => _busy = false);
+        playUiSound(context, UiSound.error);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.couldNotReschedule)));
         return;
       }
+      playUiSound(context, UiSound.confirm);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.rescheduled(formatFullDate(context, next.toDateTime())))));
@@ -276,6 +282,7 @@ class _RescheduleSheetState extends ConsumerState<_RescheduleSheet> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _busy = false);
+      playUiSound(context, UiSound.error);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.couldNotSave('$error'))));
     }
   }

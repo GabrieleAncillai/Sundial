@@ -4,6 +4,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_radii.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/sundial_style.dart';
+import '../sound/sound_service.dart';
 
 class SundialSegment<T> {
   const SundialSegment({required this.value, required this.label, this.icon});
@@ -23,12 +24,17 @@ class SundialSegmented<T> extends StatelessWidget {
     required this.selected,
     required this.onChanged,
     this.compact = false,
+    this.silent = false,
   });
 
   final List<SundialSegment<T>> segments;
   final T selected;
   final ValueChanged<T> onChanged;
   final bool compact;
+
+  /// Suppresses the selection cue when the caller previews its own sound, such
+  /// as the sound-pack and alarm pickers.
+  final bool silent;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +57,10 @@ class SundialSegmented<T> extends StatelessWidget {
           for (final segment in segments)
             GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => onChanged(segment.value),
+              onTap: () {
+                if (!silent && segment.value != selected) playUiSound(context, UiSound.select);
+                onChanged(segment.value);
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 170),
                 curve: Curves.easeOutCubic,

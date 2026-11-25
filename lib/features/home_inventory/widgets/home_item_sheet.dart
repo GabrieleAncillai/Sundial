@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/icons/sundial_icons.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../data/home_reference_defaults.dart';
 import '../../../models/home_item.dart';
@@ -511,10 +512,12 @@ class _HomeItemSheetState extends ConsumerState<HomeItemSheet> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
+      playUiSound(context, UiSound.error);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.couldNotSave('$error'))));
       return;
     }
     if (!mounted) return;
+    playUiSound(context, UiSound.confirm);
     Navigator.of(context).pop();
   }
 
@@ -541,7 +544,9 @@ class _HomeItemSheetState extends ConsumerState<HomeItemSheet> {
     } else {
       await ref.read(repositoryProvider).archiveHomeItem(_itemId);
     }
-    if (mounted) Navigator.of(context).pop();
+    if (!mounted) return;
+    playUiSound(context, UiSound.remove);
+    Navigator.of(context).pop();
   }
 
   static double _parse(String value) {

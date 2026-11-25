@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/icons/sundial_icons.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../core/time/time_field.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
@@ -294,6 +295,7 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _busy = false);
+      playUiSound(context, UiSound.error);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(context.l10n.couldNotSave('$error'))));
@@ -301,7 +303,9 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
     }
     if (!mounted) return;
     await ref.read(reminderCoordinatorProvider).reschedule();
-    if (mounted) Navigator.of(context).pop();
+    if (!mounted) return;
+    playUiSound(context, UiSound.confirm);
+    Navigator.of(context).pop();
   }
 
   Future<void> _delete() async {
@@ -324,10 +328,13 @@ class _GadgetSheetState extends ConsumerState<_GadgetSheet> {
     try {
       await ref.read(repositoryProvider).deleteEntry(gadget.id);
       await ref.read(reminderCoordinatorProvider).reschedule();
-      if (mounted) Navigator.of(context).pop();
+      if (!mounted) return;
+      playUiSound(context, UiSound.remove);
+      Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) return;
       setState(() => _busy = false);
+      playUiSound(context, UiSound.error);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.couldNotDelete('$error'))));
     }
   }

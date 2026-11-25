@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
@@ -56,7 +57,10 @@ class _TagFilterSheet extends ConsumerWidget {
                       child: Checkbox(
                         value: selected.contains(tag.id),
                         visualDensity: VisualDensity.compact,
-                        onChanged: (_) => ref.read(tagFilterProvider.notifier).toggle(tag.id),
+                        onChanged: (value) {
+                          playUiSound(context, value == true ? UiSound.toggleOn : UiSound.toggleOff);
+                          ref.read(tagFilterProvider.notifier).toggle(tag.id);
+                        },
                       ),
                     ),
                     Container(

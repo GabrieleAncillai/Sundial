@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/sundial_style.dart';
+import '../sound/sound_service.dart';
 import 'app_background.dart';
 import 'pressable.dart';
 import 'sundial_content_pane.dart';
@@ -51,7 +52,12 @@ class SundialPage extends StatelessWidget {
                     title: title,
                     subtitle: subtitle,
                     actions: actions,
-                    onBack: onBack ?? () => Navigator.of(context).maybePop(),
+                    onBack:
+                        onBack ??
+                        () {
+                          playUiSound(context, UiSound.back);
+                          Navigator.of(context).maybePop();
+                        },
                   ),
                 ),
                 Expanded(

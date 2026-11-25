@@ -4,6 +4,7 @@ import 'package:sundial_core/sundial_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/l10n.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
@@ -188,12 +189,14 @@ class _ContextEditorSheetState extends ConsumerState<_ContextEditorSheet> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _busy = false);
+      playUiSound(context, UiSound.error);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(context.l10n.couldNotSave('$error'))));
       return;
     }
     if (!mounted) return;
+    playUiSound(context, UiSound.confirm);
     Navigator.of(context).pop();
   }
 
@@ -219,6 +222,8 @@ class _ContextEditorSheetState extends ConsumerState<_ContextEditorSheet> {
     );
     if (confirmed != true || !mounted) return;
     await ref.read(repositoryProvider).deleteContext(existing.id);
-    if (mounted) Navigator.of(context).pop();
+    if (!mounted) return;
+    playUiSound(context, UiSound.remove);
+    Navigator.of(context).pop();
   }
 }

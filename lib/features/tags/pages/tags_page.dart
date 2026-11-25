@@ -4,6 +4,7 @@ import 'package:sundial_core/sundial_core.dart';
 
 import '../../../core/i18n/l10n.dart';
 import '../../../core/icons/sundial_icons.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../state/providers.dart';
 import '../../../theme/app_colors.dart';
@@ -90,6 +91,7 @@ class TagsPage extends ConsumerWidget {
         ref.read(tagFilterProvider.notifier).toggle(tag.id);
       }
       await ref.read(repositoryProvider).deleteTag(tag.id);
+      if (context.mounted) playUiSound(context, UiSound.remove);
     }
   }
 }

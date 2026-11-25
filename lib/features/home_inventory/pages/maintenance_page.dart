@@ -5,6 +5,7 @@ import 'package:sundial_core/sundial_core.dart';
 import '../../../core/i18n/date_labels.dart';
 import '../../../core/i18n/l10n.dart';
 import '../../../core/icons/sundial_icons.dart';
+import '../../../core/sound/sound_service.dart';
 import '../../../core/time/time_field.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../models/maintenance_log.dart';
@@ -291,5 +292,6 @@ class _GadgetRow extends ConsumerWidget {
     if (confirmed != true) return;
     await ref.read(repositoryProvider).deleteEntry(gadget.id);
     await ref.read(reminderCoordinatorProvider).reschedule();
+    if (context.mounted) playUiSound(context, UiSound.remove);
   }
 }
