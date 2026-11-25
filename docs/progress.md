@@ -13,6 +13,181 @@ Aero 2.0 shipped on 2026-11-23 as a first-class, brightness-aware style system;
 see the new entry below and `docs/aero-2.md`. The earlier “stop gate” notes are
 historical.
 
+## 2026-11-24 Unattended device verification
+
+- **Baseline.** Debug `0.9.0+9` installed on the HUAWEI MAR-LX3A (Android 10 /
+  API 29). Analyzer clean; 432 app tests and 113 core tests pass; Linux and
+  Android builds remain green.
+- **Passed on hardware.** Relative reminder delivery at 19:47:00 on the chime
+  channel, notification tap into the editor, clean protocol-4
+  phone-initiated pairing, source replacement with a pre-replacement backup and
+  identity/pairing survival, peer→phone and phone→peer deltas, tombstone
+  propagation, and the context/project image add, replace, remove, fallback and
+  re-fetch cycle by SHA-256.
+- **Findings.** A stale paired peer that moved networks leaves the Devices card
+  in `Syncing…`, which disables its refresh and Unpair controls indefinitely;
+  the run removed those rows out-of-band. The phone also binds a new LAN port
+  on every launch (33147 → 35985 → 39801 → 35209), so a peer without discovery
+  keeps the old endpoint and cannot pull the phone. See
+  `docs/device-run-2026-11-24.md`.
+- **Blocked.** Reboot: the 20:35 alarm was queued, but after `adb reboot` the
+  launch activity was reported missing and the device left USB; three retries
+  over 60 s found no device. The reminder result is unknown.
+- **Deferred.** Timezone, Doze, airplane mode, quiet hours, absolute reminder
+  observation, snooze/complete, process-death alarm survival, desktop-initiated
+  pairing, unpair/re-pair, the three-device mesh and payload-secrecy inspection.
+- **Harness.** `tool/device_peer/main.dart` boots the real database, identity,
+  LAN server, sync store and media store against `/tmp/device-run/peer-data`,
+  executes a JSON step script and prints one JSON line per step. It is a test
+  tool and is not shipped.
+
+## 2026-11-24 Launcher icons and in-app icon switch
+
+- **Artwork.** Two original 1024 px sundial boards in Penpot replaced the
+  rejected S monogram: Classic in cream, sage and brass, and Aero in sky,
+  glass, chrome and gold. The dial has a beveled rim, engraved hour lines, a
+  chapter ring, cardinal diamonds, a plinth with rivets, a nodus bead and a cast
+  shadow along a real hour line. The approved boards and adaptive layers are in
+  `branding/exports/`; the decision record is `branding/README.md`.
+- **Android assets.** `tool/generate_icons.py` writes the legacy mipmaps, the
+  adaptive background and foreground layers, the Android 13 monochrome layer,
+  the v26/v33 XML and the 256 px in-app previews. The foreground is scaled to
+  0.78 of the 108 dp canvas so the sun stays inside the circular mask.
+- **Switch.** `MainActivity` lost its launcher filter; `.ClassicIcon` and
+  `.AeroIcon` activity aliases target it and exactly one is enabled. A
+  `sundial/app_icon` channel toggles them with `DONT_KILL_APP`. The
+  device-local `appIconStyle` setting is re-applied in `main()` on every launch
+  and stripped from backups.
+- **Settings.** Appearance gained an App icon row with the real launcher
+  previews, a selected ring and check, an Aero-aware surface and a
+  launcher-cache hint. It is available on Android and Linux; Linux explains
+  that a logout/login refreshes the desktop icon and confirms the write with a
+  snackbar. The settings search index includes the row.
+- **Linux.** Both hicolor 16–512 px sets live in `assets/icons/linux/hicolor`
+  and install into the bundle's `share/` tree. On selection, `AppIconService`
+  copies the chosen set to `$XDG_DATA_HOME/icons/hicolor` (default
+  `~/.local/share/icons/hicolor`) under the desktop entry's unchanged
+  `io.github.sundial.png` name. It re-applies on launch and only writes files
+  that differ. GNOME/KDE may cache the old icon until logout/login; that is the
+  documented trade-off. Wayland ignores per-window hints, so the user-local
+  icon-theme override is the reliable path.
+- **Tests.** `test/app_icon_test.dart` covers parsing, the Android channel, the
+  no-op outside Android/Linux, the Linux hicolor write and switch-back, the
+  picker callback, both hints, persistence through the appearance page, every
+  density/layer/XML, and the two-alias manifest. Backup and settings tests
+  cover exclusion and persistence.
+- **Verification.** `flutter analyze --no-fatal-infos` is clean; the app suite
+  passes (435 tests) and the core suite passes (113 tests); Linux debug and
+  Android debug APK builds pass. A real Linux launch with a temporary
+  `XDG_DATA_HOME` wrote the eight Classic hicolor files, confirming the startup
+  path loads the bundled sets and writes the user override. The
+  `v1.0-appearance-mobile.png` and `v2-aero-appearance-mobile.png` shots were
+  regenerated with the picker. The screenshot harness now precaches bundled
+  images so screenshots show real artwork.
+- **Remaining device checks.** Switch aliases on the physical Android device,
+  confirm the launcher refresh and Android 13 monochrome themed icon. On Linux,
+  switch Classic ↔ Aero, log out/in, and confirm the dock/app-menu icon. See
+  `docs/device-checklist.md` and `branding/README.md`.
+
+## 2026-11-24 Search filter action
+
+- **Placement.** The desktop rail's tag filter is now the trailing action of
+  the search field instead of a bare `IconButton` beside it. The bare glyph
+  read as a floating control that did not match the round buttons elsewhere.
+- **Treatment.** `SundialSearchAction` keeps the action flat inside the field
+  frame: a soft disc when idle, the style's selected gradient and an accent
+  glyph when filters are active, plus the same count badge as the phone header.
+  The phone header's badge now comes from the shared `_FilterBadge` widget.
+- **Evidence.** `test/visual_kit_test.dart` checks that the action stays inside
+  the field, shows its badge, changes to the selected gradient and reports a
+  tap. Screenshot: `docs/screenshots/v2-aero-plan-desktop.png`.
+
+## 2026-11-24 Monthly habit quotas (schema v16)
+
+- **Domain.** `Habit` gained `targetPeriod` (`week` or `month`) and a generic
+  `targetCount`; `HabitCompletions` is now a date-to-count map. Monthly
+  progress sums the calendar month, monthly streaks count consecutive
+  qualifying months, and `targetForRange` scales a target to the visible stats
+  range. `LocalDate.addMonths` clamps to the destination month length.
+- **Data.** Schema v16 adds `habit_records.target_period` (default `week`) and
+  `habit_completion_records.check_in_count` (default 1). The v15 upgrade adds
+  both columns before any row mapper reads them, including after the v10 draft
+  repair can rename the completion table, then seeds the new sync field group.
+  Existing rows keep their weekly target and one check-in per day.
+- **Sync and backup.** The habit `schedule` group includes `target_period` and
+  the completion row gains a `count` group. Backup schema 16 writes
+  `targetCount`, `targetPeriod` and `checkInCount`; schema 3-15 imports still
+  default to weekly and one check-in per day. Older peers ignore the new
+  period/delta fields without losing the habit.
+- **UI and MCP.** The habit editor switches between week and month, weekly
+  targets stay at 1-7, monthly targets go to 31, and the card logs/undoes
+  several same-day check-ins with a month progress bar. The history page shows
+  twelve months for monthly habits. `habits.list` exposes target period/count
+  and current-period progress; `habits.check` accepts `completed`, `count` or
+  `delta`.
+- **Tests.** Core month progress/streak/range tests, a real v15 to v16
+  migration, backup round-trip plus v15 fallback, MCP monthly and delta flows,
+  a monthly card widget test, and a two-device sync test for the period and
+  same-day count. Full app suite passes (422 tests); core suite passes (113
+  tests).
+
+## 2026-11-24 Sync debug log
+
+- **Gate.** Settings gained a device-local **Developer** section with an
+  **Enable developer options** switch. The sync log row only exists while the
+  switch is on; the setting is stored as `developerOptions`, never synced and
+  off by default.
+- **Data.** `SyncStore.readDebugSnapshot` reads the existing replica
+  bookkeeping instead of adding a second log: the local change feed newest
+  first with the HLC of every changed merge group, accepted field versions,
+  tombstones and peer cursors. `watchDebugSnapshot` watches the five sync tables
+  and debounces bursts from one pull. Lists are capped (200 changes, 300 field
+  versions, 200 tombstones) while the header shows real totals.
+- **Screen.** `SyncDebugPage` has Changes, Fields, Tombstones and Peers views,
+  a filter and a copy-log action. A change expands to show each field group's
+  compact and raw HLC, a pretty-printed row payload and a per-change copy. The
+  page is read-only and states that remote applies update field versions rather
+  than appending to the local feed.
+- **Evidence.** `test/sync_debug_test.dart` covers the created/updated/deleted
+  feed rows, HLC parsing, tombstones, peer cursors, caps and the initial watch
+  event. `test/sync_debug_page_test.dart` covers the settings gate and renders
+  a local change. English and Spanish strings are in the ARB layer.
+- **Verification.** `flutter analyze --no-fatal-infos` clean; the new tests and
+  the full app/core suites pass; Linux debug and Android debug builds pass.
+  Screenshot: `docs/screenshots/v2-sync-debug-mobile.png`.
+
+## 2026-11-24 Semantic sound design
+
+- **Cue set.** `UiSound` grew from six cues to seventeen semantic actions:
+  tap, tab change, open, back, select, toggle on/off, task complete/reopen,
+  checklist/shopping tick/untick, save, delete, timer start/pause/finish and
+  error. Completion uses its own reward motif instead of a switch blip.
+- **Packs.** Both Aero and Soft receive a new original WAV for every cue.
+  `tool/generate_sounds.dart` synthesises them deterministically and writes the
+  Android `res/raw` mirrors; Aero is bright and glassy at 44.1 kHz, Soft is
+  quieter, low-passed and 22.05 kHz.
+- **Playback.** Android `SoundPool` now exposes `preload`; the selected pack is
+  warmed on startup, when sounds are enabled and when the pack changes, so the
+  first interaction is not late. Repeated identical cues within 35 ms are
+  coalesced, which also prevents nested tap targets from double-firing. Linux
+  still uses `aplay`, with system sounds as fallback.
+- **Wiring.** Task cards, calendar entry rows, shift checklists, habits,
+  shopping, inventory quantity/archive, home and maintenance sheets, timers,
+  entry save/delete, tab changes, sheets, page back, switches and segmented
+  controls all play the matching cue. Background sync, MCP writes and imports
+  stay silent.
+- **Settings.** Sound → Sound library previews every cue, grouped by
+  navigation, toggles, completion, timers and feedback. English and Spanish
+  strings are in the ARB layer; the sound-pack and alarm pickers preview their
+  own choice instead of double-firing a selection cue.
+- **Evidence.** `test/sound_assets_test.dart` checks every cue in both packs and
+  the Android raw resources (valid 16-bit mono WAV, audible, under 0.5 s).
+  `test/sound_service_test.dart` covers pack dispatch, the off switch, forced
+  previews, coalescing and Android preload.
+- **Verification.** `flutter analyze --no-fatal-infos` clean; 405 app tests
+  pass; Linux debug and Android debug APKs build. Real-device audio remains on
+  `docs/device-checklist.md`.
+
 ## 2026-11-24 Shared context menu kit
 
 - **Menus.** Added `SundialMenuButton`/`SundialMenuAction` in
@@ -25,14 +200,26 @@ historical.
   sizes, shopping rows, reference rows, maintenance gadgets, the item palette
   menu and the stats export menu all use the shared component. Each list menu
   names the row it was opened from.
+- **Aero surface.** Classic keeps the stock `PopupMenuButton` route. Aero uses a
+  `MenuAnchor` panel so the popup can paint the chrome gradient, top gloss,
+  cyan accent rim and tinted shadow from the style pack instead of a flat
+  Material colour. The panel is content-sized between 216 and 288 dp, matching
+  the compact width of the stock popup, and opens below its trigger. A 20 dp
+  transparent edge inset keeps the rim and glow inside the screen when
+  `MenuAnchor` clamps the menu against an edge. The dark screenshot caught the
+  earlier flush-right clip; the width pass restored the narrower menu while
+  keeping the accented rim.
 - **Theme.** Popup menus now use the card radius, a border in both styles, the
   shared shadow token, a stronger elevation and balanced vertical padding.
 - **Evidence.** `test/sundial_menu_test.dart` covers the header, icons, section
   divider, danger colour, disabled action, optional leading action and Aero.
-  Screenshots: `docs/screenshots/v2-context-menu-mobile.png` and
-  `docs/screenshots/v2-aero-context-menu-mobile.png`.
+  Screenshots: `docs/screenshots/v2-context-menu-mobile.png`,
+  `docs/screenshots/v2-aero-context-menu-mobile.png` and
+  `docs/screenshots/v2-aero-dark-context-menu-mobile.png`.
 - **Verification.** `flutter analyze --no-fatal-infos` clean; 397 app tests pass
-  (including the five new menu tests); the two screenshot tests render.
+  (including the five menu tests, with the Aero surface, back handling and
+  danger treatment covered); the three context-menu screenshot tests render;
+  Linux debug and Android debug APKs build.
 
 ## 2026-11-23 Aero 2.0 style system shipped
 

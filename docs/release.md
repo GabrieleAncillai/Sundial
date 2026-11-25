@@ -73,6 +73,34 @@ The Linux bundle is `build/linux/x64/release/bundle/`. Archive it with:
 tar -czf sundial-linux-x64.tar.gz -C build/linux/x64/release/bundle .
 ```
 
+### Linux desktop integration
+
+`bundle/share/` carries `applications/io.github.sundial.desktop` and both
+hicolor sets (`io.github.sundial.png` for Classic and
+`io.github.sundial.aero.png` for Aero). A desktop session only reads them after
+they are installed into an XDG data directory. For a local bundle:
+
+```bash
+mkdir -p ~/.local/bin ~/.local/share/applications ~/.local/share/icons
+install -m 755 build/linux/x64/release/bundle/sundial ~/.local/bin/sundial
+cp -r build/linux/x64/release/bundle/share/icons/hicolor ~/.local/share/icons/
+cp build/linux/x64/release/bundle/share/applications/io.github.sundial.desktop \
+  ~/.local/share/applications/
+update-desktop-database ~/.local/share/applications 2>/dev/null || true
+gtk-update-icon-cache ~/.local/share/icons/hicolor 2>/dev/null || true
+```
+
+The entry uses `Exec=sundial`, so `~/.local/bin` must be on `PATH`. It uses
+`Icon=io.github.sundial`; the in-app picker writes the chosen set to
+`$XDG_DATA_HOME/icons/hicolor` (default `~/.local/share/icons/hicolor`) under
+that name, so the entry does not need editing. The app re-applies the choice on
+launch. Log out and back in if the shell keeps the old icon; GNOME/KDE cache
+app icons across sessions.
+
+The copied `share/icons` tree is the fallback/initial icon. The app can
+recreate both sets in the user data directory; the bundle copy is still
+required for a desktop that looks up the icon before the app has run.
+
 ## Tag and publish
 
 ```bash

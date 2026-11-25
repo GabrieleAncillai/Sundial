@@ -41,6 +41,15 @@ Sundial itself is GPL-3.0-only; see [LICENSE](LICENSE) and
 - The Aero sundial mark, bokeh, sky, horizon and glass recipes are original
   Flutter vector/painter work. Material Icons are provided by Flutter through
   `uses-material-design`.
+- **Interaction and alarm sounds** (`assets/sounds/` and the Android `res/raw`
+  copies) are original procedural synthesis by the Sundial project. No
+  third-party sound sample is bundled. Regenerate the interaction cues with
+  `dart run tool/generate_sounds.dart`.
+- **Launcher artwork** (`branding/exports/`, the Android mipmaps/drawables and
+  `assets/icons/`) is original Sundial work designed in Penpot. No third-party
+  icon or platform asset is copied. Regenerate it with
+  `python3 tool/generate_icons.py`; the design record and source boards are
+  described in `branding/README.md`.
 
 Fonts, icons, illustrations, sounds and sample data are credited here when they
 are added. Do not copy an asset without recording its source and license.

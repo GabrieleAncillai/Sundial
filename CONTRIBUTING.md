@@ -113,6 +113,11 @@ The project follows the conventions used by InlitX projects (Streak and GymMane)
   ARB setup in GymMane and Streak: `l10n.yaml`, `lib/l10n/app_en.arb`,
   `lib/l10n/app_es.arb` and a generated `AppLocalizations`. Do not leave
   user-facing literals in widgets once the ARB layer exists.
+- Interaction sounds are generated, not hand-edited. Add or tune a cue in
+  `tool/generate_sounds.dart`, run `dart run tool/generate_sounds.dart`, and
+  commit both `assets/sounds/<pack>/` and the Android `res/raw` mirrors. Every
+  `UiSound` value needs a cue in both packs; `test/sound_assets_test.dart`
+  enforces it.
 
 ## Tests
 

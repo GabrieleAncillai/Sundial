@@ -268,10 +268,12 @@ Known follow-ups:
   midnight, and deadline-only items get a due marker instead of an all-day chip.
 - Desktop layouts for Today/Stats are intentionally the spacious single-column
   versions; a denser dashboard can follow once the real window sizes are known.
-- Sound needs a real-device pass: Android plays bundled raw resources through a
-  SoundPool bridge and Linux shells out to `aplay`; both fall back to system
-  sounds. The alarm-sound setting maps to per-sound Android notification
-  channels; Linux notifications keep the desktop default.
+- Sound has a semantic seventeen-cue set in both Aero and Soft packs, with
+  Android SoundPool preload, a Settings → Sound library preview and 35 ms
+  coalescing. A real-device audio pass remains: Android plays bundled raw
+  resources through the SoundPool bridge and Linux shells out to `aplay`; both
+  fall back to system sounds. The alarm-sound setting maps to per-sound Android
+  notification channels; Linux notifications keep the desktop default.
 - Time zone selection sets the planning zone for new timed entries. Changing
   the display zone still follows the device, as the time model requires.
 - Compact sheets keep the standard dimmed barrier so drag-to-dismiss, keyboard

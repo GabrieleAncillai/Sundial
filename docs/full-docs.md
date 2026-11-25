@@ -211,7 +211,8 @@ evening, and all of that has to start earlier than the day itself.
 
 **Current state.** Multiple reminders per entry, yearly dates, tags and a
 global tag filter are shipped. The Personal space carries admin and people
-dates.
+dates. Habits support weekly targets and monthly quotas, including several
+check-ins on the same day.
 
 **Not this.** A shared account or a couples planning app. If another person
 needs visibility, a read-only calendar export is a better answer than shared
@@ -333,7 +334,7 @@ Unpairing removes the row locally; the other device keeps its own copy. There
 is no account to delete and no password-reset channel. The PIN is a local
 gate, not a defense against someone holding the unlocked device.
 
-### 5.4 LAN sync: pull-only replicas (schema v15, protocol 4)
+### 5.4 LAN sync: pull-only replicas (schema v16, protocol 4)
 
 Each app owns its copy of the planner. The replica-sync decision supersedes
 the earlier query-only rule: paired devices hold full replicas and merge with
@@ -344,7 +345,12 @@ sync UI. Media sync (Design B) shipped on top of it with schema v15 and
 protocol 4: context and project images travel by content-addressed id over a
 signed, paired-only endpoint, never as paths. The old read-only snapshot
 endpoint and table are kept for one release because the MCP adapter still shares
-the payload helpers; no UI reads them.
+the payload helpers; no UI reads them. Schema v16 adds monthly habit quotas:
+`habit_records.target_period` (`week` or `month`) and
+`habit_completion_records.check_in_count`. The habit `schedule` merge group
+carries the period and the completion `count` group carries the day's total.
+Older peers ignore the new period and keep the weekly reading; v15 backups
+import with `week` and one check-in per day.
 
 Target model:
 
@@ -394,6 +400,14 @@ Shipped in Phase 2 and Phase 3:
 - After a remote apply, the app shell rebuilds the reminder queue, reloads
   `weekStart` and refreshes the Android home widget. It does not play a sound
   or notify for ordinary remote edits.
+- A device-local developer mode (Settings → Developer → Enable developer
+  options) unlocks a read-only sync debug log. The page reads the same
+  bookkeeping the engine uses: the local change feed newest first with the HLC
+  of every changed merge group, the accepted field versions, tombstones and
+  peer cursors. It watches the tables live, caps each list and copies the whole
+  snapshot as JSON. It never appends to the feed or mutates replica rows.
+  Neither GymMane nor Streak has replica sync, so this diagnostic is a Sundial
+  deviation with no upstream equivalent.
 - Protocol 3 added `POST /sundial/v1/sync/snapshot` and
   `POST /sundial/v1/sync/changes`. Both require the paired shared key and sign
   the request body, timestamp, nonce and path.
@@ -460,7 +474,9 @@ replacement resolves to the newest id.
   leave that row's id null without failing the upgrade.
 - Backups include `imageMediaId`, include display bytes or (when the display
   copy is gone) the cache bytes, and rebuild the local media index on import.
-  Schema 3-15 are accepted; a v14 backup computes ids from the restored bytes.
+  Schema 3-16 are accepted; a v14 backup computes ids from the restored bytes
+  and a schema 3-15 backup defaults habits to weekly targets and one check-in
+  per day.
 - v1 keeps unreferenced cache files. There is no automatic garbage collection;
   delete-all clears the index and the managed media folder.
 
@@ -534,10 +550,11 @@ does not update changed rows.
 
 ## 6. Data model (target)
 
-The migration path is v1 → … → v14 → v15. The shipped schema has the shape
+The migration path is v1 → … → v15 → v16. The shipped schema has the shape
 below, including tags, reference-data-backed home variants, shopping items,
 per-slot shift checklists, shift tags, per-pattern sleep buffers, maintenance
-logs, the local pairing identity and content-addressed media.
+logs, the local pairing identity, content-addressed media and monthly habit
+quotas.
 
 - **spaces**: id, name, color, position, timestamps, soft delete. Seeded with
   Personal, Work and Home. Spaces are rows, not an enum.
@@ -551,7 +568,10 @@ logs, the local pairing identity and content-addressed media.
 - **completions**: entry id plus occurrence date in the entry's stored
   timezone. This is what makes a recurring chore checkable per occurrence.
   Checking this week's bins does not check next week's, and travel does not
-  lose the check.
+  lose the check. A recurring multi-day span (for example a monthly bill open
+  from the 1st to the 5th) is one occurrence for completion: every displayed
+  day carries the same cycle anchor, so checking any day closes the window.
+  Reminders can still fire on each day of the span until it is closed.
 - **reminders**: entry id, offset in minutes or an absolute local time (`timeMinute`), enabled. Multiple rows per entry.
 - **shift_patterns**: id, space, name, timezone, cycle length in days, anchor
   date, enabled, timestamps, soft delete.
@@ -570,6 +590,13 @@ logs, the local pairing identity and content-addressed media.
 - **media_cache_records**: device-local index of `media_id`, cache path, mime,
   byte size and creation time. It is not synced, is absent from backups and is
   rebuilt on import and v14→v15 migration.
+- **habits**: id, space, context, name, description, color, icon, target count,
+  target period (`week` or `month`), weekday schedule, position, archived,
+  timestamps, soft delete. The historical `target_per_week` column stores the
+  count for either period; `target_period` says how it is measured.
+- **habit_completions**: habit id, date, check-in count, created at. One row per
+  habit and day. `check_in_count` lets a monthly quota record several payments
+  on the same day; weekly habits stay at zero or one.
 - **entry_tags**: entry id, tag id.
 - **home_categories**: id, name, icon, color, position, timestamps, soft
   delete. Seeded with food, spices, household consumables, cleaning, personal
@@ -1234,16 +1261,35 @@ status. The important architecture additions are:
   off. The contract and extension guide are in
   [aero-2.md](aero-2.md); the implementation is
   `lib/theme/sundial_style.dart`.
-- Interaction sounds and alarm previews are optional and off by default. Sounds
-  play from bundled WAV assets: Android through a small `SoundPool`
-  `MethodChannel`, Linux through `aplay`, with system sounds as fallback.
-  Scheduled reminders use one Android notification channel per alarm sound.
+- Interaction sounds and alarm previews are optional and off by default. The
+  interaction set is semantic: navigation, sheet open, back, selection, toggle
+  on/off, task complete/reopen, checklist and shopping tick/untick, save,
+  delete, timer start/pause/finish and error each have their own cue. Both the
+  Aero and Soft packs ship original procedurally generated WAVs; Android plays
+  them through a small `SoundPool` `MethodChannel` with preload, Linux through
+  `aplay`, with system sounds as fallback. Settings → Sound → Sound library
+  previews every cue. Scheduled reminders use one Android notification channel
+  per alarm sound.
 - Overflow menus share `SundialMenuButton`/`SundialMenuAction` in
   `lib/core/widgets/sundial_menu.dart`: a context header, tinted icon tiles,
   grouped sections, disabled and checkable rows, and a danger treatment for
-  destructive actions. All ten list and export menus use it in Classic and Aero.
+  destructive actions. Classic keeps the stock popup route; Aero uses a
+  `MenuAnchor` panel with the chrome gradient, top gloss, cyan rim and tinted
+  shadow. All ten list and export menus use it in both styles.
 - Preferences expose a searchable IANA time-zone picker. The chosen zone is the
   planning zone for new timed entries; display still follows the device zone.
+- The launcher icon is the original sundial mark in two material sets: Classic
+  (cream/sage/brass) and Aero (sky/glass/chrome/gold). Android ships both as
+  activity aliases and Settings → Appearance → App icon switches them through
+  the `sundial/app_icon` `MethodChannel`; `main()` re-applies the stored choice
+  on launch. The choice is device-local: it is never synced and
+  `BackupService` strips it from exports. Linux ships both hicolor sets in
+  `assets/icons/linux` and writes the selected set to
+  `$XDG_DATA_HOME/icons/hicolor` (default `~/.local/share/icons/hicolor`) under
+  the desktop entry's unchanged `Icon=io.github.sundial` name. The desktop shell
+  may need a logout/login to repaint it; the settings row states that. The
+  design record and export pipeline are in `branding/README.md`;
+  `tool/generate_icons.py` is the reproducible generator.
 - The entry editor derives the task shape from clearable start/end fields:
   both = scheduled, start only = clock-in, end only = deadline, neither =
   anytime. The repeat control opens a Streak-style sheet with interval,

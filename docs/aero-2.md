@@ -23,10 +23,11 @@ The brief is still the design contract. The implementation lives in
   glow, three soft water bands and slow glass bokeh. It is disabled by
   performance mode and by the platform reduce-motion flag.
 - Glass chrome across the shell: side rail, bottom navigation, sheets, dialogs,
-  inputs, icon buttons, segmented controls, switches, progress and the add
-  button.
-- An original sundial orb brand mark and glossy glyph treatment. No Microsoft,
-  Apple or other proprietary Aero wallpaper, icon or font asset is bundled.
+  overflow menus, inputs, icon buttons, segmented controls, switches, progress
+  and the add button.
+- The shipped sundial launcher artwork as the brand mark and a glossy glyph
+  treatment. No Microsoft, Apple or other proprietary Aero wallpaper, icon or
+  font asset is bundled.
 - Aero-specific recipes for cards, task rows, calendar blocks, month/week date
   cells, stats cards, settings icons and filter pills.
 - Contrast tests for the candidate and shipped palettes, a style-system test,
@@ -43,7 +44,7 @@ The brief is still the design contract. The implementation lives in
 | `bodyFontFamily`, `displayFontFamily` | Per-style type. Classic = Nunito, Aero = Open Sans. |
 | `environment` | Background family. Classic is calm; Aero paints the sky. |
 | `iconTreatment` | Outline or glossy glyphs. |
-| `brandMark` | Flat tile or orb mark. |
+| `brandMark` | Which shipped launcher artwork the shell logo uses: Classic or Aero. |
 | `gloss`, `glassChrome`, `blurChrome` | Material switches for performance mode. |
 | `surfaceGradient`, `chromeGradient`, `selectedGradient`, `controlGradient`, `fieldGradient`, `skyGradient`, `glossGradient` | Generic recipes. A style with a gradient opts into the treatment automatically. |
 | `highlight`, `rim`, `glow`, `cardShadows`, `chromeShadows`, `horizonGlow` | Light source, rims and depth. |
@@ -134,6 +135,12 @@ dialogs and the rail. Large surfaces use `RoundedSuperellipseBorder`.
   and shows it as a long-press/hover tooltip.
 - Pressed: scale 0.98; 180–260 ms ease-out.
 - The rail keeps the persistent search field and filter badge.
+- The filter is the search field's trailing action, not a raised button beside
+  it. Idle is a soft disc inside the field; active uses the selected gradient,
+  an accent glyph and the shared count badge.
+- The main rail and the Settings sidebar render through the shared
+  `SundialSidebar` and `SundialSidebarItem` widgets, so width, inset, row
+  radius, glyph treatment and selected styling are defined once.
 
 ### Button
 
@@ -178,15 +185,20 @@ dialogs and the rail. Large surfaces use `RoundedSuperellipseBorder`.
 
 - Shared `SundialMenuButton` and `SundialMenuAction` in
   `lib/core/widgets/sundial_menu.dart`.
-- Surface: pearl with the Aero glass rim, 18 px radius and the shared shadow.
-  The menu opens below its trigger instead of over it.
-- Rows: 30 px tinted icon tile (accent soft, danger soft for destructive
-  actions), 13.5 label and an optional checkmark. Groups are separated by a
-  hairline divider.
+- Classic keeps the stock `PopupMenuButton` route. Aero uses a `MenuAnchor`
+  panel so the popup can paint the style pack instead of a flat Material
+  colour: the pearl `chromeGradient`, the top gloss, a cyan accent rim and a
+  cyan-tinted elevation shadow. The panel is content-sized between 216 and
+  288 dp, matching the compact width of the stock popup, and it opens below
+  rather than over it. A 20 dp transparent edge inset keeps the rim and glow
+  inside the screen when the anchor clamps the menu against an edge.
+- Rows: `MenuItemButton` with a 30 px tinted icon tile (accent soft, danger soft
+  for destructive actions), a 13.5 label and an optional checkmark. Groups are
+  separated by a hairline divider.
 - Header: a non-interactive context title and caption with a hairline base, so
   a menu names the row it belongs to.
-- The Material route is unchanged, so focus, keyboard navigation, dismissal and
-  screen-reader semantics keep working.
+- Focus, keyboard navigation, outside-tap dismissal, Escape and screen-reader
+  semantics come from `MenuAnchor`/`MenuItemButton`.
 
 ## Gloss, blur and motion rules
 
@@ -207,6 +219,34 @@ Aero selects the Aero interaction pack but does not enable sounds. Interaction
 sounds remain opt-in and off by default. Alarm sounds are chosen separately and
 are used by scheduled reminders.
 
+The interaction system is semantic rather than one generic click: navigation,
+sheet open, back, selection, on/off toggles, task completion and reopening,
+checklist and shopping ticks, save, delete, timer start/pause/finish and error
+each have their own cue. Both packs ship an original, procedurally generated
+WAV for every cue; `tool/generate_sounds.dart` writes the assets and the matching
+Android `res/raw` resources so they cannot drift. The selected pack is preloaded
+on startup and after a pack change so the first tap is not late. Settings →
+Sound → Sound library previews every cue. Aero is brighter and glassier at
+44.1 kHz; Soft is quieter, low-passed and 22.05 kHz.
+
+## Launcher icons
+
+Classic and Aero each have a first-class launcher icon. The art is the same
+sundial for both, with the material changed rather than the geometry: warm
+matte stone and brass for Classic, translucent glass and chrome with a gold sun
+for Aero. Adaptive background and safe-zone foreground boards keep the sun
+inside the circular mask, and Android 13 themed icons use the shared monochrome
+layer. The design record, generator and device checks are in
+[../branding/README.md](../branding/README.md).
+
+The settings picker lives in Settings → Appearance → App icon and previews the
+actual launcher PNGs. Android uses activity aliases because a launcher icon
+cannot be changed directly at runtime; the choice is device-local, re-applied
+on launch and never synced or backed up. On Linux the picker writes the chosen
+hicolor set into the user's XDG data directory under the desktop entry's
+unchanged icon name. A logout/login may be needed before the shell repaints the
+icon.
+
 ## Implementation map
 
 | Area | File |
@@ -220,6 +260,8 @@ are used by scheduled reminders.
 | Glossy glyphs and original sundial mark | `lib/core/icons/aero_glyph.dart` |
 | Shared card, nav, sheet, menu, switch, segmented, field and progress recipes | `lib/core/widgets/` |
 | Settings Style/Brightness rows and search | `lib/features/settings/` |
+| Launcher icon picker and Android alias bridge | `lib/features/settings/widgets/app_icon_row.dart`, `lib/services/app_icon_service.dart`, `android/app/src/main/kotlin/io/github/sundial/MainActivity.kt` |
+| Launcher art, exports and generator | `branding/`, `tool/generate_icons.py` |
 | Screenshots | `tool/screenshots/screenshot_test.dart` |
 
 ## Screenshots
@@ -230,10 +272,11 @@ Rendered from the real app, not concept compositions:
 - `docs/screenshots/v2-aero-today-dark.png` (phone, dark)
 - `docs/screenshots/v2-aero-plan-desktop.png` (desktop, light)
 - `docs/screenshots/v2-aero-settings-mobile.png` (phone, light)
-- `docs/screenshots/v2-aero-appearance-mobile.png` (phone, light; Style and
-  Brightness rows)
+- `docs/screenshots/v2-aero-appearance-mobile.png` (phone, light; Style,
+  App icon and Brightness rows)
 - `docs/screenshots/v2-context-menu-mobile.png` (Classic inventory menu)
 - `docs/screenshots/v2-aero-context-menu-mobile.png` (Aero inventory menu)
+- `docs/screenshots/v2-aero-dark-context-menu-mobile.png` (Aero dark inventory menu)
 - `docs/screenshots/nav-responsive-360-430.png` (nav close-up: 360 dp icon-only
   and 430 dp labeled)
 
@@ -268,8 +311,8 @@ candidate `AeroColors` tokens and the shipped `SundialColors.aeroLight` /
 ## Verification
 
 - `flutter analyze --no-fatal-infos`: clean.
-- `flutter test`: 392 tests pass (including the style, contrast, widget, motion
-  seam, nav-lens and compact-nav coverage).
+- `flutter test`: 397 tests pass (including the style, contrast, widget, motion
+  seam, nav-lens, compact-nav and menu coverage).
 - `(cd packages/sundial_core && dart test)`: 107 tests pass.
 - `flutter build linux --debug`: pass.
 - `flutter build apk --debug` (Java 21): pass.

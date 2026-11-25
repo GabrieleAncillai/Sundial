@@ -25,6 +25,7 @@ git clone https://github.com/InlitX/streak.git ../Streak
 | CSV and calendar export | `lib/services/local_store.dart` (`exportCsv`), `lib/services/fit_export.dart`, `lib/services/plan_share.dart` | `lib/services/import_service.dart`, `lib/services/backup_service.dart` | Shipped: `features/export/csv_interchange.dart` for entries, shopping and inventory, plus read-only ICS export. |
 | Calendar / month / week | `lib/screens/history_screen.dart`, `lib/screens/timeline_screen.dart` | `lib/features/habits/widgets/activity_calendar.dart`, `lib/core/express/express_month.dart`, `lib/features/habits/pages/day_timeline_page.dart`, `lib/features/habits/widgets/grid_habit_cards.dart` | Streak is the primary calendar reference. |
 | Notifications and reminders | `lib/services/alarm_store.dart`, `lib/services/rest_alarm.dart`, `lib/services/train_reminder.dart`, `lib/services/supplement_reminder.dart` | `lib/services/notification_service.dart`, `lib/services/reminder_schedule.dart`, `lib/services/reminder_sounds.dart` | Streak is the primary reminder reference. Sundial adds absolute-time reminders, quiet/work-hour suppression and snooze/complete actions. |
+| Interaction and alarm sounds | none | `lib/services/reminder_sounds.dart` (alarm choice only) | Neither reference has a semantic UI cue system. Sundial's seventeen-cue interaction set and procedural WAV generator are original; see `docs/aero-2.md` and `tool/generate_sounds.dart`. |
 | Backup and import | `lib/services/auto_backup.dart`, `lib/services/backup_zip.dart`, `lib/services/fitnotes_backup.dart`, `lib/services/workout_import.dart` | `lib/services/backup_service.dart`, `lib/services/backup_archive.dart`, `lib/services/import_service.dart`, `lib/services/auto_sync.dart` | Versioned files, validation, test coverage. |
 | Settings | `lib/screens/settings_screen.dart`, `lib/state/settings_state.dart` | `lib/features/settings/pages/settings_page.dart`, `lib/features/settings/state/settings_controller.dart` | Theme, locale, week start, reminders, data folder, privacy. |
 | Localization | `l10n.yaml`, `lib/l10n/l10n.dart`, `lib/l10n/app_en.arb`, `lib/l10n/app_es.arb` | `l10n.yaml`, `lib/core/i18n/l10n.dart`, `lib/core/i18n/app_locale.dart`, `lib/l10n/app_en.arb`, `lib/l10n/app_es.arb` | English source, Spanish first translation. |
@@ -91,6 +92,9 @@ git clone https://github.com/InlitX/streak.git ../Streak
   a first-class job/home/person context inside three spaces. Sundial adds
   `PlannerContext`, `Project` and `Habit` to `sundial_core` and schema v9. The
   folder cards, category icons and habit controls adapt Streak's patterns.
+  Monthly habit quotas and per-day check-in counts are a Sundial extension:
+  Streak's habit form is weekly-target only. Schema v16 stores the period on
+  the habit and the count on each completion.
 - **Responsive shell and week grid.** GymMane and Streak are phone-first. Sundial's
   side rail follows Streak's `responsive.dart` idea, and the desktop week grid
   is a planner-specific widget with move/resize/create gestures. Overlapping
@@ -104,6 +108,12 @@ git clone https://github.com/InlitX/streak.git ../Streak
   `lib/core/window/window_chrome.dart` pushes the app palette to GTK. This is a
   platform-layer adaptation, not a new visual pattern. See the window-chrome
   note in `docs/full-docs.md`.
+- **Selectable launcher icons.** Neither reference ships alternate launcher
+  icons or an in-app icon switch. Sundial's original sundial mark is designed in
+  Penpot; Android uses activity aliases (`.ClassicIcon`/`.AeroIcon`) and a
+  `sundial/app_icon` `MethodChannel`, with a device-local setting. The design
+  record is `branding/README.md` and the reproducible generator is
+  `tool/generate_icons.py`.
 - **Stats and report export.** Streak has habit statistics; neither reference
   has a Clockify-style tracked-time report. The dashboard uses Sundial data and the
   PDF/CSV writer lives in `lib/features/stats/report_writer.dart`.

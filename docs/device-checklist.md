@@ -5,6 +5,16 @@ release build. Record the build version and the device model next to each item.
 
 ## Latest run
 
+2026-11-24, HUAWEI MAR-LX3A, Android 10 / API 29, debug 0.9.0+9. The
+unattended pass is in
+[device-run-2026-11-24.md](device-run-2026-11-24.md). It passed the baseline,
+relative reminder delivery, notification tap, clean phone-initiated pairing,
+source replacement, deltas and tombstones both ways, and the context/project
+image lifecycle. It failed the unpair check (a stale peer pins the Devices page
+in `pulling`) and was blocked at reboot when the phone left USB. Timezone, Doze,
+quiet hours, desktop-initiated pairing and payload-secrecy inspection remain
+open.
+
 2026-11-09, HUAWEI MAR-LX3A, Android 10 / API 29, debug 0.9.0+9. The full log
 is in [device-run-2026-11-09.md](device-run-2026-11-09.md). Summary: install,
 notifications (except the Android 13/12 paths, N/A on API 29), timezone, LAN,
@@ -39,6 +49,47 @@ replica path, not the notification, reboot or battery items.
 Desktop screenshots are unavailable in this Wayland session; the desktop pass
 was launch, logs and database verification.
 
+## 2026-11-24 Unattended verification
+
+Run on the HUAWEI MAR-LX3A with debug 0.9.0+9 and a headless Linux peer
+(`tool/device_peer`). Full detail and evidence are in
+[device-run-2026-11-24.md](device-run-2026-11-24.md).
+
+- [x] Analyzer clean, 432 app tests and 113 core tests pass, APK installs with
+      `versionName=0.9.0 versionCode=9`.
+- [x] The app launches without a fatal log. API 29 correctly reports the
+      Android 13 notification permission and Android 12 exact-alarm access as
+      N/A.
+- [x] A relative reminder scheduled for 19:47 posted at 19:47:00 on
+      `sundial_reminders_chime` with `Snooze 10 minutes` and `Mark complete`.
+- [x] Tapping the notification opened the matching entry editor.
+- [x] A clean first-time phone-initiated pairing succeeded at protocol 4; both
+      sides stored the peer and the phone reported the different-plan state.
+- [x] Source replacement wrote `sundial-auto-20261124-195809.json`, kept
+      identity/pairing/device-local settings, brought entries, tags, a shift,
+      home inventory, a context, a project and the staged image, and matched the
+      peer dataset id.
+- [x] A peer edit reached the phone on startup (no Devices visit) and a phone
+      edit reached the peer; a peer delete propagated as a tombstone.
+- [x] Context and project images add, replace, remove and re-fetch by SHA-256;
+      the card renders the image and falls back to the icon when it is missing.
+- [ ] Unpair/re-pair. **FAIL:** with the old cross-network peer unreachable, the
+      card stayed on `Syncing…` and the per-device refresh and Unpair actions
+      were disabled. The stale rows were removed out-of-band; re-pair was not
+      run.
+- [ ] Reboot reminder. **BLOCKED:** the 20:35 alarm was queued, but after
+      `adb reboot` the activity manager reported the launch activity missing and
+      the device left USB; three retries over 60 s found no device.
+- [ ] Absolute reminder post, snooze/complete actions, process-death survival,
+      quiet hours, timezone, Doze and payload-secrecy inspection were deferred.
+
+Known finding: the phone binds a different LAN port on each launch (33147,
+35985, 39801, 35209 observed), while a paired peer stores the port from
+pairing. Discovery can refresh it, but a peer without discovery cannot reach
+the phone until the endpoint is updated.
+
+Human items from `docs/manual-device-checklist.md` are unchanged.
+
 ## Appearance and Aero 2.0
 
 - [ ] Open Settings → Appearance and confirm the separate **Style**
@@ -61,6 +112,43 @@ was launch, logs and database verification.
       surface and stays readable.
 - [ ] Rotate or reopen the app and confirm the selected style and brightness
       survive a restart.
+
+## Launcher icon
+
+- [ ] Settings → Appearance shows the **App icon** row with Classic and Aero
+      previews. Confirm the selected card has the accent ring and check badge.
+- [ ] Switch Classic → Aero and back. Confirm the launcher entry is replaced
+      with the matching icon and the app still opens. If the launcher caches the
+      old icon, restart the launcher and check again.
+- [ ] Force-stop and reopen the app. Confirm the stored choice is re-applied
+      (the alias state is restored on launch).
+- [ ] On Android 13+, enable themed icons and confirm the monochrome sundial
+      layer is used instead of the colour icon.
+- [ ] Back up, clear app data and restore. Confirm the backup does not carry the
+      launcher choice and the default Classic alias comes back.
+- [ ] Place the icon at 48, 32 and 24 px on light and dark home screens under a
+      circle and a rounded-square mask. Confirm the sun stays inside the mask
+      and the gnomon remains readable.
+
+## Interaction sounds
+
+- [ ] Settings → Sound: turn interaction sounds on and confirm the switch cues.
+- [ ] Switch between Soft and Aero and confirm each pack previews after the
+      change.
+- [ ] Open Sound library and preview every group. Confirm each cue is distinct
+      and the Soft pack is noticeably quieter.
+- [ ] Complete a task on Today and reopen it. Confirm the completion and undo
+      cues differ from the toggle cues.
+- [ ] Tick a shift checklist item, a habit, and a shopping line. Confirm the
+      check cue, then the uncheck cue when each is reversed.
+- [ ] Start, pause and finish a tracked task. Confirm the three timer cues
+      differ.
+- [ ] Switch tabs, open and close a sheet, change a segmented control and use
+      a page back button. Confirm the navigation, open, back and select cues.
+- [ ] Relaunch the app with sounds already on and tap immediately. Confirm the
+      first cue is not delayed by loading.
+- [ ] Enable silent mode / Do Not Disturb and confirm interaction cues follow
+      the device's sonification policy.
 
 ## Emulator baseline (already verified)
 

@@ -17,6 +17,7 @@ import 'package:sundial/features/home_inventory/pages/home_inventory_page.dart';
 import 'package:sundial/features/home_inventory/pages/household_catalog_page.dart';
 import 'package:sundial/features/home_inventory/pages/maintenance_page.dart';
 import 'package:sundial/features/home_inventory/pages/shopping_list_page.dart';
+import 'package:sundial/features/sync/pages/sync_debug_page.dart';
 import 'package:sundial/models/app_settings.dart';
 import 'package:sundial/models/home_item.dart';
 import 'package:sundial/models/shopping_item.dart';
@@ -262,6 +263,17 @@ void main() {
     );
   });
 
+  testWidgets('render mobile sync debug log', (tester) async {
+    await _renderShell(
+      tester,
+      'v2-sync-debug-mobile.png',
+      database,
+      view: _phone,
+      settings: const AppSettings(developerOptionsEnabled: true),
+      home: const SyncDebugPage(),
+    );
+  });
+
   testWidgets('render Aero Today', (tester) async {
     await _renderShell(
       tester,
@@ -306,6 +318,21 @@ void main() {
       settings: const AppSettings(visualStyle: SundialVisualStyle.aero),
       act: (tester) async {
         await tester.tap(find.byIcon(Icons.settings_outlined));
+        await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  testWidgets('render Aero dark settings desktop', (tester) async {
+    await _renderShell(
+      tester,
+      'v2-aero-settings-desktop.png',
+      database,
+      view: _desktop,
+      brightness: Brightness.dark,
+      settings: const AppSettings(visualStyle: SundialVisualStyle.aero, themeMode: ThemeMode.dark),
+      act: (tester) async {
+        await tester.tap(find.text('Settings'));
         await tester.pumpAndSettle();
       },
     );
@@ -464,6 +491,22 @@ void main() {
       },
     );
   });
+
+  testWidgets('render Aero dark context menu', (tester) async {
+    await _renderShell(
+      tester,
+      'v2-aero-dark-context-menu-mobile.png',
+      database,
+      view: _phone,
+      brightness: Brightness.dark,
+      settings: const AppSettings(visualStyle: SundialVisualStyle.aero, themeMode: ThemeMode.dark),
+      home: const HomeInventoryPage(),
+      act: (tester) async {
+        await tester.tap(find.byIcon(Icons.more_horiz).first);
+        await tester.pumpAndSettle();
+      },
+    );
+  });
 }
 
 Future<void> _loadFonts() async {
@@ -556,6 +599,21 @@ Future<void> _renderShell(
     );
     await tester.pumpAndSettle();
     if (act != null) await act(tester);
+
+    // flutter_test does not finish asynchronous image decoding during a normal
+    // pump. Resolve bundled images before capture so the screenshots show the
+    // real art instead of blank image frames.
+    final images = tester.widgetList<Image>(find.byType(Image)).toList();
+    if (images.isNotEmpty) {
+      final context = tester.element(find.byType(Navigator).first);
+      await tester.runAsync(() async {
+        for (final image in images) {
+          final provider = image.image;
+          if (provider is AssetImage) await precacheImage(provider, context);
+        }
+      });
+      await tester.pumpAndSettle();
+    }
 
     final boundary = tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
     await tester.runAsync(() async {
@@ -659,7 +717,7 @@ Future<void> _seed(AppDatabase database) async {
       description: 'Twenty minutes before work',
       colorValue: 0xFF6B9B7B,
       icon: 'directions_run',
-      targetPerWeek: 5,
+      targetCount: 5,
       createdAt: created,
     ),
   );

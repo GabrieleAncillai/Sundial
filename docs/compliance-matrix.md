@@ -119,7 +119,7 @@ product-polish claims as proof.
 | OLED is readable in light mode | Met | OLED forces the dark palette, including when Aero is selected (`settings_test.dart`) |
 | Text size | Met (existing) | `textScale` |
 | Language English/Spanish | Met (existing) | ARB parity tests |
-| Interaction sounds off by default, pack, preview, six actions | Partial | assets and settings exist; a full six-action device audit is still manual |
+| Interaction sounds off by default, two packs, seventeen cues, per-cue previews | Met | `lib/core/sound/sound_service.dart`, `tool/generate_sounds.dart`, Settings → Sound → Sound library; `test/sound_assets_test.dart`, `test/sound_service_test.dart` |
 | Alarm sound picker used by notifications | Partial | Android channels exist; Linux uses the desktop sound; device check pending |
 | Date format applied app-wide | Met (first pass) | full dates, month/year, calendar headers, shift preview and report labels use the preference |
 | Searchable IANA zone with offset/local time | Met (existing) | `timezone_picker.dart` |
