@@ -10,6 +10,7 @@ import '../../../core/timezone/timezone_picker.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../models/app_settings.dart';
 import '../../../models/visual_style.dart';
+import '../../../services/app_icon_service.dart';
 import '../../../state/providers.dart';
 import '../../../state/settings_controller.dart';
 import '../../backup/backup_files.dart';
@@ -28,11 +29,13 @@ import '../../import/import_files.dart';
 import '../../media/media_store.dart';
 import '../../shifts/pages/shift_patterns_page.dart';
 import '../../spaces/widgets/space_controls.dart';
+import '../../sync/pages/sync_debug_page.dart';
 import '../../tags/pages/tags_page.dart';
+import '../widgets/app_icon_row.dart';
 import '../widgets/settings_rows.dart';
 import 'about_page.dart';
 
-enum SettingsDetailSection { appearance, preferences, data, about }
+enum SettingsDetailSection { appearance, preferences, data, about, developer }
 
 class SettingsDetailPage extends ConsumerWidget {
   const SettingsDetailPage({super.key, required this.section, this.highlight, this.embedded = false});
@@ -53,6 +56,7 @@ class SettingsDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
+    final appIcons = ref.watch(appIconServiceProvider);
     final controller = ref.read(settingsProvider.notifier);
 
     final content = SingleChildScrollView(
@@ -79,6 +83,29 @@ class SettingsDetailPage extends ConsumerWidget {
                     compact: true,
                   ),
                 ),
+                if (appIcons.isSupported)
+                  SettingsAppIconRow(
+                    title: l10n.appIcon,
+                    subtitle: l10n.appIconSubtitle,
+                    hint: appIcons.isLinux ? l10n.appIconHintLinux : l10n.appIconHint,
+                    classicLabel: l10n.appIconClassic,
+                    aeroLabel: l10n.appIconAero,
+                    selected: settings.appIconStyle,
+                    onChanged: (value) async {
+                      await controller.setAppIconStyle(value);
+                      final applied = await appIcons.apply(value);
+                      if (!context.mounted) return;
+                      if (!applied) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(l10n.appIconApplyFailed)));
+                      } else if (appIcons.isLinux) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(l10n.appIconHintLinux)));
+                      }
+                    },
+                  ),
                 SettingsChoiceRow(
                   icon: Icons.brightness_6_outlined,
                   title: l10n.brightness,
@@ -215,21 +242,19 @@ class SettingsDetailPage extends ConsumerWidget {
                       SundialSegment(value: SundialSoundPack.aero, label: l10n.soundPackAero),
                     ],
                     selected: settings.soundPack,
+                    silent: true,
                     onChanged: (value) {
                       controller.setSoundPack(value);
-                      ref.read(soundControllerProvider).play(UiSound.tap, force: true);
+                      ref.read(soundControllerProvider).play(UiSound.complete, force: true);
                     },
                     compact: true,
                   ),
                 ),
-                SettingsChoiceRow(
+                SettingsNavRow(
                   icon: Icons.play_circle_outline,
-                  title: l10n.previewSound,
-                  choice: OutlinedButton.icon(
-                    onPressed: () => ref.read(soundControllerProvider).play(UiSound.tap, force: true),
-                    icon: const Icon(Icons.play_arrow, size: 18),
-                    label: Text(l10n.previewSound),
-                  ),
+                  title: l10n.soundLibrary,
+                  subtitle: l10n.soundLibrarySubtitle,
+                  onTap: () => _openSoundLibrary(context),
                 ),
                 SettingsChoiceRow(
                   icon: Icons.alarm_outlined,
@@ -242,6 +267,7 @@ class SettingsDetailPage extends ConsumerWidget {
                       SundialSegment(value: SundialAlarmSound.bright, label: l10n.alarmSoundBright),
                     ],
                     selected: settings.alarmSound,
+                    silent: true,
                     onChanged: (value) {
                       controller.setAlarmSound(value);
                       ref.read(soundControllerProvider).previewAlarm(value);
@@ -492,6 +518,29 @@ class SettingsDetailPage extends ConsumerWidget {
                 ),
               ],
             ),
+          if (section == SettingsDetailSection.developer)
+            SettingsSection(
+              highlight: highlight,
+              title: l10n.developerSection,
+              children: [
+                SettingsSwitchRow(
+                  icon: Icons.developer_mode,
+                  title: l10n.developerOptions,
+                  subtitle: l10n.developerOptionsSubtitle,
+                  value: settings.developerOptionsEnabled,
+                  onChanged: controller.setDeveloperOptionsEnabled,
+                ),
+                if (settings.developerOptionsEnabled)
+                  SettingsNavRow(
+                    icon: Icons.sync_problem,
+                    title: l10n.syncDebugLog,
+                    subtitle: l10n.syncDebugLogSubtitle,
+                    onTap: () => Navigator.of(
+                      context,
+                    ).push(MaterialPageRoute<void>(builder: (_) => const SyncDebugPage())),
+                  ),
+              ],
+            ),
         ],
       ),
     );
@@ -504,6 +553,7 @@ class SettingsDetailPage extends ConsumerWidget {
         SettingsDetailSection.preferences => l10n.preferencesSection,
         SettingsDetailSection.data => l10n.dataSection,
         SettingsDetailSection.about => l10n.about,
+        SettingsDetailSection.developer => l10n.developerSection,
       },
       child: content,
     );
@@ -854,6 +904,10 @@ class SettingsDetailPage extends ConsumerWidget {
     }
   }
 
+  Future<void> _openSoundLibrary(BuildContext context) {
+    return showAppSheet<void>(context: context, builder: (_) => const _SoundLibrarySheet());
+  }
+
   Future<void> _pickTimeZone(BuildContext context, WidgetRef ref, AppSettings settings) async {
     final l10n = context.l10n;
     final picked = await showTimeZonePicker(
@@ -956,7 +1010,10 @@ class SettingsDetailPage extends ConsumerWidget {
             ListTile(
               title: Text(label),
               trailing: value == selected ? const Icon(Icons.check) : null,
-              onTap: () => Navigator.of(context).pop(value),
+              onTap: () {
+                playUiSound(context, UiSound.select);
+                Navigator.of(context).pop(value);
+              },
             ),
         ],
       ),
@@ -1315,6 +1372,102 @@ class _KeepBackupsSheet extends ConsumerWidget {
     );
   }
 }
+
+class _SoundLibrarySheet extends ConsumerWidget {
+  const _SoundLibrarySheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final controller = ref.read(soundControllerProvider);
+    final groups = <(String, List<UiSound>)>[
+      (
+        l10n.soundGroupNavigation,
+        const <UiSound>[UiSound.tap, UiSound.nav, UiSound.open, UiSound.back, UiSound.select],
+      ),
+      (l10n.soundGroupToggles, const <UiSound>[UiSound.toggleOn, UiSound.toggleOff]),
+      (
+        l10n.soundGroupCompletion,
+        const <UiSound>[
+          UiSound.complete,
+          UiSound.uncomplete,
+          UiSound.check,
+          UiSound.uncheck,
+          UiSound.confirm,
+          UiSound.remove,
+        ],
+      ),
+      (l10n.soundGroupTimers, const <UiSound>[UiSound.start, UiSound.pause, UiSound.finish]),
+      (l10n.soundGroupSystem, const <UiSound>[UiSound.error]),
+    ];
+
+    return AppSheet(
+      title: l10n.soundLibrary,
+      subtitle: l10n.soundLibrarySubtitle,
+      children: [
+        for (final (title, sounds) in groups) ...[
+          SectionLabel(title),
+          SoftCard(
+            padding: EdgeInsets.zero,
+            clip: true,
+            child: Column(
+              children: [
+                for (final sound in sounds)
+                  SheetAction(
+                    icon: _soundIcon(sound),
+                    label: _soundLabel(l10n, sound),
+                    trailing: Icons.play_arrow_rounded,
+                    onTap: () => controller.play(sound, force: true),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ],
+    );
+  }
+}
+
+String _soundLabel(AppLocalizations l10n, UiSound sound) => switch (sound) {
+  UiSound.tap => l10n.soundTap,
+  UiSound.nav => l10n.soundNavigate,
+  UiSound.open => l10n.soundOpen,
+  UiSound.back => l10n.soundBack,
+  UiSound.select => l10n.soundSelect,
+  UiSound.toggleOn => l10n.soundToggleOn,
+  UiSound.toggleOff => l10n.soundToggleOff,
+  UiSound.complete => l10n.soundComplete,
+  UiSound.uncomplete => l10n.soundUncomplete,
+  UiSound.check => l10n.soundCheck,
+  UiSound.uncheck => l10n.soundUncheck,
+  UiSound.confirm => l10n.soundConfirm,
+  UiSound.remove => l10n.soundRemove,
+  UiSound.start => l10n.soundStart,
+  UiSound.pause => l10n.soundPause,
+  UiSound.finish => l10n.soundFinish,
+  UiSound.error => l10n.soundError,
+};
+
+IconData _soundIcon(UiSound sound) => switch (sound) {
+  UiSound.tap => Icons.touch_app_outlined,
+  UiSound.nav => Icons.swap_horiz,
+  UiSound.open => Icons.unfold_more,
+  UiSound.back => Icons.arrow_back,
+  UiSound.select => Icons.radio_button_checked,
+  UiSound.toggleOn => Icons.toggle_on_outlined,
+  UiSound.toggleOff => Icons.toggle_off_outlined,
+  UiSound.complete => Icons.task_alt,
+  UiSound.uncomplete => Icons.undo,
+  UiSound.check => Icons.check_box_outlined,
+  UiSound.uncheck => Icons.check_box_outline_blank,
+  UiSound.confirm => Icons.save_outlined,
+  UiSound.remove => Icons.delete_outline,
+  UiSound.start => Icons.play_circle_outline,
+  UiSound.pause => Icons.pause_circle_outline,
+  UiSound.finish => Icons.stop_circle_outlined,
+  UiSound.error => Icons.error_outline,
+};
 
 class _HoursSheet extends StatefulWidget {
   const _HoursSheet({required this.title, required this.start, required this.end, required this.onSave});

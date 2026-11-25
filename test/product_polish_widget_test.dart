@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sundial/core/i18n/l10n.dart';
+import 'package:sundial/core/widgets/ui_kit.dart';
 import 'package:sundial/features/calendar/widgets/day_timeline.dart';
 import 'package:sundial/features/spaces/pages/context_detail_page.dart';
+import 'package:sundial/features/spaces/widgets/habit_widgets.dart';
 import 'package:sundial/features/settings/pages/settings_page.dart';
 import 'package:sundial/features/stats/pages/stats_page.dart';
 import 'package:sundial/models/app_settings.dart';
@@ -76,6 +78,37 @@ void main() {
     expect(find.text('Home inventory'), findsNothing);
     expect(find.text('Shopping list'), findsNothing);
     expect(find.text('Gadgets'), findsNothing);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('monthly habit card adds and undoes same-day check-ins', (tester) async {
+    const habit = Habit(
+      id: 'card',
+      spaceId: 'personal',
+      name: 'Card',
+      colorValue: 0xFF0A8FCF,
+      targetCount: 7,
+      targetPeriod: HabitTargetPeriod.month,
+    );
+    await database.saveHabit(habit);
+    await database.setHabitCompletionCount('card', today, 2);
+
+    await tester.pumpWidget(host(HabitCard(habit: habit)));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('2/7'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('habit-log-one')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('3/7'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Undo one'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('2/7'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(seconds: 1));
@@ -211,7 +244,15 @@ void main() {
     await tester.pumpAndSettle();
 
     // The sidebar lists the top-level sections and Appearance is selected.
+    expect(find.byType(SundialSidebar), findsOneWidget);
+    expect(find.byType(SundialSidebarItem), findsNWidgets(6));
     expect(find.text('Appearance'), findsWidgets);
+
+    // Search and list rows share the same horizontal insets as the main rail.
+    final search = tester.getRect(find.byType(SundialSearchField));
+    final firstRow = tester.getRect(find.byType(SundialSidebarItem).first);
+    expect(firstRow.left, search.left - 2);
+    expect(firstRow.right, search.right + 2);
     expect(find.text('Preferences'), findsOneWidget);
     expect(find.text('Data and backup'), findsOneWidget);
     expect(find.text('Online functionalities'), findsOneWidget);

@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/i18n/l10n.dart';
-import '../../../core/layout/sundial_layout.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../models/app_settings.dart';
+import '../../../services/app_icon_service.dart';
 import '../../../state/providers.dart';
 import '../../../state/settings_controller.dart';
 import '../../../theme/app_colors.dart';
-import '../../../theme/app_radii.dart';
 import '../../../theme/app_typography.dart';
 import '../../mcp/pages/mcp_page.dart';
 import '../../sync/pages/devices_page.dart';
@@ -51,7 +50,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Widget _mobile(BuildContext context) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
-    final entries = _entries(l10n);
+    final entries = _entries(l10n, settings);
     final query = _query.trim().toLowerCase();
     final matches = query.isEmpty
         ? const <_SettingLink>[]
@@ -110,6 +109,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   subtitle: l10n.dataSubtitle,
                   onTap: () => _pushDetail(context, SettingsDetailSection.data),
                 ),
+                SettingsNavRow(
+                  icon: Icons.developer_mode,
+                  title: l10n.developerSection,
+                  subtitle: l10n.developerSubtitle,
+                  onTap: () => _pushDetail(context, SettingsDetailSection.developer),
+                ),
               ],
             ),
             _onlineSection(context, l10n, settings, pairedCount),
@@ -134,7 +139,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Widget _desktop(BuildContext context) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
-    final entries = _entries(l10n);
+    final entries = _entries(l10n, settings);
     final query = _query.trim().toLowerCase();
     final matches = query.isEmpty
         ? const <_SettingLink>[]
@@ -154,13 +159,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       onBack: () => Navigator.of(context).maybePop(),
     );
     final pane = Expanded(
-      child: SundialContentPane(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _paneHeader(context, l10n),
-            Expanded(child: _paneBody(context, l10n, settings, pairedCount)),
-          ],
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+        child: SundialContentPane(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _paneHeader(context, l10n),
+              Expanded(child: _paneBody(context, l10n, settings, pairedCount)),
+            ],
+          ),
         ),
       ),
     );
@@ -168,15 +176,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: AppBackground(
+        style: settings.backgroundStyle,
+        customColor: Color(settings.backgroundCustomColor),
+        performanceMode: settings.performanceMode,
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: settings.navSide == SundialNavSide.right
-                  ? [pane, const SizedBox(width: 22), sidebar]
-                  : [sidebar, const SizedBox(width: 22), pane],
-            ),
+          bottom: false,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: settings.navSide == SundialNavSide.right ? [pane, sidebar] : [sidebar, pane],
           ),
         ),
       ),
@@ -212,6 +219,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       case _DesktopSettingsSection.appearance:
       case _DesktopSettingsSection.preferences:
       case _DesktopSettingsSection.data:
+      case _DesktopSettingsSection.developer:
         return SettingsDetailPage(
           section: _desktopSection.detail!,
           highlight: _desktopHighlight,
@@ -269,7 +277,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  List<_SettingLink> _entries(AppLocalizations l10n) => [
+  List<_SettingLink> _entries(AppLocalizations l10n, AppSettings settings) => [
     _SettingLink(
       icon: Icons.palette_outlined,
       title: l10n.style,
@@ -277,6 +285,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       keywords: 'style classic aero frutiger tema estilo',
       section: SettingsDetailSection.appearance,
     ),
+    if (const AppIconService().isSupported)
+      _SettingLink(
+        icon: Icons.apps_rounded,
+        title: l10n.appIcon,
+        subtitle: l10n.appearanceSection,
+        keywords: 'app icon launcher classic aero icono lanzador',
+        section: SettingsDetailSection.appearance,
+      ),
     _SettingLink(
       icon: Icons.brightness_6_outlined,
       title: l10n.brightness,
@@ -459,6 +475,21 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       keywords: 'about license version credits acerca licencia',
       route: _SettingRoute.about,
     ),
+    _SettingLink(
+      icon: Icons.developer_mode,
+      title: l10n.developerOptions,
+      subtitle: l10n.developerSubtitle,
+      keywords: 'developer debug diagnostics log depuracion desarrollador',
+      section: SettingsDetailSection.developer,
+    ),
+    if (settings.developerOptionsEnabled)
+      _SettingLink(
+        icon: Icons.sync_problem,
+        title: l10n.syncDebugLog,
+        subtitle: l10n.developerSubtitle,
+        keywords: 'sync log hlc merge changes sincronizacion registro',
+        section: SettingsDetailSection.developer,
+      ),
   ];
 
   void _selectDesktopSection(_DesktopSettingsSection section) {
@@ -557,45 +588,32 @@ class _SettingsSidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final c = context.mc;
-    return Container(
-      width: kSidebarWidth,
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
-      decoration: BoxDecoration(
-        color: c.navBg,
-        borderRadius: BorderRadius.circular(SundialRadii.lg),
-        border: Border.all(color: c.border),
-      ),
+    return SundialSidebar(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(4, 0, 4, 14),
-            child: Row(
-              children: [
-                _SidebarBackButton(onTap: onBack),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    l10n.settings,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: SundialType.headline(21, color: c.text),
-                  ),
-                ),
-              ],
+            padding: const EdgeInsets.fromLTRB(16, 16, 12, 10),
+            child: SundialPageHeader(title: l10n.settings, onBack: onBack),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: SundialSearchField(
+              controller: searchController,
+              hint: searchHint,
+              onChanged: onSearchChanged,
             ),
           ),
-          SundialSearchField(controller: searchController, hint: searchHint, onChanged: onSearchChanged),
-          const SizedBox(height: 14),
+          const SizedBox(height: 4),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(bottom: 8),
+            child: SundialSidebarList(
+              bottom: 8,
               children: [
                 if (searching) ...[
                   SectionLabel(l10n.settingsSearch),
                   if (matches.isEmpty)
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+                      padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
                       child: Text(
                         l10n.noSettingsFound,
                         style: SundialType.body(12.5, color: c.textSecondary),
@@ -603,33 +621,33 @@ class _SettingsSidebar extends StatelessWidget {
                     )
                   else
                     for (final link in matches)
-                      _SidebarRow(
+                      SundialSidebarItem(
                         icon: link.icon,
                         title: link.title,
                         subtitle: link.subtitle,
                         onTap: () => onOpenLink(link),
                       ),
                 ] else ...[
-                  _SidebarRow(
+                  SundialSidebarItem(
                     icon: Icons.palette_outlined,
                     title: l10n.appearanceSection,
                     selected: selected == _DesktopSettingsSection.appearance,
                     onTap: () => onSelected(_DesktopSettingsSection.appearance),
                   ),
-                  _SidebarRow(
+                  SundialSidebarItem(
                     icon: Icons.tune,
                     title: l10n.preferencesSection,
                     selected: selected == _DesktopSettingsSection.preferences,
                     onTap: () => onSelected(_DesktopSettingsSection.preferences),
                   ),
-                  _SidebarRow(
+                  SundialSidebarItem(
                     icon: Icons.storage_outlined,
                     title: l10n.dataSection,
                     selected: selected == _DesktopSettingsSection.data,
                     onTap: () => onSelected(_DesktopSettingsSection.data),
                   ),
                   const _SidebarDivider(),
-                  _SidebarRow(
+                  SundialSidebarItem(
                     icon: Icons.language,
                     title: l10n.onlineSection,
                     value: onlineEnabled ? l10n.on : l10n.off,
@@ -637,7 +655,13 @@ class _SettingsSidebar extends StatelessWidget {
                     onTap: () => onSelected(_DesktopSettingsSection.online),
                   ),
                   const _SidebarDivider(),
-                  _SidebarRow(
+                  SundialSidebarItem(
+                    icon: Icons.developer_mode,
+                    title: l10n.developerSection,
+                    selected: selected == _DesktopSettingsSection.developer,
+                    onTap: () => onSelected(_DesktopSettingsSection.developer),
+                  ),
+                  SundialSidebarItem(
                     icon: Icons.info_outline,
                     title: l10n.about,
                     selected: selected == _DesktopSettingsSection.about,
@@ -648,31 +672,6 @@ class _SettingsSidebar extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SidebarBackButton extends StatelessWidget {
-  const _SidebarBackButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.mc;
-    return Pressable(
-      onTap: onTap,
-      semanticButton: true,
-      child: Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: c.surface,
-          border: Border.all(color: c.border),
-        ),
-        child: Icon(Icons.chevron_left, size: 21, color: c.text),
       ),
     );
   }
@@ -690,89 +689,13 @@ class _SidebarDivider extends StatelessWidget {
   }
 }
 
-class _SidebarRow extends StatelessWidget {
-  const _SidebarRow({
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    this.value,
-    this.selected = false,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final String? value;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.mc;
-    final twoLines = subtitle != null;
-    return Semantics(
-      selected: selected,
-      button: true,
-      child: Pressable(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          margin: const EdgeInsets.symmetric(vertical: 2),
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: twoLines ? 8 : 10),
-          decoration: BoxDecoration(
-            color: selected ? c.accentSoft : Colors.transparent,
-            borderRadius: BorderRadius.circular(SundialRadii.sm),
-            border: Border.all(color: selected ? c.accent.withValues(alpha: 0.30) : Colors.transparent),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 18, color: selected ? c.accent : c.textSecondary),
-              const SizedBox(width: 11),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: SundialType.body(
-                        13.5,
-                        weight: selected ? FontWeight.w800 : FontWeight.w600,
-                        color: selected ? c.accent : c.text,
-                      ),
-                    ),
-                    if (twoLines) ...[
-                      const SizedBox(height: 1),
-                      Text(
-                        subtitle!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: SundialType.body(10.5, color: c.textTertiary),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              if (value != null) ...[
-                const SizedBox(width: 8),
-                Text(value!, style: SundialType.label(10.5, color: c.textTertiary)),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 enum _DesktopSettingsSection {
   appearance,
   preferences,
   data,
   online,
-  about;
+  about,
+  developer;
 
   SettingsDetailSection? get detail => switch (this) {
     _DesktopSettingsSection.appearance => SettingsDetailSection.appearance,
@@ -780,6 +703,7 @@ enum _DesktopSettingsSection {
     _DesktopSettingsSection.data => SettingsDetailSection.data,
     _DesktopSettingsSection.online => null,
     _DesktopSettingsSection.about => null,
+    _DesktopSettingsSection.developer => SettingsDetailSection.developer,
   };
 
   static _DesktopSettingsSection fromDetail(SettingsDetailSection section) => switch (section) {
@@ -787,6 +711,7 @@ enum _DesktopSettingsSection {
     SettingsDetailSection.preferences => _DesktopSettingsSection.preferences,
     SettingsDetailSection.data => _DesktopSettingsSection.data,
     SettingsDetailSection.about => _DesktopSettingsSection.about,
+    SettingsDetailSection.developer => _DesktopSettingsSection.developer,
   };
 
   String title(AppLocalizations l10n) => switch (this) {
@@ -795,6 +720,7 @@ enum _DesktopSettingsSection {
     _DesktopSettingsSection.data => l10n.dataSection,
     _DesktopSettingsSection.online => l10n.onlineSection,
     _DesktopSettingsSection.about => l10n.about,
+    _DesktopSettingsSection.developer => l10n.developerSection,
   };
 
   String subtitle(AppLocalizations l10n) => switch (this) {
@@ -803,6 +729,7 @@ enum _DesktopSettingsSection {
     _DesktopSettingsSection.data => l10n.dataSubtitle,
     _DesktopSettingsSection.online => l10n.onlineSubtitle,
     _DesktopSettingsSection.about => l10n.aboutSubtitle,
+    _DesktopSettingsSection.developer => l10n.developerSubtitle,
   };
 }
 
