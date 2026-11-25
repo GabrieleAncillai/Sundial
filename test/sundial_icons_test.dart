@@ -42,4 +42,15 @@ void main() {
     expect(SundialIcons.search('money'), containsAll(['payments', 'wallet']));
     expect(SundialIcons.search(''), SundialIcons.names);
   });
+
+  test('gemstone searches find the gem and sparkle set', () {
+    expect(SundialIcons.all['diamond'], Icons.diamond);
+    expect(
+      SundialIcons.search('gemstone'),
+      containsAll(['diamond', 'diamond_outlined', 'diamond_rounded', 'diamond_sharp', 'token', 'hexagon']),
+    );
+    expect(SundialIcons.search('jewellery'), contains('diamond'));
+    expect(SundialIcons.search('ruby'), contains('diamond'));
+    expect(SundialIcons.search('sparkle'), containsAll(['auto_awesome', 'flare', 'stars']));
+  });
 }

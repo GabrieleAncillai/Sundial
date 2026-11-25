@@ -304,6 +304,18 @@ abstract final class SundialIcons {
     'bolt': Icons.bolt,
     'target': Icons.track_changes,
     'book': Icons.book,
+
+    // Gems, sparkle and faceted shapes.
+    'diamond': Icons.diamond,
+    'diamond_outlined': Icons.diamond_outlined,
+    'diamond_rounded': Icons.diamond_rounded,
+    'diamond_sharp': Icons.diamond_sharp,
+    'token': Icons.token,
+    'hexagon': Icons.hexagon,
+    'pentagon': Icons.pentagon,
+    'auto_awesome': Icons.auto_awesome,
+    'flare': Icons.flare,
+    'stars': Icons.stars,
   };
 
   static const List<String> workRecommended = [
@@ -568,5 +580,30 @@ abstract final class SundialIcons {
     'bolt': ['electricity', 'power', 'energy', 'lightning'],
     'target': ['goal', 'aim', 'objective', 'focus'],
     'book': ['reading', 'read', 'library'],
+    'diamond': [
+      'gem',
+      'gemstone',
+      'jewel',
+      'jewellery',
+      'jewelry',
+      'crystal',
+      'brilliant',
+      'ruby',
+      'emerald',
+      'sapphire',
+      'amethyst',
+      'topaz',
+      'opal',
+      'luxury',
+    ],
+    'diamond_outlined': ['gem', 'gemstone', 'jewel', 'crystal', 'wireframe', 'outline'],
+    'diamond_rounded': ['gem', 'gemstone', 'jewel', 'crystal', 'round cut', 'brilliant'],
+    'diamond_sharp': ['gem', 'gemstone', 'jewel', 'crystal', 'kite cut', 'pear cut'],
+    'token': ['gem', 'gemstone', 'amulet', 'charm', 'coin', 'medal'],
+    'hexagon': ['gem', 'gemstone', 'crystal', 'facet', 'shape', 'honeycomb'],
+    'pentagon': ['gem', 'gemstone', 'crystal', 'facet', 'shape'],
+    'auto_awesome': ['sparkle', 'sparkles', 'magic', 'shine', 'glitter', 'star'],
+    'flare': ['sparkle', 'burst', 'shine', 'glow', 'star'],
+    'stars': ['sparkle', 'glitter', 'starry', 'night', 'magic'],
   };
 }
