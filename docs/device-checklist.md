@@ -3,6 +3,10 @@
 This is the last v1.0 gate. Run it on the real Android device with a debug or
 release build. Record the build version and the device model next to each item.
 
+Run instructions: [unattended-device-run.md](unattended-device-run.md) for the
+agent-driven pass and [manual-device-checklist.md](manual-device-checklist.md)
+for the items that need a human.
+
 ## Latest run
 
 2026-11-24, HUAWEI MAR-LX3A, Android 10 / API 29, debug 0.9.0+9. The

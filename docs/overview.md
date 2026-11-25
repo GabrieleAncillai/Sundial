@@ -72,6 +72,9 @@ covered. The constraint audit is in [compliance-audit.md](compliance-audit.md).
 - [Full docs](full-docs.md): architecture, data model, feature areas and roadmap.
 - [Completion plan](completion-plan.md): the active v0.6 → v1.0 milestones and
   acceptance criteria.
+- [Progress](progress.md): the dated log of shipped work and live test counts.
+- [Device checklist](device-checklist.md): the v1.0 on-device gate, run prompts
+  and latest reports.
 - [Compliance audit](compliance-audit.md): constraint status and open findings.
 - [Reference map](reference-map.md): where to look in GymMane and Streak.
 - [Screenshots](screenshots/): the current Aero, menu and Home captures rendered
