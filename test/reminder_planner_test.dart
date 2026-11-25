@@ -236,6 +236,76 @@ void main() {
     expect(plans[1].fireAt, DateTime.utc(2026, 3, 8, 12));
   });
 
+  test('a multi-day window reminds on every day and stops when completed', () {
+    final entry = Entry(
+      id: 'credit',
+      spaceId: 'personal',
+      title: 'Pay the loan',
+      date: LocalDate.parse('2026-01-01'),
+      endDate: LocalDate.parse('2026-01-05'),
+      allDay: true,
+      recurrence: const RecurrenceRule(frequency: RecurrenceFrequency.monthly, monthDay: 1),
+      createdAt: createdAt,
+      updatedAt: createdAt,
+    );
+    const reminders = {
+      'credit': [Reminder(id: 'morning', entryId: 'credit', offsetMinutes: 0, timeMinute: 9 * 60)],
+    };
+    final occurrences = expandEntries(
+      entries: [entry],
+      start: LocalDate.parse('2026-01-01'),
+      end: LocalDate.parse('2026-01-05'),
+      viewerTimeZone: 'Europe/Madrid',
+    );
+    final plans = planReminders(
+      occurrences: occurrences,
+      remindersByEntry: reminders,
+      now: DateTime.utc(2026, 1, 1),
+      deviceTimeZone: 'Europe/Madrid',
+    );
+
+    expect(plans, hasLength(5));
+    expect(plans.map((plan) => plan.date).toSet(), {LocalDate.parse('2026-01-01')});
+    expect(plans.map((plan) => plan.notificationId).toSet(), hasLength(5));
+    expect(plans.map((plan) => plan.fireAt), [
+      DateTime.utc(2026, 1, 1, 8),
+      DateTime.utc(2026, 1, 2, 8),
+      DateTime.utc(2026, 1, 3, 8),
+      DateTime.utc(2026, 1, 4, 8),
+      DateTime.utc(2026, 1, 5, 8),
+    ]);
+
+    final completed = expandEntries(
+      entries: [entry],
+      start: LocalDate.parse('2026-01-01'),
+      end: LocalDate.parse('2026-01-05'),
+      viewerTimeZone: 'Europe/Madrid',
+      completions: {
+        entry.id: {LocalDate.parse('2026-01-01')},
+      },
+    );
+    expect(completed.every((occurrence) => occurrence.completed), isTrue);
+    expect(
+      planReminders(
+        occurrences: completed,
+        remindersByEntry: reminders,
+        now: DateTime.utc(2026, 1, 1),
+        deviceTimeZone: 'Europe/Madrid',
+      ),
+      isEmpty,
+    );
+  });
+
+  test('notification ids stay distinct for the days of one multi-day occurrence', () {
+    final dayOne = notificationIdFor('credit', 'morning', 20260101, displayDateKey: 20260101);
+    final dayTwo = notificationIdFor('credit', 'morning', 20260101, displayDateKey: 20260102);
+    final legacy = notificationIdFor('credit', 'morning', 20260101);
+
+    expect(dayOne, legacy);
+    expect(dayTwo, isNot(dayOne));
+    expect(notificationIdFor('credit', 'morning', 20260101, displayDateKey: 20260101), dayOne);
+  });
+
   test('notification ids are stable and distinct per occurrence', () {
     final first = notificationIdFor('entry', 'entry:10', 20260302);
     final again = notificationIdFor('entry', 'entry:10', 20260302);

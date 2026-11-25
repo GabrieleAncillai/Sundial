@@ -185,9 +185,9 @@ class Entry {
 
   /// Whether this entry appears on [day] in its stored timezone.
   ///
-  /// Recurring entries are expanded by their start dates. A multi-day
-  /// recurring entry is not supported; that needs an explicit end offset per
-  /// occurrence, which is a later decision.
+  /// Recurring entries match their start dates only. Calendar expansion uses
+  /// `expandEntries`, which also places a recurring multi-day occurrence on
+  /// every day it covers.
   bool occursOn(LocalDate day) {
     if (deletedAt != null || status == EntryStatus.cancelled) return false;
     final anchor = date;
@@ -378,6 +378,10 @@ class EntryOccurrence {
   });
 
   /// Date in the entry's stored timezone.
+  ///
+  /// For a recurring multi-day span this is the cycle's anchor date on every
+  /// displayed day; [displayDate] is the day being drawn. Completion is keyed
+  /// by this date.
   final LocalDate date;
 
   /// Date in the viewer's timezone. This is what lists and calendars group by.

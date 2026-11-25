@@ -164,6 +164,53 @@ void main() {
     expect(occurrences.last.completed, isFalse);
   });
 
+  test('completing any day of a recurring multi-day window completes every day', () async {
+    await database.seedDefaults();
+    final first = LocalDate.parse('2026-01-01');
+    final now = DateTime.utc(2026, 1, 1, 8);
+
+    await database.saveEntry(
+      Entry(
+        id: 'credit',
+        spaceId: 'personal',
+        title: 'Pay the loan',
+        kind: EntryKind.obligation,
+        date: first,
+        endDate: LocalDate.parse('2026-01-05'),
+        allDay: true,
+        recurrence: const RecurrenceRule(frequency: RecurrenceFrequency.monthly, monthDay: 1),
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    await database.setOccurrenceCompleted('credit', first, completed: true);
+
+    final january = await database
+        .watchEntriesBetween(first, LocalDate.parse('2026-01-05'), 'Europe/Madrid')
+        .first;
+    expect(january, hasLength(5));
+    expect(january.every((occurrence) => occurrence.completed), isTrue);
+
+    final fourth = await database
+        .watchEntriesBetween(LocalDate.parse('2026-01-04'), LocalDate.parse('2026-01-04'), 'Europe/Madrid')
+        .first;
+    expect(fourth, hasLength(1));
+    expect(fourth.single.date, first);
+    expect(fourth.single.completed, isTrue);
+
+    final february = await database
+        .watchEntriesBetween(LocalDate.parse('2026-02-01'), LocalDate.parse('2026-02-05'), 'Europe/Madrid')
+        .first;
+    expect(february, hasLength(5));
+    expect(february.any((occurrence) => occurrence.completed), isFalse);
+
+    await database.setOccurrenceCompleted('credit', first, completed: false);
+    final reopened = await database
+        .watchEntriesBetween(first, LocalDate.parse('2026-01-05'), 'Europe/Madrid')
+        .first;
+    expect(reopened.every((occurrence) => !occurrence.completed), isTrue);
+  });
+
   test('completion survives a database restart', () async {
     final directory = await Directory.systemTemp.createTemp('sundial-restart');
     final path = '${directory.path}/sundial.sqlite';

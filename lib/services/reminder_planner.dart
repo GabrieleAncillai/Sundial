@@ -67,7 +67,12 @@ List<PlannedReminder> planReminders({
 
       plans.add(
         PlannedReminder(
-          notificationId: notificationIdFor(entry.id, reminder.id, occurrence.date.key),
+          notificationId: notificationIdFor(
+            entry.id,
+            reminder.id,
+            occurrence.date.key,
+            displayDateKey: occurrence.displayDate.key,
+          ),
           entryId: entry.id,
           date: occurrence.date,
           fireAt: fireAt,
@@ -84,8 +89,15 @@ List<PlannedReminder> planReminders({
 
 /// Stable 31-bit notification id. FNV-1a avoids `String.hashCode`, which is
 /// not guaranteed to survive Dart SDK upgrades.
-int notificationIdFor(String entryId, String reminderId, int dateKey) {
-  final input = '$entryId|$reminderId|$dateKey';
+///
+/// A recurring multi-day occurrence is drawn on several display days while it
+/// shares one completion key. The display date keeps each day's reminder
+/// distinct until the occurrence is completed; single-day occurrences keep the
+/// same id as before.
+int notificationIdFor(String entryId, String reminderId, int dateKey, {int? displayDateKey}) {
+  final input = displayDateKey == null || displayDateKey == dateKey
+      ? '$entryId|$reminderId|$dateKey'
+      : '$entryId|$reminderId|$dateKey|$displayDateKey';
   var hash = 0x811c9dc5;
   for (final unit in input.codeUnits) {
     hash ^= unit;

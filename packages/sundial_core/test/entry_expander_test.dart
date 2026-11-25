@@ -165,6 +165,86 @@ void main() {
     );
 
     expect(occurrences.map((item) => item.displayDate.iso), ['2026-03-03', '2026-03-04']);
+    expect(occurrences.every((item) => item.date == trip.date), isTrue);
+  });
+
+  test('a recurring multi-day window completes as one occurrence', () {
+    final entry = Entry(
+      id: 'credit',
+      spaceId: 'personal',
+      title: 'Pay the loan',
+      kind: EntryKind.obligation,
+      date: LocalDate.parse('2026-01-01'),
+      endDate: LocalDate.parse('2026-01-05'),
+      allDay: true,
+      recurrence: const RecurrenceRule(frequency: RecurrenceFrequency.monthly, monthDay: 1),
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    final occurrences = expandEntries(
+      entries: [entry],
+      start: LocalDate.parse('2026-01-01'),
+      end: LocalDate.parse('2026-02-05'),
+      viewerTimeZone: 'Pacific/Auckland',
+      completions: {
+        entry.id: {LocalDate.parse('2026-01-01')},
+      },
+    );
+
+    final january = occurrences.where((item) => item.displayDate.month == 1).toList();
+    final february = occurrences.where((item) => item.displayDate.month == 2).toList();
+    expect(january.map((item) => item.displayDate.iso), [
+      '2026-01-01',
+      '2026-01-02',
+      '2026-01-03',
+      '2026-01-04',
+      '2026-01-05',
+    ]);
+    expect(january.every((item) => item.date == LocalDate.parse('2026-01-01')), isTrue);
+    expect(january.every((item) => item.completed), isTrue);
+    expect(february, hasLength(5));
+    expect(february.every((item) => item.date == LocalDate.parse('2026-02-01')), isTrue);
+    expect(february.any((item) => item.completed), isFalse);
+  });
+
+  test('a narrow view inside a recurring multi-day window still finds the occurrence', () {
+    final entry = Entry(
+      id: 'credit',
+      spaceId: 'personal',
+      title: 'Pay the loan',
+      kind: EntryKind.obligation,
+      date: LocalDate.parse('2026-01-01'),
+      endDate: LocalDate.parse('2026-01-05'),
+      allDay: true,
+      recurrence: const RecurrenceRule(frequency: RecurrenceFrequency.monthly, monthDay: 1),
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    final fourth = expandEntries(
+      entries: [entry],
+      start: LocalDate.parse('2026-01-04'),
+      end: LocalDate.parse('2026-01-04'),
+      viewerTimeZone: 'Europe/Madrid',
+      completions: {
+        entry.id: {LocalDate.parse('2026-01-01')},
+      },
+    );
+
+    expect(fourth, hasLength(1));
+    expect(fourth.single.displayDate, LocalDate.parse('2026-01-04'));
+    expect(fourth.single.date, LocalDate.parse('2026-01-01'));
+    expect(fourth.single.completed, isTrue);
+    expect(
+      expandEntries(
+        entries: [entry],
+        start: LocalDate.parse('2026-01-06'),
+        end: LocalDate.parse('2026-01-06'),
+        viewerTimeZone: 'Europe/Madrid',
+      ),
+      isEmpty,
+    );
   });
 
   test('all-day items sort before timed items on the same day', () {

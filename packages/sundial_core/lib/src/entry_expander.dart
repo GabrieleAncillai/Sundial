@@ -16,13 +16,16 @@ typedef EntryCompletions = Map<String, Set<LocalDate>>;
 /// group it by its date in [viewerTimeZone]. That is what makes a 09:00 shift
 /// move when the device travels and a birthday stay put.
 ///
-/// Multi-day entries produce one occurrence per displayed day. Overnight timed
-/// entries also produce the tail day, so a 22:00–02:00 block is visible on both
-/// days. Recurrence skip dates are removed and modified occurrences are moved
-/// to their replacement date/time before placement.
+/// Multi-day entries produce one occurrence per displayed day. A recurring
+/// multi-day occurrence keeps the same anchor date on every displayed day, so
+/// completing any day completes the whole occurrence. Overnight timed entries
+/// also produce the tail day, so a 22:00–02:00 block is visible on both days.
+/// Recurrence skip dates are removed and modified occurrences are moved to
+/// their replacement date/time before placement.
 ///
-/// The caller pads recurrence expansion by two days in each direction, so an
-/// occurrence whose viewer date lands inside the range is still found.
+/// Recurrence expansion leads the range by each entry's own span plus two days,
+/// and trails it by two, so a timed occurrence whose viewer date lands inside
+/// the range is still found.
 List<EntryOccurrence> expandEntries({
   required Iterable<Entry> entries,
   required LocalDate start,
@@ -33,7 +36,6 @@ List<EntryOccurrence> expandEntries({
   if (start.isAfter(end)) return const <EntryOccurrence>[];
 
   final result = <EntryOccurrence>[];
-  final paddedStart = start.addDays(-2);
   final paddedEnd = end.addDays(2);
 
   for (final entry in entries) {
@@ -44,6 +46,11 @@ List<EntryOccurrence> expandEntries({
     if (anchor == null) continue;
     final doneDates = completions[entry.id] ?? const <LocalDate>{};
     final rule = entry.recurrence;
+    // A narrow view can start after the anchor of a multi-day occurrence that
+    // still covers it. Lead the expansion by the entry's own span, not just
+    // the two-day viewer-timezone padding.
+    final spanDays = entry.endDate?.differenceInDays(anchor) ?? 0;
+    final paddedStart = start.addDays(-(spanDays + 2));
 
     final overrides = <LocalDate, RecurrenceOverride>{
       for (final override in rule?.overrides ?? const <RecurrenceOverride>[]) override.date: override,
@@ -70,18 +77,20 @@ List<EntryOccurrence> expandEntries({
           : entry.copyWith(title: override.title, notes: override.notes);
 
       if (entry.allDay || (override?.allDay ?? false)) {
-        final last = entry.endDate;
-        final span = last == null ? 0 : last.differenceInDays(anchor);
         var cursor = effectiveDate;
-        final lastDay = effectiveDate.addDays(span);
+        final lastDay = effectiveDate.addDays(spanDays);
+        // Every day of a multi-day occurrence is one item for completion. The
+        // occurrence anchor keeps all days of a recurring window tied to the
+        // same completion, so checking any day closes the whole window and
+        // cancels its remaining reminders.
         while (cursor.isOnOrBefore(lastDay)) {
           if (_inRange(cursor, start, end)) {
             result.add(
               EntryOccurrence(
-                date: cursor,
+                date: date,
                 displayDate: cursor,
                 entry: occurrenceEntry,
-                completed: entry.status == EntryStatus.done || doneDates.contains(cursor),
+                completed: entry.status == EntryStatus.done || doneDates.contains(date),
               ),
             );
           }
