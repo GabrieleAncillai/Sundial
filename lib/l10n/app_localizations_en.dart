@@ -325,6 +325,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get styleAero => 'Aero';
 
   @override
+  String get appIcon => 'App icon';
+
+  @override
+  String get appIconSubtitle => 'Choose the launcher icon for this device.';
+
+  @override
+  String get appIconClassic => 'Classic';
+
+  @override
+  String get appIconAero => 'Aero';
+
+  @override
+  String get appIconHint => 'Some launchers need a restart before the new icon appears.';
+
+  @override
+  String get appIconHintLinux => 'Log out and back in to refresh the desktop icon.';
+
+  @override
+  String get appIconApplyFailed => 'Could not update the app icon.';
+
+  @override
   String get brightness => 'Brightness';
 
   @override
@@ -1758,12 +1779,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get habitName => 'Habit name';
 
   @override
+  String get habitTargetPeriod => 'Target period';
+
+  @override
   String get targetPerWeek => 'Target per week';
+
+  @override
+  String get targetPerMonth => 'Target per month';
 
   @override
   String timesPerWeek(int count) {
     return '$count× per week';
   }
+
+  @override
+  String timesPerMonth(int count) {
+    return '$count× per month';
+  }
+
+  @override
+  String get increaseTarget => 'Increase target';
+
+  @override
+  String get decreaseTarget => 'Decrease target';
 
   @override
   String streakDays(int count) {
@@ -1776,7 +1814,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String streakMonths(int count) {
+    return '$count month streak';
+  }
+
+  @override
   String get thisWeek => 'This week';
+
+  @override
+  String get thisMonth => 'This month';
 
   @override
   String get habitHistory => 'History';
@@ -1791,10 +1837,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get habitHistoryHint => 'Filled days are done. Outlined days are scheduled.';
 
   @override
+  String get habitMonthHistoryHint => 'Each bar is one month. The number shows check-ins against the target.';
+
+  @override
   String get markHabitDone => 'Mark done';
 
   @override
   String get habitDone => 'Done today';
+
+  @override
+  String get logHabitOne => 'Log one';
+
+  @override
+  String get undoHabitOne => 'Undo one';
 
   @override
   String get addGadget => 'Add gadget';
@@ -2441,7 +2496,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get interactionSoundsSubtitle =>
-      'Short, quiet blips for taps, tabs, completions and clock actions. Off by default.';
+      'Short, quiet cues for taps, tabs, completions, checklists and timers. Off by default.';
 
   @override
   String get soundPackLabel => 'Sound pack';
@@ -2454,6 +2509,78 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get previewSound => 'Preview';
+
+  @override
+  String get soundLibrary => 'Sound library';
+
+  @override
+  String get soundLibrarySubtitle => 'Preview every cue in the current pack.';
+
+  @override
+  String get soundGroupNavigation => 'Navigation';
+
+  @override
+  String get soundGroupToggles => 'Toggles';
+
+  @override
+  String get soundGroupCompletion => 'Completion';
+
+  @override
+  String get soundGroupTimers => 'Timers';
+
+  @override
+  String get soundGroupSystem => 'Feedback';
+
+  @override
+  String get soundTap => 'Tap';
+
+  @override
+  String get soundNavigate => 'Tab change';
+
+  @override
+  String get soundOpen => 'Open';
+
+  @override
+  String get soundBack => 'Back';
+
+  @override
+  String get soundSelect => 'Select';
+
+  @override
+  String get soundToggleOn => 'On';
+
+  @override
+  String get soundToggleOff => 'Off';
+
+  @override
+  String get soundComplete => 'Task complete';
+
+  @override
+  String get soundUncomplete => 'Reopen task';
+
+  @override
+  String get soundCheck => 'Check off';
+
+  @override
+  String get soundUncheck => 'Uncheck';
+
+  @override
+  String get soundConfirm => 'Save';
+
+  @override
+  String get soundRemove => 'Delete';
+
+  @override
+  String get soundStart => 'Start timer';
+
+  @override
+  String get soundPause => 'Pause timer';
+
+  @override
+  String get soundFinish => 'Finish timer';
+
+  @override
+  String get soundError => 'Error';
 
   @override
   String get alarmSounds => 'Alarm sounds';
@@ -3059,6 +3186,132 @@ class AppLocalizationsEn extends AppLocalizations {
   String serviceEventTitle(String name) {
     return '$name service';
   }
+
+  @override
+  String get developerSection => 'Developer';
+
+  @override
+  String get developerSubtitle => 'Diagnostic tools and local logs';
+
+  @override
+  String get developerOptions => 'Enable developer options';
+
+  @override
+  String get developerOptionsSubtitle => 'Show diagnostic tools such as the sync log.';
+
+  @override
+  String get syncDebugLog => 'Sync debug log';
+
+  @override
+  String get syncDebugLogSubtitle => 'Inspect field-level HLC changes, versions and peer cursors.';
+
+  @override
+  String get syncDebugTitle => 'Sync debug';
+
+  @override
+  String get syncDebugSubtitle => 'Local HLC merge bookkeeping on this device.';
+
+  @override
+  String get syncDebugExplainer =>
+      'Each local edit appends a change with the HLC of every changed field group. Remote applies update the field versions but never append here.';
+
+  @override
+  String get syncDebugLocalState => 'Local sync state';
+
+  @override
+  String get syncDebugChanges => 'Changes';
+
+  @override
+  String get syncDebugFields => 'Fields';
+
+  @override
+  String get syncDebugFieldVersions => 'Field versions';
+
+  @override
+  String get syncDebugTombstones => 'Tombstones';
+
+  @override
+  String get syncDebugPeers => 'Peers';
+
+  @override
+  String get syncDebugRefresh => 'Refresh log';
+
+  @override
+  String get syncDebugCopy => 'Copy log';
+
+  @override
+  String get syncDebugCopied => 'Sync log copied.';
+
+  @override
+  String get syncDebugCopyChange => 'Copy change';
+
+  @override
+  String get syncDebugCopiedChange => 'Change copied.';
+
+  @override
+  String get syncDebugFilter => 'Filter entity, row, field or value';
+
+  @override
+  String syncDebugShowing(int shown, int total) {
+    return 'Showing $shown of $total';
+  }
+
+  @override
+  String get syncDebugNoChanges => 'No local changes yet.';
+
+  @override
+  String get syncDebugNoFields => 'No field versions yet.';
+
+  @override
+  String get syncDebugNoTombstones => 'No tombstones.';
+
+  @override
+  String get syncDebugNoPeers => 'No peer cursors yet.';
+
+  @override
+  String get syncDebugNoMatches => 'Nothing matches that filter.';
+
+  @override
+  String get syncDebugNode => 'Node';
+
+  @override
+  String get syncDebugDataset => 'Dataset';
+
+  @override
+  String get syncDebugEpoch => 'Epoch';
+
+  @override
+  String get syncDebugClock => 'HLC clock';
+
+  @override
+  String get syncDebugUpsert => 'Upsert';
+
+  @override
+  String get syncDebugDelete => 'Delete';
+
+  @override
+  String syncDebugFieldsChanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count fields', one: '1 field');
+    return '$_temp0';
+  }
+
+  @override
+  String get syncDebugTombstone => 'Tombstone';
+
+  @override
+  String get syncDebugRowPayload => 'Row payload';
+
+  @override
+  String get syncDebugCursor => 'Cursor';
+
+  @override
+  String get syncDebugLastSynced => 'Last synced';
+
+  @override
+  String get syncDebugPeerError => 'Error';
+
+  @override
+  String get syncDebugUpdated => 'Updated';
 
   @override
   String get saveSettings => 'Save';

@@ -656,6 +656,48 @@ abstract class AppLocalizations {
   /// **'Aero'**
   String get styleAero;
 
+  /// No description provided for @appIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'App icon'**
+  String get appIcon;
+
+  /// No description provided for @appIconSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the launcher icon for this device.'**
+  String get appIconSubtitle;
+
+  /// No description provided for @appIconClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get appIconClassic;
+
+  /// No description provided for @appIconAero.
+  ///
+  /// In en, this message translates to:
+  /// **'Aero'**
+  String get appIconAero;
+
+  /// No description provided for @appIconHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Some launchers need a restart before the new icon appears.'**
+  String get appIconHint;
+
+  /// No description provided for @appIconHintLinux.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out and back in to refresh the desktop icon.'**
+  String get appIconHintLinux;
+
+  /// No description provided for @appIconApplyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update the app icon.'**
+  String get appIconApplyFailed;
+
   /// No description provided for @brightness.
   ///
   /// In en, this message translates to:
@@ -3206,17 +3248,47 @@ abstract class AppLocalizations {
   /// **'Habit name'**
   String get habitName;
 
+  /// No description provided for @habitTargetPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Target period'**
+  String get habitTargetPeriod;
+
   /// No description provided for @targetPerWeek.
   ///
   /// In en, this message translates to:
   /// **'Target per week'**
   String get targetPerWeek;
 
+  /// No description provided for @targetPerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Target per month'**
+  String get targetPerMonth;
+
   /// No description provided for @timesPerWeek.
   ///
   /// In en, this message translates to:
   /// **'{count}× per week'**
   String timesPerWeek(int count);
+
+  /// No description provided for @timesPerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}× per month'**
+  String timesPerMonth(int count);
+
+  /// No description provided for @increaseTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase target'**
+  String get increaseTarget;
+
+  /// No description provided for @decreaseTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease target'**
+  String get decreaseTarget;
 
   /// No description provided for @streakDays.
   ///
@@ -3230,11 +3302,23 @@ abstract class AppLocalizations {
   /// **'{count} week streak'**
   String streakWeeks(int count);
 
+  /// No description provided for @streakMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} month streak'**
+  String streakMonths(int count);
+
   /// No description provided for @thisWeek.
   ///
   /// In en, this message translates to:
   /// **'This week'**
   String get thisWeek;
+
+  /// No description provided for @thisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get thisMonth;
 
   /// No description provided for @habitHistory.
   ///
@@ -3260,6 +3344,12 @@ abstract class AppLocalizations {
   /// **'Filled days are done. Outlined days are scheduled.'**
   String get habitHistoryHint;
 
+  /// No description provided for @habitMonthHistoryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Each bar is one month. The number shows check-ins against the target.'**
+  String get habitMonthHistoryHint;
+
   /// No description provided for @markHabitDone.
   ///
   /// In en, this message translates to:
@@ -3271,6 +3361,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Done today'**
   String get habitDone;
+
+  /// No description provided for @logHabitOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Log one'**
+  String get logHabitOne;
+
+  /// No description provided for @undoHabitOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo one'**
+  String get undoHabitOne;
 
   /// No description provided for @addGadget.
   ///
@@ -4463,7 +4565,7 @@ abstract class AppLocalizations {
   /// No description provided for @interactionSoundsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Short, quiet blips for taps, tabs, completions and clock actions. Off by default.'**
+  /// **'Short, quiet cues for taps, tabs, completions, checklists and timers. Off by default.'**
   String get interactionSoundsSubtitle;
 
   /// No description provided for @soundPackLabel.
@@ -4489,6 +4591,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Preview'**
   String get previewSound;
+
+  /// No description provided for @soundLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound library'**
+  String get soundLibrary;
+
+  /// No description provided for @soundLibrarySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview every cue in the current pack.'**
+  String get soundLibrarySubtitle;
+
+  /// No description provided for @soundGroupNavigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation'**
+  String get soundGroupNavigation;
+
+  /// No description provided for @soundGroupToggles.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggles'**
+  String get soundGroupToggles;
+
+  /// No description provided for @soundGroupCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion'**
+  String get soundGroupCompletion;
+
+  /// No description provided for @soundGroupTimers.
+  ///
+  /// In en, this message translates to:
+  /// **'Timers'**
+  String get soundGroupTimers;
+
+  /// No description provided for @soundGroupSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get soundGroupSystem;
+
+  /// No description provided for @soundTap.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap'**
+  String get soundTap;
+
+  /// No description provided for @soundNavigate.
+  ///
+  /// In en, this message translates to:
+  /// **'Tab change'**
+  String get soundNavigate;
+
+  /// No description provided for @soundOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get soundOpen;
+
+  /// No description provided for @soundBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get soundBack;
+
+  /// No description provided for @soundSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get soundSelect;
+
+  /// No description provided for @soundToggleOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get soundToggleOn;
+
+  /// No description provided for @soundToggleOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get soundToggleOff;
+
+  /// No description provided for @soundComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Task complete'**
+  String get soundComplete;
+
+  /// No description provided for @soundUncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen task'**
+  String get soundUncomplete;
+
+  /// No description provided for @soundCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Check off'**
+  String get soundCheck;
+
+  /// No description provided for @soundUncheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncheck'**
+  String get soundUncheck;
+
+  /// No description provided for @soundConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get soundConfirm;
+
+  /// No description provided for @soundRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get soundRemove;
+
+  /// No description provided for @soundStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start timer'**
+  String get soundStart;
+
+  /// No description provided for @soundPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause timer'**
+  String get soundPause;
+
+  /// No description provided for @soundFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish timer'**
+  String get soundFinish;
+
+  /// No description provided for @soundError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get soundError;
 
   /// No description provided for @alarmSounds.
   ///
@@ -5599,6 +5845,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} service'**
   String serviceEventTitle(String name);
+
+  /// No description provided for @developerSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer'**
+  String get developerSection;
+
+  /// No description provided for @developerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostic tools and local logs'**
+  String get developerSubtitle;
+
+  /// No description provided for @developerOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable developer options'**
+  String get developerOptions;
+
+  /// No description provided for @developerOptionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show diagnostic tools such as the sync log.'**
+  String get developerOptionsSubtitle;
+
+  /// No description provided for @syncDebugLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync debug log'**
+  String get syncDebugLog;
+
+  /// No description provided for @syncDebugLogSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspect field-level HLC changes, versions and peer cursors.'**
+  String get syncDebugLogSubtitle;
+
+  /// No description provided for @syncDebugTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync debug'**
+  String get syncDebugTitle;
+
+  /// No description provided for @syncDebugSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Local HLC merge bookkeeping on this device.'**
+  String get syncDebugSubtitle;
+
+  /// No description provided for @syncDebugExplainer.
+  ///
+  /// In en, this message translates to:
+  /// **'Each local edit appends a change with the HLC of every changed field group. Remote applies update the field versions but never append here.'**
+  String get syncDebugExplainer;
+
+  /// No description provided for @syncDebugLocalState.
+  ///
+  /// In en, this message translates to:
+  /// **'Local sync state'**
+  String get syncDebugLocalState;
+
+  /// No description provided for @syncDebugChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes'**
+  String get syncDebugChanges;
+
+  /// No description provided for @syncDebugFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Fields'**
+  String get syncDebugFields;
+
+  /// No description provided for @syncDebugFieldVersions.
+  ///
+  /// In en, this message translates to:
+  /// **'Field versions'**
+  String get syncDebugFieldVersions;
+
+  /// No description provided for @syncDebugTombstones.
+  ///
+  /// In en, this message translates to:
+  /// **'Tombstones'**
+  String get syncDebugTombstones;
+
+  /// No description provided for @syncDebugPeers.
+  ///
+  /// In en, this message translates to:
+  /// **'Peers'**
+  String get syncDebugPeers;
+
+  /// No description provided for @syncDebugRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh log'**
+  String get syncDebugRefresh;
+
+  /// No description provided for @syncDebugCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy log'**
+  String get syncDebugCopy;
+
+  /// No description provided for @syncDebugCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync log copied.'**
+  String get syncDebugCopied;
+
+  /// No description provided for @syncDebugCopyChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy change'**
+  String get syncDebugCopyChange;
+
+  /// No description provided for @syncDebugCopiedChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change copied.'**
+  String get syncDebugCopiedChange;
+
+  /// No description provided for @syncDebugFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter entity, row, field or value'**
+  String get syncDebugFilter;
+
+  /// No description provided for @syncDebugShowing.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing {shown} of {total}'**
+  String syncDebugShowing(int shown, int total);
+
+  /// No description provided for @syncDebugNoChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'No local changes yet.'**
+  String get syncDebugNoChanges;
+
+  /// No description provided for @syncDebugNoFields.
+  ///
+  /// In en, this message translates to:
+  /// **'No field versions yet.'**
+  String get syncDebugNoFields;
+
+  /// No description provided for @syncDebugNoTombstones.
+  ///
+  /// In en, this message translates to:
+  /// **'No tombstones.'**
+  String get syncDebugNoTombstones;
+
+  /// No description provided for @syncDebugNoPeers.
+  ///
+  /// In en, this message translates to:
+  /// **'No peer cursors yet.'**
+  String get syncDebugNoPeers;
+
+  /// No description provided for @syncDebugNoMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches that filter.'**
+  String get syncDebugNoMatches;
+
+  /// No description provided for @syncDebugNode.
+  ///
+  /// In en, this message translates to:
+  /// **'Node'**
+  String get syncDebugNode;
+
+  /// No description provided for @syncDebugDataset.
+  ///
+  /// In en, this message translates to:
+  /// **'Dataset'**
+  String get syncDebugDataset;
+
+  /// No description provided for @syncDebugEpoch.
+  ///
+  /// In en, this message translates to:
+  /// **'Epoch'**
+  String get syncDebugEpoch;
+
+  /// No description provided for @syncDebugClock.
+  ///
+  /// In en, this message translates to:
+  /// **'HLC clock'**
+  String get syncDebugClock;
+
+  /// No description provided for @syncDebugUpsert.
+  ///
+  /// In en, this message translates to:
+  /// **'Upsert'**
+  String get syncDebugUpsert;
+
+  /// No description provided for @syncDebugDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get syncDebugDelete;
+
+  /// No description provided for @syncDebugFieldsChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 field} other{{count} fields}}'**
+  String syncDebugFieldsChanged(int count);
+
+  /// No description provided for @syncDebugTombstone.
+  ///
+  /// In en, this message translates to:
+  /// **'Tombstone'**
+  String get syncDebugTombstone;
+
+  /// No description provided for @syncDebugRowPayload.
+  ///
+  /// In en, this message translates to:
+  /// **'Row payload'**
+  String get syncDebugRowPayload;
+
+  /// No description provided for @syncDebugCursor.
+  ///
+  /// In en, this message translates to:
+  /// **'Cursor'**
+  String get syncDebugCursor;
+
+  /// No description provided for @syncDebugLastSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Last synced'**
+  String get syncDebugLastSynced;
+
+  /// No description provided for @syncDebugPeerError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get syncDebugPeerError;
+
+  /// No description provided for @syncDebugUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated'**
+  String get syncDebugUpdated;
 
   /// No description provided for @saveSettings.
   ///

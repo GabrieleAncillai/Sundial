@@ -325,6 +325,28 @@ class AppLocalizationsEs extends AppLocalizations {
   String get styleAero => 'Aero';
 
   @override
+  String get appIcon => 'Icono de la app';
+
+  @override
+  String get appIconSubtitle => 'Elige el icono del lanzador para este dispositivo.';
+
+  @override
+  String get appIconClassic => 'Clásico';
+
+  @override
+  String get appIconAero => 'Aero';
+
+  @override
+  String get appIconHint => 'Algunos lanzadores necesitan reiniciarse para mostrar el icono nuevo.';
+
+  @override
+  String get appIconHintLinux =>
+      'Cierra la sesión y vuelve a entrar para actualizar el icono del escritorio.';
+
+  @override
+  String get appIconApplyFailed => 'No se pudo actualizar el icono de la app.';
+
+  @override
   String get brightness => 'Brillo';
 
   @override
@@ -1770,12 +1792,29 @@ class AppLocalizationsEs extends AppLocalizations {
   String get habitName => 'Nombre del hábito';
 
   @override
+  String get habitTargetPeriod => 'Periodo del objetivo';
+
+  @override
   String get targetPerWeek => 'Objetivo semanal';
+
+  @override
+  String get targetPerMonth => 'Objetivo mensual';
 
   @override
   String timesPerWeek(int count) {
     return '$count× por semana';
   }
+
+  @override
+  String timesPerMonth(int count) {
+    return '$count× al mes';
+  }
+
+  @override
+  String get increaseTarget => 'Aumentar objetivo';
+
+  @override
+  String get decreaseTarget => 'Reducir objetivo';
 
   @override
   String streakDays(int count) {
@@ -1788,7 +1827,15 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String streakMonths(int count) {
+    return 'Racha de $count meses';
+  }
+
+  @override
   String get thisWeek => 'Esta semana';
+
+  @override
+  String get thisMonth => 'Este mes';
 
   @override
   String get habitHistory => 'Historial';
@@ -1803,10 +1850,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get habitHistoryHint => 'Los días rellenos están hechos. Los días con borde están programados.';
 
   @override
+  String get habitMonthHistoryHint =>
+      'Cada barra es un mes. El número muestra los registros frente al objetivo.';
+
+  @override
   String get markHabitDone => 'Marcar hecho';
 
   @override
   String get habitDone => 'Hecho hoy';
+
+  @override
+  String get logHabitOne => 'Registrar uno';
+
+  @override
+  String get undoHabitOne => 'Deshacer uno';
 
   @override
   String get addGadget => 'Añadir aparato';
@@ -2453,7 +2510,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get interactionSoundsSubtitle =>
-      'Tonos breves y suaves al tocar, cambiar de pestaña, completar o fichar. Apagados por defecto.';
+      'Tonos breves y suaves al tocar, cambiar de pestaña, completar, marcar listas y usar temporizadores. Apagados por defecto.';
 
   @override
   String get soundPackLabel => 'Paquete de sonidos';
@@ -2466,6 +2523,78 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get previewSound => 'Escuchar';
+
+  @override
+  String get soundLibrary => 'Biblioteca de sonidos';
+
+  @override
+  String get soundLibrarySubtitle => 'Escucha cada sonido del paquete actual.';
+
+  @override
+  String get soundGroupNavigation => 'Navegación';
+
+  @override
+  String get soundGroupToggles => 'Interruptores';
+
+  @override
+  String get soundGroupCompletion => 'Completar';
+
+  @override
+  String get soundGroupTimers => 'Temporizadores';
+
+  @override
+  String get soundGroupSystem => 'Avisos';
+
+  @override
+  String get soundTap => 'Toque';
+
+  @override
+  String get soundNavigate => 'Cambio de pestaña';
+
+  @override
+  String get soundOpen => 'Abrir';
+
+  @override
+  String get soundBack => 'Atrás';
+
+  @override
+  String get soundSelect => 'Elegir';
+
+  @override
+  String get soundToggleOn => 'Activar';
+
+  @override
+  String get soundToggleOff => 'Desactivar';
+
+  @override
+  String get soundComplete => 'Tarea completada';
+
+  @override
+  String get soundUncomplete => 'Reabrir tarea';
+
+  @override
+  String get soundCheck => 'Marcar';
+
+  @override
+  String get soundUncheck => 'Desmarcar';
+
+  @override
+  String get soundConfirm => 'Guardar';
+
+  @override
+  String get soundRemove => 'Eliminar';
+
+  @override
+  String get soundStart => 'Iniciar temporizador';
+
+  @override
+  String get soundPause => 'Pausar temporizador';
+
+  @override
+  String get soundFinish => 'Terminar temporizador';
+
+  @override
+  String get soundError => 'Error';
 
   @override
   String get alarmSounds => 'Sonidos de alarma';
@@ -3074,6 +3203,133 @@ class AppLocalizationsEs extends AppLocalizations {
   String serviceEventTitle(String name) {
     return 'Servicio de $name';
   }
+
+  @override
+  String get developerSection => 'Desarrollador';
+
+  @override
+  String get developerSubtitle => 'Herramientas de diagnóstico y registros locales';
+
+  @override
+  String get developerOptions => 'Activar opciones de desarrollador';
+
+  @override
+  String get developerOptionsSubtitle =>
+      'Muestra herramientas de diagnóstico como el registro de sincronización.';
+
+  @override
+  String get syncDebugLog => 'Registro de sincronización';
+
+  @override
+  String get syncDebugLogSubtitle => 'Inspecciona cambios HLC por campo, versiones y cursores de pares.';
+
+  @override
+  String get syncDebugTitle => 'Depuración de sincronización';
+
+  @override
+  String get syncDebugSubtitle => 'Registro local de fusiones HLC de este dispositivo.';
+
+  @override
+  String get syncDebugExplainer =>
+      'Cada edición local añade un cambio con el HLC de cada grupo de campos modificado. Las aplicaciones remotas actualizan las versiones de campos, pero nunca añaden cambios aquí.';
+
+  @override
+  String get syncDebugLocalState => 'Estado de sincronización local';
+
+  @override
+  String get syncDebugChanges => 'Cambios';
+
+  @override
+  String get syncDebugFields => 'Campos';
+
+  @override
+  String get syncDebugFieldVersions => 'Versiones de campos';
+
+  @override
+  String get syncDebugTombstones => 'Borrados';
+
+  @override
+  String get syncDebugPeers => 'Pares';
+
+  @override
+  String get syncDebugRefresh => 'Actualizar registro';
+
+  @override
+  String get syncDebugCopy => 'Copiar registro';
+
+  @override
+  String get syncDebugCopied => 'Registro de sincronización copiado.';
+
+  @override
+  String get syncDebugCopyChange => 'Copiar cambio';
+
+  @override
+  String get syncDebugCopiedChange => 'Cambio copiado.';
+
+  @override
+  String get syncDebugFilter => 'Filtrar entidad, fila, campo o valor';
+
+  @override
+  String syncDebugShowing(int shown, int total) {
+    return 'Mostrando $shown de $total';
+  }
+
+  @override
+  String get syncDebugNoChanges => 'Aún no hay cambios locales.';
+
+  @override
+  String get syncDebugNoFields => 'Aún no hay versiones de campos.';
+
+  @override
+  String get syncDebugNoTombstones => 'No hay marcas de borrado.';
+
+  @override
+  String get syncDebugNoPeers => 'Aún no hay cursores de pares.';
+
+  @override
+  String get syncDebugNoMatches => 'Nada coincide con ese filtro.';
+
+  @override
+  String get syncDebugNode => 'Nodo';
+
+  @override
+  String get syncDebugDataset => 'Dataset';
+
+  @override
+  String get syncDebugEpoch => 'Época';
+
+  @override
+  String get syncDebugClock => 'Reloj HLC';
+
+  @override
+  String get syncDebugUpsert => 'Upsert';
+
+  @override
+  String get syncDebugDelete => 'Borrado';
+
+  @override
+  String syncDebugFieldsChanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count campos', one: '1 campo');
+    return '$_temp0';
+  }
+
+  @override
+  String get syncDebugTombstone => 'Marca de borrado';
+
+  @override
+  String get syncDebugRowPayload => 'Contenido de la fila';
+
+  @override
+  String get syncDebugCursor => 'Cursor';
+
+  @override
+  String get syncDebugLastSynced => 'Última sincronización';
+
+  @override
+  String get syncDebugPeerError => 'Error';
+
+  @override
+  String get syncDebugUpdated => 'Actualizado';
 
   @override
   String get saveSettings => 'Guardar';
