@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
+import '../models/app_icon_style.dart';
 import '../models/app_settings.dart';
 import '../models/visual_style.dart';
 import '../services/planner_repository.dart';
@@ -37,6 +38,11 @@ class SettingsController extends Notifier<AppSettings> {
     if (value == SundialVisualStyle.aero) {
       await _repository.writeSetting(SettingsKeys.soundPack, SundialSoundPack.aero.name);
     }
+  }
+
+  Future<void> setAppIconStyle(AppIconStyle value) async {
+    state = state.copyWith(appIconStyle: value);
+    await _repository.writeSetting(SettingsKeys.appIconStyle, value.name);
   }
 
   Future<void> setAccentScheme(SundialAccentScheme value) async {
@@ -99,6 +105,11 @@ class SettingsController extends Notifier<AppSettings> {
   Future<void> setAlarmSound(SundialAlarmSound value) async {
     state = state.copyWith(alarmSound: value);
     await _repository.writeSetting(SettingsKeys.alarmSound, value.name);
+  }
+
+  Future<void> setDeveloperOptionsEnabled(bool value) async {
+    state = state.copyWith(developerOptionsEnabled: value);
+    await _repository.writeSetting(SettingsKeys.developerOptions, '$value');
   }
 
   /// Empty selects the device zone. Unknown zones are ignored so a stale or

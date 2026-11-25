@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
+import 'app_icon_style.dart';
 import 'visual_style.dart';
 
 abstract final class SettingsKeys {
@@ -28,6 +29,9 @@ abstract final class SettingsKeys {
 
   static const visualStyle = 'visualStyle';
 
+  /// Device-local launcher icon choice. Never synced or backed up.
+  static const appIconStyle = 'appIconStyle';
+
   /// Legacy key. Read only to migrate installs that predate named styles.
   static const themeVariant = 'themeVariant';
   static const colorScheme = 'colorScheme';
@@ -43,6 +47,7 @@ abstract final class SettingsKeys {
   static const soundPack = 'soundPack';
   static const alarmSound = 'alarmSound';
   static const timezoneOverride = 'timezoneOverride';
+  static const developerOptions = 'developerOptions';
 }
 
 enum SundialAccentScheme { sage, ocean, sunset, violet, mono }
@@ -81,6 +86,7 @@ class AppSettings {
     this.quietHoursStartMinute = 22 * 60,
     this.quietHoursEndMinute = 7 * 60,
     this.visualStyle = SundialVisualStyle.classic,
+    this.appIconStyle = AppIconStyle.classic,
     this.accentScheme = SundialAccentScheme.sage,
     this.backgroundStyle = SundialBackgroundStyle.dots,
     this.backgroundCustomColor = 0xFFF6F4EF,
@@ -94,6 +100,7 @@ class AppSettings {
     this.soundPack = SundialSoundPack.aero,
     this.alarmSound = SundialAlarmSound.chime,
     this.timezoneOverride = '',
+    this.developerOptionsEnabled = false,
   });
 
   final ThemeMode themeMode;
@@ -134,6 +141,7 @@ class AppSettings {
   final int quietHoursEndMinute;
 
   final SundialVisualStyle visualStyle;
+  final AppIconStyle appIconStyle;
   final SundialAccentScheme accentScheme;
   final SundialBackgroundStyle backgroundStyle;
   final int backgroundCustomColor;
@@ -157,6 +165,10 @@ class AppSettings {
 
   /// IANA zone used for new timed entries. Empty follows the device zone.
   final String timezoneOverride;
+
+  /// Reveals local diagnostic tools such as the sync debug log. Device-local
+  /// and never synced.
+  final bool developerOptionsEnabled;
 
   Duration get commute => Duration(minutes: sleepCommuteMinutes);
   Duration get windDown => Duration(minutes: sleepWindDownMinutes);
@@ -197,6 +209,7 @@ class AppSettings {
     return AppSettings(
       themeMode: _themeMode(values),
       visualStyle: _visualStyle(values),
+      appIconStyle: AppIconStyle.fromName(values[SettingsKeys.appIconStyle]),
       accentScheme: _accentScheme(values[SettingsKeys.colorScheme]),
       backgroundStyle: _backgroundStyle(values[SettingsKeys.backgroundStyle]),
       backgroundCustomColor: int.tryParse(values[SettingsKeys.backgroundCustomColor] ?? '') ?? 0xFFF6F4EF,
@@ -235,6 +248,7 @@ class AppSettings {
       quietHoursEnabled: values[SettingsKeys.quietHoursEnabled] == 'true',
       quietHoursStartMinute: _minutes(values[SettingsKeys.quietHoursStart], 22 * 60),
       quietHoursEndMinute: _minutes(values[SettingsKeys.quietHoursEnd], 7 * 60),
+      developerOptionsEnabled: values[SettingsKeys.developerOptions] == 'true',
     );
   }
 
@@ -353,6 +367,7 @@ class AppSettings {
     int? quietHoursStartMinute,
     int? quietHoursEndMinute,
     SundialVisualStyle? visualStyle,
+    AppIconStyle? appIconStyle,
     SundialAccentScheme? accentScheme,
     SundialBackgroundStyle? backgroundStyle,
     int? backgroundCustomColor,
@@ -366,6 +381,7 @@ class AppSettings {
     SundialSoundPack? soundPack,
     SundialAlarmSound? alarmSound,
     String? timezoneOverride,
+    bool? developerOptionsEnabled,
   }) => AppSettings(
     themeMode: themeMode ?? this.themeMode,
     locale: clearLocale ? null : (locale ?? this.locale),
@@ -388,6 +404,7 @@ class AppSettings {
     quietHoursStartMinute: quietHoursStartMinute ?? this.quietHoursStartMinute,
     quietHoursEndMinute: quietHoursEndMinute ?? this.quietHoursEndMinute,
     visualStyle: visualStyle ?? this.visualStyle,
+    appIconStyle: appIconStyle ?? this.appIconStyle,
     accentScheme: accentScheme ?? this.accentScheme,
     backgroundStyle: backgroundStyle ?? this.backgroundStyle,
     backgroundCustomColor: backgroundCustomColor ?? this.backgroundCustomColor,
@@ -401,5 +418,6 @@ class AppSettings {
     soundPack: soundPack ?? this.soundPack,
     alarmSound: alarmSound ?? this.alarmSound,
     timezoneOverride: timezoneOverride ?? this.timezoneOverride,
+    developerOptionsEnabled: developerOptionsEnabled ?? this.developerOptionsEnabled,
   );
 }

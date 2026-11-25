@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sundial/models/app_icon_style.dart';
 import 'package:sundial/models/app_settings.dart';
 import 'package:sundial/models/date_range.dart';
 import 'package:sundial/services/app_database.dart';
@@ -48,6 +49,7 @@ void main() {
       SettingsKeys.hideWorkSpace: 'true',
       SettingsKeys.defaultReminderOffsets: '60,10,10',
       SettingsKeys.syncEnabled: 'false',
+      SettingsKeys.developerOptions: 'true',
     });
 
     expect(settings.themeMode, ThemeMode.dark);
@@ -56,6 +58,8 @@ void main() {
     expect(settings.hideWorkSpace, isTrue);
     expect(settings.defaultReminderOffsets, [10, 60]);
     expect(settings.syncEnabled, isFalse);
+    expect(settings.developerOptionsEnabled, isTrue);
+    expect(const AppSettings().developerOptionsEnabled, isFalse);
   });
 
   test('falls back on unknown values', () {
@@ -68,6 +72,15 @@ void main() {
     expect(settings.themeMode, ThemeMode.system);
     expect(settings.locale, const Locale('tlh'));
     expect(settings.weekStart, DateTime.monday);
+  });
+
+  test('parses the device-local launcher icon choice', () {
+    expect(const AppSettings().appIconStyle, AppIconStyle.classic);
+    expect(
+      AppSettings.fromMap({SettingsKeys.appIconStyle: AppIconStyle.aero.name}).appIconStyle,
+      AppIconStyle.aero,
+    );
+    expect(AppSettings.fromMap({SettingsKeys.appIconStyle: 'neon'}).appIconStyle, AppIconStyle.classic);
   });
 
   test('parses sound and planning time zone preferences', () {
@@ -180,7 +193,9 @@ void main() {
     await controller.setSoundsEnabled(true);
     await controller.setSoundPack(SundialSoundPack.soft);
     await controller.setAlarmSound(SundialAlarmSound.bright);
+    await controller.setAppIconStyle(AppIconStyle.aero);
     await controller.setTimezoneOverride('Europe/Madrid');
+    await controller.setDeveloperOptionsEnabled(true);
 
     final stored = await database.readSettings();
     expect(stored[SettingsKeys.themeMode], 'light');
@@ -191,7 +206,9 @@ void main() {
     expect(stored[SettingsKeys.soundsEnabled], 'true');
     expect(stored[SettingsKeys.soundPack], 'soft');
     expect(stored[SettingsKeys.alarmSound], 'bright');
+    expect(stored[SettingsKeys.appIconStyle], 'aero');
     expect(stored[SettingsKeys.timezoneOverride], 'Europe/Madrid');
+    expect(stored[SettingsKeys.developerOptions], 'true');
 
     await controller.setTimezoneOverride('Not/AZone');
     expect(container.read(settingsProvider).timezoneOverride, 'Europe/Madrid');
