@@ -11,7 +11,8 @@
     <application
         android:label="Sundial"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_classic"
+        android:roundIcon="@mipmap/ic_launcher_classic_round"
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:dataExtractionRules="@xml/data_extraction_rules">
@@ -33,13 +34,37 @@
               android:resource="@style/NormalTheme"
               />
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-            <intent-filter>
                 <action android:name="es.antonborri.home_widget.action.LAUNCH" />
             </intent-filter>
         </activity>
+        <!-- The launcher icon is selectable. Each alias is a launcher entry with
+             its own icon; the app enables exactly one at a time. -->
+        <activity-alias
+            android:name=".ClassicIcon"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_classic"
+            android:label="Sundial"
+            android:roundIcon="@mipmap/ic_launcher_classic_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".AeroIcon"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_aero"
+            android:label="Sundial"
+            android:roundIcon="@mipmap/ic_launcher_aero_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <receiver

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Sundial
+GenericName=Planner
+Comment=A local-first planner for life, work and home.
+Exec=sundial
+Icon=io.github.sundial
+Terminal=false
+Categories=Office;Utility;
+StartupWMClass=io.github.sundial

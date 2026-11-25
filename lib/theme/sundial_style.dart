@@ -15,7 +15,7 @@ enum SundialEnvironment { calm, aero }
 /// How glyphs are rendered. Outline is the reference shell; glossy is Aero.
 enum SundialIconTreatment { outline, glossy }
 
-/// The brand mark shape. A future style can add its own mark without making
+/// The brand mark artwork. A future style can add its own mark without making
 /// the shell test for a style name.
 enum SundialBrandMark { tile, orb }
 

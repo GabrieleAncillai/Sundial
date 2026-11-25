@@ -6,6 +6,7 @@ import 'package:sundial_core/sundial_core.dart';
 import 'app/sundial_app.dart';
 import 'models/app_settings.dart';
 import 'services/app_database.dart';
+import 'services/app_icon_service.dart';
 import 'services/notification_service.dart';
 import 'state/providers.dart';
 import 'state/settings_controller.dart';
@@ -17,6 +18,10 @@ Future<void> main() async {
   final database = AppDatabase.open(defaultTimeZone: timeZone);
   await database.seedDefaults();
   final settings = AppSettings.fromMap(await database.readSettings());
+  // Android remembers the enabled activity alias across launches, but an
+  // install, update or backup restore can reset it. Re-apply the stored choice
+  // before the first frame so the launcher entry always matches the setting.
+  await const AppIconService().apply(settings.appIconStyle);
   final notifications = NotificationService();
   await notifications.initialize(deviceTimeZone: timeZone, alarmSound: settings.alarmSound);
   runApp(
