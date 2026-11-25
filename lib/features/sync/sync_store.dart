@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 
@@ -7,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../services/app_database.dart';
 import '../media/media_store.dart';
 import 'sync_clock.dart';
+import 'sync_debug_models.dart';
 import 'sync_field_groups.dart';
 import 'sync_models.dart';
 
@@ -22,6 +24,9 @@ class SyncStore {
 
   static const defaultSnapshotLimit = 500;
   static const defaultChangesLimit = 200;
+  static const defaultDebugChangeLimit = 200;
+  static const defaultDebugFieldLimit = 300;
+  static const defaultDebugTombstoneLimit = 200;
 
   // ---------------------------------------------------------------------------
   // Snapshot and change feed
@@ -856,6 +861,180 @@ class SyncStore {
       final parsed = SyncHlc.tryParse(payload.deleted!);
       if (parsed != null) yield parsed;
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Developer diagnostics
+
+  /// Reads the local change feed and merge state for the developer screen.
+  /// Lists are capped so a large plan cannot build an unbounded widget list;
+  /// [SyncDebugCounts] keeps the real totals for the footer.
+  Future<SyncDebugSnapshot> readDebugSnapshot({
+    int changeLimit = defaultDebugChangeLimit,
+    int fieldLimit = defaultDebugFieldLimit,
+    int tombstoneLimit = defaultDebugTombstoneLimit,
+  }) async {
+    final state = await _db.syncDeviceState();
+    final changeCap = changeLimit.clamp(1, 2000).toInt();
+    final fieldCap = fieldLimit.clamp(1, 2000).toInt();
+    final tombstoneCap = tombstoneLimit.clamp(1, 2000).toInt();
+
+    final changes =
+        await (_db.select(_db.syncChangeRecords)
+              ..orderBy([(row) => OrderingTerm.desc(row.seq)])
+              ..limit(changeCap))
+            .get();
+    final fields =
+        await (_db.select(_db.syncFieldVersionRecords)
+              ..orderBy([
+                (row) => OrderingTerm.desc(row.updatedAt),
+                (row) => OrderingTerm.asc(row.entity),
+                (row) => OrderingTerm.asc(row.rowKey),
+                (row) => OrderingTerm.asc(row.field),
+              ])
+              ..limit(fieldCap))
+            .get();
+    final tombstones =
+        await (_db.select(_db.syncTombstoneRecords)
+              ..orderBy([(row) => OrderingTerm.desc(row.updatedAt)])
+              ..limit(tombstoneCap))
+            .get();
+    final peers = await _db.select(_db.syncPeerStateRecords).get()
+      ..sort((first, second) => first.peerDeviceId.compareTo(second.peerDeviceId));
+
+    return SyncDebugSnapshot(
+      device: SyncDebugDevice(
+        nodeId: state.nodeId,
+        datasetId: state.datasetId,
+        epoch: state.epoch,
+        hlcMillis: state.hlcMillis,
+        hlcCounter: state.hlcCounter,
+        createdAt: state.createdAt,
+        updatedAt: state.updatedAt,
+      ),
+      changes: [
+        for (final row in changes)
+          SyncDebugChange(
+            seq: row.seq,
+            changeId: row.changeId,
+            originNodeId: row.originNodeId,
+            originEpoch: row.originEpoch,
+            originSeq: row.originSeq,
+            entity: row.entity,
+            rowKey: row.rowKey,
+            op: row.op,
+            versions: _decodeVersions(row.versionsJson),
+            rowJson: row.rowJson,
+            createdAt: row.createdAt,
+          ),
+      ],
+      fields: [
+        for (final row in fields)
+          SyncDebugFieldVersion(
+            entity: row.entity,
+            rowKey: row.rowKey,
+            field: row.field,
+            version: row.version,
+            updatedAt: row.updatedAt,
+          ),
+      ],
+      tombstones: [
+        for (final row in tombstones)
+          SyncDebugTombstone(
+            entity: row.entity,
+            rowKey: row.rowKey,
+            version: row.version,
+            rowJson: row.rowJson,
+            updatedAt: row.updatedAt,
+          ),
+      ],
+      peers: [
+        for (final row in peers)
+          SyncDebugPeer(
+            peerDeviceId: row.peerDeviceId,
+            datasetId: row.datasetId,
+            peerEpoch: row.peerEpoch,
+            lastPulledSeq: row.lastPulledSeq,
+            lastSyncedAt: row.lastSyncedAt,
+            lastError: row.lastError,
+          ),
+      ],
+      counts: SyncDebugCounts(
+        changes: await _rowCount(_db.syncChangeRecords),
+        fieldVersions: await _rowCount(_db.syncFieldVersionRecords),
+        tombstones: await _rowCount(_db.syncTombstoneRecords),
+      ),
+    );
+  }
+
+  /// Watches the sync bookkeeping tables and re-reads the capped snapshot.
+  /// Bursts from one pull are debounced so the page does not parse every
+  /// intermediate page.
+  Stream<SyncDebugSnapshot> watchDebugSnapshot({
+    int changeLimit = defaultDebugChangeLimit,
+    int fieldLimit = defaultDebugFieldLimit,
+    int tombstoneLimit = defaultDebugTombstoneLimit,
+  }) {
+    late final StreamController<SyncDebugSnapshot> controller;
+    StreamSubscription<Set<TableUpdate>>? subscription;
+    Timer? debounce;
+    var reading = false;
+    var pending = false;
+    var cancelled = false;
+
+    Future<void> refresh() async {
+      if (reading) {
+        pending = true;
+        return;
+      }
+      reading = true;
+      do {
+        pending = false;
+        try {
+          final snapshot = await readDebugSnapshot(
+            changeLimit: changeLimit,
+            fieldLimit: fieldLimit,
+            tombstoneLimit: tombstoneLimit,
+          );
+          if (!cancelled) controller.add(snapshot);
+        } catch (error, stackTrace) {
+          if (!cancelled) controller.addError(error, stackTrace);
+        }
+      } while (pending && !cancelled);
+      reading = false;
+    }
+
+    controller = StreamController<SyncDebugSnapshot>(
+      onListen: () {
+        unawaited(refresh());
+        subscription = _db
+            .tableUpdates(
+              TableUpdateQuery.onAllTables([
+                _db.syncChangeRecords,
+                _db.syncFieldVersionRecords,
+                _db.syncTombstoneRecords,
+                _db.syncPeerStateRecords,
+                _db.syncDeviceStateRecords,
+              ]),
+            )
+            .listen((_) {
+              debounce?.cancel();
+              debounce = Timer(const Duration(milliseconds: 120), refresh);
+            });
+      },
+      onCancel: () async {
+        cancelled = true;
+        debounce?.cancel();
+        await subscription?.cancel();
+      },
+    );
+    return controller.stream;
+  }
+
+  Future<int> _rowCount(TableInfo table) async {
+    final count = countAll();
+    final query = _db.selectOnly(table)..addColumns([count]);
+    return (await query.getSingle()).read(count) ?? 0;
   }
 }
 

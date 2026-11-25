@@ -9,6 +9,7 @@ import '../features/sync/identity_service.dart';
 import '../features/sync/lan_client.dart';
 import '../features/sync/lan_server.dart';
 import '../features/sync/peer_discovery.dart';
+import '../features/sync/sync_debug_models.dart';
 import '../features/sync/sync_engine.dart';
 import '../features/sync/sync_store.dart';
 import '../features/sync/sync_service.dart';
@@ -235,6 +236,14 @@ final lanClientProvider = Provider<LanClient>(
 );
 
 final syncStoreProvider = Provider<SyncStore>((ref) => SyncStore(ref.read(databaseProvider)));
+
+/// Read-only replica bookkeeping for the developer sync log. The stream
+/// watches the sync tables, so new field-level changes appear without a manual
+/// refresh. It stays alive only while the debug page listens.
+final syncDebugSnapshotProvider = StreamProvider<SyncDebugSnapshot>(
+  (ref) => ref.watch(syncStoreProvider).watchDebugSnapshot(),
+  isAutoDispose: true,
+);
 
 final syncEngineProvider = Provider<SyncEngine>(
   (ref) => SyncEngine(store: ref.read(syncStoreProvider), transport: ref.read(lanClientProvider)),
