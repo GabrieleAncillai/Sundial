@@ -357,7 +357,12 @@ class SundialTheme {
         shape: SundialShapes.rounded(radius: SundialRadii.xl),
         headerBackgroundColor: c.accentSoft,
         headerForegroundColor: c.text,
-        todayForegroundColor: WidgetStatePropertyAll(c.accent),
+        // Flutter paints the current year's selected pill (and today's selected
+        // day) with todayForegroundColor, so it must yield onAccent over the
+        // accent fill instead of accent-on-accent.
+        todayForegroundColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected) ? c.onAccent : c.accent,
+        ),
         dayBackgroundColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected) ? c.accent : Colors.transparent,
         ),

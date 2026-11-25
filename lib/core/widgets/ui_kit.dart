@@ -13,6 +13,7 @@ export 'sundial_progress.dart';
 export 'sundial_search_field.dart';
 export 'sundial_select_field.dart';
 export 'sundial_segmented.dart';
+export 'sundial_sidebar.dart';
 export 'sundial_text_field.dart';
 export 'page_motion.dart';
 export 'pressable.dart';

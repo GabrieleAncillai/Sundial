@@ -46,4 +46,23 @@ void main() {
     expect(theme.textTheme.bodyMedium?.fontFamily, 'Open Sans');
     expect(theme.scaffoldBackgroundColor, Colors.transparent);
   });
+
+  test('date pickers keep the selected year and today legible', () {
+    for (final visualStyle in SundialVisualStyle.values) {
+      for (final brightness in Brightness.values) {
+        final theme = SundialTheme.forStyle(visualStyle, brightness);
+        final picker = theme.datePickerTheme;
+        final colors = theme.extension<SundialStyleTheme>()!.style.colors;
+        const selected = <WidgetState>{WidgetState.selected};
+        const unselected = <WidgetState>{};
+
+        expect(picker.dayBackgroundColor?.resolve(selected), colors.accent);
+        expect(picker.dayForegroundColor?.resolve(selected), colors.onAccent);
+        // The year picker paints the current year with todayForegroundColor
+        // even when it is the selected pill, so it must yield onAccent then.
+        expect(picker.todayForegroundColor?.resolve(selected), colors.onAccent);
+        expect(picker.todayForegroundColor?.resolve(unselected), colors.accent);
+      }
+    }
+  });
 }

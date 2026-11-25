@@ -10,16 +10,22 @@ void main() {
     ThemeData theme, {
     required List<SundialMenuAction<String>> actions,
     required ValueChanged<String> onSelected,
+    Alignment alignment = Alignment.center,
+    EdgeInsets padding = EdgeInsets.zero,
   }) {
     return MaterialApp(
       theme: theme,
       home: Scaffold(
-        body: Center(
-          child: SundialMenuButton<String>(
-            headerTitle: 'Milk',
-            headerCaption: '2 bottles',
-            onSelected: onSelected,
-            actions: actions,
+        body: Align(
+          alignment: alignment,
+          child: Padding(
+            padding: padding,
+            child: SundialMenuButton<String>(
+              headerTitle: 'Milk',
+              headerCaption: '2 bottles',
+              onSelected: onSelected,
+              actions: actions,
+            ),
           ),
         ),
       ),
@@ -128,22 +134,51 @@ void main() {
     expect(selected, isNull);
   });
 
-  testWidgets('the menu opens and selects in Aero', (tester) async {
+  testWidgets('Aero paints the gloss panel, keeps an edge margin and the danger treatment', (tester) async {
+    tester.view.physicalSize = const Size(1290, 2796);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+
     String? selected;
     await tester.pumpWidget(
       host(
-        SundialTheme.forStyle(SundialVisualStyle.aero, Brightness.dark),
+        SundialTheme.forStyle(SundialVisualStyle.aero, Brightness.light),
+        alignment: Alignment.topRight,
+        padding: const EdgeInsets.all(16),
         onSelected: (value) => selected = value,
-        actions: const [SundialMenuAction(value: 'edit', label: 'Edit', icon: Icons.edit_outlined)],
+        actions: const [
+          SundialMenuAction(value: 'edit', label: 'Edit', icon: Icons.edit_outlined),
+          SundialMenuAction(
+            value: 'delete',
+            label: 'Delete',
+            icon: Icons.delete_outline_rounded,
+            destructive: true,
+            dividerBefore: true,
+          ),
+        ],
       ),
     );
 
     await tester.tap(find.byIcon(Icons.more_horiz));
     await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('sundial-aero-menu-panel')), findsOneWidget);
+    expect(find.byKey(const ValueKey('sundial-aero-menu-surface')), findsOneWidget);
+    expect(find.byKey(const ValueKey('sundial-aero-menu-gloss')), findsOneWidget);
     expect(find.text('Edit'), findsOneWidget);
+    expect(find.byWidgetPredicate((widget) => widget is PopScope && !widget.canPop), findsOneWidget);
 
-    await tester.tap(find.text('Edit'));
+    final screenWidth = tester.view.physicalSize.width / tester.view.devicePixelRatio;
+    final panelRect = tester.getRect(find.byKey(const ValueKey('sundial-aero-menu-panel')));
+    expect(panelRect.right, lessThanOrEqualTo(screenWidth - 12));
+    expect(panelRect.left, greaterThanOrEqualTo(12));
+    // Keep the content-sized popup width instead of a fixed wide panel.
+    expect(panelRect.width, lessThan(260));
+
+    final deleteLabel = tester.widget<Text>(find.text('Delete'));
+    expect(deleteLabel.style?.color, SundialColors.aeroLight.danger);
+
+    await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
-    expect(selected, 'edit');
+    expect(selected, 'delete');
   });
 }

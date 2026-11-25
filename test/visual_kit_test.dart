@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sundial/core/icons/aero_glyph.dart';
 import 'package:sundial/core/layout/sundial_layout.dart';
 import 'package:sundial/core/widgets/ui_kit.dart';
-import 'package:sundial/models/visual_style.dart';
 import 'package:sundial/theme/app_colors.dart';
 import 'package:sundial/theme/app_radii.dart';
 import 'package:sundial/theme/app_theme.dart';
+import 'package:sundial/theme/sundial_style.dart';
 
 void main() {
   testWidgets('the theme carries Sundial tokens, Nunito and component shapes', (tester) async {
@@ -28,6 +29,23 @@ void main() {
       BorderRadius.circular(SundialRadii.lg),
     );
     expect(theme.cardTheme.color, SundialColors.light.surface);
+  });
+
+  testWidgets('the app logo uses the shipped launcher artwork for its style', (tester) async {
+    Future<String> assetFor(SundialVisualStyle style) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: SundialTheme.forStyle(style, Brightness.dark),
+          home: const Scaffold(body: Center(child: SundialLogo())),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final image = tester.widget<Image>(find.byType(Image));
+      return (image.image as AssetImage).assetName;
+    }
+
+    expect(await assetFor(SundialVisualStyle.classic), 'assets/icons/icon_classic.png');
+    expect(await assetFor(SundialVisualStyle.aero), 'assets/icons/icon_aero.png');
   });
 
   testWidgets('the shared kit renders and responds', (tester) async {
@@ -69,6 +87,98 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Quiet hours'));
     await tester.pumpAndSettle();
     expect(toggled, isTrue);
+  });
+
+  testWidgets('the shared sidebar keeps one width and selected treatment', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SundialTheme.forStyle(SundialVisualStyle.aero, Brightness.dark),
+        home: Scaffold(
+          body: Row(
+            children: [
+              SundialSidebar(
+                child: ListView(
+                  children: [
+                    SundialSidebarItem(
+                      icon: Icons.today_outlined,
+                      selectedIcon: Icons.today,
+                      title: 'Today',
+                      selected: true,
+                      onTap: () {},
+                    ),
+                    SundialSidebarItem(icon: Icons.settings_outlined, title: 'Settings', onTap: () {}),
+                  ],
+                ),
+              ),
+              const Expanded(child: SizedBox()),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final surface = tester.getRect(find.byType(GlassSurface));
+    expect(surface.left, 12);
+    expect(surface.width, kSidebarWidth);
+
+    final style = tester.element(find.byType(SundialSidebar)).style;
+    final selected = tester.widget<AnimatedContainer>(
+      find.ancestor(of: find.text('Today'), matching: find.byType(AnimatedContainer)),
+    );
+    final decoration = selected.decoration! as BoxDecoration;
+    expect(decoration.gradient, style.selectedGradient);
+    expect(decoration.borderRadius, BorderRadius.circular(SundialRadii.md));
+    expect(selected.foregroundDecoration, isNotNull);
+
+    final unselected = tester.widget<AnimatedContainer>(
+      find.ancestor(of: find.text('Settings'), matching: find.byType(AnimatedContainer)),
+    );
+    expect((unselected.decoration! as BoxDecoration).gradient, isNull);
+  });
+
+  testWidgets('a search action stays inside the field frame', (tester) async {
+    var taps = 0;
+    final controller = TextEditingController();
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SundialTheme.forStyle(SundialVisualStyle.aero, Brightness.dark),
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 300,
+              child: SundialSearchField(
+                controller: controller,
+                hint: 'Search',
+                onChanged: (_) {},
+                trailing: SundialSearchAction(
+                  icon: Icons.filter_alt_outlined,
+                  tooltip: 'Filter by tag',
+                  selected: true,
+                  onTap: () => taps++,
+                  badge: const Text('2'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final field = tester.getRect(find.byType(SundialSearchField));
+    final action = tester.getRect(find.byType(SundialSearchAction));
+    expect(field.contains(action.center), isTrue);
+    expect(find.text('2'), findsOneWidget);
+
+    final container = tester.widget<AnimatedContainer>(
+      find.descendant(of: find.byType(SundialSearchAction), matching: find.byType(AnimatedContainer)),
+    );
+    expect((container.decoration! as BoxDecoration).gradient, isNotNull);
+
+    await tester.tap(find.byTooltip('Filter by tag'));
+    await tester.pumpAndSettle();
+    expect(taps, 1);
   });
 
   testWidgets('page bodies centre in the reading column on wide windows', (tester) async {

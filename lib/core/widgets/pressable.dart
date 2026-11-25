@@ -15,6 +15,7 @@ class Pressable extends StatefulWidget {
     this.scale = 0.965,
     this.semanticLabel,
     this.semanticButton = false,
+    this.semanticSelected,
     this.behavior = HitTestBehavior.opaque,
   });
 
@@ -24,6 +25,7 @@ class Pressable extends StatefulWidget {
   final double scale;
   final String? semanticLabel;
   final bool semanticButton;
+  final bool? semanticSelected;
   final HitTestBehavior behavior;
 
   @override
@@ -60,6 +62,7 @@ class _PressableState extends State<Pressable> {
     return Semantics(
       button: widget.semanticButton,
       label: label,
+      selected: widget.semanticSelected,
       onTap: widget.onTap,
       child: ExcludeSemantics(excluding: label != null, child: child),
     );

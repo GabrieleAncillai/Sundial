@@ -8,7 +8,6 @@ import 'package:sundial_core/sundial_core.dart';
 
 import '../core/i18n/l10n.dart';
 import '../core/icons/aero_glyph.dart';
-import '../core/layout/sundial_layout.dart';
 import '../core/sound/sound_service.dart';
 import '../core/widgets/ui_kit.dart';
 import '../features/home_widget/home_widget_service.dart';
@@ -31,7 +30,6 @@ import '../state/settings_controller.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_typography.dart';
-import '../theme/sundial_style.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
@@ -104,6 +102,7 @@ class _AppShellState extends ConsumerState<AppShell>
     if (!mounted) return;
     await ref.read(reminderCoordinatorProvider).reschedule();
     await ref.read(serviceCoordinatorProvider).apply(ref.read(settingsProvider));
+    ref.read(soundControllerProvider).preload();
     await _updateHomeWidget();
     unawaited(_runAutoBackup());
   }
@@ -250,7 +249,7 @@ class _AppShellState extends ConsumerState<AppShell>
 
   void _selectTab(int value) {
     if (value == _index) return;
-    ref.read(soundControllerProvider).play(UiSound.tap);
+    ref.read(soundControllerProvider).play(UiSound.nav);
     setState(() => _index = value);
     if (!MediaQuery.disableAnimationsOf(context)) _swap.forward(from: 0);
   }
@@ -258,6 +257,11 @@ class _AppShellState extends ConsumerState<AppShell>
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    ref.listen<AppSettings>(settingsProvider, (previous, next) {
+      final becameEnabled = next.soundsEnabled && previous?.soundsEnabled != true;
+      final packChanged = next.soundsEnabled && previous?.soundPack != next.soundPack;
+      if (becameEnabled || packChanged) ref.read(soundControllerProvider).preload();
+    });
     final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
     final c = context.mc;
 
@@ -351,16 +355,7 @@ class _AppShellState extends ConsumerState<AppShell>
                   icon: filterCount > 0 ? Icons.filter_alt : Icons.filter_alt_outlined,
                   tooltip: l10n.filterByTag,
                   onTap: () => showTagFilterSheet(context),
-                  badge: filterCount == 0
-                      ? null
-                      : Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: c.accent,
-                            borderRadius: BorderRadius.circular(SundialRadii.xs),
-                          ),
-                          child: Text('$filterCount', style: SundialType.label(9, color: c.onAccent)),
-                        ),
+                  badge: filterCount == 0 ? null : _FilterBadge(count: filterCount),
                 ),
                 const SizedBox(width: 8),
                 GlassIconButton(icon: Icons.settings_outlined, tooltip: l10n.settings, onTap: _openSettings),
@@ -402,6 +397,7 @@ class _AppShellState extends ConsumerState<AppShell>
   }
 
   void _openSettings() {
+    playUiSound(context, UiSound.open);
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SettingsPage()));
   }
 
@@ -410,6 +406,7 @@ class _AppShellState extends ConsumerState<AppShell>
       _sideSearchFocus.requestFocus();
       return;
     }
+    playUiSound(context, UiSound.open);
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SearchPage()));
   }
 
@@ -417,6 +414,7 @@ class _AppShellState extends ConsumerState<AppShell>
     final query = value.trim();
     if (query.isEmpty) return;
     _sideSearchFocus.unfocus();
+    playUiSound(context, UiSound.open);
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SearchPage(initialQuery: query)));
   }
 
@@ -431,6 +429,23 @@ class _AppShellState extends ConsumerState<AppShell>
 }
 
 enum _Label { today, work, home, personal, plan, stats }
+
+/// The tag-filter count, shared by the phone header and the desktop rail.
+class _FilterBadge extends StatelessWidget {
+  const _FilterBadge({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.mc;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(color: c.accent, borderRadius: BorderRadius.circular(SundialRadii.xs)),
+      child: Text('$count', style: SundialType.label(9, color: c.onAccent)),
+    );
+  }
+}
 
 class _Destination {
   const _Destination({required this.label, required this.icon, required this.selectedIcon});
@@ -471,166 +486,72 @@ class _SideRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.mc;
     final l10n = context.l10n;
-    final style = context.style;
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: SizedBox(
-        width: kSidebarWidth,
-        child: GlassSurface(
-          radius: SundialRadii.xl,
-          tint: style.hasChromeGradient ? null : c.navBg,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 12, 10),
-                child: Row(
-                  children: [
-                    const SundialLogo(size: 38),
-                    const SizedBox(width: 10),
-                    Text(l10n.appName, style: SundialType.headline(20, color: c.text)),
-                  ],
-                ),
+    return SundialSidebar(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 12, 10),
+            child: Row(
+              children: [
+                const SundialLogo(size: 38),
+                const SizedBox(width: 10),
+                Text(l10n.appName, style: SundialType.headline(20, color: c.text)),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: SundialSearchField(
+              controller: searchController,
+              focusNode: searchFocus,
+              hint: l10n.search,
+              onChanged: (_) {},
+              onSubmitted: onSearchSubmitted,
+              trailing: SundialSearchAction(
+                icon: filterCount > 0 ? Icons.filter_alt : Icons.filter_alt_outlined,
+                tooltip: l10n.filterByTag,
+                selected: filterCount > 0,
+                onTap: onFilter,
+                badge: filterCount == 0 ? null : _FilterBadge(count: filterCount),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SundialSearchField(
-                        controller: searchController,
-                        focusNode: searchFocus,
-                        hint: l10n.search,
-                        onChanged: (_) {},
-                        onSubmitted: onSearchSubmitted,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    IconButton(
-                      onPressed: onFilter,
-                      tooltip: l10n.filterByTag,
-                      icon: Badge(
-                        isLabelVisible: filterCount > 0,
-                        label: Text('$filterCount'),
-                        child: const Icon(Icons.filter_alt_outlined, size: 19),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  children: [
-                    for (var itemIndex = 0; itemIndex < items.length; itemIndex++)
-                      _RailItem(
-                        item: items[itemIndex],
-                        selected: itemIndex == index,
-                        onTap: () => onSelected(itemIndex),
-                      ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: onAdd,
-                    icon: const Icon(Icons.add, size: 19),
-                    label: Text(l10n.addEntry),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Expanded(
+            child: SundialSidebarList(
+              children: [
+                for (var itemIndex = 0; itemIndex < items.length; itemIndex++)
+                  SundialSidebarItem(
+                    icon: items[itemIndex].icon,
+                    selectedIcon: items[itemIndex].selectedIcon,
+                    title: _AppShellState._label(context, items[itemIndex].label),
+                    selected: itemIndex == index,
+                    onTap: () => onSelected(itemIndex),
                   ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
-                child: _RailItem(
-                  item: const _Destination(
-                    label: _Label.stats,
-                    icon: Icons.settings_outlined,
-                    selectedIcon: Icons.settings,
-                  ),
-                  labelOverride: l10n.settings,
-                  selected: false,
-                  onTap: onSettings,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RailItem extends StatelessWidget {
-  const _RailItem({required this.item, required this.selected, required this.onTap, this.labelOverride});
-
-  final _Destination item;
-  final bool selected;
-  final VoidCallback onTap;
-  final String? labelOverride;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.mc;
-    final style = context.style;
-    final label = labelOverride ?? _AppShellState._label(context, item.label);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Pressable(
-        onTap: onTap,
-        semanticButton: true,
-        semanticLabel: label,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: selected && !style.hasSelectedGradient ? c.accentSoft : Colors.transparent,
-            gradient: selected ? style.selectedGradient : null,
-            borderRadius: BorderRadius.circular(SundialRadii.md),
-            border: selected
-                ? Border.all(
-                    color: style.hasSelectedGradient
-                        ? c.accent.withValues(alpha: 0.42)
-                        : c.accent.withValues(alpha: 0.2),
-                  )
-                : null,
-            boxShadow: selected && style.hasSelectedGradient && !style.performanceMode
-                ? [
-                    BoxShadow(
-                      color: c.accent.withValues(alpha: 0.16),
-                      blurRadius: 12,
-                      offset: const Offset(0, 3),
-                    ),
-                  ]
-                : null,
-          ),
-          foregroundDecoration: selected && style.hasSelectedGradient && style.gloss
-              ? BoxDecoration(
-                  borderRadius: BorderRadius.circular(SundialRadii.md),
-                  gradient: style.glossGradient,
-                )
-              : null,
-          child: Row(
-            children: [
-              AeroGlyph(
-                icon: selected ? item.selectedIcon : item.icon,
-                size: 20,
-                selected: selected,
-                color: selected ? c.accent : c.textSecondary,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: onAdd,
+                icon: const Icon(Icons.add, size: 19),
+                label: Text(l10n.addEntry),
               ),
-              const SizedBox(width: 11),
-              Text(
-                label,
-                style: SundialType.body(
-                  13,
-                  weight: selected ? FontWeight.w800 : FontWeight.w600,
-                  color: selected ? c.accent : c.textSecondary,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
+            child: SundialSidebarItem(
+              icon: Icons.settings_outlined,
+              selectedIcon: Icons.settings,
+              title: l10n.settings,
+              onTap: onSettings,
+            ),
+          ),
+        ],
       ),
     );
   }
