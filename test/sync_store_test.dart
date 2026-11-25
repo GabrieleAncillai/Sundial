@@ -434,6 +434,32 @@ void main() {
     return row?.readNullable<String>('image_media_id');
   }
 
+  test('habit period and same-day check-in counts sync', () async {
+    await first.saveHabit(
+      const Habit(
+        id: 'card',
+        spaceId: 'personal',
+        name: 'Card',
+        colorValue: 0xFF00AA00,
+        targetCount: 7,
+        targetPeriod: HabitTargetPeriod.month,
+      ),
+    );
+    await first.setHabitCompletionCount('card', day, 2);
+    await adoptDataset(second, first);
+    await pull(from: first, to: second, peerId: 'device-a');
+
+    final habit = (await second.watchHabits().first).single;
+    expect(habit.targetPeriod, HabitTargetPeriod.month);
+    expect(habit.targetCount, 7);
+    expect((await second.watchHabitCompletions().first)['card']?[day], 2);
+
+    // A later delta travels through the change feed, not only the snapshot.
+    await first.adjustHabitCompletion('card', day, 1);
+    await pull(from: first, to: second, peerId: 'device-a');
+    expect((await second.watchHabitCompletions().first)['card']?[day], 3);
+  });
+
   test('a context image syncs by id and its local path never travels', () async {
     final file = await writePng(pictures, 'house.png', tinyPng);
     await first.saveContext(

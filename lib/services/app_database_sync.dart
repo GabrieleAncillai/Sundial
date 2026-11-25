@@ -106,7 +106,7 @@ extension SyncDatabase on AppDatabase {
       fields: const [
         SyncFieldGroup('name', ['name']),
         SyncFieldGroup('content', ['description', 'color', 'icon']),
-        SyncFieldGroup('schedule', ['target_per_week', 'weekdays']),
+        SyncFieldGroup('schedule', ['target_per_week', 'target_period', 'weekdays']),
         SyncFieldGroup('placement', ['space_id', 'context_id', 'position']),
         SyncFieldGroup('archived', ['archived']),
       ],
@@ -120,6 +120,7 @@ extension SyncDatabase on AppDatabase {
       softDelete: false,
       fields: const [
         SyncFieldGroup(presentField, ['habit_id', 'date_key']),
+        SyncFieldGroup('count', ['check_in_count']),
       ],
       immutableColumns: const {'created_at'},
     ),

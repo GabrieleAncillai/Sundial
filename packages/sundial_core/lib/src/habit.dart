@@ -31,10 +31,24 @@ EntryPriority effectivePriority(Entry entry, DateTime now) {
   return urgency.index > explicit.index ? urgency : explicit;
 }
 
-/// A weekly habit inside Personal.
+/// The period a habit target is measured in.
 ///
-/// [targetPerWeek] is the number of days the user wants to check in. Daily
-/// habits use 7; a three-times-a-week habit uses 3.
+/// Weekly habits count check-ins inside one week. Monthly habits count them
+/// inside one calendar month, which covers quotas such as "use the card seven
+/// times this month" or "gym twelve times".
+enum HabitTargetPeriod { week, month }
+
+/// Check-in counts per calendar day.
+///
+/// A day may hold more than one check-in, so a set of dates is not enough for
+/// monthly quotas. Weekly habits normally use 0 or 1 per day.
+typedef HabitCompletions = Map<LocalDate, int>;
+
+/// A habit inside Personal.
+///
+/// [targetCount] is the number of check-ins wanted in [targetPeriod]. Weekly
+/// habits clamp the count to the number of active weekdays; monthly habits
+/// allow up to 31, because a quota is not tied to a weekday schedule.
 class Habit {
   const Habit({
     required this.id,
@@ -44,7 +58,8 @@ class Habit {
     this.description = '',
     required this.colorValue,
     this.icon = 'star',
-    this.targetPerWeek = 7,
+    this.targetCount = 7,
+    this.targetPeriod = HabitTargetPeriod.week,
     this.weekdays = const {1, 2, 3, 4, 5, 6, 7},
     this.position = 0,
     this.archived = false,
@@ -59,7 +74,8 @@ class Habit {
   final String description;
   final int colorValue;
   final String icon;
-  final int targetPerWeek;
+  final int targetCount;
+  final HabitTargetPeriod targetPeriod;
 
   /// Scheduled weekdays, 1 = Monday through 7 = Sunday. An empty set means the
   /// habit has no fixed days and behaves like every day.
@@ -70,44 +86,108 @@ class Habit {
   final DateTime? createdAt;
   final DateTime? deletedAt;
 
+  bool get isWeekly => targetPeriod == HabitTargetPeriod.week;
+
+  bool get isMonthly => targetPeriod == HabitTargetPeriod.month;
+
   bool isScheduled(LocalDate date) => weekdays.isEmpty || weekdays.contains(date.weekday);
 
   int get scheduledPerWeek => weekdays.isEmpty ? 7 : weekdays.length.clamp(1, 7);
 
-  /// A habit whose target covers every scheduled day runs a day streak;
-  /// anything lighter runs a weekly streak.
-  bool get isDaily => cleanTarget >= scheduledPerWeek;
+  /// A weekly habit whose target covers every scheduled day runs a day
+  /// streak; anything lighter runs a weekly streak. Monthly habits always run
+  /// a monthly streak.
+  bool get isDaily => isWeekly && cleanTarget >= scheduledPerWeek;
 
-  int get cleanTarget => targetPerWeek.clamp(1, scheduledPerWeek);
+  int get cleanTarget => isMonthly ? targetCount.clamp(1, 31) : targetCount.clamp(1, scheduledPerWeek);
 
-  /// Completions in the week that starts on [weekStart], counting only
-  /// scheduled days.
-  int weekProgress(Set<LocalDate> completions, LocalDate anyDayInWeek, int weekStart) {
+  /// How many check-ins were recorded on [date].
+  int countOn(HabitCompletions completions, LocalDate date) => completions[date] ?? 0;
+
+  /// Check-ins in the week that starts on [weekStart], counting only scheduled
+  /// days.
+  int weekProgress(HabitCompletions completions, LocalDate anyDayInWeek, int weekStart) {
     final start = anyDayInWeek.startOfWeek(weekStart);
     var count = 0;
     for (var index = 0; index < 7; index++) {
       final day = start.addDays(index);
-      if (isScheduled(day) && completions.contains(day)) count++;
+      if (isScheduled(day)) count += countOn(completions, day);
     }
     return count;
   }
 
-  /// Consecutive checked days for a daily habit, or qualifying weeks for a
-  /// weekly-target habit.
+  /// Check-ins in the calendar month that contains [anyDayInMonth], counting
+  /// only scheduled days.
+  int monthProgress(HabitCompletions completions, LocalDate anyDayInMonth) {
+    final start = LocalDate(anyDayInMonth.year, anyDayInMonth.month, 1);
+    final days = start.daysInMonth;
+    var count = 0;
+    for (var index = 0; index < days; index++) {
+      final day = start.addDays(index);
+      if (isScheduled(day)) count += countOn(completions, day);
+    }
+    return count;
+  }
+
+  /// Progress in the habit's own target period.
+  int progress(HabitCompletions completions, LocalDate anyDay, {int weekStart = DateTime.monday}) =>
+      isMonthly ? monthProgress(completions, anyDay) : weekProgress(completions, anyDay, weekStart);
+
+  /// How many check-ins [start]..[end] should hold for the habit's target.
+  ///
+  /// Weekly targets scale by days. Monthly targets scale by the fraction of
+  /// each touched calendar month inside the range, so a week inside a month is
+  /// about a quarter of that month's target.
+  double targetForRange(LocalDate start, LocalDate end) {
+    if (end.isBefore(start)) return 0;
+    if (isWeekly) {
+      return cleanTarget * (end.differenceInDays(start) + 1) / 7;
+    }
+    var months = 0.0;
+    var month = LocalDate(start.year, start.month, 1);
+    while (!month.isAfter(end)) {
+      final monthEnd = LocalDate(month.year, month.month, month.daysInMonth);
+      final from = LocalDate.max(start, month);
+      final to = LocalDate.min(end, monthEnd);
+      final days = to.differenceInDays(from) + 1;
+      months += days / month.daysInMonth;
+      month = month.addDays(month.daysInMonth);
+    }
+    return cleanTarget * months;
+  }
+
+  /// Consecutive checked days for a weekly daily habit, or qualifying weeks
+  /// for a weekly-target habit, or qualifying months for a monthly habit.
   ///
   /// Unscheduled days neither add to nor break a daily streak, so a Mon/Wed/Fri
-  /// habit keeps its run across Tuesday. A 3x/week habit completed Monday to
+  /// habit keeps its run across Tuesday. A weekly habit completed Monday to
   /// Wednesday already has one qualifying week, and the rest of that week does
-  /// not break it.
-  int streak(Set<LocalDate> completions, LocalDate today, {int weekStart = DateTime.monday}) {
+  /// not break it. A monthly habit counts the current month once its target is
+  /// met and then walks backwards through qualifying months.
+  int streak(HabitCompletions completions, LocalDate today, {int weekStart = DateTime.monday}) {
+    if (isMonthly) {
+      final month = LocalDate(today.year, today.month, 1);
+      var count = monthProgress(completions, month) >= cleanTarget ? 1 : 0;
+      var previous = month.addMonths(-1);
+      // A bounded walk keeps a corrupt completion map from looping forever.
+      for (var guard = 0; guard < 1200; guard++) {
+        if (monthProgress(completions, previous) < cleanTarget) break;
+        count++;
+        previous = previous.addMonths(-1);
+      }
+      return count;
+    }
+
     if (isDaily) {
       var cursor = isScheduled(today) ? today : _previousScheduled(today);
-      if (!completions.contains(cursor)) cursor = _previousScheduled(cursor.addDays(-1));
+      if (countOn(completions, cursor) <= 0) {
+        cursor = _previousScheduled(cursor.addDays(-1));
+      }
       var count = 0;
       // A bounded walk keeps a corrupt schedule from looping forever.
       for (var guard = 0; guard < 400; guard++) {
         if (isScheduled(cursor)) {
-          if (!completions.contains(cursor)) break;
+          if (countOn(completions, cursor) <= 0) break;
           count++;
         }
         cursor = cursor.addDays(-1);
@@ -147,5 +227,13 @@ class Habit {
       if (day != null && day >= 1 && day <= 7) parsed.add(day);
     }
     return parsed.isEmpty ? const {1, 2, 3, 4, 5, 6, 7} : parsed;
+  }
+
+  /// Parses a stored period name, defaulting to the original weekly rule.
+  static HabitTargetPeriod parseTargetPeriod(String? raw) {
+    for (final period in HabitTargetPeriod.values) {
+      if (period.name == raw) return period;
+    }
+    return HabitTargetPeriod.week;
   }
 }

@@ -443,11 +443,22 @@ void main() {
         spaceId: 'personal',
         name: 'Walk',
         colorValue: 0xFF00AA00,
-        targetPerWeek: 3,
+        targetCount: 3,
         weekdays: {1, 3, 5},
       ),
     );
+    await database.saveHabit(
+      const Habit(
+        id: 'card',
+        spaceId: 'personal',
+        name: 'Card',
+        colorValue: 0xFF00AA00,
+        targetCount: 7,
+        targetPeriod: HabitTargetPeriod.month,
+      ),
+    );
     await database.setHabitCompleted('walk', LocalDate.parse('2026-11-09'), completed: true);
+    await database.setHabitCompletionCount('card', LocalDate.parse('2026-11-09'), 2);
     await database.startTimeEntry(entryId: 'passport', at: DateTime.utc(2026, 11, 9, 10));
     await database.stopTimeEntry('passport', at: DateTime.utc(2026, 11, 9, 10, 30));
 
@@ -468,10 +479,18 @@ void main() {
       'method': 'tools/call',
       'params': {'name': 'habits.list', 'arguments': <String, Object?>{}},
     });
-    final habit = ((_toolPayload(habitsBody)['habits'] as List).single as Map);
+    final habits = (_toolPayload(habitsBody)['habits'] as List).cast<Map>();
+    final habit = habits.firstWhere((item) => item['id'] == 'walk');
     expect(habit['weekdays'], [1, 3, 5]);
+    expect(habit['targetPeriod'], 'week');
     expect(habit['progressThisWeek'], 1);
     expect(habit['doneToday'], isTrue);
+    final card = habits.firstWhere((item) => item['id'] == 'card');
+    expect(card['targetPeriod'], 'month');
+    expect(card['targetCount'], 7);
+    expect(card['progressThisMonth'], 2);
+    expect(card['todayCount'], 2);
+    expect(card.containsKey('progressThisWeek'), isFalse);
 
     final (_, sessionsBody) = await post({
       'jsonrpc': '2.0',
@@ -618,7 +637,7 @@ void main() {
         spaceId: 'personal',
         name: 'Walk',
         colorValue: 0xFF00AA00,
-        targetPerWeek: 3,
+        targetCount: 3,
         weekdays: {1, 3, 5},
       ),
     );
@@ -635,7 +654,18 @@ void main() {
     });
     expect(_toolPayload(checkedBody)['completed'], isTrue);
     final completions = await database.watchHabitCompletions().first;
-    expect(completions['walk'], contains(LocalDate.parse('2026-11-10')));
+    expect(completions['walk']?[LocalDate.parse('2026-11-10')], 1);
+
+    final (_, deltaBody) = await post({
+      'jsonrpc': '2.0',
+      'id': 50,
+      'method': 'tools/call',
+      'params': {
+        'name': 'habits.check',
+        'arguments': {'habitId': 'walk', 'date': '2026-11-10', 'delta': 2},
+      },
+    });
+    expect(_toolPayload(deltaBody)['count'], 3);
 
     final (_, startBody) = await post({
       'jsonrpc': '2.0',

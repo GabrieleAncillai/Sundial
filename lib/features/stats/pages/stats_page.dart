@@ -47,7 +47,7 @@ class _StatsPageState extends ConsumerState<StatsPage> {
     final spaces = ref.watch(spacesProvider).value ?? fallbackSpaces;
     final projects = ref.watch(projectsProvider(null)).value ?? const <Project>[];
     final habits = ref.watch(habitsProvider('personal')).value ?? const <Habit>[];
-    final completions = ref.watch(habitCompletionsProvider).value ?? const <String, Set<LocalDate>>{};
+    final completions = ref.watch(habitCompletionsProvider).value ?? const <String, HabitCompletions>{};
     final timeAsync = ref.watch(
       timeEntriesRangeProvider((
         start: instantAt(start, 0, timeZone),
@@ -281,10 +281,9 @@ class _StatsPageState extends ConsumerState<StatsPage> {
                   for (final habit in habits)
                     _HabitRow(
                       habit: habit,
-                      completions: completions[habit.id] ?? const <LocalDate>{},
+                      completions: completions[habit.id] ?? const <LocalDate, int>{},
                       start: start,
                       end: end,
-                      weekStart: settings.weekStart,
                     ),
                 ],
               ),
@@ -673,26 +672,20 @@ class _BreakdownRow extends StatelessWidget {
 }
 
 class _HabitRow extends StatelessWidget {
-  const _HabitRow({
-    required this.habit,
-    required this.completions,
-    required this.start,
-    required this.end,
-    required this.weekStart,
-  });
+  const _HabitRow({required this.habit, required this.completions, required this.start, required this.end});
 
   final Habit habit;
-  final Set<LocalDate> completions;
+  final HabitCompletions completions;
   final LocalDate start;
   final LocalDate end;
-  final int weekStart;
 
   @override
   Widget build(BuildContext context) {
     final c = context.mc;
-    final weeks = math.max(1, (end.differenceInDays(start) + 1) / 7);
-    final done = completions.where((date) => date.isOnOrAfter(start) && date.isOnOrBefore(end)).length;
-    final target = math.max(1, (habit.cleanTarget * weeks).ceil());
+    final done = completions.entries
+        .where((entry) => entry.key.isOnOrAfter(start) && entry.key.isOnOrBefore(end))
+        .fold<int>(0, (sum, entry) => sum + entry.value);
+    final target = math.max(1.0, habit.targetForRange(start, end));
     final ratio = (done / target).clamp(0.0, 1.0);
     return Padding(
       padding: const EdgeInsets.only(bottom: 9),

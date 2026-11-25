@@ -90,7 +90,13 @@ class HabitRecords extends Table {
   TextColumn get description => text().withDefault(const Constant(''))();
   IntColumn get color => integer()();
   TextColumn get icon => text().withDefault(const Constant('star'))();
+
+  /// Historical column name. The value is the target count for
+  /// [targetPeriod]; renaming it would break older peers and backups.
   IntColumn get targetPerWeek => integer().withDefault(const Constant(7))();
+
+  /// `week` or `month`, the period the target is measured in.
+  TextColumn get targetPeriod => text().withDefault(const Constant('week'))();
 
   /// Scheduled weekdays, 1 = Monday through 7 = Sunday, comma separated.
   TextColumn get weekdays => text().withDefault(const Constant('1,2,3,4,5,6,7'))();
@@ -108,6 +114,10 @@ class HabitRecords extends Table {
 class HabitCompletionRecords extends Table {
   TextColumn get habitId => text().references(HabitRecords, #id)();
   IntColumn get dateKey => integer()();
+
+  /// Check-ins recorded on this date. Weekly habits normally use 1; monthly
+  /// quotas allow several transactions on the same day.
+  IntColumn get checkInCount => integer().withDefault(const Constant(1))();
   DateTimeColumn get createdAt => dateTime()();
 
   @override
@@ -714,7 +724,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -723,6 +733,9 @@ class AppDatabase extends _$AppDatabase {
       await _ensureShiftSyncIndexes();
     },
     onUpgrade: (m, from, to) async {
+      // Row mappers used by older migrations expect every current column, so
+      // the v16 habit columns must exist before any mapper reads a row.
+      if (from < 16) await _addV16ColumnsEarly(m);
       // Row mappers used by older migrations expect every current column, so
       // the v14 shift sync ids must exist before the v6 slot backfill reads
       // them. The v14 step still creates the sync tables and backfills values.
@@ -748,11 +761,16 @@ class AppDatabase extends _$AppDatabase {
       // A v1.2 build already reported v10 while leaving the draft columns and
       // gadgets behind, so the repair must also run for v10 and v11 files.
       if (from < 12) await _migrateToV10(m);
+      // The v10 repair can rename the draft habit-check table, which leaves a
+      // completion table without the new count column. Add it again before the
+      // v14 field-version seed reads the current mapper.
+      if (from < 16) await _addV16ColumnsEarly(m);
       if (from < 11) await _migrateToV11(m);
       if (from < 12) await _migrateToV12(m);
       if (from < 13) await _migrateToV13(m);
       if (from < 14) await _migrateToV14(m);
       if (from < 15) await _migrateToV15(m);
+      if (from < 16) await _migrateToV16(m);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -1207,6 +1225,7 @@ class AppDatabase extends _$AppDatabase {
         color: Value(habit.colorValue),
         icon: Value(habit.icon),
         targetPerWeek: Value(habit.cleanTarget),
+        targetPeriod: Value(habit.targetPeriod.name),
         weekdays: Value(habit.weekdaysKey),
         position: Value(habit.position),
         archived: Value(habit.archived),
@@ -1228,41 +1247,83 @@ class AppDatabase extends _$AppDatabase {
     await recordSyncDelete(spec, id, lastRow: before);
   }
 
-  Stream<Map<String, Set<LocalDate>>> watchHabitCompletions({String? habitId}) {
+  Stream<Map<String, HabitCompletions>> watchHabitCompletions({String? habitId}) {
     final query = select(habitCompletionRecords);
     if (habitId != null) query.where((row) => row.habitId.equals(habitId));
     return query.watch().map((rows) {
-      final result = <String, Set<LocalDate>>{};
+      final result = <String, HabitCompletions>{};
       for (final row in rows) {
-        (result[row.habitId] ??= <LocalDate>{}).add(LocalDate.fromKey(row.dateKey));
+        if (row.checkInCount <= 0) continue;
+        (result[row.habitId] ??= <LocalDate, int>{})[LocalDate.fromKey(row.dateKey)] = row.checkInCount;
       }
       return result;
     });
   }
 
-  Future<void> setHabitCompleted(String habitId, LocalDate date, {required bool completed}) async {
+  /// Sets one day to a check-in count. Zero removes the row.
+  Future<void> setHabitCompletionCount(String habitId, LocalDate date, int count) async {
     final spec = syncEntity('habitCompletion');
+    final key = spec.rowKey({'habit_id': habitId, 'date_key': date.key});
     final existing = await (select(
       habitCompletionRecords,
     )..where((row) => row.habitId.equals(habitId) & row.dateKey.equals(date.key))).getSingleOrNull();
-    if (completed) {
-      if (existing != null) return;
+    final next = count < 0 ? 0 : count;
+    if (next == 0) {
+      if (existing == null) return;
+      final before = spec.serialize(existing);
+      await (delete(
+        habitCompletionRecords,
+      )..where((row) => row.habitId.equals(habitId) & row.dateKey.equals(date.key))).go();
+      await recordSyncDelete(spec, key, lastRow: before);
+      return;
+    }
+    if (existing == null) {
       await into(habitCompletionRecords).insert(
         HabitCompletionRecordsCompanion.insert(
           habitId: habitId,
           dateKey: date.key,
+          checkInCount: Value(next),
           createdAt: DateTime.now(),
         ),
       );
-      await recordSyncAfter(spec, spec.rowKey({'habit_id': habitId, 'date_key': date.key}));
+      await recordSyncAfter(spec, key);
       return;
     }
-    if (existing == null) return;
+    if (existing.checkInCount == next) return;
     final before = spec.serialize(existing);
-    await (delete(
-      habitCompletionRecords,
-    )..where((row) => row.habitId.equals(habitId) & row.dateKey.equals(date.key))).go();
-    await recordSyncDelete(spec, spec.rowKey({'habit_id': habitId, 'date_key': date.key}), lastRow: before);
+    await (update(habitCompletionRecords)
+          ..where((row) => row.habitId.equals(habitId) & row.dateKey.equals(date.key)))
+        .write(HabitCompletionRecordsCompanion(checkInCount: Value(next)));
+    await recordSyncAfter(spec, key, before: before);
+  }
+
+  /// Adds [delta] check-ins to one day, never going below zero.
+  ///
+  /// The read and the write share a transaction so two quick taps cannot both
+  /// read the same starting count and lose an increment.
+  Future<void> adjustHabitCompletion(String habitId, LocalDate date, int delta) async {
+    if (delta == 0) return;
+    await transaction(() async {
+      final existing = await (select(
+        habitCompletionRecords,
+      )..where((row) => row.habitId.equals(habitId) & row.dateKey.equals(date.key))).getSingleOrNull();
+      final next = (existing?.checkInCount ?? 0) + delta;
+      await setHabitCompletionCount(habitId, date, next < 0 ? 0 : next);
+    });
+  }
+
+  /// Marks a day as done or clear. Kept for weekly habits, backups and older
+  /// MCP clients; it never reduces an existing multi-check-in day.
+  Future<void> setHabitCompleted(String habitId, LocalDate date, {required bool completed}) async {
+    if (completed) {
+      final existing = await (select(
+        habitCompletionRecords,
+      )..where((row) => row.habitId.equals(habitId) & row.dateKey.equals(date.key))).getSingleOrNull();
+      if (existing != null) return;
+      await setHabitCompletionCount(habitId, date, 1);
+      return;
+    }
+    await setHabitCompletionCount(habitId, date, 0);
   }
 
   Stream<List<TimeEntry>> watchTimeEntriesForEntry(String entryId) {
@@ -1416,15 +1477,21 @@ class AppDatabase extends _$AppDatabase {
     return _expandEntryRows(rows, start, end, viewerTimeZone);
   }
 
-  JoinedSelectStatement _entriesQuery(LocalDate start, LocalDate end) => select(entryRecords).join([
-    leftOuterJoin(
-      completionRecords,
-      completionRecords.entryId.equalsExp(entryRecords.id) &
-          completionRecords.dateKey.isBetweenValues(start.addDays(-2).key, end.addDays(2).key),
-    ),
-    leftOuterJoin(entryTagRecords, entryTagRecords.entryId.equalsExp(entryRecords.id)),
-    leftOuterJoin(timeEntryRecords, timeEntryRecords.entryId.equalsExp(entryRecords.id)),
-  ])..where(entryRecords.deletedAt.isNull());
+  JoinedSelectStatement _entriesQuery(LocalDate start, LocalDate end) {
+    final startKey = Variable.withInt(start.key);
+    final endKey = Variable.withInt(end.key);
+    final spanDays = coalesce<int>([entryRecords.endDateKey, entryRecords.dateKey]) - entryRecords.dateKey;
+    return select(entryRecords).join([
+      leftOuterJoin(
+        completionRecords,
+        completionRecords.entryId.equalsExp(entryRecords.id) &
+            completionRecords.dateKey.isBiggerOrEqual(startKey - spanDays - const Constant(2)) &
+            completionRecords.dateKey.isSmallerOrEqual(endKey + const Constant(2)),
+      ),
+      leftOuterJoin(entryTagRecords, entryTagRecords.entryId.equalsExp(entryRecords.id)),
+      leftOuterJoin(timeEntryRecords, timeEntryRecords.entryId.equalsExp(entryRecords.id)),
+    ])..where(entryRecords.deletedAt.isNull());
+  }
 
   /// Open tasks with no date or a date up to [until]. Today uses this for
   /// unscheduled and overdue work that must stay visible.
@@ -4191,6 +4258,13 @@ class AppDatabase extends _$AppDatabase {
     await seedSyncFieldVersionsForAll();
   }
 
+  /// v16 adds monthly habit quotas and per-day check-in counts. Rows written
+  /// by older builds keep the weekly period and one check-in per day.
+  Future<void> _migrateToV16(Migrator m) async {
+    await _addV16ColumnsEarly(m);
+    await seedSyncFieldVersionsForAll();
+  }
+
   /// Hashes each existing context/project image into the content-addressed
   /// cache. A missing or unreadable file leaves that row's media id null; one
   /// bad file must never abort the upgrade.
@@ -4255,6 +4329,31 @@ class AppDatabase extends _$AppDatabase {
       await customStatement(
         'CREATE UNIQUE INDEX IF NOT EXISTS shift_exception_sync_id ON shift_exception_records(sync_id)',
       );
+    }
+  }
+
+  /// Adds the v16 habit columns to tables that already exist. Called before
+  /// any migration that reads rows with the current mapper, and again after
+  /// the v10 repair may have renamed the draft habit-check table.
+  Future<void> _addV16ColumnsEarly(Migrator m) async {
+    final tableNames = (await customSelect(
+      "SELECT name FROM sqlite_master WHERE type = 'table'",
+    ).get()).map((row) => row.read<String>('name')).toSet();
+    if (tableNames.contains('habit_records')) {
+      final columns = (await customSelect(
+        'PRAGMA table_info(habit_records)',
+      ).get()).map((row) => row.read<String>('name')).toSet();
+      if (!columns.contains('target_period')) {
+        await m.addColumn(habitRecords, habitRecords.targetPeriod);
+      }
+    }
+    if (tableNames.contains('habit_completion_records')) {
+      final columns = (await customSelect(
+        'PRAGMA table_info(habit_completion_records)',
+      ).get()).map((row) => row.read<String>('name')).toSet();
+      if (!columns.contains('check_in_count')) {
+        await m.addColumn(habitCompletionRecords, habitCompletionRecords.checkInCount);
+      }
     }
   }
 
@@ -4358,7 +4457,8 @@ Habit _habitFromRow(HabitRow row) => Habit(
   description: row.description,
   colorValue: row.color,
   icon: row.icon,
-  targetPerWeek: row.targetPerWeek,
+  targetCount: row.targetPerWeek,
+  targetPeriod: Habit.parseTargetPeriod(row.targetPeriod),
   weekdays: Habit.parseWeekdays(row.weekdays),
   position: row.position,
   archived: row.archived,

@@ -84,9 +84,9 @@ void main() {
       spaceId: 'personal',
       name: 'Walk',
       colorValue: 0xFF00AA00,
-      targetPerWeek: 3,
+      targetCount: 3,
     );
-    final completions = {day, day.addDays(1), day.addDays(2)};
+    final completions = {day: 1, day.addDays(1): 1, day.addDays(2): 1};
     final today = day.addDays(2);
     expect(habit.weekProgress(completions, today, DateTime.monday), 3);
     expect(habit.streak(completions, today, weekStart: DateTime.monday), 1);
@@ -96,7 +96,7 @@ void main() {
     expect(habit.streak(completions, sunday, weekStart: DateTime.monday), 1);
 
     // A second qualifying week makes a two-week streak.
-    final secondWeek = {...completions, day.addDays(7), day.addDays(8), day.addDays(9)};
+    final secondWeek = {...completions, day.addDays(7): 1, day.addDays(8): 1, day.addDays(9): 1};
     expect(habit.streak(secondWeek, day.addDays(13), weekStart: DateTime.monday), 2);
   });
 
@@ -107,7 +107,7 @@ void main() {
       spaceId: 'personal',
       name: 'Gym',
       colorValue: 0xFF00AA00,
-      targetPerWeek: 3,
+      targetCount: 3,
       weekdays: const {1, 3, 5},
     );
     expect(habit.cleanTarget, 3);
@@ -120,12 +120,12 @@ void main() {
     final tuesday = monday.addDays(1);
 
     // A Tuesday check-in does not count towards a Mon/Wed/Fri habit.
-    expect(habit.weekProgress({tuesday}, monday, DateTime.monday), 0);
-    expect(habit.weekProgress({monday, wednesday, friday}, friday, DateTime.monday), 3);
+    expect(habit.weekProgress({tuesday: 1}, monday, DateTime.monday), 0);
+    expect(habit.weekProgress({monday: 1, wednesday: 1, friday: 1}, friday, DateTime.monday), 3);
 
     // Tuesday is skipped by the day streak instead of breaking it.
-    expect(habit.streak({monday, wednesday}, wednesday, weekStart: DateTime.monday), 2);
-    expect(habit.streak({monday, wednesday}, tuesday, weekStart: DateTime.monday), 1);
+    expect(habit.streak({monday: 1, wednesday: 1}, wednesday, weekStart: DateTime.monday), 2);
+    expect(habit.streak({monday: 1, wednesday: 1}, tuesday, weekStart: DateTime.monday), 1);
 
     // A lighter target keeps a weekly streak.
     final twice = Habit(
@@ -133,11 +133,73 @@ void main() {
       spaceId: 'personal',
       name: 'Run',
       colorValue: 0xFF00AA00,
-      targetPerWeek: 2,
+      targetCount: 2,
       weekdays: const {1, 3, 5},
     );
     expect(twice.isDaily, isFalse);
-    expect(twice.streak({monday, wednesday}, friday, weekStart: DateTime.monday), 1);
+    expect(twice.streak({monday: 1, wednesday: 1}, friday, weekStart: DateTime.monday), 1);
+  });
+
+  test('a monthly habit counts every check-in in the calendar month', () {
+    final habit = Habit(
+      id: 'card',
+      spaceId: 'personal',
+      name: 'Card',
+      colorValue: 0xFF00AA00,
+      targetCount: 7,
+      targetPeriod: HabitTargetPeriod.month,
+    );
+    final november = LocalDate.parse('2026-11-01');
+    final completions = {
+      november: 2,
+      november.addDays(1): 1,
+      november.addDays(2): 1,
+      november.addDays(30): 1,
+    };
+
+    expect(habit.cleanTarget, 7);
+    expect(habit.isDaily, isFalse);
+    expect(habit.monthProgress(completions, november), 4);
+    expect(habit.progress(completions, november), 4);
+    expect(habit.progress(completions, november.addDays(30)), 1);
+  });
+
+  test('monthly streaks count consecutive qualifying months', () {
+    final habit = Habit(
+      id: 'card',
+      spaceId: 'personal',
+      name: 'Card',
+      colorValue: 0xFF00AA00,
+      targetCount: 2,
+      targetPeriod: HabitTargetPeriod.month,
+    );
+    final november = LocalDate.parse('2026-11-01');
+    final october = november.addMonths(-1);
+    final september = october.addMonths(-1);
+    final completions = {november: 2, october: 1, october.addDays(20): 1, september: 2};
+    expect(habit.streak(completions, november.addDays(20)), 3);
+
+    // A month still in progress does not break the previous run.
+    final priorOnly = {october: 2, september: 2};
+    expect(habit.streak(priorOnly, november.addDays(20)), 2);
+  });
+
+  test('habit targets scale to the visible range', () {
+    final weekly = Habit(id: 'walk', spaceId: 'personal', name: 'Walk', colorValue: 0, targetCount: 3);
+    final monthly = Habit(
+      id: 'card',
+      spaceId: 'personal',
+      name: 'Card',
+      colorValue: 0,
+      targetCount: 7,
+      targetPeriod: HabitTargetPeriod.month,
+    );
+    final start = LocalDate.parse('2026-11-01');
+    final end = LocalDate.parse('2026-11-30');
+
+    expect(weekly.targetForRange(start, end), closeTo(3 * 30 / 7, 0.001));
+    expect(monthly.targetForRange(start, end), closeTo(7, 0.001));
+    expect(monthly.targetForRange(start, end.addDays(31)), closeTo(14, 0.001));
   });
 
   test('habit weekdays round-trip through storage', () {

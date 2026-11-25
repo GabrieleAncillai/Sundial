@@ -143,7 +143,7 @@ void main() {
     expect(columns.map((row) => row.data['name']), contains('time_zone'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
   });
 
   test('migrates real v2 data and keeps tags usable', () async {
@@ -205,7 +205,7 @@ void main() {
     expect((await database.watchTags().first).single.name, 'Tax');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
   });
 
   test('migrates real v3 data and exposes the v0.3 tables', () async {
@@ -259,7 +259,7 @@ void main() {
 
     await database.saveShiftChecklistItems('missing-pattern', const []);
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
   });
 
   test('migrates real v4 data and creates the pairing tables', () async {
@@ -413,7 +413,7 @@ void main() {
     expect(paired.port, 8766);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
   });
 
   test('migrates real v5 checklist rows to per-slot keys', () async {
@@ -483,7 +483,7 @@ void main() {
     expect(saved.windDownMinutes, 20);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
   });
 
   test('migrates real v6 rows to shopping order and purchase history', () async {
@@ -540,7 +540,7 @@ void main() {
     expect(history.single.note, 'Shop run');
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
   });
 
   test('migrates real v7 rows to custom reminder times and remote snapshots', () async {
@@ -615,7 +615,7 @@ void main() {
     expect(await database.readRemoteSnapshots(), isEmpty);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
   });
 
   test('migrates real v8 rows to contexts, projects, habits and tracked tasks', () async {
@@ -690,7 +690,7 @@ void main() {
     expect((await database.readShiftChecklistItems('bar')).single.dayIndex, 2);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
   });
 
   test('repairs a database written by the draft v9 build', () async {
@@ -812,7 +812,7 @@ void main() {
     expect(habit.contextId, 'pizza');
     expect(habit.weekdays, {1, 3, 5}, reason: 'the draft weekday schedule survives the v10 rebuild');
     final completions = await database.watchHabitCompletions().first;
-    expect(completions['open-shop'], contains(LocalDate.parse('2026-11-09')));
+    expect(completions['open-shop']?[LocalDate.parse('2026-11-09')], 1);
 
     final sessions = await database.readTimeEntriesBetween(
       DateTime.utc(2026, 11, 1),
@@ -853,7 +853,7 @@ void main() {
     expect(nextDue, LocalDate.parse('2027-10-29'));
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
   });
 
   test('a v10 database gains habit weekdays and keeps writing', () async {
@@ -901,17 +901,17 @@ void main() {
         spaceId: existing.spaceId,
         name: existing.name,
         colorValue: existing.colorValue,
-        targetPerWeek: 3,
+        targetCount: 3,
         weekdays: const {1, 3, 5},
         createdAt: existing.createdAt,
       ),
     );
     final updated = (await database.watchHabits().first).single;
     expect(updated.weekdays, {1, 3, 5});
-    expect(updated.targetPerWeek, 3);
+    expect(updated.targetCount, 3);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
   });
 
   test('repairs the draft leftovers a v1.2 build reported as v10', () async {
@@ -997,7 +997,7 @@ void main() {
     expect(draftTable, isEmpty);
 
     final version = await repaired.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
   });
 
   test('migrates v12 inventory text into variants and reference rows', () async {
@@ -1076,7 +1076,7 @@ void main() {
     expect((await database.watchHomeCategories().first), isNotEmpty);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
   });
   test('a v13 database gains sync ids, field versions and tombstones', () async {
     final directory = await Directory.systemTemp.createTemp('sundial-v14-sync');
@@ -1327,7 +1327,7 @@ void main() {
     expect(state.epoch, isNotEmpty);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
 
     final slots = await database.customSelect('SELECT sync_id FROM shift_slot_records').get();
     expect(slots, hasLength(2));
@@ -1453,7 +1453,7 @@ void main() {
     addTearDown(database.close);
 
     final version = await database.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 15);
+    expect(version.data.values.single, 16);
 
     final rows = await database
         .customSelect('SELECT id, image_media_id FROM context_records ORDER BY id')
@@ -1482,5 +1482,72 @@ void main() {
     expect(mediaVersions, hasLength(1));
 
     expect((await database.watchContexts().first).map((item) => item.id), containsAll(['house', 'gone']));
+  });
+
+  test('a v15 database gains monthly habit targets and check-in counts', () async {
+    final directory = await Directory.systemTemp.createTemp('sundial-v15-habits');
+    final path = p.join(directory.path, 'sundial.sqlite');
+    addTearDown(() => directory.delete(recursive: true));
+
+    final created = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    await created.seedDefaults();
+    await created.saveHabit(
+      const Habit(
+        id: 'walk',
+        spaceId: 'personal',
+        name: 'Walk',
+        colorValue: 0xFF00AA00,
+        targetCount: 3,
+        weekdays: {1, 3, 5},
+      ),
+    );
+    await created.setHabitCompleted('walk', LocalDate.parse('2026-11-09'), completed: true);
+    await created.close();
+
+    // Rewind the two habit tables to their v15 shape. Everything else is
+    // already v15-compatible, so only the new fields and the new sync field
+    // version have to disappear.
+    final raw = sqlite3.open(path);
+    raw.execute('ALTER TABLE habit_records DROP COLUMN target_period');
+    raw.execute('ALTER TABLE habit_completion_records DROP COLUMN check_in_count');
+    raw.execute(
+      "DELETE FROM sync_field_version_records WHERE entity = 'habitCompletion' AND field = 'count'",
+    );
+    raw.execute('PRAGMA user_version = 15');
+    raw.dispose();
+
+    final database = AppDatabase(NativeDatabase(File(path)), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(database.close);
+
+    final habit = (await database.watchHabits().first).single;
+    expect(habit.targetPeriod, HabitTargetPeriod.week);
+    expect(habit.targetCount, 3);
+    expect((await database.watchHabitCompletions().first)['walk']?[LocalDate.parse('2026-11-09')], 1);
+
+    await database.saveHabit(
+      Habit(
+        id: habit.id,
+        spaceId: habit.spaceId,
+        name: habit.name,
+        colorValue: habit.colorValue,
+        targetCount: 7,
+        targetPeriod: HabitTargetPeriod.month,
+        weekdays: habit.weekdays,
+        createdAt: habit.createdAt,
+      ),
+    );
+    final updated = (await database.watchHabits().first).single;
+    expect(updated.targetPeriod, HabitTargetPeriod.month);
+    expect(updated.targetCount, 7);
+
+    final fields = await database
+        .customSelect(
+          "SELECT field FROM sync_field_version_records WHERE entity = 'habitCompletion' ORDER BY field",
+        )
+        .get();
+    expect(fields.map((row) => row.read<String>('field')), containsAll(['present', 'count']));
+
+    final version = await database.customSelect('PRAGMA user_version').getSingle();
+    expect(version.data.values.single, 16);
   });
 }

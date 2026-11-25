@@ -374,29 +374,7 @@ class McpServer {
           'today': today.iso,
           'habits': [
             for (final habit in habits)
-              {
-                'id': habit.id,
-                'spaceId': habit.spaceId,
-                'contextId': habit.contextId,
-                'name': habit.name,
-                'description': habit.description,
-                'icon': habit.icon,
-                'color': habit.colorValue,
-                'targetPerWeek': habit.targetPerWeek,
-                'weekdays': habit.weekdays.toList()..sort(),
-                'progressThisWeek': habit.weekProgress(
-                  completions[habit.id] ?? const <LocalDate>{},
-                  today,
-                  weekStart,
-                ),
-                'streak': habit.streak(
-                  completions[habit.id] ?? const <LocalDate>{},
-                  today,
-                  weekStart: weekStart,
-                ),
-                'doneToday': completions[habit.id]?.contains(today) ?? false,
-                'archived': habit.archived,
-              },
+              _habitJson(habit, completions[habit.id] ?? const <LocalDate, int>{}, today, weekStart),
           ],
         };
       case 'time.sessions':
@@ -465,15 +443,57 @@ class McpServer {
     }
   }
 
+  Map<String, Object?> _habitJson(Habit habit, HabitCompletions completions, LocalDate today, int weekStart) {
+    final todayCount = habit.countOn(completions, today);
+    return {
+      'id': habit.id,
+      'spaceId': habit.spaceId,
+      'contextId': habit.contextId,
+      'name': habit.name,
+      'description': habit.description,
+      'icon': habit.icon,
+      'color': habit.colorValue,
+      'targetCount': habit.targetCount,
+      'targetPeriod': habit.targetPeriod.name,
+      if (habit.isWeekly) 'targetPerWeek': habit.targetCount,
+      'weekdays': habit.weekdays.toList()..sort(),
+      'progressThisPeriod': habit.progress(completions, today, weekStart: weekStart),
+      if (habit.isWeekly) 'progressThisWeek': habit.weekProgress(completions, today, weekStart),
+      if (habit.isMonthly) 'progressThisMonth': habit.monthProgress(completions, today),
+      'streak': habit.streak(completions, today, weekStart: weekStart),
+      'doneToday': todayCount > 0,
+      'todayCount': todayCount,
+      'archived': habit.archived,
+    };
+  }
+
   Future<Map<String, Object?>> _checkHabit(Map<String, Object?> arguments, LocalDate today) async {
     final habitId = _stringArg(arguments, 'habitId');
     final habits = await _repository.watchHabits().first;
     if (!habits.any((habit) => habit.id == habitId)) throw const _RpcException(-32602, 'Unknown habitId');
     final date = _dateArg(arguments, 'date') ?? today;
     final completed = arguments['completed'];
-    if (completed is! bool) throw const _RpcException(-32602, 'completed must be a boolean');
-    await _repository.setHabitCompleted(habitId, date, completed: completed);
-    return {'habitId': habitId, 'date': date.iso, 'completed': completed};
+    final count = arguments['count'];
+    final delta = arguments['delta'];
+    final modes = [completed, count, delta].where((value) => value != null).length;
+    if (modes != 1) {
+      throw const _RpcException(-32602, 'Provide exactly one of completed, count or delta');
+    }
+    if (completed != null) {
+      if (completed is! bool) throw const _RpcException(-32602, 'completed must be a boolean');
+      await _repository.setHabitCompleted(habitId, date, completed: completed);
+    } else if (count != null) {
+      if (count is! int || count < 0) {
+        throw const _RpcException(-32602, 'count must be a non-negative integer');
+      }
+      await _repository.setHabitCompletionCount(habitId, date, count);
+    } else {
+      if (delta is! int) throw const _RpcException(-32602, 'delta must be an integer');
+      await _repository.adjustHabitCompletion(habitId, date, delta);
+    }
+    final counts = await _repository.watchHabitCompletions(habitId: habitId).first;
+    final dayCount = counts[habitId]?[date] ?? 0;
+    return {'habitId': habitId, 'date': date.iso, 'completed': dayCount > 0, 'count': dayCount};
   }
 
   Future<Map<String, Object?>> _startSession(Map<String, Object?> arguments, LocalDate today) async {
@@ -875,7 +895,7 @@ class McpServer {
       },
       {
         'name': 'habits.list',
-        'description': 'Habits with their weekday schedule, this week progress and streak.',
+        'description': 'Habits with their target period, current-period progress and streak.',
         'inputSchema': {'type': 'object', 'properties': <String, Object?>{}},
       },
       {
@@ -1022,15 +1042,26 @@ class McpServer {
         },
         {
           'name': 'habits.check',
-          'description': 'Mark a habit done or not done for one date.',
+          'description':
+              'Set a habit check-in count for one date, or add/remove check-ins. '
+              'Weekly habits normally use completed; monthly quotas can use count or delta.',
           'inputSchema': {
             'type': 'object',
             'properties': {
               'habitId': {'type': 'string'},
               'date': {'type': 'string', 'description': 'YYYY-MM-DD, defaults to today'},
-              'completed': {'type': 'boolean'},
+              'completed': {
+                'type': 'boolean',
+                'description': 'Mark done (one check-in) or clear the date. Kept for older clients.',
+              },
+              'count': {
+                'type': 'integer',
+                'minimum': 0,
+                'description': 'Exact number of check-ins for the date. Zero clears it.',
+              },
+              'delta': {'type': 'integer', 'description': 'Add or remove this many check-ins for the date.'},
             },
-            'required': ['habitId', 'completed'],
+            'required': ['habitId'],
           },
         },
         {

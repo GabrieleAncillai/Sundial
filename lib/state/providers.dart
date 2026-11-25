@@ -95,7 +95,7 @@ final habitsProvider = StreamProvider.family<List<Habit>, String?>(
   (ref, spaceId) => ref.watch(repositoryProvider).watchHabits(spaceId: spaceId),
 );
 
-final habitCompletionsProvider = StreamProvider<Map<String, Set<LocalDate>>>(
+final habitCompletionsProvider = StreamProvider<Map<String, HabitCompletions>>(
   (ref) => ref.watch(repositoryProvider).watchHabitCompletions(),
 );
 

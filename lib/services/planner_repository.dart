@@ -46,8 +46,14 @@ class PlannerRepository {
 
   Future<void> deleteHabit(String id) => _database.softDeleteHabit(id);
 
-  Stream<Map<String, Set<LocalDate>>> watchHabitCompletions({String? habitId}) =>
+  Stream<Map<String, HabitCompletions>> watchHabitCompletions({String? habitId}) =>
       _database.watchHabitCompletions(habitId: habitId);
+
+  Future<void> setHabitCompletionCount(String habitId, LocalDate date, int count) =>
+      _database.setHabitCompletionCount(habitId, date, count);
+
+  Future<void> adjustHabitCompletion(String habitId, LocalDate date, int delta) =>
+      _database.adjustHabitCompletion(habitId, date, delta);
 
   Future<void> setHabitCompleted(String habitId, LocalDate date, {required bool completed}) =>
       _database.setHabitCompleted(habitId, date, completed: completed);

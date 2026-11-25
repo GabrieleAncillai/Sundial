@@ -50,7 +50,10 @@ abstract final class SyncPayloads {
     'description': habit.description,
     'color': habit.colorValue,
     'icon': habit.icon,
-    'targetPerWeek': habit.targetPerWeek,
+    'targetCount': habit.targetCount,
+    'targetPeriod': habit.targetPeriod.name,
+    // Kept for clients that still read the one-release read-only snapshot.
+    'targetPerWeek': habit.targetCount,
     'weekdays': habit.weekdays.toList()..sort(),
     'position': habit.position,
     'archived': habit.archived,

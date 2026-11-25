@@ -37,7 +37,7 @@ class BackupService {
   BackupService(this._database, {Directory? mediaDirectory}) : _mediaDirectory = mediaDirectory;
 
   static const appTag = 'sundial';
-  static const currentSchemaVersion = 15;
+  static const currentSchemaVersion = 16;
 
   /// The oldest payload this build still upgrades. v1 and v2 are excluded on
   /// purpose: they predate timezone-aware entries and cannot be mapped safely.
@@ -53,6 +53,7 @@ class BackupService {
     'appLockMisses',
     'appLockBlockedUntil',
     'syncDatasetId',
+    'appIconStyle',
   };
 
   final AppDatabase _database;
@@ -271,7 +272,8 @@ class BackupService {
             'description': row.description,
             'color': row.color,
             'icon': row.icon,
-            'targetPerWeek': row.targetPerWeek,
+            'targetCount': row.targetPerWeek,
+            'targetPeriod': row.targetPeriod,
             'weekdays': row.weekdays,
             'position': row.position,
             'archived': row.archived,
@@ -282,7 +284,12 @@ class BackupService {
       ],
       'habitCompletions': [
         for (final row in habitCompletions)
-          {'habitId': row.habitId, 'dateKey': row.dateKey, 'createdAt': _date(row.createdAt)},
+          {
+            'habitId': row.habitId,
+            'dateKey': row.dateKey,
+            'checkInCount': row.checkInCount,
+            'createdAt': _date(row.createdAt),
+          },
       ],
       'timeEntries': [
         for (final row in timeEntries)
@@ -740,6 +747,11 @@ class BackupService {
       }
 
       for (final row in habits) {
+        final targetPeriod = _habitTargetPeriod(row);
+        final rawTarget = _optionalInteger(row, 'targetCount') ?? _optionalInteger(row, 'targetPerWeek') ?? 7;
+        final target = targetPeriod == HabitTargetPeriod.week
+            ? rawTarget.clamp(1, 7)
+            : rawTarget.clamp(1, 31);
         await _database
             .into(_database.habitRecords)
             .insert(
@@ -751,7 +763,8 @@ class BackupService {
                 description: Value(_optionalString(row, 'description') ?? ''),
                 color: Value(_integer(row, 'color')),
                 icon: Value(_optionalString(row, 'icon') ?? 'star'),
-                targetPerWeek: Value(_optionalInteger(row, 'targetPerWeek') ?? 7),
+                targetPerWeek: Value(target),
+                targetPeriod: Value(targetPeriod.name),
                 weekdays: Value(_optionalString(row, 'weekdays') ?? '1,2,3,4,5,6,7'),
                 position: Value(_optionalInteger(row, 'position') ?? 0),
                 archived: Value(_optionalBoolean(row, 'archived') ?? false),
@@ -992,12 +1005,14 @@ class BackupService {
       }
 
       for (final row in habitCompletions) {
+        final count = _optionalInteger(row, 'checkInCount') ?? 1;
         await _database
             .into(_database.habitCompletionRecords)
             .insert(
               HabitCompletionRecordsCompanion.insert(
                 habitId: _string(row, 'habitId'),
                 dateKey: _integer(row, 'dateKey'),
+                checkInCount: Value(count < 1 ? 1 : count),
                 createdAt: _dateTime(row, 'createdAt'),
               ),
             );
@@ -1225,6 +1240,15 @@ class BackupService {
         }
       }
     }
+  }
+
+  static HabitTargetPeriod _habitTargetPeriod(Map<String, Object?> row) {
+    final raw = _optionalString(row, 'targetPeriod');
+    if (raw == null || raw.isEmpty) return HabitTargetPeriod.week;
+    for (final period in HabitTargetPeriod.values) {
+      if (period.name == raw) return period;
+    }
+    throw BackupFormatException('habit has an unknown target period');
   }
 
   static String? _backupMediaPath(String? path, Map<String, String> targets) {

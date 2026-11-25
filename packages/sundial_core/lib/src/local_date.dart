@@ -65,6 +65,18 @@ class LocalDate implements Comparable<LocalDate> {
     return LocalDate(shifted.year, shifted.month, shifted.day);
   }
 
+  /// Shifts by whole months, clamping the day to the destination month.
+  ///
+  /// 31 January plus one month is 28 February (29 in a leap year), which is
+  /// the same rule the monthly recurrence uses.
+  LocalDate addMonths(int months) {
+    final total = year * 12 + (month - 1) + months;
+    final nextYear = total ~/ 12;
+    final nextMonth = total % 12 + 1;
+    final first = LocalDate(nextYear, nextMonth, 1);
+    return LocalDate(nextYear, nextMonth, day > first.daysInMonth ? first.daysInMonth : day);
+  }
+
   /// Whole days from [other] to this date.
   int differenceInDays(LocalDate other) =>
       DateTime.utc(year, month, day).difference(DateTime.utc(other.year, other.month, other.day)).inDays;

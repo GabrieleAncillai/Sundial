@@ -21,6 +21,14 @@ void main() {
       expect(LocalDate.parse('2026-03-01').addDays(-1).iso, '2026-02-28');
     });
 
+    test('adds months and clamps the day to the month length', () {
+      expect(LocalDate.parse('2026-01-31').addMonths(1).iso, '2026-02-28');
+      expect(LocalDate.parse('2024-01-31').addMonths(1).iso, '2024-02-29');
+      expect(LocalDate.parse('2026-11-15').addMonths(2).iso, '2027-01-15');
+      expect(LocalDate.parse('2026-01-15').addMonths(-1).iso, '2025-12-15');
+      expect(LocalDate.parse('2026-03-31').addMonths(-1).iso, '2026-02-28');
+    });
+
     test('computes whole-day differences', () {
       final monday = LocalDate.parse('2026-11-09');
       final friday = LocalDate.parse('2026-11-13');

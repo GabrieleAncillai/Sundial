@@ -10,13 +10,16 @@ import '../../../state/settings_controller.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
 
-/// Twelve weeks of check-ins for one habit, plus its current streak and target.
+/// Twelve weeks or twelve months of check-ins for one habit, plus its current
+/// target and streak. Monthly habits use a month bar because a day grid cannot
+/// show several check-ins on the same date.
 class HabitHistoryPage extends ConsumerWidget {
   const HabitHistoryPage({super.key, required this.habit});
 
   final Habit habit;
 
   static const _weeks = 12;
+  static const _months = 12;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,12 +27,14 @@ class HabitHistoryPage extends ConsumerWidget {
     final c = context.mc;
     final today = localDateAt(ref.watch(nowProvider), ref.watch(deviceTimeZoneProvider));
     final weekStart = ref.watch(settingsProvider).weekStart;
-    final completions = ref.watch(habitCompletionsProvider).value?[habit.id] ?? const <LocalDate>{};
+    final completions = ref.watch(habitCompletionsProvider).value?[habit.id] ?? const <LocalDate, int>{};
     final color = Color(habit.colorValue);
     final currentWeekStart = today.startOfWeek(weekStart);
-    final progress = habit.weekProgress(completions, today, weekStart);
+    final progress = habit.progress(completions, today, weekStart: weekStart);
     final streak = habit.streak(completions, today, weekStart: weekStart);
-    final doneEver = completions.where((date) => !date.isAfter(today)).length;
+    final doneEver = completions.entries
+        .where((entry) => !entry.key.isAfter(today))
+        .fold<int>(0, (sum, entry) => sum + entry.value);
 
     return SundialPage(
       title: habit.name,
@@ -41,12 +46,19 @@ class HabitHistoryPage extends ConsumerWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: _Stat(label: l10n.thisWeek, value: '$progress/${habit.cleanTarget}'),
+                  child: _Stat(
+                    label: habit.isMonthly ? l10n.thisMonth : l10n.thisWeek,
+                    value: '$progress/${habit.cleanTarget}',
+                  ),
                 ),
                 Expanded(
                   child: _Stat(
                     label: l10n.habitHistory,
-                    value: habit.isDaily ? l10n.streakDays(streak) : l10n.streakWeeks(streak),
+                    value: habit.isMonthly
+                        ? l10n.streakMonths(streak)
+                        : habit.isDaily
+                        ? l10n.streakDays(streak)
+                        : l10n.streakWeeks(streak),
                   ),
                 ),
                 Expanded(
@@ -58,17 +70,30 @@ class HabitHistoryPage extends ConsumerWidget {
           const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(l10n.habitHistoryHint, style: SundialType.body(11.5, color: c.textTertiary)),
+            child: Text(
+              habit.isMonthly ? l10n.habitMonthHistoryHint : l10n.habitHistoryHint,
+              style: SundialType.body(11.5, color: c.textTertiary),
+            ),
           ),
           const SizedBox(height: 14),
-          for (var offset = _weeks - 1; offset >= 0; offset--)
-            _WeekRow(
-              start: currentWeekStart.addDays(-7 * offset),
-              today: today,
-              completions: completions,
-              habit: habit,
-              color: color,
-            ),
+          if (habit.isMonthly)
+            for (var offset = _months - 1; offset >= 0; offset--)
+              _MonthRow(
+                month: LocalDate(today.year, today.month, 1).addMonths(-offset),
+                today: today,
+                completions: completions,
+                habit: habit,
+                color: color,
+              )
+          else
+            for (var offset = _weeks - 1; offset >= 0; offset--)
+              _WeekRow(
+                start: currentWeekStart.addDays(-7 * offset),
+                today: today,
+                completions: completions,
+                habit: habit,
+                color: color,
+              ),
         ],
       ),
     );
@@ -86,7 +111,7 @@ class _WeekRow extends StatelessWidget {
 
   final LocalDate start;
   final LocalDate today;
-  final Set<LocalDate> completions;
+  final HabitCompletions completions;
   final Habit habit;
   final Color color;
 
@@ -108,12 +133,60 @@ class _WeekRow extends StatelessWidget {
                 child: _DayDot(
                   date: start.addDays(index),
                   today: today,
-                  done: completions.contains(start.addDays(index)),
+                  done: habit.countOn(completions, start.addDays(index)) > 0,
                   scheduled: habit.isScheduled(start.addDays(index)),
                   color: color,
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MonthRow extends StatelessWidget {
+  const _MonthRow({
+    required this.month,
+    required this.today,
+    required this.completions,
+    required this.habit,
+    required this.color,
+  });
+
+  /// The first day of the month.
+  final LocalDate month;
+  final LocalDate today;
+  final HabitCompletions completions;
+  final Habit habit;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.mc;
+    final progress = habit.monthProgress(completions, month);
+    final ratio = (progress / habit.cleanTarget).clamp(0.0, 1.0);
+    final current = month.year == today.year && month.month == today.month;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 7),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  formatMonthYear(context, month.toDateTime()),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: SundialType.label(10.5, color: current ? color : c.textTertiary),
+                ),
+              ),
+              Text('$progress/${habit.cleanTarget}', style: SundialType.label(10.5, color: c.textSecondary)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          SundialProgressBar(value: ratio, height: 6, color: color),
         ],
       ),
     );

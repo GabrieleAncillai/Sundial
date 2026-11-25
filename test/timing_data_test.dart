@@ -53,14 +53,39 @@ void main() {
       ),
     );
     await database.saveHabit(
-      const Habit(id: 'walk', spaceId: 'personal', name: 'Walk', colorValue: 0xFF00AA00, targetPerWeek: 3),
+      const Habit(id: 'walk', spaceId: 'personal', name: 'Walk', colorValue: 0xFF00AA00, targetCount: 3),
     );
     await database.setHabitCompleted('walk', day, completed: true);
 
     expect((await database.watchContexts(spaceId: 'work').first).single.imagePath, '/tmp/cafe.png');
     expect((await database.watchProjects(contextId: 'cafe').first).single.name, 'Renovation');
-    expect((await database.watchHabits(spaceId: 'personal').first).single.targetPerWeek, 3);
-    expect((await database.watchHabitCompletions().first)['walk'], {day});
+    expect((await database.watchHabits(spaceId: 'personal').first).single.targetCount, 3);
+    expect((await database.watchHabitCompletions().first)['walk'], {day: 1});
+  });
+
+  test('stores monthly targets and several check-ins on one day', () async {
+    await database.saveHabit(
+      const Habit(
+        id: 'card',
+        spaceId: 'personal',
+        name: 'Card',
+        colorValue: 0xFF00AA00,
+        targetCount: 7,
+        targetPeriod: HabitTargetPeriod.month,
+      ),
+    );
+    await database.setHabitCompletionCount('card', day, 2);
+    await database.setHabitCompletionCount('card', day.addDays(1), 1);
+    // Marking a day already done must not reduce its count.
+    await database.setHabitCompleted('card', day.addDays(1), completed: true);
+
+    final habit = (await database.watchHabits(spaceId: 'personal').first).single;
+    final completions = (await database.watchHabitCompletions().first)['card']!;
+    expect(habit.targetPeriod, HabitTargetPeriod.month);
+    expect(habit.cleanTarget, 7);
+    expect(completions[day], 2);
+    expect(completions[day.addDays(1)], 1);
+    expect(habit.monthProgress(completions, day), 3);
   });
 
   test('expands clock-in, deadline and anytime tasks with priority', () async {

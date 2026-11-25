@@ -7,6 +7,8 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sundial/features/backup/backup_service.dart';
 import 'package:sundial/features/media/media_store.dart';
+import 'package:sundial/models/app_icon_style.dart';
+import 'package:sundial/models/app_settings.dart';
 import 'package:sundial/models/home_item.dart';
 import 'package:sundial/models/home_reference.dart';
 import 'package:sundial/models/local_identity.dart';
@@ -65,11 +67,12 @@ void main() {
         spaceId: 'personal',
         name: 'Walk',
         colorValue: 0xFF00AA00,
-        targetPerWeek: 3,
+        targetCount: 3,
+        targetPeriod: HabitTargetPeriod.month,
         weekdays: {1, 3, 5},
       ),
     );
-    await database.setHabitCompleted('walk', LocalDate.parse('2026-11-09'), completed: true);
+    await database.setHabitCompletionCount('walk', LocalDate.parse('2026-11-09'), 2);
     await database.saveEntry(
       Entry(
         id: 'bins',
@@ -235,7 +238,7 @@ void main() {
 
     final exported = await BackupService(source).exportJson();
     final payload = jsonDecode(exported) as Map<String, dynamic>;
-    expect(payload['schemaVersion'], 15);
+    expect(payload['schemaVersion'], 16);
     expect(payload.containsKey('identity'), isFalse);
     expect(payload.containsKey('pairedDevices'), isFalse);
     expect(exported, isNot(contains('cGluaGFzaA==')));
@@ -263,7 +266,11 @@ void main() {
     after.remove('exportedAt');
 
     expect(after, before);
-    expect((await target.watchHabits().first).single.weekdays, {1, 3, 5});
+    final habit = (await target.watchHabits().first).single;
+    expect(habit.weekdays, {1, 3, 5});
+    expect(habit.targetPeriod, HabitTargetPeriod.month);
+    expect(habit.targetCount, 3);
+    expect((await target.watchHabitCompletions().first)['walk']?[LocalDate.parse('2026-11-09')], 2);
   });
 
   test('backups embed and restore sticker media', () async {
@@ -346,7 +353,7 @@ void main() {
 
     final exported = await BackupService(sourceDb, mediaDirectory: sourceMedia).exportJson();
     final payload = jsonDecode(exported) as Map<String, Object?>;
-    expect(payload['schemaVersion'], 15);
+    expect(payload['schemaVersion'], 16);
     expect(jsonEncode(payload), isNot(contains('media_cache_records')));
     final contexts = (payload['contexts'] as List).cast<Map<String, Object?>>();
     expect(contexts.single['imageMediaId'], MediaStore.hashBytes(tinyPng));
@@ -541,6 +548,38 @@ void main() {
           .first),
       isNotEmpty,
     );
+  });
+
+  test('accepts a schema v15 habit without the new fields', () async {
+    await source.saveHabit(
+      const Habit(
+        id: 'walk',
+        spaceId: 'personal',
+        name: 'Walk',
+        colorValue: 0xFF00AA00,
+        targetCount: 3,
+        weekdays: {1, 3, 5},
+      ),
+    );
+    await source.setHabitCompleted('walk', LocalDate.parse('2026-11-09'), completed: true);
+    final payload = jsonDecode(await BackupService(source).exportJson()) as Map<String, Object?>;
+    payload['schemaVersion'] = 15;
+    for (final row in (payload['habits'] as List).cast<Map<String, Object?>>()) {
+      row.remove('targetPeriod');
+      row['targetPerWeek'] = row.remove('targetCount');
+    }
+    for (final row in (payload['habitCompletions'] as List).cast<Map<String, Object?>>()) {
+      row.remove('checkInCount');
+    }
+
+    final target = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(target.close);
+    await BackupService(target).importJson(jsonEncode(payload));
+
+    final habit = (await target.watchHabits().first).single;
+    expect(habit.targetPeriod, HabitTargetPeriod.week);
+    expect(habit.targetCount, 3);
+    expect((await target.watchHabitCompletions().first)['walk']?[LocalDate.parse('2026-11-09')], 1);
   });
 
   test('rejects a corrupt file without touching existing data', () async {
@@ -761,6 +800,17 @@ void main() {
     await BackupService(target).importJson(exported);
     expect((await target.readSettings()).containsKey('syncDatasetId'), isFalse);
     expect(await target.ensureSyncDatasetId(), isNot('source-dataset'));
+  });
+
+  test('excludes the launcher icon choice from backups', () async {
+    await source.writeSetting(SettingsKeys.appIconStyle, AppIconStyle.aero.name);
+    final exported = await BackupService(source).exportJson();
+    expect(exported, isNot(contains(SettingsKeys.appIconStyle)));
+
+    final target = AppDatabase(NativeDatabase.memory(), defaultTimeZone: 'Europe/Madrid');
+    addTearDown(target.close);
+    await BackupService(target).importJson(exported);
+    expect((await target.readSettings()).containsKey(SettingsKeys.appIconStyle), isFalse);
   });
 
   test('upgrades a v4 payload with home items and shopping', () async {

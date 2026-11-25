@@ -2018,6 +2018,18 @@ class $HabitRecordsTable extends HabitRecords
     requiredDuringInsert: false,
     defaultValue: const Constant(7),
   );
+  static const VerificationMeta _targetPeriodMeta = const VerificationMeta(
+    'targetPeriod',
+  );
+  @override
+  late final GeneratedColumn<String> targetPeriod = GeneratedColumn<String>(
+    'target_period',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('week'),
+  );
   static const VerificationMeta _weekdaysMeta = const VerificationMeta(
     'weekdays',
   );
@@ -2100,6 +2112,7 @@ class $HabitRecordsTable extends HabitRecords
     color,
     icon,
     targetPerWeek,
+    targetPeriod,
     weekdays,
     position,
     archived,
@@ -2175,6 +2188,15 @@ class $HabitRecordsTable extends HabitRecords
         targetPerWeek.isAcceptableOrUnknown(
           data['target_per_week']!,
           _targetPerWeekMeta,
+        ),
+      );
+    }
+    if (data.containsKey('target_period')) {
+      context.handle(
+        _targetPeriodMeta,
+        targetPeriod.isAcceptableOrUnknown(
+          data['target_period']!,
+          _targetPeriodMeta,
         ),
       );
     }
@@ -2259,6 +2281,10 @@ class $HabitRecordsTable extends HabitRecords
         DriftSqlType.int,
         data['${effectivePrefix}target_per_week'],
       )!,
+      targetPeriod: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_period'],
+      )!,
       weekdays: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}weekdays'],
@@ -2300,7 +2326,13 @@ class HabitRow extends DataClass implements Insertable<HabitRow> {
   final String description;
   final int color;
   final String icon;
+
+  /// Historical column name. The value is the target count for
+  /// [targetPeriod]; renaming it would break older peers and backups.
   final int targetPerWeek;
+
+  /// `week` or `month`, the period the target is measured in.
+  final String targetPeriod;
 
   /// Scheduled weekdays, 1 = Monday through 7 = Sunday, comma separated.
   final String weekdays;
@@ -2318,6 +2350,7 @@ class HabitRow extends DataClass implements Insertable<HabitRow> {
     required this.color,
     required this.icon,
     required this.targetPerWeek,
+    required this.targetPeriod,
     required this.weekdays,
     required this.position,
     required this.archived,
@@ -2338,6 +2371,7 @@ class HabitRow extends DataClass implements Insertable<HabitRow> {
     map['color'] = Variable<int>(color);
     map['icon'] = Variable<String>(icon);
     map['target_per_week'] = Variable<int>(targetPerWeek);
+    map['target_period'] = Variable<String>(targetPeriod);
     map['weekdays'] = Variable<String>(weekdays);
     map['position'] = Variable<int>(position);
     map['archived'] = Variable<bool>(archived);
@@ -2361,6 +2395,7 @@ class HabitRow extends DataClass implements Insertable<HabitRow> {
       color: Value(color),
       icon: Value(icon),
       targetPerWeek: Value(targetPerWeek),
+      targetPeriod: Value(targetPeriod),
       weekdays: Value(weekdays),
       position: Value(position),
       archived: Value(archived),
@@ -2386,6 +2421,7 @@ class HabitRow extends DataClass implements Insertable<HabitRow> {
       color: serializer.fromJson<int>(json['color']),
       icon: serializer.fromJson<String>(json['icon']),
       targetPerWeek: serializer.fromJson<int>(json['targetPerWeek']),
+      targetPeriod: serializer.fromJson<String>(json['targetPeriod']),
       weekdays: serializer.fromJson<String>(json['weekdays']),
       position: serializer.fromJson<int>(json['position']),
       archived: serializer.fromJson<bool>(json['archived']),
@@ -2406,6 +2442,7 @@ class HabitRow extends DataClass implements Insertable<HabitRow> {
       'color': serializer.toJson<int>(color),
       'icon': serializer.toJson<String>(icon),
       'targetPerWeek': serializer.toJson<int>(targetPerWeek),
+      'targetPeriod': serializer.toJson<String>(targetPeriod),
       'weekdays': serializer.toJson<String>(weekdays),
       'position': serializer.toJson<int>(position),
       'archived': serializer.toJson<bool>(archived),
@@ -2424,6 +2461,7 @@ class HabitRow extends DataClass implements Insertable<HabitRow> {
     int? color,
     String? icon,
     int? targetPerWeek,
+    String? targetPeriod,
     String? weekdays,
     int? position,
     bool? archived,
@@ -2439,6 +2477,7 @@ class HabitRow extends DataClass implements Insertable<HabitRow> {
     color: color ?? this.color,
     icon: icon ?? this.icon,
     targetPerWeek: targetPerWeek ?? this.targetPerWeek,
+    targetPeriod: targetPeriod ?? this.targetPeriod,
     weekdays: weekdays ?? this.weekdays,
     position: position ?? this.position,
     archived: archived ?? this.archived,
@@ -2460,6 +2499,9 @@ class HabitRow extends DataClass implements Insertable<HabitRow> {
       targetPerWeek: data.targetPerWeek.present
           ? data.targetPerWeek.value
           : this.targetPerWeek,
+      targetPeriod: data.targetPeriod.present
+          ? data.targetPeriod.value
+          : this.targetPeriod,
       weekdays: data.weekdays.present ? data.weekdays.value : this.weekdays,
       position: data.position.present ? data.position.value : this.position,
       archived: data.archived.present ? data.archived.value : this.archived,
@@ -2480,6 +2522,7 @@ class HabitRow extends DataClass implements Insertable<HabitRow> {
           ..write('color: $color, ')
           ..write('icon: $icon, ')
           ..write('targetPerWeek: $targetPerWeek, ')
+          ..write('targetPeriod: $targetPeriod, ')
           ..write('weekdays: $weekdays, ')
           ..write('position: $position, ')
           ..write('archived: $archived, ')
@@ -2500,6 +2543,7 @@ class HabitRow extends DataClass implements Insertable<HabitRow> {
     color,
     icon,
     targetPerWeek,
+    targetPeriod,
     weekdays,
     position,
     archived,
@@ -2519,6 +2563,7 @@ class HabitRow extends DataClass implements Insertable<HabitRow> {
           other.color == this.color &&
           other.icon == this.icon &&
           other.targetPerWeek == this.targetPerWeek &&
+          other.targetPeriod == this.targetPeriod &&
           other.weekdays == this.weekdays &&
           other.position == this.position &&
           other.archived == this.archived &&
@@ -2536,6 +2581,7 @@ class HabitRecordsCompanion extends UpdateCompanion<HabitRow> {
   final Value<int> color;
   final Value<String> icon;
   final Value<int> targetPerWeek;
+  final Value<String> targetPeriod;
   final Value<String> weekdays;
   final Value<int> position;
   final Value<bool> archived;
@@ -2552,6 +2598,7 @@ class HabitRecordsCompanion extends UpdateCompanion<HabitRow> {
     this.color = const Value.absent(),
     this.icon = const Value.absent(),
     this.targetPerWeek = const Value.absent(),
+    this.targetPeriod = const Value.absent(),
     this.weekdays = const Value.absent(),
     this.position = const Value.absent(),
     this.archived = const Value.absent(),
@@ -2569,6 +2616,7 @@ class HabitRecordsCompanion extends UpdateCompanion<HabitRow> {
     required int color,
     this.icon = const Value.absent(),
     this.targetPerWeek = const Value.absent(),
+    this.targetPeriod = const Value.absent(),
     this.weekdays = const Value.absent(),
     this.position = const Value.absent(),
     this.archived = const Value.absent(),
@@ -2591,6 +2639,7 @@ class HabitRecordsCompanion extends UpdateCompanion<HabitRow> {
     Expression<int>? color,
     Expression<String>? icon,
     Expression<int>? targetPerWeek,
+    Expression<String>? targetPeriod,
     Expression<String>? weekdays,
     Expression<int>? position,
     Expression<bool>? archived,
@@ -2608,6 +2657,7 @@ class HabitRecordsCompanion extends UpdateCompanion<HabitRow> {
       if (color != null) 'color': color,
       if (icon != null) 'icon': icon,
       if (targetPerWeek != null) 'target_per_week': targetPerWeek,
+      if (targetPeriod != null) 'target_period': targetPeriod,
       if (weekdays != null) 'weekdays': weekdays,
       if (position != null) 'position': position,
       if (archived != null) 'archived': archived,
@@ -2627,6 +2677,7 @@ class HabitRecordsCompanion extends UpdateCompanion<HabitRow> {
     Value<int>? color,
     Value<String>? icon,
     Value<int>? targetPerWeek,
+    Value<String>? targetPeriod,
     Value<String>? weekdays,
     Value<int>? position,
     Value<bool>? archived,
@@ -2644,6 +2695,7 @@ class HabitRecordsCompanion extends UpdateCompanion<HabitRow> {
       color: color ?? this.color,
       icon: icon ?? this.icon,
       targetPerWeek: targetPerWeek ?? this.targetPerWeek,
+      targetPeriod: targetPeriod ?? this.targetPeriod,
       weekdays: weekdays ?? this.weekdays,
       position: position ?? this.position,
       archived: archived ?? this.archived,
@@ -2681,6 +2733,9 @@ class HabitRecordsCompanion extends UpdateCompanion<HabitRow> {
     if (targetPerWeek.present) {
       map['target_per_week'] = Variable<int>(targetPerWeek.value);
     }
+    if (targetPeriod.present) {
+      map['target_period'] = Variable<String>(targetPeriod.value);
+    }
     if (weekdays.present) {
       map['weekdays'] = Variable<String>(weekdays.value);
     }
@@ -2716,6 +2771,7 @@ class HabitRecordsCompanion extends UpdateCompanion<HabitRow> {
           ..write('color: $color, ')
           ..write('icon: $icon, ')
           ..write('targetPerWeek: $targetPerWeek, ')
+          ..write('targetPeriod: $targetPeriod, ')
           ..write('weekdays: $weekdays, ')
           ..write('position: $position, ')
           ..write('archived: $archived, ')
@@ -2759,6 +2815,18 @@ class $HabitCompletionRecordsTable extends HabitCompletionRecords
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _checkInCountMeta = const VerificationMeta(
+    'checkInCount',
+  );
+  @override
+  late final GeneratedColumn<int> checkInCount = GeneratedColumn<int>(
+    'check_in_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -2771,7 +2839,12 @@ class $HabitCompletionRecordsTable extends HabitCompletionRecords
     requiredDuringInsert: true,
   );
   @override
-  List<GeneratedColumn> get $columns => [habitId, dateKey, createdAt];
+  List<GeneratedColumn> get $columns => [
+    habitId,
+    dateKey,
+    checkInCount,
+    createdAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2800,6 +2873,15 @@ class $HabitCompletionRecordsTable extends HabitCompletionRecords
     } else if (isInserting) {
       context.missing(_dateKeyMeta);
     }
+    if (data.containsKey('check_in_count')) {
+      context.handle(
+        _checkInCountMeta,
+        checkInCount.isAcceptableOrUnknown(
+          data['check_in_count']!,
+          _checkInCountMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -2825,6 +2907,10 @@ class $HabitCompletionRecordsTable extends HabitCompletionRecords
         DriftSqlType.int,
         data['${effectivePrefix}date_key'],
       )!,
+      checkInCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}check_in_count'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -2842,10 +2928,15 @@ class HabitCompletionRow extends DataClass
     implements Insertable<HabitCompletionRow> {
   final String habitId;
   final int dateKey;
+
+  /// Check-ins recorded on this date. Weekly habits normally use 1; monthly
+  /// quotas allow several transactions on the same day.
+  final int checkInCount;
   final DateTime createdAt;
   const HabitCompletionRow({
     required this.habitId,
     required this.dateKey,
+    required this.checkInCount,
     required this.createdAt,
   });
   @override
@@ -2853,6 +2944,7 @@ class HabitCompletionRow extends DataClass
     final map = <String, Expression>{};
     map['habit_id'] = Variable<String>(habitId);
     map['date_key'] = Variable<int>(dateKey);
+    map['check_in_count'] = Variable<int>(checkInCount);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -2861,6 +2953,7 @@ class HabitCompletionRow extends DataClass
     return HabitCompletionRecordsCompanion(
       habitId: Value(habitId),
       dateKey: Value(dateKey),
+      checkInCount: Value(checkInCount),
       createdAt: Value(createdAt),
     );
   }
@@ -2873,6 +2966,7 @@ class HabitCompletionRow extends DataClass
     return HabitCompletionRow(
       habitId: serializer.fromJson<String>(json['habitId']),
       dateKey: serializer.fromJson<int>(json['dateKey']),
+      checkInCount: serializer.fromJson<int>(json['checkInCount']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -2882,6 +2976,7 @@ class HabitCompletionRow extends DataClass
     return <String, dynamic>{
       'habitId': serializer.toJson<String>(habitId),
       'dateKey': serializer.toJson<int>(dateKey),
+      'checkInCount': serializer.toJson<int>(checkInCount),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -2889,16 +2984,21 @@ class HabitCompletionRow extends DataClass
   HabitCompletionRow copyWith({
     String? habitId,
     int? dateKey,
+    int? checkInCount,
     DateTime? createdAt,
   }) => HabitCompletionRow(
     habitId: habitId ?? this.habitId,
     dateKey: dateKey ?? this.dateKey,
+    checkInCount: checkInCount ?? this.checkInCount,
     createdAt: createdAt ?? this.createdAt,
   );
   HabitCompletionRow copyWithCompanion(HabitCompletionRecordsCompanion data) {
     return HabitCompletionRow(
       habitId: data.habitId.present ? data.habitId.value : this.habitId,
       dateKey: data.dateKey.present ? data.dateKey.value : this.dateKey,
+      checkInCount: data.checkInCount.present
+          ? data.checkInCount.value
+          : this.checkInCount,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -2908,19 +3008,21 @@ class HabitCompletionRow extends DataClass
     return (StringBuffer('HabitCompletionRow(')
           ..write('habitId: $habitId, ')
           ..write('dateKey: $dateKey, ')
+          ..write('checkInCount: $checkInCount, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(habitId, dateKey, createdAt);
+  int get hashCode => Object.hash(habitId, dateKey, checkInCount, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is HabitCompletionRow &&
           other.habitId == this.habitId &&
           other.dateKey == this.dateKey &&
+          other.checkInCount == this.checkInCount &&
           other.createdAt == this.createdAt);
 }
 
@@ -2928,17 +3030,20 @@ class HabitCompletionRecordsCompanion
     extends UpdateCompanion<HabitCompletionRow> {
   final Value<String> habitId;
   final Value<int> dateKey;
+  final Value<int> checkInCount;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const HabitCompletionRecordsCompanion({
     this.habitId = const Value.absent(),
     this.dateKey = const Value.absent(),
+    this.checkInCount = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   HabitCompletionRecordsCompanion.insert({
     required String habitId,
     required int dateKey,
+    this.checkInCount = const Value.absent(),
     required DateTime createdAt,
     this.rowid = const Value.absent(),
   }) : habitId = Value(habitId),
@@ -2947,12 +3052,14 @@ class HabitCompletionRecordsCompanion
   static Insertable<HabitCompletionRow> custom({
     Expression<String>? habitId,
     Expression<int>? dateKey,
+    Expression<int>? checkInCount,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (habitId != null) 'habit_id': habitId,
       if (dateKey != null) 'date_key': dateKey,
+      if (checkInCount != null) 'check_in_count': checkInCount,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -2961,12 +3068,14 @@ class HabitCompletionRecordsCompanion
   HabitCompletionRecordsCompanion copyWith({
     Value<String>? habitId,
     Value<int>? dateKey,
+    Value<int>? checkInCount,
     Value<DateTime>? createdAt,
     Value<int>? rowid,
   }) {
     return HabitCompletionRecordsCompanion(
       habitId: habitId ?? this.habitId,
       dateKey: dateKey ?? this.dateKey,
+      checkInCount: checkInCount ?? this.checkInCount,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -2980,6 +3089,9 @@ class HabitCompletionRecordsCompanion
     }
     if (dateKey.present) {
       map['date_key'] = Variable<int>(dateKey.value);
+    }
+    if (checkInCount.present) {
+      map['check_in_count'] = Variable<int>(checkInCount.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -2995,6 +3107,7 @@ class HabitCompletionRecordsCompanion
     return (StringBuffer('HabitCompletionRecordsCompanion(')
           ..write('habitId: $habitId, ')
           ..write('dateKey: $dateKey, ')
+          ..write('checkInCount: $checkInCount, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -21291,6 +21404,7 @@ typedef $$HabitRecordsTableCreateCompanionBuilder =
       required int color,
       Value<String> icon,
       Value<int> targetPerWeek,
+      Value<String> targetPeriod,
       Value<String> weekdays,
       Value<int> position,
       Value<bool> archived,
@@ -21309,6 +21423,7 @@ typedef $$HabitRecordsTableUpdateCompanionBuilder =
       Value<int> color,
       Value<String> icon,
       Value<int> targetPerWeek,
+      Value<String> targetPeriod,
       Value<String> weekdays,
       Value<int> position,
       Value<bool> archived,
@@ -21425,6 +21540,11 @@ class $$HabitRecordsTableFilterComposer
 
   ColumnFilters<int> get targetPerWeek => $composableBuilder(
     column: $table.targetPerWeek,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetPeriod => $composableBuilder(
+    column: $table.targetPeriod,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -21570,6 +21690,11 @@ class $$HabitRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get targetPeriod => $composableBuilder(
+    column: $table.targetPeriod,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get weekdays => $composableBuilder(
     column: $table.weekdays,
     builder: (column) => ColumnOrderings(column),
@@ -21675,6 +21800,11 @@ class $$HabitRecordsTableAnnotationComposer
 
   GeneratedColumn<int> get targetPerWeek => $composableBuilder(
     column: $table.targetPerWeek,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get targetPeriod => $composableBuilder(
+    column: $table.targetPeriod,
     builder: (column) => column,
   );
 
@@ -21809,6 +21939,7 @@ class $$HabitRecordsTableTableManager
                 Value<int> color = const Value.absent(),
                 Value<String> icon = const Value.absent(),
                 Value<int> targetPerWeek = const Value.absent(),
+                Value<String> targetPeriod = const Value.absent(),
                 Value<String> weekdays = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 Value<bool> archived = const Value.absent(),
@@ -21825,6 +21956,7 @@ class $$HabitRecordsTableTableManager
                 color: color,
                 icon: icon,
                 targetPerWeek: targetPerWeek,
+                targetPeriod: targetPeriod,
                 weekdays: weekdays,
                 position: position,
                 archived: archived,
@@ -21843,6 +21975,7 @@ class $$HabitRecordsTableTableManager
                 required int color,
                 Value<String> icon = const Value.absent(),
                 Value<int> targetPerWeek = const Value.absent(),
+                Value<String> targetPeriod = const Value.absent(),
                 Value<String> weekdays = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 Value<bool> archived = const Value.absent(),
@@ -21859,6 +21992,7 @@ class $$HabitRecordsTableTableManager
                 color: color,
                 icon: icon,
                 targetPerWeek: targetPerWeek,
+                targetPeriod: targetPeriod,
                 weekdays: weekdays,
                 position: position,
                 archived: archived,
@@ -21988,6 +22122,7 @@ typedef $$HabitCompletionRecordsTableCreateCompanionBuilder =
     HabitCompletionRecordsCompanion Function({
       required String habitId,
       required int dateKey,
+      Value<int> checkInCount,
       required DateTime createdAt,
       Value<int> rowid,
     });
@@ -21995,6 +22130,7 @@ typedef $$HabitCompletionRecordsTableUpdateCompanionBuilder =
     HabitCompletionRecordsCompanion Function({
       Value<String> habitId,
       Value<int> dateKey,
+      Value<int> checkInCount,
       Value<DateTime> createdAt,
       Value<int> rowid,
     });
@@ -22049,6 +22185,11 @@ class $$HabitCompletionRecordsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get checkInCount => $composableBuilder(
+    column: $table.checkInCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
@@ -22092,6 +22233,11 @@ class $$HabitCompletionRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get checkInCount => $composableBuilder(
+    column: $table.checkInCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -22132,6 +22278,11 @@ class $$HabitCompletionRecordsTableAnnotationComposer
   });
   GeneratedColumn<int> get dateKey =>
       $composableBuilder(column: $table.dateKey, builder: (column) => column);
+
+  GeneratedColumn<int> get checkInCount => $composableBuilder(
+    column: $table.checkInCount,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -22201,11 +22352,13 @@ class $$HabitCompletionRecordsTableTableManager
               ({
                 Value<String> habitId = const Value.absent(),
                 Value<int> dateKey = const Value.absent(),
+                Value<int> checkInCount = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => HabitCompletionRecordsCompanion(
                 habitId: habitId,
                 dateKey: dateKey,
+                checkInCount: checkInCount,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
@@ -22213,11 +22366,13 @@ class $$HabitCompletionRecordsTableTableManager
               ({
                 required String habitId,
                 required int dateKey,
+                Value<int> checkInCount = const Value.absent(),
                 required DateTime createdAt,
                 Value<int> rowid = const Value.absent(),
               }) => HabitCompletionRecordsCompanion.insert(
                 habitId: habitId,
                 dateKey: dateKey,
+                checkInCount: checkInCount,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
